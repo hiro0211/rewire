@@ -1,0 +1,53 @@
+import { create } from 'zustand';
+import { userStorage } from '@/lib/storage/userStorage';
+import type { User } from '@/types/models';
+
+interface UserState {
+  user: User | null;
+  isLoading: boolean;
+  hasHydrated: boolean;
+}
+
+interface UserActions {
+  setUser: (user: User) => void;
+  updateUser: (updates: Partial<User>) => void;
+  loadUser: () => Promise<void>;
+  reset: () => Promise<void>;
+}
+
+export const useUserStore = create<UserState & UserActions>((set, get) => ({
+  user: null,
+  isLoading: false,
+  hasHydrated: false,
+
+  setUser: (user) => {
+    set({ user });
+    userStorage.save(user);
+  },
+
+  updateUser: async (updates) => {
+    const { user } = get();
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      set({ user: updatedUser });
+      await userStorage.save(updatedUser);
+    }
+  },
+
+  loadUser: async () => {
+    set({ isLoading: true });
+    try {
+      const user = await userStorage.get();
+      set({ user, hasHydrated: true });
+    } catch (e) {
+      console.error('Failed to load user', e);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  reset: async () => {
+    set({ user: null });
+    await userStorage.clear();
+  },
+}));
