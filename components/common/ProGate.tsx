@@ -1,16 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-// import { useRouter } from 'expo-router'; // Will use later
+import { useRouter } from 'expo-router';
 import { Card } from '@/components/ui/Card';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface ProGateProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   isPro?: boolean; // In MVP, this will come from store
   fallback?: React.ReactNode;
 }
 
 export function ProGate({ children, isPro = false, fallback }: ProGateProps) {
+  const router = useRouter();
+
   if (isPro) {
     return <>{children}</>;
   }
@@ -25,7 +27,7 @@ export function ProGate({ children, isPro = false, fallback }: ProGateProps) {
       <Text style={styles.description}>
         この機能を利用するには Pro へのアップグレードが必要です。
       </Text>
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/paywall')}>
         <Text style={styles.buttonText}>詳細を見る</Text>
       </TouchableOpacity>
     </Card>

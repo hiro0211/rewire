@@ -3,20 +3,26 @@
     "name": "rewire",
     "slug": "rewire",
     "version": "1.0.0",
+    "icon": "./assets/images/icon.png",
     "orientation": "portrait",
     "scheme": "rewire",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0A0A0F"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rewire.app",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "広告のパーソナライズのために使用します。許可しない場合でもアプリは通常通りご利用いただけます。"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0A0A0F"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -27,7 +33,18 @@
     },
     "plugins": [
       "expo-router",
-      "expo-tracking-transparency"
+      "expo-tracking-transparency",
+      "expo-secure-store",
+      "./plugins/withContentBlocker",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      "react-native-purchases",
+      "react-native-purchases-ui"
     ],
     "experiments": {
       "typedRoutes": true

@@ -10,6 +10,7 @@ interface BreathState {
 interface BreathActions {
   loadSessions: () => Promise<void>;
   addSession: (session: BreathSession) => Promise<void>;
+  reset: () => void;
 }
 
 export const useBreathStore = create<BreathState & BreathActions>((set, get) => ({
@@ -30,5 +31,9 @@ export const useBreathStore = create<BreathState & BreathActions>((set, get) => 
     const newSessions = [...sessions, session];
     set({ sessions: newSessions, totalSessions: newSessions.length });
     await breathSessionStorage.save(session);
+  },
+
+  reset: () => {
+    set({ sessions: [], totalSessions: 0 });
   },
 }));

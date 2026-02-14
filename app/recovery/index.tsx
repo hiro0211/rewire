@@ -7,6 +7,8 @@ import { recoveryService } from '@/features/recovery/recoveryService';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { BannerAdView } from '@/components/ads/BannerAdView';
+import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 // import { useRouter } from 'expo-router';
 
 export default function RecoveryScreen() {
@@ -35,7 +37,7 @@ export default function RecoveryScreen() {
           <>
              <View style={styles.divider} />
              <NextActionList />
-             
+
              <View style={styles.messageBox}>
                <Text style={styles.messageText}>
                  あなたの連続記録はリセットされましたが、
@@ -44,6 +46,8 @@ export default function RecoveryScreen() {
              </View>
           </>
         )}
+
+        <BannerAdView unitId={AD_UNIT_IDS.BANNER_RECOVERY} />
       </ScrollView>
     </SafeAreaWrapper>
   );

@@ -1,3 +1,5 @@
+import type { SubscriptionPlan } from '../lib/subscription/subscriptionTypes';
+
 export interface User {
   id: string;
   nickname: string;
@@ -7,6 +9,10 @@ export interface User {
   notifyTime: string;
   notifyEnabled: boolean;
   createdAt: string;
+  consentGivenAt: string | null;
+  ageVerifiedAt: string | null;
+  subscriptionPlan?: SubscriptionPlan;
+  subscriptionExpiresAt?: string | null;
 }
 
 export interface DailyCheckin {

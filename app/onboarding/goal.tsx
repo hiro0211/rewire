@@ -12,7 +12,11 @@ import * as Crypto from 'expo-crypto';
 const GOAL_OPTIONS = [7, 14, 30, 90];
 
 export default function GoalSettingScreen() {
-  const { nickname } = useLocalSearchParams<{ nickname: string }>();
+  const { nickname, consentGivenAt, ageVerifiedAt } = useLocalSearchParams<{
+    nickname: string;
+    consentGivenAt: string;
+    ageVerifiedAt: string;
+  }>();
   // Default to 30 if undefined
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
@@ -28,10 +32,12 @@ export default function GoalSettingScreen() {
       notifyTime: '22:00',
       notifyEnabled: true, // Assuming enabled for MVP flow
       createdAt: new Date().toISOString(),
+      consentGivenAt: Array.isArray(consentGivenAt) ? consentGivenAt[0] : consentGivenAt || null,
+      ageVerifiedAt: Array.isArray(ageVerifiedAt) ? ageVerifiedAt[0] : ageVerifiedAt || null,
     };
 
     await setUser(newUser);
-    router.replace('/(tabs)');
+    router.replace({ pathname: '/paywall', params: { source: 'onboarding' } });
   };
 
   return (

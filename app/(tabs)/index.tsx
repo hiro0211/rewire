@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StreakCard } from '@/components/dashboard/StreakCard';
@@ -8,15 +8,28 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
+import { BannerAdView } from '@/components/ads/BannerAdView';
+import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 export default function DashboardScreen() {
   const { user } = useUserStore();
-  const { loadCheckins, todayCheckin } = useCheckinStore();
+  const { loadCheckins, todayCheckin, checkins } = useCheckinStore();
   const router = useRouter();
 
   useEffect(() => {
     loadCheckins();
   }, []);
+
+  const weeklySummary = useMemo(() => {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weekCheckins = checkins.filter(
+      (c) => new Date(c.date) >= weekAgo
+    );
+    const cleanDays = weekCheckins.filter((c) => !c.watchedPorn).length;
+    const totalDays = weekCheckins.length;
+    return { cleanDays, totalDays };
+  }, [checkins]);
 
   return (
     <SafeAreaWrapper style={styles.container}>
@@ -46,10 +59,25 @@ export default function DashboardScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>週間サマリー</Text>
-          <View style={styles.placeholderCard}>
-            <Text style={styles.placeholderText}>データ収集中...</Text>
+          <View style={styles.summaryCard}>
+            {weeklySummary.totalDays > 0 ? (
+              <>
+                <Text style={styles.summaryNumber}>
+                  {weeklySummary.cleanDays}/{weeklySummary.totalDays}
+                </Text>
+                <Text style={styles.summaryLabel}>日間クリア</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.summaryEmptyText}>
+                  チェックインを始めると{'\n'}週間レポートがここに表示されます
+                </Text>
+              </>
+            )}
           </View>
         </View>
+
+        <BannerAdView unitId={AD_UNIT_IDS.BANNER_DASHBOARD} />
       </ScrollView>
       
       <SOSButton />
@@ -105,15 +133,28 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
   },
-  placeholderCard: {
+  summaryCard: {
     backgroundColor: COLORS.surface,
     padding: SPACING.xl,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 100,
+    minHeight: 100,
   },
-  placeholderText: {
+  summaryNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  summaryLabel: {
+    fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  summaryEmptyText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.sm,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

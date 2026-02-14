@@ -4,9 +4,17 @@ import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useInterstitialAd } from '@/hooks/ads/useInterstitialAd';
+import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 export default function CheckinCompleteScreen() {
   const router = useRouter();
+  const { show: showInterstitial } = useInterstitialAd(AD_UNIT_IDS.INTERSTITIAL_CHECKIN_COMPLETE);
+
+  const handleGoHome = async () => {
+    await showInterstitial();
+    router.replace('/(tabs)');
+  };
 
   return (
     <SafeAreaWrapper>
@@ -19,7 +27,7 @@ export default function CheckinCompleteScreen() {
         </Text>
         <Button
           title="ホームに戻る"
-          onPress={() => router.replace('/(tabs)')}
+          onPress={handleGoHome}
           style={styles.button}
         />
       </View>

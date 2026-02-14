@@ -6,6 +6,8 @@ import { HistoryCalendar } from '@/components/history/HistoryCalendar';
 import { HistoryList } from '@/components/history/HistoryList';
 import { ToggleButton } from '@/components/ui/ToggleButton';
 import { useCheckinStore } from '@/stores/checkinStore';
+import { BannerAdView } from '@/components/ads/BannerAdView';
+import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 export default function HistoryScreen() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -43,6 +45,7 @@ export default function HistoryScreen() {
       <View style={styles.content}>
         {viewMode === 'calendar' ? <HistoryCalendar /> : <HistoryList />}
       </View>
+      <BannerAdView unitId={AD_UNIT_IDS.BANNER_HISTORY} />
     </SafeAreaView>
   );
 }

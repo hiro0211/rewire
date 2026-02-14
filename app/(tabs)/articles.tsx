@@ -5,6 +5,8 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { ArticleListItem } from '@/components/articles/ArticleListItem';
 import { ARTICLES } from '@/constants/articles';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { BannerAdView } from '@/components/ads/BannerAdView';
+import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 export default function ArticleListScreen() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function ArticleListScreen() {
         )}
         contentContainerStyle={styles.listContent}
       />
+      <BannerAdView unitId={AD_UNIT_IDS.BANNER_ARTICLES} />
     </SafeAreaWrapper>
   );
 }

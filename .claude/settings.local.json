@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(npx expo install:*)",
+      "Bash(npx tsc:*)",
+      "WebSearch",
+      "Bash(ls:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx expo export:*)",
+      "Bash(npm install:*)",
+      "Bash(npm ls:*)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:www.revenuecat.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx expo customize:*)",
+      "WebFetch(domain:blog.ottijp.com)",
+      "WebFetch(domain:mcthnk.com)",
+      "WebFetch(domain:marumaro7.hatenablog.com)",
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(python:*)",
+      "Bash(where:*)",
+      "Bash(py --version)",
+      "Bash(py -m pip install:*)",
+      "Bash(py -c:*)",
+      "WebFetch(domain:www.paywallscreens.com)",
+      "WebFetch(domain:screensdesign.com)",
+      "WebFetch(domain:www.namiml.com)",
+      "WebFetch(domain:www.notion.com)",
+      "WebFetch(domain:www.termsfeed.com)",
+      "WebFetch(domain:qiita.com)",
+      "WebFetch(domain:zenn.dev)",
+      "Bash(npx eas-cli:*)",
+      "Bash(npx node:*)",
+      "WebFetch(domain:support.google.com)"
+    ]
+  }
+}

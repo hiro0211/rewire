@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { userStorage } from '@/lib/storage/userStorage';
+import { asyncStorageClient } from '@/lib/storage/asyncStorageClient';
+import { useCheckinStore } from './checkinStore';
+import { useBreathStore } from './breathStore';
 import type { User } from '@/types/models';
 
 interface UserState {
@@ -10,7 +13,7 @@ interface UserState {
 
 interface UserActions {
   setUser: (user: User) => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<User>) => Promise<void>;
   loadUser: () => Promise<void>;
   reset: () => Promise<void>;
 }
@@ -48,6 +51,8 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
 
   reset: async () => {
     set({ user: null });
-    await userStorage.clear();
+    await asyncStorageClient.clearAll();
+    useCheckinStore.getState().reset();
+    useBreathStore.getState().reset();
   },
 }));

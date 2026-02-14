@@ -1,12 +1,6 @@
 import { Tabs } from 'expo-router';
 import { COLORS, SPACING } from '@/constants/theme';
-import { View } from 'react-native';
-
-// Simple text icons for MVP. We will add vector icons later if needed.
-const TabIcon = ({ name, color }: { name: string; color: string }) => (
-  // Placeholder for icon
-  <View style={{ width: 24, height: 24, backgroundColor: color, borderRadius: 12 }} />
-);
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -26,33 +20,39 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarLabel: 'Home',
-          // tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
+          title: 'ホーム',
+          tabBarLabel: 'ホーム',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
+      {/* v1.1 で記事機能を追加予定
       <Tabs.Screen
         name="articles"
         options={{
-          title: 'Articles',
+          title: '記事',
           tabBarLabel: '記事',
-          // tabBarIcon: ({ color }) => <TabIcon name="book" color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="book-outline" size={size} color={color} />,
         }}
+      />
+      */}
+      <Tabs.Screen
+        name="articles"
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'History',
+          title: '履歴',
           tabBarLabel: '履歴',
-          tabBarIcon: ({ color }) => <TabIcon name="calendar" color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: '設定',
           tabBarLabel: '設定',
-          tabBarIcon: ({ color }) => <TabIcon name="settings" color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="settings-outline" size={size} color={color} />,
         }}
       />
     </Tabs>

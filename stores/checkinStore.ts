@@ -12,6 +12,7 @@ interface CheckinActions {
   loadCheckins: () => Promise<void>;
   addCheckin: (checkin: DailyCheckin) => Promise<void>;
   refreshTodayCheckin: () => void;
+  reset: () => void;
 }
 
 export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) => ({
@@ -46,5 +47,9 @@ export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) 
     const today = new Date().toISOString().split('T')[0];
     const found = checkins.find((c) => c.date === today) || null;
     set({ todayCheckin: found });
+  },
+
+  reset: () => {
+    set({ checkins: [], todayCheckin: null });
   },
 }));
