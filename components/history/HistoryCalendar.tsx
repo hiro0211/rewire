@@ -40,7 +40,7 @@ export const HistoryCalendar = () => {
     const checkin = checkins.find(c => c.date === dateStr);
 
     if (!checkin) return 'empty';
-    if (checkin.watchedPorn || checkin.masturbated) return 'relapse';
+    if (checkin.watchedPorn) return 'relapse';
     return 'clean';
   };
 

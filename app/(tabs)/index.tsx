@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StreakCard } from '@/components/dashboard/StreakCard';
 import { SOSButton } from '@/components/dashboard/SOSButton';
@@ -42,15 +42,18 @@ export default function DashboardScreen() {
         <StreakCard />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>今日のチェックイン</Text>
+          <Text style={styles.sectionTitle}>今日の振り返り</Text>
           {todayCheckin ? (
             <View style={styles.doneContainer}>
-              <Text style={styles.doneText}>完了済み ✅</Text>
+              <Text style={styles.doneText}>完了済み</Text>
               <Text style={styles.doneSubText}>明日も続けましょう。</Text>
+              <TouchableOpacity onPress={() => router.push('/checkin')} style={styles.redoButton}>
+                <Text style={styles.redoText}>やり直す</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <Button
-              title="チェックインする"
+              title="今日の結果を入力"
               onPress={() => router.push('/checkin')}
               style={styles.checkinButton}
             />
@@ -132,6 +135,16 @@ const styles = StyleSheet.create({
   doneSubText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
+  },
+  redoButton: {
+    marginTop: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+  },
+  redoText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.xs,
+    textDecorationLine: 'underline',
   },
   summaryCard: {
     backgroundColor: COLORS.surface,

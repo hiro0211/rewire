@@ -115,7 +115,7 @@ export default function SettingsScreen() {
         setBlockerEnabled(!success);
       }
     } catch (e) {
-      Alert.alert('エラー', 'コンテンツブロッカーの設定に失敗しました。');
+      Alert.alert('エラー', 'ポルノブロッカーの設定に失敗しました。');
     } finally {
       setBlockerLoading(false);
     }
@@ -162,9 +162,9 @@ export default function SettingsScreen() {
         {/* Content Blocker Section - iOS only */}
         {Platform.OS === 'ios' && (
           <>
-            <SectionHeader title="コンテンツブロッカー" />
+            <SectionHeader title="ポルノブロッカー" />
             <SettingItem
-              label="Safariブロッカー"
+              label="アダルトサイトをブロック"
               type="toggle"
               toggleValue={blockerEnabled}
               onToggle={handleBlockerToggle}

@@ -20,7 +20,7 @@ export function SOSButton() {
     >
       {/* <Ionicons name="warning" size={24} color="#FFF" /> */}
       <View style={styles.iconPlaceholder} /> 
-      <Text style={styles.text}>SOS</Text>
+      <Text style={styles.text}>深呼吸</Text>
     </TouchableOpacity>
   );
 }

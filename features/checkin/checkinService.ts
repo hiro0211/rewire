@@ -28,7 +28,6 @@ export const checkinService = {
       userId: user?.id || 'unknown',
       date: today,
       watchedPorn: input.watchedPorn!,
-      masturbated: input.masturbated!,
       urgeLevel: input.urgeLevel as any,
       stressLevel: input.stressLevel as any,
       qualityOfLife: input.qualityOfLife as any,

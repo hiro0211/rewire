@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
@@ -32,6 +32,11 @@ export default function CheckinScreen() {
 
   return (
     <SafeAreaWrapper>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={styles.backText}>← 戻る</Text>
+        </TouchableOpacity>
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>デイリーチェックイン</Text>
         
@@ -41,14 +46,8 @@ export default function CheckinScreen() {
           onChange={(v) => setField('watchedPorn', v)}
         />
         
-        <BinaryQuestion
-          label="❷ オナニーをしましたか？"
-          value={formState.masturbated}
-          onChange={(v) => setField('masturbated', v)}
-        />
-        
         <LevelSlider
-          label="❸ 誘惑レベル"
+          label="❷ 誘惑レベル"
           value={formState.urgeLevel}
           onChange={(v) => setField('urgeLevel', v)}
           minLabel="なし"
@@ -56,7 +55,7 @@ export default function CheckinScreen() {
         />
         
         <LevelSlider
-          label="❹ ストレスレベル"
+          label="❸ ストレスレベル"
           value={formState.stressLevel}
           onChange={(v) => setField('stressLevel', v)}
           minLabel="低い"
@@ -64,7 +63,7 @@ export default function CheckinScreen() {
         />
         
         <LevelSlider
-          label="❺ 今日の生活の質"
+          label="❹ 今日の生活の質"
           value={formState.qualityOfLife}
           onChange={(v) => setField('qualityOfLife', v)}
           maximumValue={5}
@@ -82,7 +81,7 @@ export default function CheckinScreen() {
           title="記録する"
           onPress={handleSubmit}
           loading={isLoading}
-          disabled={formState.watchedPorn === null || formState.masturbated === null}
+          disabled={formState.watchedPorn === null}
         />
       </ScrollView>
     </SafeAreaWrapper>
@@ -90,6 +89,18 @@ export default function CheckinScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+  },
+  backButton: {
+    paddingVertical: SPACING.sm,
+    alignSelf: 'flex-start',
+  },
+  backText: {
+    color: COLORS.primary,
+    fontSize: FONT_SIZE.md,
+  },
   content: {
     padding: SPACING.lg,
     paddingBottom: 50,

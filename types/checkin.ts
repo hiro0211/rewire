@@ -1,6 +1,5 @@
 export interface CheckinFormInput {
   watchedPorn: boolean | null;
-  masturbated: boolean | null;
   urgeLevel: number;
   stressLevel: number;
   qualityOfLife: number;

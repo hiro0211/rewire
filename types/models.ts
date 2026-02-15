@@ -20,7 +20,6 @@ export interface DailyCheckin {
   userId: string;
   date: string; // YYYY-MM-DD
   watchedPorn: boolean;
-  masturbated: boolean;
   urgeLevel: 0 | 1 | 2 | 3 | 4;
   stressLevel: 0 | 1 | 2 | 3 | 4;
   qualityOfLife: 1 | 2 | 3 | 4 | 5;

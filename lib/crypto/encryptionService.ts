@@ -3,7 +3,16 @@ import * as Crypto from 'expo-crypto';
 
 const KEY_ALIAS = 'rewire_enc_key';
 
-async function getOrCreateKey(): Promise<CryptoKey> {
+// Check if crypto.subtle is available
+const isCryptoAvailable = typeof globalThis.crypto !== 'undefined' && 
+                         typeof globalThis.crypto.subtle !== 'undefined';
+
+async function getOrCreateKey(): Promise<CryptoKey | null> {
+  if (!isCryptoAvailable) {
+    console.warn('[encryptionService] crypto.subtle not available, encryption disabled');
+    return null;
+  }
+
   let rawKeyBase64 = await SecureStore.getItemAsync(KEY_ALIAS);
 
   if (!rawKeyBase64) {
@@ -35,7 +44,16 @@ function base64ToUint8Array(base64: string): Uint8Array {
 
 export const encryptionService = {
   async encrypt(plaintext: string): Promise<string> {
+    // Fallback: If crypto is not available, return plaintext with a prefix
+    if (!isCryptoAvailable) {
+      return `PLAIN:${plaintext}`;
+    }
+
     const key = await getOrCreateKey();
+    if (!key) {
+      return `PLAIN:${plaintext}`;
+    }
+
     const iv = Crypto.getRandomBytes(12);
     const encoder = new TextEncoder();
     const data = encoder.encode(plaintext);
@@ -54,7 +72,20 @@ export const encryptionService = {
   },
 
   async decrypt(encryptedBase64: string): Promise<string> {
+    // Handle plaintext fallback
+    if (encryptedBase64.startsWith('PLAIN:')) {
+      return encryptedBase64.substring(6);
+    }
+
+    if (!isCryptoAvailable) {
+      throw new Error('Crypto not available and data is encrypted');
+    }
+
     const key = await getOrCreateKey();
+    if (!key) {
+      throw new Error('Could not get encryption key');
+    }
+
     const combined = base64ToUint8Array(encryptedBase64);
 
     const iv = combined.slice(0, 12);
@@ -71,6 +102,11 @@ export const encryptionService = {
   },
 
   isEncrypted(value: string): boolean {
+    // Check for plaintext fallback prefix
+    if (value.startsWith('PLAIN:')) {
+      return false;
+    }
+
     // Unencrypted JSON starts with [ or {. Encrypted data is base64.
     if (!value || value.length < 28) return false;
     const trimmed = value.trim();

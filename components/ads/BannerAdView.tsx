@@ -1,25 +1,36 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useUserStore } from '@/stores/userStore';
 import { COLORS } from '@/constants/theme';
+import { isExpoGo } from '@/lib/nativeGuard';
+
+let BannerAd: any = null;
+let BannerAdSize: any = {};
+if (!isExpoGo) {
+  try {
+    const ads = require('react-native-google-mobile-ads');
+    BannerAd = ads.BannerAd;
+    BannerAdSize = ads.BannerAdSize;
+  } catch {
+    // Native module not available
+  }
+}
 
 interface BannerAdViewProps {
   unitId: string;
-  size?: BannerAdSize;
+  size?: string;
 }
 
-export function BannerAdView({ unitId, size = BannerAdSize.ANCHORED_ADAPTIVE_BANNER }: BannerAdViewProps) {
+export function BannerAdView({ unitId, size }: BannerAdViewProps) {
   const { user } = useUserStore();
 
-  // Pro ユーザーには広告非表示
-  if (user?.isPro) return null;
+  if (user?.isPro || !BannerAd) return null;
 
   return (
     <View style={styles.container}>
       <BannerAd
         unitId={unitId}
-        size={size}
+        size={size || BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         requestOptions={{ requestNonPersonalizedAdsOnly: true }}
       />
     </View>

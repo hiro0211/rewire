@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     flexDirection: 'row',
+    gap: SPACING.sm,
   },
   toggleButtonWrapper: {
     flex: 1,

@@ -3,7 +3,6 @@ import type { CheckinFormInput } from '@/types/checkin';
 
 const INITIAL_STATE: CheckinFormInput = {
   watchedPorn: null,
-  masturbated: null,
   urgeLevel: 0,
   stressLevel: 0,
   qualityOfLife: 3,

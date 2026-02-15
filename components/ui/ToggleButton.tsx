@@ -58,12 +58,11 @@ export function ToggleButton({ title, active, onPress }: ToggleButtonProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: '100%',
     height: 48,
     borderRadius: RADIUS.sm,
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: SPACING.xs,
     borderWidth: 1,
   },
   text: {

@@ -1,17 +1,34 @@
 import { useEffect, useState, useCallback } from 'react';
-import { RewardedAd, RewardedAdEventType, AdEventType } from 'react-native-google-mobile-ads';
 import { useUserStore } from '@/stores/userStore';
+import { isExpoGo } from '@/lib/nativeGuard';
+
+let RewardedAd: any = null;
+let RewardedAdEventType: any = {};
+let AdEventType: any = {};
+if (!isExpoGo) {
+  try {
+    const ads = require('react-native-google-mobile-ads');
+    RewardedAd = ads.RewardedAd;
+    RewardedAdEventType = ads.RewardedAdEventType;
+    AdEventType = ads.AdEventType;
+  } catch {
+    // Native module not available
+  }
+}
 
 export function useRewardedAd(unitId: string) {
   const { user } = useUserStore();
   const [loaded, setLoaded] = useState(false);
   const [rewarded, setRewarded] = useState(false);
-  const [adInstance] = useState(() => RewardedAd.createForAdRequest(unitId, {
-    requestNonPersonalizedAdsOnly: true,
-  }));
+  const [adInstance] = useState(() => {
+    if (!RewardedAd) return null;
+    return RewardedAd.createForAdRequest(unitId, {
+      requestNonPersonalizedAdsOnly: true,
+    });
+  });
 
   useEffect(() => {
-    if (user?.isPro) return;
+    if (!adInstance || user?.isPro) return;
 
     const loadedUnsub = adInstance.addAdEventListener(AdEventType.LOADED, () => setLoaded(true));
     const earnedUnsub = adInstance.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => setRewarded(true));
@@ -30,8 +47,7 @@ export function useRewardedAd(unitId: string) {
   }, [adInstance, user?.isPro]);
 
   const show = useCallback(async (): Promise<boolean> => {
-    if (user?.isPro) return false;
-    if (!loaded) return false;
+    if (!adInstance || user?.isPro || !loaded) return false;
     adInstance.show();
     return true;
   }, [loaded, adInstance, user?.isPro]);

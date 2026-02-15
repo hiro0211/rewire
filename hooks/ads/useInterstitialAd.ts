@@ -1,21 +1,36 @@
 import { useEffect, useState, useCallback } from 'react';
-import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import { useUserStore } from '@/stores/userStore';
+import { isExpoGo } from '@/lib/nativeGuard';
+
+let InterstitialAd: any = null;
+let AdEventType: any = {};
+if (!isExpoGo) {
+  try {
+    const ads = require('react-native-google-mobile-ads');
+    InterstitialAd = ads.InterstitialAd;
+    AdEventType = ads.AdEventType;
+  } catch {
+    // Native module not available
+  }
+}
 
 export function useInterstitialAd(unitId: string) {
   const { user } = useUserStore();
   const [loaded, setLoaded] = useState(false);
-  const [adInstance] = useState(() => InterstitialAd.createForAdRequest(unitId, {
-    requestNonPersonalizedAdsOnly: true,
-  }));
+  const [adInstance] = useState(() => {
+    if (!InterstitialAd) return null;
+    return InterstitialAd.createForAdRequest(unitId, {
+      requestNonPersonalizedAdsOnly: true,
+    });
+  });
 
   useEffect(() => {
-    if (user?.isPro) return; // Pro ユーザーはロードしない
+    if (!adInstance || user?.isPro) return;
 
     const loadedUnsub = adInstance.addAdEventListener(AdEventType.LOADED, () => setLoaded(true));
     const closedUnsub = adInstance.addAdEventListener(AdEventType.CLOSED, () => {
       setLoaded(false);
-      adInstance.load(); // 次の広告をプリロード
+      adInstance.load();
     });
 
     adInstance.load();
@@ -27,8 +42,7 @@ export function useInterstitialAd(unitId: string) {
   }, [adInstance, user?.isPro]);
 
   const show = useCallback(async (): Promise<boolean> => {
-    if (user?.isPro) return false;
-    if (!loaded) return false;
+    if (!adInstance || user?.isPro || !loaded) return false;
     adInstance.show();
     return true;
   }, [loaded, adInstance, user?.isPro]);

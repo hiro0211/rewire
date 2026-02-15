@@ -9,8 +9,8 @@ import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge'
 
 const STEPS = [
   {
-    title: 'Safariコンテンツブロッカー',
-    description: 'Rewireは、Safariでアダルトコンテンツを\n自動的にブロックする機能を提供します。',
+    title: 'ポルノブロッカー',
+    description: 'Safariでアダルトサイトへのアクセスを\n自動的にブロックします。',
     icon: 'shield-checkmark-outline' as const,
   },
   {
@@ -30,7 +30,7 @@ const STEPS = [
   },
   {
     title: '設定完了！',
-    description: 'Safariでアダルトコンテンツが\n自動的にブロックされるようになりました。',
+    description: 'Safariでアダルトサイトへのアクセスが\n自動的にブロックされます。',
     icon: 'checkmark-circle-outline' as const,
   },
 ];

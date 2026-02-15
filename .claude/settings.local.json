@@ -34,7 +34,15 @@
       "WebFetch(domain:zenn.dev)",
       "Bash(npx eas-cli:*)",
       "Bash(npx node:*)",
-      "WebFetch(domain:support.google.com)"
+      "WebFetch(domain:support.google.com)",
+      "WebFetch(domain:kan-kikuchi.hatenablog.com)",
+      "WebFetch(domain:aqlier.com)",
+      "Bash(eas:*)",
+      "Bash(identify:*)",
+      "Bash(python3:*)",
+      "Bash(pip show:*)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:shofj.com)"
     ]
   }
 }

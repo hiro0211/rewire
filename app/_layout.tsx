@@ -9,7 +9,16 @@ import * as SplashScreen from 'expo-splash-screen';
 import { trackingClient } from '@/lib/tracking/trackingClient';
 import { adMobClient } from '@/lib/ads/adMobClient';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
-import Purchases from 'react-native-purchases';
+import { isExpoGo } from '@/lib/nativeGuard';
+
+let Purchases: any = null;
+if (!isExpoGo) {
+  try {
+    Purchases = require('react-native-purchases').default;
+  } catch {
+    // Native module not available
+  }
+}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -49,6 +58,7 @@ export default function RootLayout() {
     if (!hasHydrated) return;
 
     subscriptionClient.initialize();
+    if (!Purchases) return;
     const listener = (info: { entitlements: { active: Record<string, unknown> } }) => {
       const isPro = typeof info.entitlements.active['pro'] !== 'undefined';
       const currentUser = useUserStore.getState().user;
@@ -78,13 +88,18 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/goal" options={{ headerShown: false }} />
         <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'modal' }} />
-        <Stack.Screen name="article/[id]" options={{ headerShown: true }} />
+        <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="checkin/index" options={{ headerShown: false }} />
         <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />
-        <Stack.Screen name="breathing" options={{ headerShown: false }} />
-        <Stack.Screen name="recovery" options={{ headerShown: false }} />
+        <Stack.Screen name="breathing/index" options={{ headerShown: false }} />
+        <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
+        <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
+        <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
+        <Stack.Screen name="history/index" options={{ headerShown: false }} />
         <Stack.Screen name="terms" options={{ headerShown: false }} />
         <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
         <Stack.Screen name="content-blocker-setup" options={{ headerShown: false }} />

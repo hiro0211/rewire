@@ -14,16 +14,20 @@ export function BinaryQuestion({ label, value, onChange }: BinaryQuestionProps) 
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.buttons}>
-        <ToggleButton
-          title="はい"
-          active={value === true}
-          onPress={() => onChange(true)}
-        />
-        <ToggleButton
-          title="いいえ"
-          active={value === false}
-          onPress={() => onChange(false)}
-        />
+        <View style={styles.buttonWrapper}>
+          <ToggleButton
+            title="はい"
+            active={value === true}
+            onPress={() => onChange(true)}
+          />
+        </View>
+        <View style={styles.buttonWrapper}>
+          <ToggleButton
+            title="いいえ"
+            active={value === false}
+            onPress={() => onChange(false)}
+          />
+        </View>
       </View>
     </View>
   );
@@ -41,5 +45,9 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  buttonWrapper: {
+    flex: 1,
   },
 });

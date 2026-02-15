@@ -21,6 +21,10 @@ export const asyncStorageClient = {
       if (rawValue == null) return null;
 
       if (SENSITIVE_KEYS.includes(key)) {
+        // Handle PLAIN: prefix (fallback when crypto.subtle is unavailable)
+        if (rawValue.startsWith('PLAIN:')) {
+          return JSON.parse(rawValue.substring(6));
+        }
         if (encryptionService.isEncrypted(rawValue)) {
           const decrypted = await encryptionService.decrypt(rawValue);
           return JSON.parse(decrypted);

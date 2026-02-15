@@ -11,6 +11,7 @@ interface CheckinState {
 interface CheckinActions {
   loadCheckins: () => Promise<void>;
   addCheckin: (checkin: DailyCheckin) => Promise<void>;
+  removeTodayCheckin: () => Promise<void>;
   refreshTodayCheckin: () => void;
   reset: () => void;
 }
@@ -38,8 +39,18 @@ export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) 
     const { checkins } = get();
     const newCheckins = [checkin, ...checkins];
     set({ checkins: newCheckins, todayCheckin: checkin });
-    
+
     await checkinStorage.save(checkin);
+  },
+
+  removeTodayCheckin: async () => {
+    const today = new Date().toISOString().split('T')[0];
+    await checkinStorage.remove(today);
+    const { checkins } = get();
+    set({
+      checkins: checkins.filter((c) => c.date !== today),
+      todayCheckin: null,
+    });
   },
 
   refreshTodayCheckin: () => {

@@ -15,7 +15,7 @@ export const HistoryList = () => {
   );
 
   const renderItem = ({ item }: { item: DailyCheckin }) => {
-    const isRelapse = item.watchedPorn || item.masturbated;
+    const isRelapse = item.watchedPorn;
     
     return (
       <View style={styles.itemContainer}>
@@ -33,10 +33,9 @@ export const HistoryList = () => {
             </View>
           </View>
           
-          {(item.watchedPorn || item.masturbated) && (
+          {item.watchedPorn && (
              <View style={styles.tagsRow}>
-                {item.watchedPorn && <Text style={styles.tag}>ポルノ視聴</Text>}
-                {item.masturbated && <Text style={styles.tag}>自慰行為</Text>}
+                <Text style={styles.tag}>ポルノ視聴</Text>
              </View>
           )}
 
