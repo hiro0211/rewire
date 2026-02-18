@@ -1,50 +1,42 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Linking, Platform } from 'react-native';
+import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
+import { StepBadge } from '@/components/content-blocker/StepBadge';
+import { ScreenshotStep } from '@/components/content-blocker/ScreenshotStep';
+import { useContentBlockerStatus } from '@/hooks/useContentBlockerStatus';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
+import { useUserStore } from '@/stores/userStore';
 
-const STEPS = [
-  {
-    title: 'ポルノブロッカー',
-    description: 'Safariでアダルトサイトへのアクセスを\n自動的にブロックします。',
-    icon: 'shield-checkmark-outline' as const,
-  },
-  {
-    title: '設定アプリを開く',
-    description: 'iPhoneの「設定」アプリを開いてください。',
-    icon: 'settings-outline' as const,
-  },
-  {
-    title: 'Safari → 機能拡張',
-    description: '設定 → Safari → 機能拡張 の順に\nタップしてください。',
-    icon: 'compass-outline' as const,
-  },
-  {
-    title: 'Rewireをオンにする',
-    description: '「Rewire Content Blocker」を見つけて\nトグルをオンにしてください。',
-    icon: 'toggle-outline' as const,
-  },
-  {
-    title: '設定完了！',
-    description: 'Safariでアダルトサイトへのアクセスが\n自動的にブロックされます。',
-    icon: 'checkmark-circle-outline' as const,
-  },
-];
+const TOTAL_STEPS = 5;
+
+const STEP_IMAGES = {
+  1: require('@/assets/images/content-blocker/step1-settings-apps.jpg'),
+  2: require('@/assets/images/content-blocker/step2-safari-extensions.jpg'),
+  3: require('@/assets/images/content-blocker/step3-enable-rewire.jpg'),
+} as const;
+
+const STEP_HIGHLIGHTS = {
+  1: { top: 80, left: 3, width: 90, height: 8 },
+  2: { top: 45, left: 5, width: 90, height: 7 },
+  3: { top:27, left: 5, width: 90, height: 7 },
+} as const;
 
 export default function ContentBlockerSetupScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const isPro = useUserStore((s) => s.user?.isPro ?? false) || __DEV__;
 
-  const currentStep = STEPS[step];
-  const isLastStep = step === STEPS.length - 1;
+  useContentBlockerStatus(step, () => {
+    setStep(4);
+  });
 
   const handleNext = useCallback(async () => {
-    if (isLastStep) {
+    if (step === 4) {
       setIsLoading(true);
       try {
         await contentBlockerBridge.reloadBlockerRules();
@@ -55,21 +47,47 @@ export default function ContentBlockerSetupScreen() {
     } else {
       setStep(step + 1);
     }
-  }, [step, isLastStep, router]);
-
-  const handleSkip = useCallback(() => {
-    router.back();
-  }, [router]);
+  }, [step, router]);
 
   const handleOpenSettings = useCallback(() => {
     Linking.openURL('App-Prefs:SAFARI');
   }, []);
 
+  const handlePrev = useCallback(() => {
+    if (step > 0) setStep(step - 1);
+  }, [step]);
+
+  const handleBack = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const handleUpgrade = useCallback(() => {
+    router.push('/paywall');
+  }, [router]);
+
   return (
     <SafeAreaWrapper style={styles.container}>
+      {/* Header navigation */}
+      <View style={styles.header}>
+        {step > 0 ? (
+          <TouchableOpacity onPress={handlePrev} style={styles.headerButton}>
+            <Ionicons name="chevron-back" size={20} color={COLORS.primary} />
+            <Text style={styles.headerButtonText}>前へ</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.headerButton} />
+        )}
+        {step >= 1 && step <= 3 && (
+          <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
+            <Text style={styles.headerSkipText}>あとで設定する</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       <View style={styles.content}>
+        {/* Progress dots */}
         <View style={styles.stepIndicator}>
-          {STEPS.map((_, i) => (
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <View
               key={i}
               style={[
@@ -81,39 +99,152 @@ export default function ContentBlockerSetupScreen() {
           ))}
         </View>
 
-        <View style={styles.iconContainer}>
-          <Ionicons
-            name={currentStep.icon}
-            size={80}
-            color={COLORS.primary}
-          />
-        </View>
+        {/* Step 0 - Intro */}
+        {step === 0 && (
+          <>
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={80}
+                color={COLORS.primary}
+              />
+            </View>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>ポルノブロッカー</Text>
+              <View style={styles.proBadge}>
+                <Text style={styles.proBadgeText}>PRO</Text>
+              </View>
+            </View>
+            <Text style={styles.description}>
+              {'Safariでアダルトサイトを自動ブロック。\n3ステップで設定できます。'}
+            </Text>
+            {!isPro && (
+              <View style={styles.proGate}>
+                <Ionicons name="lock-closed" size={24} color={COLORS.pro} />
+                <Text style={styles.proGateText}>
+                  この機能はPro限定です
+                </Text>
+              </View>
+            )}
+          </>
+        )}
 
-        <Text style={styles.title}>{currentStep.title}</Text>
-        <Text style={styles.description}>{currentStep.description}</Text>
-
+        {/* Step 1 - Settings > Apps > Safari */}
         {step === 1 && (
-          <Button
-            title="設定アプリを開く"
-            variant="secondary"
-            onPress={handleOpenSettings}
-            style={styles.openSettingsButton}
-          />
+          <>
+            <StepBadge step={1} />
+            <Text style={styles.stepTitle}>
+              「設定」→「アプリ」→「Safari」
+            </Text>
+            <Text style={styles.stepDescription}>
+              設定アプリを開いて「アプリ」から「Safari」を選択してください
+            </Text>
+            <ScreenshotStep
+              image={STEP_IMAGES[1]}
+              highlight={STEP_HIGHLIGHTS[1]}
+            />
+          </>
+        )}
+
+        {/* Step 2 - Safari > Extensions */}
+        {step === 2 && (
+          <>
+            <StepBadge step={2} />
+            <Text style={styles.stepTitle}>「機能拡張」をタップ</Text>
+            <Text style={styles.stepDescription}>
+              Safari設定の中にある「機能拡張」を選択してください
+            </Text>
+            <ScreenshotStep
+              image={STEP_IMAGES[2]}
+              highlight={STEP_HIGHLIGHTS[2]}
+            />
+          </>
+        )}
+
+        {/* Step 3 - Enable Rewire */}
+        {step === 3 && (
+          <>
+            <StepBadge step={3} />
+            <Text style={styles.stepTitle}>Rewireをオンにする</Text>
+            <Text style={styles.stepDescription}>
+              「rewire」を選んで「機能拡張を許可」をオンにしてください
+            </Text>
+            <ScreenshotStep
+              image={STEP_IMAGES[3]}
+              highlight={STEP_HIGHLIGHTS[3]}
+            />
+          </>
+        )}
+
+        {/* Step 4 - Completion */}
+        {step === 4 && (
+          <>
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name="checkmark-circle"
+                size={80}
+                color={COLORS.success}
+              />
+            </View>
+            <Text style={styles.title}>設定完了！</Text>
+            <Text style={styles.description}>
+              {'Safariでアダルトサイトが\n自動的にブロックされます'}
+            </Text>
+          </>
         )}
       </View>
 
+      {/* Footer */}
       <View style={styles.footer}>
-        <Button
-          title={isLastStep ? '完了' : '次へ'}
-          onPress={handleNext}
-          loading={isLoading}
-        />
-        <Button
-          title="スキップ"
-          variant="ghost"
-          onPress={handleSkip}
-          style={styles.skipButton}
-        />
+        {step === 0 && (
+          <>
+            {isPro ? (
+              <Button title="セットアップを開始" onPress={handleNext} />
+            ) : (
+              <Button
+                title="Proにアップグレード"
+                onPress={handleUpgrade}
+                style={styles.upgradeButton}
+              />
+            )}
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <Button title="設定アプリを開く" onPress={handleOpenSettings} />
+            <Button
+              title="次へ"
+              variant="secondary"
+              onPress={handleNext}
+              style={styles.secondaryButton}
+            />
+          </>
+        )}
+
+        {step === 2 && (
+          <Button title="次へ" onPress={handleNext} />
+        )}
+
+        {step === 3 && (
+          <>
+            <Button title="設定を開く" onPress={handleOpenSettings} />
+            <Button
+              title="次へ"
+              variant="secondary"
+              onPress={handleNext}
+              style={styles.secondaryButton}
+            />
+          </>
+        )}
+
+        {step === 4 && (
+          <Button
+            title="完了"
+            onPress={handleNext}
+            loading={isLoading}
+          />
+        )}
       </View>
     </SafeAreaWrapper>
   );
@@ -123,13 +254,35 @@ const styles = StyleSheet.create({
   container: {
     padding: SPACING.lg,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 44,
+  },
+  headerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 44,
+    minHeight: 44,
+  },
+  headerButtonText: {
+    color: COLORS.primary,
+    fontSize: FONT_SIZE.md,
+    fontWeight: '500',
+  },
+  headerSkipText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.sm,
+  },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   stepIndicator: {
     flexDirection: 'row',
+    marginTop: SPACING.xxl,
     marginBottom: SPACING.xxl,
   },
   stepDot: {
@@ -155,12 +308,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xxl,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    gap: SPACING.sm,
+  },
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom: SPACING.md,
     textAlign: 'center',
+  },
+  proBadge: {
+    backgroundColor: COLORS.pro,
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+  },
+  proBadgeText: {
+    color: '#FFFFFF',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: 'bold',
   },
   description: {
     fontSize: FONT_SIZE.md,
@@ -169,14 +338,38 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: SPACING.xl,
   },
-  openSettingsButton: {
-    width: '100%',
+  proGate: {
+    alignItems: 'center',
+    gap: SPACING.sm,
     marginTop: SPACING.md,
+  },
+  proGateText: {
+    color: COLORS.pro,
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '600',
+  },
+  stepTitle: {
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  stepDescription: {
+    fontSize: FONT_SIZE.md,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: SPACING.lg,
   },
   footer: {
     marginBottom: SPACING.xl,
   },
-  skipButton: {
+  secondaryButton: {
     marginTop: SPACING.sm,
+  },
+  upgradeButton: {
+    backgroundColor: COLORS.pro,
   },
 });
