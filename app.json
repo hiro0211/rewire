@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rewire.app",
+      "bundleIdentifier": "rewire.app.com",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "広告のパーソナライズのために使用します。許可しない場合でもアプリは通常通りご利用いただけます。"
       }
@@ -32,10 +32,18 @@
       "output": "static"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "./plugins/withDisableResourceBundleSigning"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3e815c4f-9829-4aea-a68c-45ec5bb1f892"
+      }
+    },
+    "owner": "hiro01150"
   }
 }

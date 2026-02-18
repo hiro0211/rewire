@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Platform, Linking } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Platform, Linking, AppState } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
@@ -27,12 +27,21 @@ export default function SettingsScreen() {
   const [blockerEnabled, setBlockerEnabled] = useState(false);
   const [blockerLoading, setBlockerLoading] = useState(false);
 
-  useEffect(() => {
+  // Check content blocker state from Safari on mount and when app returns to foreground
+  const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
-      contentBlockerBridge.getBlockerStatus().then((status) => {
-        setBlockerEnabled(status.isEnabled);
-      });
+      const status = await contentBlockerBridge.getBlockerStatus();
+      setBlockerEnabled(status.isEnabled);
     }
+  };
+
+  useEffect(() => {
+    checkBlockerStatus();
+    // Re-check when app returns from Settings
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') checkBlockerStatus();
+    });
+    return () => sub.remove();
   }, []);
 
   const handleNotificationToggle = async (value: boolean) => {
@@ -105,20 +114,38 @@ export default function SettingsScreen() {
   };
 
   const handleBlockerToggle = async (value: boolean) => {
-    setBlockerLoading(true);
-    try {
-      if (value) {
-        const success = await contentBlockerBridge.enableBlocker();
-        setBlockerEnabled(success);
-      } else {
-        const success = await contentBlockerBridge.disableBlocker();
-        setBlockerEnabled(!success);
-      }
-    } catch (e) {
-      Alert.alert('エラー', 'ポルノブロッカーの設定に失敗しました。');
-    } finally {
-      setBlockerLoading(false);
+    if (value) {
+      // Content Blocker can only be enabled from Safari Settings
+      Alert.alert(
+        'Safari設定が必要です',
+        'アダルトサイトブロックを有効にするには、Safariの設定から拡張機能をONにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → ONにする',
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          {
+            text: '設定を開く',
+            onPress: () => {
+              Linking.openURL('App-Prefs:SAFARI');
+            },
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Safari設定が必要です',
+        'ブロックを無効にするには、Safariの設定から拡張機能をOFFにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → OFFにする',
+        [
+          { text: 'OK' },
+          {
+            text: '設定を開く',
+            onPress: () => {
+              Linking.openURL('App-Prefs:SAFARI');
+            },
+          },
+        ]
+      );
     }
+    // Refresh state after a delay (user may have changed it in Settings)
+    setTimeout(checkBlockerStatus, 2000);
   };
 
   if (!user) return null;

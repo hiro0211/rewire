@@ -113,6 +113,114 @@ const BLOCKED_DOMAINS = [
   "forums.socialmediagirls.com",
 ];
 
+// Safari Content Blocker limit: 150,000 rules per extension
+const MAX_RULES = 150000;
+
+// StevenBlack hosts file (porn category)
+const BLOCKLIST_URL =
+  "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn/hosts";
+
+// Domains to skip when parsing hosts file
+const SKIP_DOMAINS = new Set([
+  "localhost",
+  "localhost.localdomain",
+  "local",
+  "broadcasthost",
+  "0.0.0.0",
+  "ip6-localhost",
+  "ip6-loopback",
+  "ip6-localnet",
+  "ip6-mcastprefix",
+  "ip6-allnodes",
+  "ip6-allrouters",
+  "ip6-allhosts",
+]);
+
+/**
+ * Fetch and parse the StevenBlack hosts file at build time.
+ * Falls back to BLOCKED_DOMAINS on network error.
+ */
+async function fetchBlockList() {
+  const https = require("https");
+
+  return new Promise((resolve) => {
+    console.log("[ContentBlocker] Fetching StevenBlack blocklist...");
+    const req = https.get(BLOCKLIST_URL, { timeout: 30000 }, (res) => {
+      if (res.statusCode !== 200) {
+        console.warn(
+          `[ContentBlocker] HTTP ${res.statusCode}, using fallback list`
+        );
+        resolve(BLOCKED_DOMAINS);
+        return;
+      }
+
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        const domains = parseHostsFile(data);
+        console.log(
+          `[ContentBlocker] Fetched ${domains.length} domains from StevenBlack`
+        );
+        resolve(domains);
+      });
+    });
+
+    req.on("error", (err) => {
+      console.warn(
+        `[ContentBlocker] Fetch failed: ${err.message}, using fallback list`
+      );
+      resolve(BLOCKED_DOMAINS);
+    });
+
+    req.on("timeout", () => {
+      req.destroy();
+      console.warn("[ContentBlocker] Fetch timed out, using fallback list");
+      resolve(BLOCKED_DOMAINS);
+    });
+  });
+}
+
+/**
+ * Parse a StevenBlack-format hosts file into a domain array.
+ * Format: "0.0.0.0 domain.com" per line
+ */
+function parseHostsFile(content) {
+  const domainSet = new Set();
+
+  // Always include our curated list first
+  for (const d of BLOCKED_DOMAINS) {
+    domainSet.add(d.toLowerCase());
+  }
+
+  const lines = content.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip empty lines and comments
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    // Parse "0.0.0.0 domain.com" or "127.0.0.1 domain.com"
+    const parts = trimmed.split(/\s+/);
+    if (parts.length < 2) continue;
+
+    const domain = parts[1].toLowerCase();
+    if (!domain || SKIP_DOMAINS.has(domain)) continue;
+    // Basic domain validation
+    if (!domain.includes(".")) continue;
+
+    domainSet.add(domain);
+  }
+
+  // Enforce Safari Content Blocker limit
+  const allDomains = Array.from(domainSet);
+  if (allDomains.length > MAX_RULES) {
+    console.log(
+      `[ContentBlocker] Trimming ${allDomains.length} domains to ${MAX_RULES} (Safari limit)`
+    );
+    return allDomains.slice(0, MAX_RULES);
+  }
+  return allDomains;
+}
+
 /**
  * Generate Safari Content Blocker rules from the domain list.
  * Each domain gets a "block" rule with an if-domain trigger.
@@ -134,7 +242,7 @@ function generateBlockerRules(domains) {
 // ============================================================
 function withAppGroupsEntitlement(config) {
   return withEntitlementsPlist(config, (config) => {
-    const APP_GROUP = "group.com.rewire.app";
+    const APP_GROUP = "group.rewire.app.com";
     const groups = config.modResults["com.apple.security.application-groups"] || [];
     if (!groups.includes(APP_GROUP)) {
       groups.push(APP_GROUP);
@@ -157,22 +265,22 @@ function withExtensionFiles(config) {
       // Create extension directory
       fs.mkdirSync(extDir, { recursive: true });
 
-      // Generate blockerList.json
-      const rules = generateBlockerRules(BLOCKED_DOMAINS);
+      // Fetch StevenBlack blocklist and generate blockerList.json
+      const domains = await fetchBlockList();
+      const rules = generateBlockerRules(domains);
+      console.log(`[ContentBlocker] Writing ${rules.length} rules to blockerList.json`);
       fs.writeFileSync(
         path.join(extDir, "blockerList.json"),
-        JSON.stringify(rules, null, 2)
+        JSON.stringify(rules)
       );
 
       // Write ContentBlockerRequestHandler.swift
       const handlerSwift = `import UIKit
-import MobileCoreServices
 
 class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
     func beginRequest(with context: NSExtensionContext) {
-        guard let attachment = NSItemProvider(
-            contentsOf: Bundle.main.url(forResource: "blockerList", withExtension: "json")
-        ) else {
+        guard let url = Bundle(for: ContentBlockerRequestHandler.self).url(forResource: "blockerList", withExtension: "json"),
+              let attachment = NSItemProvider(contentsOf: url) else {
             context.cancelRequest(withError: NSError(domain: "ContentBlockerExtension", code: 1, userInfo: nil))
             return
         }
@@ -215,29 +323,12 @@ class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
 \t\t<key>NSExtensionPointIdentifier</key>
 \t\t<string>com.apple.Safari.content-blocker</string>
 \t\t<key>NSExtensionPrincipalClass</key>
-\t\t<string>ContentBlockerRequestHandler</string>
+\t\t<string>$(PRODUCT_MODULE_NAME).ContentBlockerRequestHandler</string>
 \t</dict>
 </dict>
 </plist>
 `;
-      fs.writeFileSync(path.join(extDir, "Info.plist"), infoPlist);
-
-      // Write entitlements
-      const entitlements = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-\t<key>com.apple.security.application-groups</key>
-\t<array>
-\t\t<string>group.com.rewire.app</string>
-\t</array>
-</dict>
-</plist>
-`;
-      fs.writeFileSync(
-        path.join(extDir, "ContentBlockerExtension.entitlements"),
-        entitlements
-      );
+      fs.writeFileSync(path.join(extDir, "ContentBlockerExtension-Info.plist"), infoPlist);
 
       return config;
     },
@@ -251,7 +342,7 @@ function withExtensionTarget(config) {
   return withXcodeProject(config, (config) => {
     const project = config.modResults;
     const EXTENSION_NAME = "ContentBlockerExtension";
-    const EXTENSION_BUNDLE_ID = "com.rewire.app.ContentBlockerExtension";
+    const EXTENSION_BUNDLE_ID = "rewire.app.com.ContentBlockerExtension";
 
     // Add the app extension target
     const target = project.addTarget(
@@ -262,49 +353,44 @@ function withExtensionTarget(config) {
     );
 
     // Add build configuration settings for the extension target
-    const configurations = project.pbxXCConfigurationList();
-    const targetKey = target.uuid;
+    // Use buildConfigurationList UUID directly from addTarget return value
+    // (avoids xcode library's quoted-name issue where name = '"ContentBlockerExtension"')
+    const configListUuid = target.pbxNativeTarget.buildConfigurationList;
+    const configList = project.pbxXCConfigurationList()[configListUuid];
 
-    // Find the target's build configuration list
-    for (const configKey in configurations) {
-      const configList = configurations[configKey];
-      if (
-        configList &&
-        configList.buildConfigurations &&
-        configList.comment &&
-        configList.comment.includes(EXTENSION_NAME)
-      ) {
-        const buildConfigs = configList.buildConfigurations;
-        for (const buildConfig of buildConfigs) {
-          const configUuid = buildConfig.value;
-          const xcBuildConfig = project.pbxXCBuildConfigurationSection()[configUuid];
-          if (xcBuildConfig) {
-            xcBuildConfig.buildSettings = xcBuildConfig.buildSettings || {};
-            Object.assign(xcBuildConfig.buildSettings, {
-              SWIFT_VERSION: "5.0",
-              IPHONEOS_DEPLOYMENT_TARGET: "15.0",
-              PRODUCT_BUNDLE_IDENTIFIER: `"${EXTENSION_BUNDLE_ID}"`,
-              INFOPLIST_FILE: `"${EXTENSION_NAME}/Info.plist"`,
-              CODE_SIGN_ENTITLEMENTS: `"${EXTENSION_NAME}/${EXTENSION_NAME}.entitlements"`,
-              CODE_SIGN_STYLE: "Automatic",
-              TARGETED_DEVICE_FAMILY: `"1,2"`,
-              GENERATE_INFOPLIST_FILE: "NO",
-              MARKETING_VERSION: "1.0",
-              CURRENT_PROJECT_VERSION: "1",
-              SWIFT_EMIT_LOC_STRINGS: "YES",
-            });
-          }
+    if (configList && configList.buildConfigurations) {
+      for (const buildConfig of configList.buildConfigurations) {
+        const configUuid = buildConfig.value;
+        const xcBuildConfig =
+          project.pbxXCBuildConfigurationSection()[configUuid];
+        if (xcBuildConfig) {
+          xcBuildConfig.buildSettings =
+            xcBuildConfig.buildSettings || {};
+          Object.assign(xcBuildConfig.buildSettings, {
+            SWIFT_VERSION: "5.0",
+            IPHONEOS_DEPLOYMENT_TARGET: "15.1",
+            PRODUCT_BUNDLE_IDENTIFIER: `"${EXTENSION_BUNDLE_ID}"`,
+            INFOPLIST_FILE: `"${EXTENSION_NAME}/${EXTENSION_NAME}-Info.plist"`,
+            CODE_SIGN_STYLE: "Automatic",
+            DEVELOPMENT_TEAM: "KV6CYPA7JK",
+            TARGETED_DEVICE_FAMILY: `"1,2"`,
+            GENERATE_INFOPLIST_FILE: "NO",
+            MARKETING_VERSION: "1.0",
+            CURRENT_PROJECT_VERSION: "1",
+            SWIFT_EMIT_LOC_STRINGS: "YES",
+          });
         }
       }
     }
 
     // Add source files and resources to the extension target
     const groupName = EXTENSION_NAME;
+
+    // Create group with all extension files
     const extGroup = project.addPbxGroup(
       [
         "ContentBlockerRequestHandler.swift",
-        "Info.plist",
-        "ContentBlockerExtension.entitlements",
+        "ContentBlockerExtension-Info.plist",
         "blockerList.json",
       ],
       groupName,
@@ -315,18 +401,20 @@ function withExtensionTarget(config) {
     const mainGroup = project.getFirstProject().firstProject.mainGroup;
     project.addToPbxGroup(extGroup.uuid, mainGroup);
 
-    // Add source file to extension target's compile sources
-    project.addSourceFile(
-      `${EXTENSION_NAME}/ContentBlockerRequestHandler.swift`,
-      { target: target.uuid },
-      extGroup.uuid
+    // Use addBuildPhase to add sources and resources to the target
+    // This avoids the xcode library's addResourceFile bug
+    project.addBuildPhase(
+      [`${EXTENSION_NAME}/ContentBlockerRequestHandler.swift`],
+      "PBXSourcesBuildPhase",
+      "Sources",
+      target.uuid
     );
 
-    // Add blockerList.json as a resource
-    project.addResourceFile(
-      `${EXTENSION_NAME}/blockerList.json`,
-      { target: target.uuid },
-      extGroup.uuid
+    project.addBuildPhase(
+      [`${EXTENSION_NAME}/blockerList.json`],
+      "PBXResourcesBuildPhase",
+      "Resources",
+      target.uuid
     );
 
     return config;

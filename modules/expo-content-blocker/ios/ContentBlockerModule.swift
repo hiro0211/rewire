@@ -3,43 +3,40 @@ import SafariServices
 
 public class ContentBlockerModule: Module {
     private let extensionBundleId = Bundle.main.bundleIdentifier! + ".ContentBlockerExtension"
-    private let appGroupId = "group.com.rewire.app"
-    private let blockerEnabledKey = "contentBlockerEnabled"
 
     public func definition() -> ModuleDefinition {
         Name("ExpoContentBlocker")
 
+        // Reload the content blocker rules in Safari
         AsyncFunction("enableBlocker") { () async -> Bool in
-            self.setBlockerEnabled(true)
             return await self.reloadExtension()
         }
 
+        // Content blockers can only be disabled from Safari Settings
         AsyncFunction("disableBlocker") { () async -> Bool in
-            self.setBlockerEnabled(false)
+            return false
+        }
+
+        // Check actual state from SFContentBlockerManager
+        AsyncFunction("getBlockerStatus") { () async -> [String: Any] in
+            do {
+                let state = try await SFContentBlockerManager.stateOfContentBlocker(withIdentifier: self.extensionBundleId)
+                return [
+                    "isEnabled": state.isEnabled,
+                    "extensionBundleId": self.extensionBundleId,
+                ]
+            } catch {
+                print("Failed to get content blocker state: \(error)")
+                return [
+                    "isEnabled": false,
+                    "extensionBundleId": self.extensionBundleId,
+                ]
+            }
+        }
+
+        AsyncFunction("reloadBlockerRules") { () async -> Bool in
             return await self.reloadExtension()
         }
-
-        Function("getBlockerStatus") { () -> [String: Any] in
-            return [
-                "isEnabled": self.isBlockerEnabled(),
-                "extensionBundleId": self.extensionBundleId,
-            ]
-        }
-
-        AsyncFunction("reloadBlockerRules") { () -> Bool in
-            return await self.reloadExtension()
-        }
-    }
-
-    private func setBlockerEnabled(_ enabled: Bool) {
-        guard let defaults = UserDefaults(suiteName: appGroupId) else { return }
-        defaults.set(enabled, forKey: blockerEnabledKey)
-        defaults.synchronize()
-    }
-
-    private func isBlockerEnabled() -> Bool {
-        guard let defaults = UserDefaults(suiteName: appGroupId) else { return false }
-        return defaults.bool(forKey: blockerEnabledKey)
     }
 
     private func reloadExtension() async -> Bool {

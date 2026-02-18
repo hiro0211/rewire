@@ -42,7 +42,32 @@
       "Bash(python3:*)",
       "Bash(pip show:*)",
       "WebFetch(domain:developers.google.com)",
-      "WebFetch(domain:shofj.com)"
+      "WebFetch(domain:shofj.com)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh repo create:*)",
+      "Bash(cmd.exe /c \"where gh\")",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "WebFetch(domain:apps.apple.com)",
+      "Bash(npx eas:*)",
+      "Bash(npx expo doctor:*)",
+      "Bash(npx expo-doctor:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(node -e:*)",
+      "WebFetch(domain:facebook.github.io)",
+      "WebFetch(domain:forums.expo.dev)",
+      "WebFetch(domain:blog.codemagic.io)",
+      "Bash(grep:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:adguard.com)",
+      "WebFetch(domain:oisd.nl)",
+      "WebFetch(domain:nsfw.oisd.nl)",
+      "WebFetch(domain:cdn.jsdelivr.net)"
     ]
   }
 }

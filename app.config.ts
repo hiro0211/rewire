@@ -16,11 +16,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.rewire.app',
+    bundleIdentifier: 'rewire.app.com',
     infoPlist: {
       NSUserTrackingUsageDescription:
-        'This is used to personalize ads. The app works normally even without permission.',
+        '広告のパーソナライズのために使用します。許可しない場合でもアプリは通常通りご利用いただけます。',
       CFBundleAllowMixedLocalizations: true,
+      ITSAppUsesNonExemptEncryption: false,
     },
   },
   locales: {
@@ -42,7 +43,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-tracking-transparency',
     'expo-secure-store',
+    [
+      'expo-build-properties',
+      {
+        ios: {
+          deploymentTarget: '15.1',
+        },
+      },
+    ],
     './plugins/withContentBlocker',
+    './plugins/withDisableResourceBundleSigning',
     [
       'react-native-google-mobile-ads',
       {
@@ -51,6 +61,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
+  extra: {
+    eas: {
+      projectId: '3e815c4f-9829-4aea-a68c-45ec5bb1f892',
+      build: {
+        experimental: {
+          ios: {
+            appExtensions: [
+              {
+                targetName: 'ContentBlockerExtension',
+                bundleIdentifier: 'rewire.app.com.ContentBlockerExtension',
+                entitlements: {},
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+  owner: 'hiro01150',
   experiments: {
     typedRoutes: true,
   },

@@ -7,14 +7,40 @@ import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { useUserStore } from '@/stores/userStore';
 
+const FEATURES = [
+  {
+    icon: 'shield-checkmark-outline' as const,
+    title: 'Safariポルノブロッカー',
+    description: 'アダルトサイトへのアクセスを自動ブロック',
+    pro: true,
+  },
+  {
+    icon: 'analytics-outline' as const,
+    title: '毎日のチェックイン',
+    description: '衝動やストレスを記録して自分を客観視',
+    pro: false,
+  },
+  {
+    icon: 'fitness-outline' as const,
+    title: '呼吸エクササイズ',
+    description: '衝動が来たとき、呼吸で乗り越える',
+    pro: false,
+  },
+];
+
 const STEPS = [
   {
-    title: 'Rewire へようこそ',
-    description: '人生を前に進めるために、\n悪い習慣を断ち切る旅を始めましょう。',
+    title: 'ポルノをやめる、\n人生を変える',
+    description: 'Rewireはポルノ習慣から抜け出したい\nあなたを支えるアプリです。\n科学的アプローチで回復をサポートします。',
+  },
+  {
+    title: 'Rewireでできること',
+    description: '',
+    type: 'features' as const,
   },
   {
     title: '年齢確認',
-    description: 'このアプリは18歳以上の方を対象としています。',
+    description: 'このアプリはポルノ依存の回復を扱うため、\n18歳以上の方を対象としています。',
     type: 'ageVerification' as const,
   },
   {
@@ -94,6 +120,29 @@ export default function OnboardingScreen() {
 
         <Text style={styles.title}>{currentStep.title}</Text>
         <Text style={styles.description}>{currentStep.description}</Text>
+
+        {currentStep.type === 'features' && (
+          <View style={styles.featuresContainer}>
+            {FEATURES.map((feature, index) => (
+              <View key={index} style={styles.featureRow}>
+                <View style={styles.featureIconContainer}>
+                  <Ionicons name={feature.icon} size={28} color={COLORS.primary} />
+                </View>
+                <View style={styles.featureTextContainer}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureTitle}>{feature.title}</Text>
+                    {feature.pro && (
+                      <View style={styles.proBadge}>
+                        <Text style={styles.proBadgeText}>PRO</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.featureDescription}>{feature.description}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
 
         {currentStep.type === 'ageVerification' && (
           <View style={styles.ageContainer}>
@@ -248,6 +297,53 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginBottom: SPACING.xl,
+  },
+  featuresContainer: {
+    width: '100%',
+  },
+  featureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  featureIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: COLORS.surfaceHighlight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  featureTextContainer: {
+    flex: 1,
+  },
+  featureTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  featureTitle: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: '600' as const,
+    color: COLORS.text,
+  },
+  proBadge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    marginLeft: 8,
+  },
+  proBadgeText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#FFFFFF',
+  },
+  featureDescription: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
   },
   ageContainer: {
     width: '100%',
