@@ -5,6 +5,7 @@ export interface User {
   nickname: string;
   goalDays: number;
   streakStartDate: string | null;
+  previousStreakStartDate?: string | null;
   isPro: boolean;
   notifyTime: string;
   notifyEnabled: boolean;

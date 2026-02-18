@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 
 interface ProfileEditModalProps {
@@ -19,19 +21,18 @@ export const ProfileEditModal = ({
   onSave,
 }: ProfileEditModalProps) => {
   const [nickname, setNickname] = useState(initialNickname);
-  const [goalDays, setGoalDays] = useState(initialGoalDays.toString());
+  const [goalDays, setGoalDays] = useState(initialGoalDays);
 
   useEffect(() => {
     if (visible) {
       setNickname(initialNickname);
-      setGoalDays(initialGoalDays.toString());
+      setGoalDays(initialGoalDays);
     }
   }, [visible, initialNickname, initialGoalDays]);
 
   const handleSave = () => {
-    const days = parseInt(goalDays, 10);
-    if (days > 0) {
-      onSave(nickname, days);
+    if (goalDays > 0) {
+      onSave(nickname, goalDays);
       onClose();
     }
   };
@@ -43,7 +44,7 @@ export const ProfileEditModal = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
       >
@@ -62,15 +63,18 @@ export const ProfileEditModal = ({
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>目標日数（日）</Text>
-            <TextInput
-              style={styles.input}
-              value={goalDays}
-              onChangeText={setGoalDays}
-              keyboardType="number-pad"
-              placeholder="目標日数を入力"
-              placeholderTextColor={COLORS.textSecondary}
-            />
+            <Text style={styles.label}>目標日数</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={goalDays}
+                onValueChange={(value) => setGoalDays(value)}
+                itemStyle={styles.pickerItem}
+              >
+                {GOAL_OPTIONS.map((days) => (
+                  <Picker.Item key={days} label={`${days}日`} value={days} />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.buttonRow}>
@@ -78,7 +82,7 @@ export const ProfileEditModal = ({
               <Text style={styles.cancelText}>キャンセル</Text>
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
-                <Button title="保存" onPress={handleSave} />
+              <Button title="保存" onPress={handleSave} />
             </View>
           </View>
         </View>
@@ -123,6 +127,17 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     borderWidth: 1,
     borderColor: COLORS.surfaceHighlight,
+  },
+  pickerWrapper: {
+    backgroundColor: COLORS.background,
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.surfaceHighlight,
+  },
+  pickerItem: {
+    color: COLORS.text,
+    fontSize: 20,
   },
   buttonRow: {
     flexDirection: 'row',

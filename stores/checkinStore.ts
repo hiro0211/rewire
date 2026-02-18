@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { checkinStorage } from '@/lib/storage/checkinStorage';
+import { format } from 'date-fns';
 import type { DailyCheckin } from '@/types/models';
 
 interface CheckinState {
@@ -35,16 +36,17 @@ export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) 
   },
 
   addCheckin: async (checkin) => {
-    // Optimistic update
     const { checkins } = get();
-    const newCheckins = [checkin, ...checkins];
+    // 同日の既存チェックインを置換
+    const filtered = checkins.filter((c) => c.date !== checkin.date);
+    const newCheckins = [checkin, ...filtered];
     set({ checkins: newCheckins, todayCheckin: checkin });
 
     await checkinStorage.save(checkin);
   },
 
   removeTodayCheckin: async () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = format(new Date(), 'yyyy-MM-dd');
     await checkinStorage.remove(today);
     const { checkins } = get();
     set({
@@ -55,7 +57,7 @@ export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) 
 
   refreshTodayCheckin: () => {
     const { checkins } = get();
-    const today = new Date().toISOString().split('T')[0];
+    const today = format(new Date(), 'yyyy-MM-dd');
     const found = checkins.find((c) => c.date === today) || null;
     set({ todayCheckin: found });
   },

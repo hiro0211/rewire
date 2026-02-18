@@ -30,7 +30,7 @@ export const SettingItem = ({
     <TouchableOpacity
       style={[styles.container, isLast && styles.containerLast]}
       onPress={type === 'toggle' ? () => onToggle?.(!toggleValue) : onPress}
-      disabled={type === 'toggle'}
+      disabled={type === 'toggle' || !onPress}
       activeOpacity={type === 'toggle' ? 1 : 0.7}
     >
       <View style={styles.leftContent}>
@@ -63,7 +63,7 @@ export const SettingItem = ({
           />
         )}
 
-        {(type === 'link' || type === 'value') && (
+        {onPress && (type === 'link' || type === 'value') && (
           <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
         )}
       </View>

@@ -67,7 +67,9 @@
       "WebFetch(domain:adguard.com)",
       "WebFetch(domain:oisd.nl)",
       "WebFetch(domain:nsfw.oisd.nl)",
-      "WebFetch(domain:cdn.jsdelivr.net)"
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:pmc.ncbi.nlm.nih.gov)",
+      "WebFetch(domain:jamanetwork.com)"
     ]
   }
 }

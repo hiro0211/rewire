@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StreakCard } from '@/components/dashboard/StreakCard';
@@ -7,18 +7,21 @@ import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { BannerAdView } from '@/components/ads/BannerAdView';
 import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 export default function DashboardScreen() {
-  const { user } = useUserStore();
+  const { user, loadUser } = useUserStore();
   const { loadCheckins, todayCheckin, checkins } = useCheckinStore();
   const router = useRouter();
 
-  useEffect(() => {
-    loadCheckins();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadCheckins();
+      loadUser();
+    }, [])
+  );
 
   const weeklySummary = useMemo(() => {
     const now = new Date();

@@ -16,11 +16,9 @@ export const useCheckinSubmit = () => {
     try {
       const checkin = await checkinService.processCheckin(input);
       await addCheckin(checkin);
-      
-      // If streak reset, we need to update user store view
-      if (input.watchedPorn) {
-        await loadUser();
-      }
+
+      // ストリークのリセット・復元どちらの場合もユーザーデータを再取得
+      await loadUser();
 
       return { success: true, data: checkin };
     } catch (e: any) {

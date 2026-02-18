@@ -1,0 +1,41 @@
+name: Nightly TAKT (OpenCode Big Pickle)
+
+on:
+  schedule:
+    # 日本時間02:00
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install TAKT
+        run: npm install -g takt
+
+      - name: Write TAKT config
+        run: |
+          mkdir -p ~/.takt
+          cat > ~/.takt/config.yaml << 'EOF'
+          provider: opencode
+          model: opencode/big-pickle
+          EOF
+
+      - name: Run TAKT
+        env:
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        run: |
+          takt run --pipeline

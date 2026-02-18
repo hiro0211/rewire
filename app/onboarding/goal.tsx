@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { Picker } from '@react-native-picker/picker';
+import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
-import { ToggleButton } from '@/components/ui/ToggleButton';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { useUserStore } from '@/stores/userStore';
 import { format } from 'date-fns';
 import * as Crypto from 'expo-crypto';
-
-const GOAL_OPTIONS = [7, 14, 30, 90];
 
 export default function GoalSettingScreen() {
   const { nickname, consentGivenAt, ageVerifiedAt } = useLocalSearchParams<{
@@ -17,7 +16,6 @@ export default function GoalSettingScreen() {
     consentGivenAt: string;
     ageVerifiedAt: string;
   }>();
-  // Default to 30 if undefined
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
   const router = useRouter();
@@ -30,7 +28,7 @@ export default function GoalSettingScreen() {
       streakStartDate: format(new Date(), 'yyyy-MM-dd'),
       isPro: false,
       notifyTime: '22:00',
-      notifyEnabled: true, // Assuming enabled for MVP flow
+      notifyEnabled: true,
       createdAt: new Date().toISOString(),
       consentGivenAt: Array.isArray(consentGivenAt) ? consentGivenAt[0] : consentGivenAt || null,
       ageVerifiedAt: Array.isArray(ageVerifiedAt) ? ageVerifiedAt[0] : ageVerifiedAt || null,
@@ -48,16 +46,16 @@ export default function GoalSettingScreen() {
           まずは何日間、ポルノなしで過ごすことを目指しますか？
         </Text>
 
-        <View style={styles.optionsGrid}>
-          {GOAL_OPTIONS.map((days) => (
-            <View key={days} style={styles.optionWrapper}>
-              <ToggleButton
-                title={`${days}日`}
-                active={selectedGoal === days}
-                onPress={() => setSelectedGoal(days)}
-              />
-            </View>
-          ))}
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={selectedGoal}
+            onValueChange={(value) => setSelectedGoal(value)}
+            itemStyle={styles.pickerItem}
+          >
+            {GOAL_OPTIONS.map((days) => (
+              <Picker.Item key={days} label={`${days}日`} value={days} />
+            ))}
+          </Picker>
         </View>
       </View>
 
@@ -89,15 +87,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.xxl,
   },
-  optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+  pickerContainer: {
     width: '100%',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
   },
-  optionWrapper: {
-    width: '45%',
-    margin: SPACING.xs,
+  pickerItem: {
+    color: COLORS.text,
+    fontSize: 22,
   },
   footer: {
     marginBottom: SPACING.xl,

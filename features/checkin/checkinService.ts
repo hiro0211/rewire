@@ -1,5 +1,6 @@
 import { checkinValidator } from './checkinValidator';
 import { userStorage } from '@/lib/storage/userStorage';
+import { checkinStorage } from '@/lib/storage/checkinStorage';
 import type { CheckinFormInput } from '@/types/checkin';
 import type { DailyCheckin } from '@/types/models';
 import * as Crypto from 'expo-crypto';
@@ -15,12 +16,23 @@ export const checkinService = {
     const today = format(new Date(), 'yyyy-MM-dd');
     const user = await userStorage.get();
 
-    // Reset streak if porn was watched
     if (input.watchedPorn) {
-       await userStorage.update({ streakStartDate: today });
-    } else if (user && !user.streakStartDate) {
-      // If no streak start date (e.g. first time), set it
-      await userStorage.update({ streakStartDate: today });
+      // バックアップ保存してからリセット
+      await userStorage.update({
+        previousStreakStartDate: user?.streakStartDate ?? null,
+        streakStartDate: today,
+      });
+    } else {
+      // やり直し: 今日の既存チェックインが「観ました」なら連続記録を復元
+      const existingToday = await checkinStorage.getByDate(today);
+      if (existingToday?.watchedPorn && user?.previousStreakStartDate) {
+        await userStorage.update({
+          streakStartDate: user.previousStreakStartDate,
+          previousStreakStartDate: null,
+        });
+      } else if (user && !user.streakStartDate) {
+        await userStorage.update({ streakStartDate: today });
+      }
     }
 
     const checkin: DailyCheckin = {

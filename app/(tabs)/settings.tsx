@@ -20,7 +20,6 @@ export default function SettingsScreen() {
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [blockerEnabled, setBlockerEnabled] = useState(false);
-  const [blockerLoading, setBlockerLoading] = useState(false);
 
   const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
@@ -106,39 +105,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleBlockerToggle = async (value: boolean) => {
-    if (value) {
-      Alert.alert(
-        'Safari設定が必要です',
-        'アダルトサイトブロックを有効にするには、Safariの設定から拡張機能をONにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → ONにする',
-        [
-          { text: 'キャンセル', style: 'cancel' },
-          {
-            text: '設定を開く',
-            onPress: () => {
-              Linking.openURL('App-Prefs:SAFARI');
-            },
-          },
-        ]
-      );
-    } else {
-      Alert.alert(
-        'Safari設定が必要です',
-        'ブロックを無効にするには、Safariの設定から拡張機能をOFFにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → OFFにする',
-        [
-          { text: 'OK' },
-          {
-            text: '設定を開く',
-            onPress: () => {
-              Linking.openURL('App-Prefs:SAFARI');
-            },
-          },
-        ]
-      );
-    }
-    setTimeout(checkBlockerStatus, 2000);
-  };
-
   if (!user) return null;
 
   return (
@@ -182,11 +148,15 @@ export default function SettingsScreen() {
         {Platform.OS === 'ios' && (
           <SettingSection title="ポルノブロッカー">
             <SettingItem
-              label="アダルトサイトをブロック"
-              type="toggle"
-              toggleValue={blockerEnabled}
-              onToggle={handleBlockerToggle}
+              label="ブロック状態"
+              type="value"
+              value={blockerEnabled ? '有効' : '無効'}
               icon="shield-checkmark-outline"
+            />
+            <SettingItem
+              label="Safari設定を開く"
+              icon="open-outline"
+              onPress={() => Linking.openURL('App-Prefs:SAFARI')}
             />
             <SettingItem
               label="設定ガイド"

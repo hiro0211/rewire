@@ -36,10 +36,11 @@ export const notificationClient = {
         body: "今日のチェックインを記録しましょう。",
       },
       trigger: {
+        type: 'calendar',
         hour,
         minute,
         repeats: true,
-      } as any, // Type assertion needed for some Expo versions
+      }
     });
   },
 
