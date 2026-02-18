@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Platform, Linking, AppState } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
+import { SettingSection } from '@/components/settings/SettingSection';
 import { ProfileEditModal } from '@/components/settings/ProfileEditModal';
 import { TimePickerModal } from '@/components/settings/TimePickerModal';
 import { useUserStore } from '@/stores/userStore';
@@ -11,23 +11,17 @@ import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import RevenueCatUI from 'react-native-purchases-ui';
-import { Text } from '@/components/Themed'; // Assuming this exists or use RN Text
-
-// Section Header Component
-const SectionHeader = ({ title }: { title: string }) => (
-  <Text style={styles.sectionHeader}>{title}</Text>
-);
+import { Text } from '@/components/Themed';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, updateUser, reset } = useUserStore();
-  
+
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [blockerEnabled, setBlockerEnabled] = useState(false);
   const [blockerLoading, setBlockerLoading] = useState(false);
 
-  // Check content blocker state from Safari on mount and when app returns to foreground
   const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
       const status = await contentBlockerBridge.getBlockerStatus();
@@ -37,7 +31,6 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     checkBlockerStatus();
-    // Re-check when app returns from Settings
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') checkBlockerStatus();
     });
@@ -115,7 +108,6 @@ export default function SettingsScreen() {
 
   const handleBlockerToggle = async (value: boolean) => {
     if (value) {
-      // Content Blocker can only be enabled from Safari Settings
       Alert.alert(
         'Safari設定が必要です',
         'アダルトサイトブロックを有効にするには、Safariの設定から拡張機能をONにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → ONにする',
@@ -144,52 +136,51 @@ export default function SettingsScreen() {
         ]
       );
     }
-    // Refresh state after a delay (user may have changed it in Settings)
     setTimeout(checkBlockerStatus, 2000);
   };
 
   if (!user) return null;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>設定</Text>
-      </View>
-
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* Profile Section */}
-        <SectionHeader title="プロフィール" />
-        <SettingItem
-          label="ニックネーム"
-          value={user.nickname}
-          onPress={() => closeProfileModal(true)}
-        />
-        <SettingItem
-          label="目標日数"
-          value={`${user.goalDays}日`}
-          onPress={() => closeProfileModal(true)}
-        />
+        <SettingSection title="プロフィール">
+          <SettingItem
+            label="ニックネーム"
+            value={user.nickname}
+            onPress={() => closeProfileModal(true)}
+          />
+          <SettingItem
+            label="目標日数"
+            value={`${user.goalDays}日`}
+            onPress={() => closeProfileModal(true)}
+            isLast
+          />
+        </SettingSection>
 
         {/* Notifications Section */}
-        <SectionHeader title="通知" />
-        <SettingItem
-          label="デイリーリマインダー"
-          type="toggle"
-          toggleValue={user.notifyEnabled}
-          onToggle={handleNotificationToggle}
-        />
-        {user.notifyEnabled && (
+        <SettingSection title="通知">
           <SettingItem
-            label="通知時間"
-            value={user.notifyTime}
-            onPress={() => setTimePickerVisible(true)}
+            label="デイリーリマインダー"
+            type="toggle"
+            toggleValue={user.notifyEnabled}
+            onToggle={handleNotificationToggle}
+            isLast={!user.notifyEnabled}
           />
-        )}
+          {user.notifyEnabled && (
+            <SettingItem
+              label="通知時間"
+              value={user.notifyTime}
+              onPress={() => setTimePickerVisible(true)}
+              isLast
+            />
+          )}
+        </SettingSection>
 
         {/* Content Blocker Section - iOS only */}
         {Platform.OS === 'ios' && (
-          <>
-            <SectionHeader title="ポルノブロッカー" />
+          <SettingSection title="ポルノブロッカー">
             <SettingItem
               label="アダルトサイトをブロック"
               type="toggle"
@@ -201,58 +192,66 @@ export default function SettingsScreen() {
               label="設定ガイド"
               icon="book-outline"
               onPress={() => router.push('/content-blocker-setup' as any)}
+              isLast
             />
-          </>
+          </SettingSection>
         )}
 
         {/* Pro Section */}
-        <SectionHeader title="プレミアム" />
-        {user.isPro ? (
-          <SettingItem
-            label="サブスクリプション管理"
-            icon="star"
-            onPress={handleManageSubscription}
-            value="Pro 有効"
-          />
-        ) : (
-          <>
+        <SettingSection title="プレミアム">
+          {user.isPro ? (
             <SettingItem
-              label="Proにアップグレード"
+              label="サブスクリプション管理"
               icon="star"
-              onPress={handleProUpgrade}
+              onPress={handleManageSubscription}
+              value="Pro 有効"
+              isLast
             />
-            <SettingItem
-              label="購入を復元"
-              icon="refresh-outline"
-              onPress={handleRestorePurchases}
-            />
-          </>
-        )}
+          ) : (
+            <>
+              <SettingItem
+                label="Proにアップグレード"
+                icon="star"
+                onPress={handleProUpgrade}
+              />
+              <SettingItem
+                label="購入を復元"
+                icon="refresh-outline"
+                onPress={handleRestorePurchases}
+                isLast
+              />
+            </>
+          )}
+        </SettingSection>
 
         {/* Support Section */}
-        <SectionHeader title="サポート" />
-        <SettingItem
+        <SettingSection title="サポート">
+          <SettingItem
             label="お問い合わせ"
             icon="mail-outline"
             onPress={() => Linking.openURL('mailto:arimurahiroaki40@gmail.com')}
-        />
-        <SettingItem
+          />
+          <SettingItem
             label="利用規約"
             onPress={() => router.push('/terms' as any)}
-        />
-        <SettingItem
+          />
+          <SettingItem
             label="プライバシーポリシー"
             onPress={() => router.push('/privacy-policy' as any)}
-        />
+            isLast
+          />
+        </SettingSection>
 
         {/* Danger Zone */}
-        <SectionHeader title="データ管理" />
-        <SettingItem
-          label="データをリセット"
-          destructive
-          onPress={handleResetData}
-          icon="trash-outline"
-        />
+        <SettingSection title="データ管理">
+          <SettingItem
+            label="データをリセット"
+            destructive
+            onPress={handleResetData}
+            icon="trash-outline"
+            isLast
+          />
+        </SettingSection>
 
         <Text style={styles.version}>Version 1.0.0 (Build 1)</Text>
       </ScrollView>
@@ -272,7 +271,7 @@ export default function SettingsScreen() {
         onClose={() => setTimePickerVisible(false)}
         onSave={handleTimeChange}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -281,27 +280,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceHighlight,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
   content: {
     paddingBottom: SPACING.xl,
-  },
-  sectionHeader: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    textTransform: 'uppercase',
   },
   version: {
     textAlign: 'center',

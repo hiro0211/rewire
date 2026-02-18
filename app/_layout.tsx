@@ -84,24 +84,28 @@ export default function RootLayout() {
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: COLORS.background },
-          animation: 'fade',
+          headerStyle: { backgroundColor: COLORS.background },
+          headerTintColor: COLORS.primary,
+          headerTitleStyle: { color: COLORS.text, fontSize: 17, fontWeight: '600' },
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="index" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/goal" options={{ headerShown: false }} />
         <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="checkin/index" options={{ headerShown: false }} />
+        <Stack.Screen name="checkin/index" options={{ headerShown: true, title: 'デイリーチェックイン' }} />
         <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/index" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
         <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
         <Stack.Screen name="history/index" options={{ headerShown: false }} />
-        <Stack.Screen name="terms" options={{ headerShown: false }} />
-        <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
+        <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
+        <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
         <Stack.Screen name="content-blocker-setup" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>

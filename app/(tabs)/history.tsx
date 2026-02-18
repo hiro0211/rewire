@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet } from 'react-native';
 import { COLORS, SPACING } from '@/constants/theme';
 import { HistoryCalendar } from '@/components/history/HistoryCalendar';
 import { HistoryList } from '@/components/history/HistoryList';
-import { ToggleButton } from '@/components/ui/ToggleButton';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { BannerAdView } from '@/components/ads/BannerAdView';
 import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
+const VIEW_MODES = ['カレンダー', 'リスト'] as const;
+
 export default function HistoryScreen() {
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [viewIndex, setViewIndex] = useState(0);
   const loadCheckins = useCheckinStore((state) => state.loadCheckins);
 
   useEffect(() => {
@@ -18,35 +19,20 @@ export default function HistoryScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>記録履歴</Text>
-      </View>
-
-      <View style={styles.toggleContainer}>
-        <View style={styles.toggleRow}>
-          <View style={styles.toggleButtonWrapper}>
-            <ToggleButton
-              title="カレンダー"
-              active={viewMode === 'calendar'}
-              onPress={() => setViewMode('calendar')}
-            />
-          </View>
-          <View style={styles.toggleButtonWrapper}>
-            <ToggleButton
-              title="リスト"
-              active={viewMode === 'list'}
-              onPress={() => setViewMode('list')}
-            />
-          </View>
-        </View>
+    <View style={styles.container}>
+      <View style={styles.segmentContainer}>
+        <SegmentedControl
+          segments={[...VIEW_MODES]}
+          selectedIndex={viewIndex}
+          onChange={setViewIndex}
+        />
       </View>
 
       <View style={styles.content}>
-        {viewMode === 'calendar' ? <HistoryCalendar /> : <HistoryList />}
+        {viewIndex === 0 ? <HistoryCalendar /> : <HistoryList />}
       </View>
       <BannerAdView unitId={AD_UNIT_IDS.BANNER_HISTORY} />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -55,25 +41,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  header: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  toggleContainer: {
+  segmentContainer: {
     paddingHorizontal: SPACING.md,
     marginBottom: SPACING.md,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  toggleButtonWrapper: {
-    flex: 1,
   },
   content: {
     flex: 1,

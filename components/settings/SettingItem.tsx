@@ -12,6 +12,7 @@ interface SettingItemProps {
   onToggle?: (value: boolean) => void;
   onPress?: () => void;
   destructive?: boolean;
+  isLast?: boolean;
 }
 
 export const SettingItem = ({
@@ -23,10 +24,11 @@ export const SettingItem = ({
   onToggle,
   onPress,
   destructive = false,
+  isLast = false,
 }: SettingItemProps) => {
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[styles.container, isLast && styles.containerLast]}
       onPress={type === 'toggle' ? () => onToggle?.(!toggleValue) : onPress}
       disabled={type === 'toggle'}
       activeOpacity={type === 'toggle' ? 1 : 0.7}
@@ -34,10 +36,10 @@ export const SettingItem = ({
       <View style={styles.leftContent}>
         {icon && (
           <View style={styles.iconContainer}>
-            <Ionicons 
-                name={icon} 
-                size={20} 
-                color={destructive ? COLORS.error : COLORS.textSecondary} 
+            <Ionicons
+              name={icon}
+              size={20}
+              color={destructive ? COLORS.error : COLORS.textSecondary}
             />
           </View>
         )}
@@ -50,7 +52,7 @@ export const SettingItem = ({
         {type === 'value' && (
           <Text style={styles.valueText}>{value}</Text>
         )}
-        
+
         {type === 'toggle' && (
           <Switch
             value={toggleValue}
@@ -60,7 +62,7 @@ export const SettingItem = ({
             ios_backgroundColor={COLORS.surfaceHighlight}
           />
         )}
-        
+
         {(type === 'link' || type === 'value') && (
           <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
         )}
@@ -77,8 +79,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.md,
     backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.background,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.surfaceHighlight,
+  },
+  containerLast: {
+    borderBottomWidth: 0,
   },
   leftContent: {
     flexDirection: 'row',

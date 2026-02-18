@@ -1,8 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text } from '@/components/Themed';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 
@@ -15,17 +12,8 @@ const Paragraph = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function PrivacyPolicyScreen() {
-  const router = useRouter();
-
   return (
-    <SafeAreaWrapper>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        <Text style={styles.title}>プライバシーポリシー</Text>
-      </View>
-
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.updatedDate}>最終更新日: 2025年1月1日</Text>
 
@@ -76,27 +64,14 @@ export default function PrivacyPolicyScreen() {
           arimurahiroaki40@gmail.com
         </Paragraph>
       </ScrollView>
-    </SafeAreaWrapper>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceHighlight,
-  },
-  backButton: {
-    marginRight: SPACING.md,
-    padding: SPACING.xs,
-  },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
-    color: COLORS.text,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     padding: SPACING.screenPadding,
