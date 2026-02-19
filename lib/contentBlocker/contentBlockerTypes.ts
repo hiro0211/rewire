@@ -8,4 +8,7 @@ export interface ContentBlockerBridge {
   disableBlocker: () => Promise<boolean>;
   getBlockerStatus: () => Promise<ContentBlockerStatus>;
   reloadBlockerRules: () => Promise<boolean>;
+  addCustomDomain: (domain: string) => Promise<boolean>;
+  removeCustomDomain: (domain: string) => Promise<boolean>;
+  getCustomDomains: () => Promise<string[]>;
 }

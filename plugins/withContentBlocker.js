@@ -143,6 +143,10 @@ const BLOCKED_DOMAINS = [
 // Safari Content Blocker limit: 150,000 rules per extension
 const MAX_RULES = 150000;
 
+// Shared identifiers (used by both the main app and the Content Blocker extension)
+const APP_GROUP_ID = "group.rewire.app.com";
+const CUSTOM_DOMAINS_KEY = "custom_blocked_domains";
+
 // StevenBlack hosts file (porn category)
 const BLOCKLIST_URL =
   "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn/hosts";
@@ -269,10 +273,9 @@ function generateBlockerRules(domains) {
 // ============================================================
 function withAppGroupsEntitlement(config) {
   return withEntitlementsPlist(config, (config) => {
-    const APP_GROUP = "group.rewire.app.com";
     const groups = config.modResults["com.apple.security.application-groups"] || [];
-    if (!groups.includes(APP_GROUP)) {
-      groups.push(APP_GROUP);
+    if (!groups.includes(APP_GROUP_ID)) {
+      groups.push(APP_GROUP_ID);
     }
     config.modResults["com.apple.security.application-groups"] = groups;
     return config;
@@ -306,8 +309,8 @@ function withExtensionFiles(config) {
       const handlerSwift = `import UIKit
 
 class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
-    private let appGroupId = "group.rewire.app.com"
-    private let customDomainsKey = "custom_blocked_domains"
+    private let appGroupId = "${APP_GROUP_ID}"
+    private let customDomainsKey = "${CUSTOM_DOMAINS_KEY}"
 
     func beginRequest(with context: NSExtensionContext) {
         // 1. Load static rules from blockerList.json
@@ -401,7 +404,7 @@ class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
 <dict>
 \t<key>com.apple.security.application-groups</key>
 \t<array>
-\t\t<string>group.rewire.app.com</string>
+\t\t<string>${APP_GROUP_ID}</string>
 \t</array>
 </dict>
 </plist>

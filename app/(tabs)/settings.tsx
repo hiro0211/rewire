@@ -166,6 +166,11 @@ export default function SettingsScreen() {
               onPress={() => router.push('/domain-management' as any)}
             />
             <SettingItem
+              label="カスタムブロックリスト"
+              icon="ban-outline"
+              onPress={() => router.push('/custom-blocklist' as any)}
+            />
+            <SettingItem
               label="時給設定"
               type="value"
               value={`¥${hourlyWage.toLocaleString()}`}

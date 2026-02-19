@@ -20,3 +20,7 @@
 !instructions/**
 !output-contracts/
 !output-contracts/**
+
+# Task directories (for nightly execution)
+!tasks/
+!tasks/**

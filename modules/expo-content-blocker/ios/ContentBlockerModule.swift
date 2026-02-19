@@ -3,6 +3,8 @@ import SafariServices
 
 public class ContentBlockerModule: Module {
     private let extensionBundleId = Bundle.main.bundleIdentifier! + ".ContentBlockerExtension"
+    private let appGroupId = "group.rewire.app.com"
+    private let customDomainsKey = "custom_blocked_domains"
 
     public func definition() -> ModuleDefinition {
         Name("ExpoContentBlocker")
@@ -36,6 +38,37 @@ public class ContentBlockerModule: Module {
 
         AsyncFunction("reloadBlockerRules") { () async -> Bool in
             return await self.reloadExtension()
+        }
+
+        // Add a custom domain to the block list and reload
+        AsyncFunction("addCustomDomain") { (domain: String) async -> Bool in
+            guard let defaults = UserDefaults(suiteName: self.appGroupId) else { return false }
+            var domains = defaults.stringArray(forKey: self.customDomainsKey) ?? []
+            let normalized = domain.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !normalized.isEmpty,
+                  normalized.contains("."),
+                  !normalized.hasPrefix("."),
+                  !normalized.hasSuffix("."),
+                  !normalized.contains(" "),
+                  !domains.contains(normalized) else { return false }
+            domains.append(normalized)
+            defaults.set(domains, forKey: self.customDomainsKey)
+            return await self.reloadExtension()
+        }
+
+        // Remove a custom domain from the block list and reload
+        AsyncFunction("removeCustomDomain") { (domain: String) async -> Bool in
+            guard let defaults = UserDefaults(suiteName: self.appGroupId) else { return false }
+            var domains = defaults.stringArray(forKey: self.customDomainsKey) ?? []
+            domains.removeAll { $0 == domain.lowercased() }
+            defaults.set(domains, forKey: self.customDomainsKey)
+            return await self.reloadExtension()
+        }
+
+        // Get all custom blocked domains
+        AsyncFunction("getCustomDomains") { () -> [String] in
+            guard let defaults = UserDefaults(suiteName: self.appGroupId) else { return [] }
+            return defaults.stringArray(forKey: self.customDomainsKey) ?? []
         }
     }
 

@@ -38,4 +38,4 @@ jobs:
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: |
-          takt run --pipeline --auto-pr
+          takt run --pipeline --auto-pr .takt/tasks/20260220-000200-夜間テストタスク/order.md

@@ -108,6 +108,7 @@ export default function RootLayout() {
         <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
         <Stack.Screen name="safari-extension-setup" options={{ headerShown: false }} />
         <Stack.Screen name="domain-management" options={{ headerShown: true, title: 'ドメイン管理' }} />
+        <Stack.Screen name="custom-blocklist" options={{ headerShown: true, title: 'カスタムブロック' }} />
       </Stack>
     </SafeAreaProvider>
   );
