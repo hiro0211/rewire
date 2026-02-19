@@ -24,7 +24,7 @@ export default function TermsScreen() {
 
         <SectionTitle>2. 利用条件</SectionTitle>
         <Paragraph>
-          本アプリは18歳以上の方を対象としています。18歳未満の方は本アプリを使用することができません。本アプリをご利用いただくことで、ユーザーは18歳以上であることを表明したものとみなします。
+          本アプリはポルノ習慣からの回復を支援する目的で提供されています。本アプリをご利用いただくことで、ユーザーは本規約に同意したものとみなします。
         </Paragraph>
 
         <SectionTitle>3. 免責事項</SectionTitle>

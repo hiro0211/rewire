@@ -11,10 +11,9 @@ import { format } from 'date-fns';
 import * as Crypto from 'expo-crypto';
 
 export default function GoalSettingScreen() {
-  const { nickname, consentGivenAt, ageVerifiedAt } = useLocalSearchParams<{
+  const { nickname, consentGivenAt } = useLocalSearchParams<{
     nickname: string;
     consentGivenAt: string;
-    ageVerifiedAt: string;
   }>();
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
@@ -31,7 +30,7 @@ export default function GoalSettingScreen() {
       notifyEnabled: true,
       createdAt: new Date().toISOString(),
       consentGivenAt: Array.isArray(consentGivenAt) ? consentGivenAt[0] : consentGivenAt || null,
-      ageVerifiedAt: Array.isArray(ageVerifiedAt) ? ageVerifiedAt[0] : ageVerifiedAt || null,
+      ageVerifiedAt: null,
     };
 
     await setUser(newUser);

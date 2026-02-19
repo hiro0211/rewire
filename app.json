@@ -33,7 +33,9 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withDisableResourceBundleSigning"
+      "./plugins/withDisableResourceBundleSigning",
+      "./plugins/withContentBlocker",
+      "./plugins/withSafariWebExtension"
     ],
     "experiments": {
       "typedRoutes": true

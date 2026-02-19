@@ -69,7 +69,18 @@
       "WebFetch(domain:nsfw.oisd.nl)",
       "WebFetch(domain:cdn.jsdelivr.net)",
       "WebFetch(domain:pmc.ncbi.nlm.nih.gov)",
-      "WebFetch(domain:jamanetwork.com)"
+      "WebFetch(domain:jamanetwork.com)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(gh repo list:*)",
+      "Bash(git clone:*)",
+      "Bash(git pull:*)",
+      "Bash(test:*)",
+      "WebFetch(domain:1blocker.com)",
+      "WebFetch(domain:www.pornblockplus.com)",
+      "WebFetch(domain:blockp.io)",
+      "WebFetch(domain:support.1blocker.com)",
+      "WebFetch(domain:support.freedom.to)"
     ]
   }
 }

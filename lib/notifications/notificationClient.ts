@@ -33,7 +33,7 @@ export const notificationClient = {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: "今日の振り返り",
-        body: "今日のチェックインを記録しましょう。",
+        body: "今日の振り返りを記録しましょう。",
       },
       trigger: {
         type: 'calendar',

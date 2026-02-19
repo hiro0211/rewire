@@ -76,7 +76,7 @@ export default function DashboardScreen() {
             ) : (
               <>
                 <Text style={styles.summaryEmptyText}>
-                  チェックインを始めると{'\n'}週間レポートがここに表示されます
+                  振り返りを始めると{'\n'}週間レポートがここに表示されます
                 </Text>
               </>
             )}

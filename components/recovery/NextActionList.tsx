@@ -9,7 +9,8 @@ export function NextActionList() {
 
   const ACTIONS = [
     { title: '深呼吸をして落ち着く', route: '/breathing' as const, icon: '🌬️' },
-    { title: '記事を読んで学ぶ', route: '/(tabs)/articles' as const, icon: '📖' },
+    // TODO: 科学記事機能は未実装のため一時的に非表示
+    // { title: '記事を読んで学ぶ', route: '/(tabs)/articles' as const, icon: '📖' },
     { title: 'ホームに戻る', route: '/(tabs)' as const, icon: '🏠' },
   ];
 

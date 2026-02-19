@@ -5,13 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { StepBadge } from '@/components/content-blocker/StepBadge';
-import { ScreenshotStep } from '@/components/content-blocker/ScreenshotStep';
-import { useContentBlockerStatus } from '@/hooks/useContentBlockerStatus';
-import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
+import { StepBadge } from '@/components/safari-setup/StepBadge';
+import { ScreenshotStep } from '@/components/safari-setup/ScreenshotStep';
 import { useUserStore } from '@/stores/userStore';
+import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 7;
 
 const STEP_IMAGES = {
   1: require('@/assets/images/content-blocker/step1-settings-apps.jpg'),
@@ -22,21 +21,17 @@ const STEP_IMAGES = {
 const STEP_HIGHLIGHTS = {
   1: { top: 80, left: 3, width: 90, height: 8 },
   2: { top: 45, left: 5, width: 90, height: 7 },
-  3: { top:27, left: 5, width: 90, height: 7 },
+  3: { top: 27, left: 5, width: 90, height: 7 },
 } as const;
 
-export default function ContentBlockerSetupScreen() {
+export default function SafariExtensionSetupScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const isPro = useUserStore((s) => s.user?.isPro ?? false) || __DEV__;
 
-  useContentBlockerStatus(step, () => {
-    setStep(4);
-  });
-
   const handleNext = useCallback(async () => {
-    if (step === 4) {
+    if (step === 6) {
       setIsLoading(true);
       try {
         await contentBlockerBridge.reloadBlockerRules();
@@ -77,7 +72,7 @@ export default function ContentBlockerSetupScreen() {
         ) : (
           <View style={styles.headerButton} />
         )}
-        {step >= 1 && step <= 3 && (
+        {step >= 1 && step <= 5 && (
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
             <Text style={styles.headerSkipText}>あとで設定する</Text>
           </TouchableOpacity>
@@ -110,13 +105,13 @@ export default function ContentBlockerSetupScreen() {
               />
             </View>
             <View style={styles.titleRow}>
-              <Text style={styles.title}>ポルノブロッカー</Text>
+              <Text style={styles.title}>Safari拡張機能</Text>
               <View style={styles.proBadge}>
                 <Text style={styles.proBadgeText}>PRO</Text>
               </View>
             </View>
             <Text style={styles.description}>
-              {'Safariでアダルトサイトを自動ブロック。\n3ステップで設定できます。'}
+              {'アダルトサイトの自動ブロック\nと視聴時間の計測を行います\n4ステップで設定できます'}
             </Text>
             {!isPro && (
               <View style={styles.proGate}>
@@ -146,7 +141,7 @@ export default function ContentBlockerSetupScreen() {
           </>
         )}
 
-        {/* Step 2 - Safari > Extensions */}
+        {/* Step 2 - Extensions */}
         {step === 2 && (
           <>
             <StepBadge step={2} />
@@ -161,13 +156,15 @@ export default function ContentBlockerSetupScreen() {
           </>
         )}
 
-        {/* Step 3 - Enable Rewire */}
+        {/* Step 3 - Enable Content Blocker */}
         {step === 3 && (
           <>
             <StepBadge step={3} />
-            <Text style={styles.stepTitle}>Rewireをオンにする</Text>
+            <Text style={styles.stepTitle}>
+              「Rewire」のブロッカーをオンにする
+            </Text>
             <Text style={styles.stepDescription}>
-              「rewire」を選んで「機能拡張を許可」をオンにしてください
+              コンテンツブロッカーを有効にするとアダルトサイトが自動ブロックされます
             </Text>
             <ScreenshotStep
               image={STEP_IMAGES[3]}
@@ -176,8 +173,44 @@ export default function ContentBlockerSetupScreen() {
           </>
         )}
 
-        {/* Step 4 - Completion */}
+        {/* Step 4 - Enable Web Extension */}
         {step === 4 && (
+          <>
+            <StepBadge step={4} />
+            <Text style={styles.stepTitle}>
+              「Rewire」の拡張機能を許可する
+            </Text>
+            <Text style={styles.stepDescription}>
+              拡張機能を有効にすると視聴時間の自動計測が開始されます
+            </Text>
+            <View style={styles.screenshotPlaceholder}>
+              <Text style={styles.screenshotPlaceholderText}>
+                スクリーンショット準備中
+              </Text>
+            </View>
+          </>
+        )}
+
+        {/* Step 5 - Allow All Websites */}
+        {step === 5 && (
+          <>
+            <StepBadge step={5} />
+            <Text style={styles.stepTitle}>
+              「すべてのWebサイト」で「許可」を選択
+            </Text>
+            <Text style={styles.stepDescription}>
+              すべてのWebサイトでの実行を許可してください
+            </Text>
+            <View style={styles.screenshotPlaceholder}>
+              <Text style={styles.screenshotPlaceholderText}>
+                スクリーンショット準備中
+              </Text>
+            </View>
+          </>
+        )}
+
+        {/* Step 6 - Completion */}
+        {step === 6 && (
           <>
             <View style={styles.iconContainer}>
               <Ionicons
@@ -188,7 +221,7 @@ export default function ContentBlockerSetupScreen() {
             </View>
             <Text style={styles.title}>設定完了！</Text>
             <Text style={styles.description}>
-              {'Safariでアダルトサイトが\n自動的にブロックされます'}
+              {'Safariでアダルトサイトが\n自動的にブロックされ、\n視聴時間が計測されます'}
             </Text>
           </>
         )}
@@ -239,6 +272,30 @@ export default function ContentBlockerSetupScreen() {
         )}
 
         {step === 4 && (
+          <>
+            <Button title="設定を開く" onPress={handleOpenSettings} />
+            <Button
+              title="次へ"
+              variant="secondary"
+              onPress={handleNext}
+              style={styles.secondaryButton}
+            />
+          </>
+        )}
+
+        {step === 5 && (
+          <>
+            <Button title="設定を開く" onPress={handleOpenSettings} />
+            <Button
+              title="次へ"
+              variant="secondary"
+              onPress={handleNext}
+              style={styles.secondaryButton}
+            />
+          </>
+        )}
+
+        {step === 6 && (
           <Button
             title="完了"
             onPress={handleNext}
@@ -362,6 +419,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: SPACING.lg,
+  },
+  screenshotPlaceholder: {
+    width: '100%',
+    aspectRatio: 9 / 16,
+    maxHeight: 340,
+    backgroundColor: COLORS.surfaceHighlight,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  screenshotPlaceholderText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.sm,
   },
   footer: {
     marginBottom: SPACING.xl,

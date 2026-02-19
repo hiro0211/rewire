@@ -35,6 +35,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: '統計',
+          headerShown: true,
+          tabBarLabel: '統計',
+          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />,
+        }}
+      />
       {/* v1.1 で記事機能を追加予定 */}
       <Tabs.Screen
         name="articles"

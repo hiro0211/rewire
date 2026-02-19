@@ -97,7 +97,7 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding/goal" options={{ headerShown: false }} />
         <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="checkin/index" options={{ headerShown: true, title: 'デイリーチェックイン' }} />
+        <Stack.Screen name="checkin/index" options={{ headerShown: true, title: '今日の振り返り', headerBackTitle: 'ホーム' }} />
         <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/index" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
@@ -106,7 +106,8 @@ export default function RootLayout() {
         <Stack.Screen name="history/index" options={{ headerShown: false }} />
         <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
         <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
-        <Stack.Screen name="content-blocker-setup" options={{ headerShown: false }} />
+        <Stack.Screen name="safari-extension-setup" options={{ headerShown: false }} />
+        <Stack.Screen name="domain-management" options={{ headerShown: true, title: 'ドメイン管理' }} />
       </Stack>
     </SafeAreaProvider>
   );

@@ -10,6 +10,7 @@ import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
+import { useUsageStore } from '@/stores/usageStore';
 import RevenueCatUI from 'react-native-purchases-ui';
 import { Text } from '@/components/Themed';
 
@@ -20,6 +21,7 @@ export default function SettingsScreen() {
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [blockerEnabled, setBlockerEnabled] = useState(false);
+  const { hourlyWage, setHourlyWage } = useUsageStore();
 
   const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
@@ -144,9 +146,9 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        {/* Content Blocker Section - iOS only */}
+        {/* Safari Extension Section - iOS only */}
         {Platform.OS === 'ios' && (
-          <SettingSection title="ポルノブロッカー">
+          <SettingSection title="Safari拡張機能">
             <SettingItem
               label="ブロック状態"
               type="value"
@@ -154,14 +156,33 @@ export default function SettingsScreen() {
               icon="shield-checkmark-outline"
             />
             <SettingItem
-              label="Safari設定を開く"
-              icon="open-outline"
-              onPress={() => Linking.openURL('App-Prefs:SAFARI')}
-            />
-            <SettingItem
               label="設定ガイド"
               icon="book-outline"
-              onPress={() => router.push('/content-blocker-setup' as any)}
+              onPress={() => router.push('/safari-extension-setup' as any)}
+            />
+            <SettingItem
+              label="ドメイン管理"
+              icon="list-outline"
+              onPress={() => router.push('/domain-management' as any)}
+            />
+            <SettingItem
+              label="時給設定"
+              type="value"
+              value={`¥${hourlyWage.toLocaleString()}`}
+              icon="cash-outline"
+              onPress={() => {
+                Alert.prompt(
+                  '時給設定',
+                  '統計画面の金額換算に使用します',
+                  (text) => {
+                    const val = parseInt(text, 10);
+                    if (!isNaN(val) && val > 0) setHourlyWage(val);
+                  },
+                  'plain-text',
+                  String(hourlyWage),
+                  'number-pad'
+                );
+              }}
               isLast
             />
           </SettingSection>

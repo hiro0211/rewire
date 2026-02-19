@@ -111,6 +111,33 @@ const BLOCKED_DOMAINS = [
   "simpcity.su",
   "leakedbb.com",
   "forums.socialmediagirls.com",
+  // MissAV and related domains
+  "missav.com",
+  "missav.ws",
+  "missav.ai",
+  "missav.live",
+  "missav.fun",
+  "missav.tv",
+  "missav.net",
+  "missav.org",
+  "missav.to",
+  "missav123.com",
+  "thisav.com",
+  "supjav.com",
+  "jable.tv",
+  "netflav.com",
+  "avgle.com",
+  "javmost.com",
+  "javbangers.com",
+  "javdoe.com",
+  "javfinder.la",
+  "javhd.com",
+  "javlibrary.com",
+  "javmenu.com",
+  "javrave.club",
+  "javtrailers.com",
+  "highporn.net",
+  "bestjavporn.com",
 ];
 
 // Safari Content Blocker limit: 150,000 rules per extension
@@ -275,18 +302,55 @@ function withExtensionFiles(config) {
       );
 
       // Write ContentBlockerRequestHandler.swift
+      // Merges static blockerList.json with custom domains from App Group UserDefaults
       const handlerSwift = `import UIKit
 
 class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
+    private let appGroupId = "group.rewire.app.com"
+    private let customDomainsKey = "custom_blocked_domains"
+
     func beginRequest(with context: NSExtensionContext) {
-        guard let url = Bundle(for: ContentBlockerRequestHandler.self).url(forResource: "blockerList", withExtension: "json"),
-              let attachment = NSItemProvider(contentsOf: url) else {
+        // 1. Load static rules from blockerList.json
+        var rules: [[String: Any]] = []
+        if let url = Bundle(for: ContentBlockerRequestHandler.self).url(forResource: "blockerList", withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let staticRules = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            rules = staticRules
+        }
+
+        // 2. Load custom domains from App Group UserDefaults and generate rules
+        if let defaults = UserDefaults(suiteName: appGroupId),
+           let customDomains = defaults.stringArray(forKey: customDomainsKey) {
+            for domain in customDomains {
+                rules.append([
+                    "trigger": ["url-filter": ".*", "if-domain": ["*" + domain]],
+                    "action": ["type": "block"]
+                ])
+            }
+        }
+
+        // 3. Serialize merged rules and return via extension context
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: rules),
+              let tempURL = writeTempJSON(jsonData),
+              let attachment = NSItemProvider(contentsOf: tempURL) else {
             context.cancelRequest(withError: NSError(domain: "ContentBlockerExtension", code: 1, userInfo: nil))
             return
         }
+
         let item = NSExtensionItem()
         item.attachments = [attachment]
         context.completeRequest(returningItems: [item], completionHandler: nil)
+    }
+
+    private func writeTempJSON(_ data: Data) -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent("mergedBlockerList.json")
+        do {
+            try data.write(to: fileURL)
+            return fileURL
+        } catch {
+            return nil
+        }
     }
 }
 `;
@@ -329,6 +393,23 @@ class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
 </plist>
 `;
       fs.writeFileSync(path.join(extDir, "ContentBlockerExtension-Info.plist"), infoPlist);
+
+      // Write ContentBlockerExtension.entitlements (App Group for UserDefaults sharing)
+      const entitlementsPlist = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+\t<key>com.apple.security.application-groups</key>
+\t<array>
+\t\t<string>group.rewire.app.com</string>
+\t</array>
+</dict>
+</plist>
+`;
+      fs.writeFileSync(
+        path.join(extDir, "ContentBlockerExtension.entitlements"),
+        entitlementsPlist
+      );
 
       return config;
     },
@@ -378,6 +459,7 @@ function withExtensionTarget(config) {
             MARKETING_VERSION: "1.0",
             CURRENT_PROJECT_VERSION: "1",
             SWIFT_EMIT_LOC_STRINGS: "YES",
+            CODE_SIGN_ENTITLEMENTS: `"${EXTENSION_NAME}/${EXTENSION_NAME}.entitlements"`,
           });
         }
       }
@@ -391,6 +473,7 @@ function withExtensionTarget(config) {
       [
         "ContentBlockerRequestHandler.swift",
         "ContentBlockerExtension-Info.plist",
+        "ContentBlockerExtension.entitlements",
         "blockerList.json",
       ],
       groupName,

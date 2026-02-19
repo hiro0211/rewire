@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, PanResponder, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
@@ -16,7 +16,7 @@ const FEATURES = [
   },
   {
     icon: 'analytics-outline' as const,
-    title: '毎日のチェックイン',
+    title: '毎日の振り返り',
     description: '衝動やストレスを記録して自分を客観視',
     pro: false,
   },
@@ -39,11 +39,6 @@ const STEPS = [
     type: 'features' as const,
   },
   {
-    title: '年齢確認',
-    description: 'このアプリはポルノ依存の回復を扱うため、\n18歳以上の方を対象としています。',
-    type: 'ageVerification' as const,
-  },
-  {
     title: 'あなたの名前は？',
     description: 'アプリ内で呼びかけるニックネームを教えてください。\n（匿名で構いません）',
     type: 'nickname' as const,
@@ -63,30 +58,69 @@ const STEPS = [
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const [nickname, setNickname] = useState('');
-  const [isOver18, setIsOver18] = useState(false);
-  const [showUnderageMessage, setShowUnderageMessage] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [dataAgreed, setDataAgreed] = useState(false);
   const { setUser } = useUserStore();
   const router = useRouter();
+  const translateX = useRef(new Animated.Value(0)).current;
 
-  const handleNext = async () => {
-    const currentStep = STEPS[step];
+  // Refs to access latest state from PanResponder closure
+  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed });
+  stateRef.current = { step, nickname, privacyAgreed, dataAgreed };
+
+  const animateTransition = (direction: number, callback: () => void) => {
+    Animated.timing(translateX, {
+      toValue: direction * 300,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      translateX.setValue(direction * -300);
+      callback();
+      Animated.timing(translateX, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  const canAdvanceAt = (s: number, nick: string, priv: boolean, data: boolean) => {
+    const cs = STEPS[s];
+    if (cs.type === 'nickname') return !!nick.trim();
+    if (cs.type === 'consent') return priv && data;
+    return true;
+  };
+
+  const SWIPE_THRESHOLD = 50;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        Math.abs(gs.dx) > 20 && Math.abs(gs.dy) < 50,
+      onPanResponderRelease: (_, gs) => {
+        const { step: s, nickname: n, privacyAgreed: p, dataAgreed: d } = stateRef.current;
+        if (gs.dx < -SWIPE_THRESHOLD) {
+          if (s < STEPS.length - 1 && canAdvanceAt(s, n, p, d)) {
+            animateTransition(-1, () => setStep(s + 1));
+          }
+        } else if (gs.dx > SWIPE_THRESHOLD) {
+          if (s > 0) {
+            animateTransition(1, () => setStep(s - 1));
+          }
+        }
+      },
+    })
+  ).current;
+
+  const handleNext = () => {
     if (step < STEPS.length - 1) {
-      // Age verification step - handled by buttons, not "次へ"
-      if (currentStep.type === 'ageVerification') return;
-      // Nickname validation
-      if (currentStep.type === 'nickname' && !nickname.trim()) return;
-      // Consent validation
-      if (currentStep.type === 'consent' && (!privacyAgreed || !dataAgreed)) return;
-      setStep(step + 1);
+      if (!canAdvanceAt(step, nickname, privacyAgreed, dataAgreed)) return;
+      animateTransition(-1, () => setStep(step + 1));
     } else {
       router.push({
         pathname: '/onboarding/goal',
         params: {
           nickname,
           consentGivenAt: new Date().toISOString(),
-          ageVerifiedAt: new Date().toISOString(),
         },
       });
     }
@@ -94,17 +128,14 @@ export default function OnboardingScreen() {
 
   const currentStep = STEPS[step];
 
-  const isNextDisabled = (() => {
-    const cs = STEPS[step];
-    if (cs.type === 'ageVerification') return true;
-    if (cs.type === 'nickname') return !nickname.trim();
-    if (cs.type === 'consent') return !privacyAgreed || !dataAgreed;
-    return false;
-  })();
+  const isNextDisabled = !canAdvanceAt(step, nickname, privacyAgreed, dataAgreed);
 
   return (
     <SafeAreaWrapper style={styles.container}>
-      <View style={styles.content}>
+      <Animated.View
+        style={[styles.content, { transform: [{ translateX }] }]}
+        {...panResponder.panHandlers}
+      >
         <View style={styles.stepIndicator}>
           {STEPS.map((_, i) => (
             <View
@@ -141,34 +172,6 @@ export default function OnboardingScreen() {
                 </View>
               </View>
             ))}
-          </View>
-        )}
-
-        {currentStep.type === 'ageVerification' && (
-          <View style={styles.ageContainer}>
-            {showUnderageMessage ? (
-              <Text style={styles.underageMessage}>
-                申し訳ありませんが、このアプリは18歳以上の方のみご利用いただけます。
-              </Text>
-            ) : (
-              <>
-                <Button
-                  title="はい、18歳以上です"
-                  variant="primary"
-                  onPress={() => {
-                    setIsOver18(true);
-                    setStep(step + 1);
-                  }}
-                  style={styles.ageButton}
-                />
-                <Button
-                  title="いいえ、18歳未満です"
-                  variant="ghost"
-                  onPress={() => setShowUnderageMessage(true)}
-                  style={styles.ageButton}
-                />
-              </>
-            )}
           </View>
         )}
 
@@ -230,17 +233,15 @@ export default function OnboardingScreen() {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </Animated.View>
 
-      {currentStep.type !== 'ageVerification' && (
-        <View style={styles.footer}>
-          <Button
-            title="次へ"
-            onPress={handleNext}
-            disabled={isNextDisabled}
-          />
-        </View>
-      )}
+      <View style={styles.footer}>
+        <Button
+          title="次へ"
+          onPress={handleNext}
+          disabled={isNextDisabled}
+        />
+      </View>
     </SafeAreaWrapper>
   );
 }
@@ -344,20 +345,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
     lineHeight: 20,
-  },
-  ageContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  ageButton: {
-    width: '100%',
-    marginBottom: SPACING.md,
-  },
-  underageMessage: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
   },
   consentContainer: {
     width: '100%',
