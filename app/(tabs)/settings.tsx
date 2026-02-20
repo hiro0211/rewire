@@ -10,7 +10,8 @@ import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
-import { useUsageStore } from '@/stores/usageStore';
+// Safari Web Extension トラッキング実装後に有効化
+// import { useUsageStore } from '@/stores/usageStore';
 import RevenueCatUI from 'react-native-purchases-ui';
 import { Text } from '@/components/Themed';
 
@@ -21,7 +22,8 @@ export default function SettingsScreen() {
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [blockerEnabled, setBlockerEnabled] = useState(false);
-  const { hourlyWage, setHourlyWage } = useUsageStore();
+  // Safari Web Extension トラッキング実装後に有効化
+  // const { hourlyWage, setHourlyWage } = useUsageStore();
 
   const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
@@ -160,16 +162,20 @@ export default function SettingsScreen() {
               icon="book-outline"
               onPress={() => router.push('/safari-extension-setup' as any)}
             />
+            {/* Safari Web Extension トラッキング実装後に有効化
             <SettingItem
               label="ドメイン管理"
               icon="list-outline"
               onPress={() => router.push('/domain-management' as any)}
             />
+            */}
             <SettingItem
               label="カスタムブロックリスト"
               icon="ban-outline"
               onPress={() => router.push('/custom-blocklist' as any)}
+              isLast
             />
+            {/* Safari Web Extension トラッキング実装後に有効化
             <SettingItem
               label="時給設定"
               type="value"
@@ -190,6 +196,7 @@ export default function SettingsScreen() {
               }}
               isLast
             />
+            */}
           </SettingSection>
         )}
 

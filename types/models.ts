@@ -12,6 +12,7 @@ export interface User {
   createdAt: string;
   consentGivenAt: string | null;
   ageVerifiedAt: string | null;
+  assessmentScore?: number;
   subscriptionPlan?: SubscriptionPlan;
   subscriptionExpiresAt?: string | null;
 }

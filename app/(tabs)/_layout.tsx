@@ -35,6 +35,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
+      {/* Safari Web Extension トラッキング実装後に有効化
       <Tabs.Screen
         name="stats"
         options={{
@@ -43,6 +44,11 @@ export default function TabLayout() {
           tabBarLabel: '統計',
           tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />,
         }}
+      />
+      */}
+      <Tabs.Screen
+        name="stats"
+        options={{ href: null }}
       />
       {/* v1.1 で記事機能を追加予定 */}
       <Tabs.Screen
