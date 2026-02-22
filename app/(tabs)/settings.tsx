@@ -134,6 +134,11 @@ export default function SettingsScreen() {
               icon="shield-checkmark-outline"
             />
             <SettingItem
+              label="Safari設定を開く"
+              icon="open-outline"
+              onPress={() => Linking.openURL('App-Prefs:SAFARI')}
+            />
+            <SettingItem
               label="設定ガイド"
               icon="book-outline"
               onPress={() => router.push('/content-blocker-setup' as any)}
