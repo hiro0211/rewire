@@ -292,6 +292,39 @@ function generateBlockerRules(domains) {
   }));
 }
 
+/**
+ * Generate the Swift code for the ContentBlockerRequestHandler.
+ * Optimized to stream the file directly to Safari without loading into memory.
+ */
+function generateSwiftHandler() {
+  return `import UIKit
+
+class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
+
+    func beginRequest(with context: NSExtensionContext) {
+        // Locate the blockerList.json in the bundle
+        guard let url = Bundle(for: ContentBlockerRequestHandler.self).url(forResource: "blockerList", withExtension: "json") else {
+            // If file not found, just complete request
+            context.completeRequest(returningItems: [], completionHandler: nil)
+            return
+        }
+
+        // Create an attachment directly from the file URL
+        // This streams the file content to Safari without loading it into memory
+        guard let attachment = NSItemProvider(contentsOf: url) else {
+             context.cancelRequest(withError: NSError(domain: "ContentBlockerExtension", code: 1, userInfo: nil))
+             return
+        }
+
+        let item = NSExtensionItem()
+        item.attachments = [attachment]
+
+        context.completeRequest(returningItems: [item], completionHandler: nil)
+    }
+}
+`;
+}
+
 // ============================================================
 // Sub-plugin 1: Add App Groups entitlement to main app
 // ============================================================
@@ -330,58 +363,7 @@ function withExtensionFiles(config) {
       );
 
       // Write ContentBlockerRequestHandler.swift
-      // Merges static blockerList.json with custom domains from App Group UserDefaults
-      const handlerSwift = `import UIKit
-
-class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
-    private let appGroupId = "group.rewire.app.com"
-    private let customDomainsKey = "custom_blocked_domains"
-
-    func beginRequest(with context: NSExtensionContext) {
-        // 1. Load static rules from blockerList.json
-        var rules: [[String: Any]] = []
-        if let url = Bundle(for: ContentBlockerRequestHandler.self).url(forResource: "blockerList", withExtension: "json"),
-           let data = try? Data(contentsOf: url),
-           let staticRules = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
-            rules = staticRules
-        }
-
-        // 2. Load custom domains from App Group UserDefaults and generate rules
-        if let defaults = UserDefaults(suiteName: appGroupId),
-           let customDomains = defaults.stringArray(forKey: customDomainsKey) {
-            for domain in customDomains {
-                rules.append([
-                    "trigger": ["url-filter": ".*", "if-domain": ["*" + domain]],
-                    "action": ["type": "block"]
-                ])
-            }
-        }
-
-        // 3. Serialize merged rules and return via extension context
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: rules),
-              let tempURL = writeTempJSON(jsonData),
-              let attachment = NSItemProvider(contentsOf: tempURL) else {
-            context.cancelRequest(withError: NSError(domain: "ContentBlockerExtension", code: 1, userInfo: nil))
-            return
-        }
-
-        let item = NSExtensionItem()
-        item.attachments = [attachment]
-        context.completeRequest(returningItems: [item], completionHandler: nil)
-    }
-
-    private func writeTempJSON(_ data: Data) -> URL? {
-        let tempDir = FileManager.default.temporaryDirectory
-        let fileURL = tempDir.appendingPathComponent("mergedBlockerList.json")
-        do {
-            try data.write(to: fileURL)
-            return fileURL
-        } catch {
-            return nil
-        }
-    }
-}
-`;
+      const handlerSwift = generateSwiftHandler();
       fs.writeFileSync(
         path.join(extDir, "ContentBlockerRequestHandler.swift"),
         handlerSwift
@@ -542,4 +524,5 @@ function withContentBlocker(config) {
   return config;
 }
 
+withContentBlocker.generateSwiftHandler = generateSwiftHandler;
 module.exports = withContentBlocker;

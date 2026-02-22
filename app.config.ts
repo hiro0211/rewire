@@ -28,6 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ja: './locales/ja.json',
   },
   android: {
+    package: 'rewire.app.com',
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#0A0A0F',
