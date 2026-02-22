@@ -1,11 +1,6 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 
@@ -34,40 +29,22 @@ export const NotificationSetupStep = ({
       <Text style={styles.title}>{'毎日の振り返りが\n成長の鍵です'}</Text>
 
       <Text style={styles.description}>
-        {
-          '連続して記録を続けることで、あなたの変化が\n数字で見えてきます。毎日のチェックインが\n自己成長の第一歩です。'
-        }
+        {'記録を続けることで、あなたの変化が\n数字として見えてきます。'}
       </Text>
 
       <Text style={styles.pickerLabel}>何時に振り返りますか？</Text>
 
-      <ScrollView
-        style={styles.timeList}
-        showsVerticalScrollIndicator={false}
-      >
-        {TIME_SLOTS.map((time) => (
-          <TouchableOpacity
-            key={time}
-            style={[
-              styles.timeItem,
-              time === selectedTime && styles.timeItemSelected,
-            ]}
-            onPress={() => onTimeChange(time)}
-          >
-            <Text
-              style={[
-                styles.timeText,
-                time === selectedTime && styles.timeTextSelected,
-              ]}
-            >
-              {time}
-            </Text>
-            {time === selectedTime && (
-              <Ionicons name="checkmark" size={18} color={COLORS.primary} />
-            )}
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={selectedTime}
+          onValueChange={(value) => onTimeChange(value)}
+          itemStyle={styles.pickerItem}
+        >
+          {TIME_SLOTS.map((time) => (
+            <Picker.Item key={time} label={time} value={time} />
+          ))}
+        </Picker>
+      </View>
     </View>
   );
 };
@@ -106,33 +83,17 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
     alignSelf: 'flex-start',
   },
-  timeList: {
+  pickerContainer: {
     width: '100%',
-    maxHeight: 200,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
+    overflow: 'hidden',
   },
-  timeItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceHighlight,
-  },
-  timeItemSelected: {
-    backgroundColor: COLORS.surfaceHighlight,
-  },
-  timeText: {
-    fontSize: FONT_SIZE.md,
+  pickerItem: {
     color: COLORS.text,
-  },
-  timeTextSelected: {
-    color: COLORS.primary,
-    fontWeight: '600',
+    fontSize: 22,
   },
 });
