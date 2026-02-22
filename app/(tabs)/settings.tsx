@@ -61,6 +61,35 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleBlockerToggle = async (value: boolean) => {
+    if (value) {
+      Alert.alert(
+        'Safari設定が必要です',
+        'アダルトサイトブロックを有効にするには、Safariの設定から拡張機能をONにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → ONにする',
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          {
+            text: '設定を開く',
+            onPress: () => Linking.openURL('App-Prefs:SAFARI'),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Safari設定が必要です',
+        'ブロックを無効にするには、Safariの設定から拡張機能をOFFにしてください。\n\n設定 → Safari → 機能拡張 → Rewire → OFFにする',
+        [
+          { text: 'OK' },
+          {
+            text: '設定を開く',
+            onPress: () => Linking.openURL('App-Prefs:SAFARI'),
+          },
+        ]
+      );
+    }
+    setTimeout(checkBlockerStatus, 2000);
+  };
+
   const handleResetData = () => {
     Alert.alert(
       'データをリセット',
@@ -125,15 +154,20 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {/* Safari Extension Section */}
+        {/* Porn Blocker Section */}
         {Platform.OS === 'ios' && (
-          <SettingSection title="Safari拡張機能">
+          <SettingSection title="ポルノブロッカー">
             <SettingItem
-              label="コンテンツブロッカー"
-              value={blockerEnabled ? '有効' : '無効'}
-              onPress={() =>
-                Linking.openURL('App-Prefs:SAFARI&path=EXTENSIONS')
-              }
+              label="アダルトサイトをブロック"
+              type="toggle"
+              toggleValue={blockerEnabled}
+              onToggle={handleBlockerToggle}
+              icon="shield-checkmark-outline"
+            />
+            <SettingItem
+              label="設定ガイド"
+              icon="book-outline"
+              onPress={() => router.push('/content-blocker-setup' as any)}
               isLast
             />
           </SettingSection>
@@ -210,6 +244,18 @@ export default function SettingsScreen() {
             destructive
             onPress={handleResetData}
             icon="trash-outline"
+            isLast
+          />
+        </SettingSection>
+
+        {/* Dev Tools */}
+        <SettingSection title="開発者テスト">
+          <SettingItem
+            label="Pro機能を有効化（テスト用）"
+            type="toggle"
+            toggleValue={user.isPro}
+            onToggle={(value) => updateUser({ isPro: value })}
+            icon="bug-outline"
             isLast
           />
         </SettingSection>
