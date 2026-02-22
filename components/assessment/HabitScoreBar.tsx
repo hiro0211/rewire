@@ -24,7 +24,7 @@ export function HabitScoreBar({ score, maxScore, animated = false }: HabitScoreB
     } else {
       animatedValue.setValue(percentage);
     }
-  }, [percentage, animated]);
+  }, [percentage, animated, animatedValue]);
 
   const markerLeft = animatedValue.interpolate({
     inputRange: [0, 100],

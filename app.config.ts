@@ -71,7 +71,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
               {
                 targetName: 'ContentBlockerExtension',
                 bundleIdentifier: 'rewire.app.com.ContentBlockerExtension',
-                entitlements: {},
+                entitlements: {
+                  'com.apple.security.application-groups': [
+                    'group.rewire.app.com',
+                  ],
+                },
               },
             ],
           },

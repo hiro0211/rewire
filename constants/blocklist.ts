@@ -203,7 +203,8 @@ export const BLOCKED_DOMAINS: string[] = [
   'filthyfamily.com',
   'bignaturals.com',
 
-  // -- Hentai / anime --
+  // -- Hentai / anime / erotic animation --
+  'aniporn.com',
   'hanime.tv',
   'nhentai.net',
   'hentaihaven.xxx',
@@ -254,7 +255,10 @@ export const BLOCKED_DOMAINS: string[] = [
   'javfull.net',
   'javtiful.com',
   'njav.tv',
+  'njavtv.com',
   'missav.com',
+  'missav.live',
+  'missav.ai',
   'supjav.com',
   'jable.tv',
   'thisav.com',
@@ -280,6 +284,16 @@ export const BLOCKED_DOMAINS: string[] = [
   'highporn.net',
   'javhub.net',
   'fc2.com',
+  'av01.tv',
+  '7mmtv.sx',
+  'tktube.com',
+  'tokyomotion.net',
+  'kissjav.com',
+  'javmix.tv',
+  'popjav.tv',
+  'javgiga.com',
+  'youav.com',
+  'uraagesage.com',
 
   // -- Social / community / creator platforms --
   'onlyfans.com',
@@ -363,6 +377,8 @@ export const BLOCKED_DOMAINS: string[] = [
   // -- Leaked / revenge / deepfake --
   'mrdeepfakes.com',
   'deepfake.com',
+  'deepfakeporn.net',
+  'sexcelebrity.net',
   'celebjihad.com',
   'nudography.com',
   'ancensored.com',
@@ -373,6 +389,8 @@ export const BLOCKED_DOMAINS: string[] = [
   'phun.org',
   'forum.phun.org',
   'aznude.com',
+  'twidouga.net',
+  'twittervideotools.com',
 
   // -- Fetish / niche --
   'fetlife.com',
@@ -404,6 +422,7 @@ export const BLOCKED_DOMAINS: string[] = [
   'xhamster.desi',
 
   // -- VR porn --
+  'astalavr.com',
   'sexlikereal.com',
   'vrporn.com',
   'vrsmash.com',
@@ -416,6 +435,14 @@ export const BLOCKED_DOMAINS: string[] = [
   'vrconk.com',
   'vrallure.com',
   'swallowbay.com',
+
+  // -- Vintage / classic / niche specialty --
+  'theclassicporn.com',
+  'sexvid.xxx',
+  'xfree.com',
+  'camereonclip.com',
+  '85po.com',
+  'xeroporn.com',
 
   // -- Other well-known adult domains --
   'xpee.com',

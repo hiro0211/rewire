@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Platform, Linking, AppState } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Linking, Platform, AppState } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
 import { SettingSection } from '@/components/settings/SettingSection';
@@ -10,8 +10,6 @@ import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
-// Safari Web Extension トラッキング実装後に有効化
-// import { useUsageStore } from '@/stores/usageStore';
 import RevenueCatUI from 'react-native-purchases-ui';
 import { Text } from '@/components/Themed';
 
@@ -22,8 +20,6 @@ export default function SettingsScreen() {
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [blockerEnabled, setBlockerEnabled] = useState(false);
-  // Safari Web Extension トラッキング実装後に有効化
-  // const { hourlyWage, setHourlyWage } = useUsageStore();
 
   const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
@@ -129,6 +125,20 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
+        {/* Safari Extension Section */}
+        {Platform.OS === 'ios' && (
+          <SettingSection title="Safari拡張機能">
+            <SettingItem
+              label="コンテンツブロッカー"
+              value={blockerEnabled ? '有効' : '無効'}
+              onPress={() =>
+                Linking.openURL('App-Prefs:SAFARI&path=EXTENSIONS')
+              }
+              isLast
+            />
+          </SettingSection>
+        )}
+
         {/* Notifications Section */}
         <SettingSection title="通知">
           <SettingItem
@@ -147,58 +157,6 @@ export default function SettingsScreen() {
             />
           )}
         </SettingSection>
-
-        {/* Safari Extension Section - iOS only */}
-        {Platform.OS === 'ios' && (
-          <SettingSection title="Safari拡張機能">
-            <SettingItem
-              label="ブロック状態"
-              type="value"
-              value={blockerEnabled ? '有効' : '無効'}
-              icon="shield-checkmark-outline"
-            />
-            <SettingItem
-              label="設定ガイド"
-              icon="book-outline"
-              onPress={() => router.push('/safari-extension-setup' as any)}
-            />
-            {/* Safari Web Extension トラッキング実装後に有効化
-            <SettingItem
-              label="ドメイン管理"
-              icon="list-outline"
-              onPress={() => router.push('/domain-management' as any)}
-            />
-            */}
-            <SettingItem
-              label="カスタムブロックリスト"
-              icon="ban-outline"
-              onPress={() => router.push('/custom-blocklist' as any)}
-              isLast
-            />
-            {/* Safari Web Extension トラッキング実装後に有効化
-            <SettingItem
-              label="時給設定"
-              type="value"
-              value={`¥${hourlyWage.toLocaleString()}`}
-              icon="cash-outline"
-              onPress={() => {
-                Alert.prompt(
-                  '時給設定',
-                  '統計画面の金額換算に使用します',
-                  (text) => {
-                    const val = parseInt(text, 10);
-                    if (!isNaN(val) && val > 0) setHourlyWage(val);
-                  },
-                  'plain-text',
-                  String(hourlyWage),
-                  'number-pad'
-                );
-              }}
-              isLast
-            />
-            */}
-          </SettingSection>
-        )}
 
         {/* Pro Section */}
         <SettingSection title="プレミアム">

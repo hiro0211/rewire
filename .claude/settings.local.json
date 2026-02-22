@@ -85,7 +85,26 @@
       "WebFetch(domain:bpbcounseling.com)",
       "WebFetch(domain:fightthenewdrug.org)",
       "WebFetch(domain:startupspells.com)",
-      "WebFetch(domain:www.psypost.org)"
+      "WebFetch(domain:www.psypost.org)",
+      "WebFetch(domain:www.retention.blog)",
+      "WebFetch(domain:www.lazertechnologies.com)",
+      "WebFetch(domain:www.howtheygrow.co)",
+      "WebFetch(domain:design.google)",
+      "WebFetch(domain:www.thebehavioralscientist.com)",
+      "WebFetch(domain:appagent.com)",
+      "WebFetch(domain:www.airbridge.io)",
+      "WebFetch(domain:goodux.appcues.com)",
+      "WebFetch(domain:www.hbs.edu)",
+      "WebFetch(domain:www.pencilandpaper.io)",
+      "WebFetch(domain:whyandactuallyhow.substack.com)",
+      "WebFetch(domain:reteno.com)",
+      "WebFetch(domain:petermucka.substack.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:bootcamp.uxdesign.cc)",
+      "WebFetch(domain:www.wayline.io)",
+      "WebFetch(domain:www.smashingmagazine.com)",
+      "WebFetch(domain:designerup.co)",
+      "Bash(git checkout:*)"
     ]
   }
 }

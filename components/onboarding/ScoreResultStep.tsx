@@ -3,7 +3,6 @@ import { View, StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { getScoreLevel } from '@/lib/assessment/scoreCalculator';
-import { MAX_SCORE } from '@/constants/assessment';
 import { HabitScoreBar } from '@/components/assessment/HabitScoreBar';
 
 interface ScoreResultStepProps {

@@ -13,7 +13,12 @@ const STUB_STATUS: ContentBlockerStatus = {
  * Lazily loads the native Expo Content Blocker module.
  * Returns null when the native binary is unavailable (Expo Go / Android / Web).
  */
-function getNativeModule(): ContentBlockerBridge | null {
+function getNativeModule(): {
+  enableBlocker: () => Promise<boolean>;
+  disableBlocker: () => Promise<boolean>;
+  getBlockerStatus: () => Promise<ContentBlockerStatus>;
+  reloadBlockerRules: () => Promise<boolean>;
+} | null {
   try {
     const mod = require('../../modules/expo-content-blocker/src').default;
     return mod ?? null;
@@ -68,42 +73,6 @@ export const contentBlockerBridge: ContentBlockerBridge = {
     } catch (error) {
       console.error('[ContentBlocker] reloadBlockerRules failed:', error);
       return false;
-    }
-  },
-
-  async addCustomDomain(domain: string): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    try {
-      const mod = getNativeModule();
-      if (!mod) return false;
-      return await mod.addCustomDomain(domain);
-    } catch (error) {
-      console.error('[ContentBlocker] addCustomDomain failed:', error);
-      return false;
-    }
-  },
-
-  async removeCustomDomain(domain: string): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    try {
-      const mod = getNativeModule();
-      if (!mod) return false;
-      return await mod.removeCustomDomain(domain);
-    } catch (error) {
-      console.error('[ContentBlocker] removeCustomDomain failed:', error);
-      return false;
-    }
-  },
-
-  async getCustomDomains(): Promise<string[]> {
-    if (Platform.OS !== 'ios') return [];
-    try {
-      const mod = getNativeModule();
-      if (!mod) return [];
-      return await mod.getCustomDomains();
-    } catch (error) {
-      console.error('[ContentBlocker] getCustomDomains failed:', error);
-      return [];
     }
   },
 };

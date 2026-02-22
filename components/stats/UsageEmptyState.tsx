@@ -2,12 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
-import { Button } from '@/components/ui/Button';
-import { useRouter } from 'expo-router';
 
 export function UsageEmptyState() {
-  const router = useRouter();
-
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
@@ -19,13 +15,8 @@ export function UsageEmptyState() {
       </View>
       <Text style={styles.title}>データがありません</Text>
       <Text style={styles.description}>
-        {'Safari拡張機能を有効にすると\n視聴時間が自動で記録されます'}
+        {'チェックインを続けると\nここに統計が表示されます'}
       </Text>
-      <Button
-        title="Safari拡張機能を設定"
-        onPress={() => router.push('/safari-extension-setup' as any)}
-        style={styles.button}
-      />
     </View>
   );
 }
@@ -58,8 +49,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: SPACING.xxl,
-  },
-  button: {
-    width: '100%',
   },
 });

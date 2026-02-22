@@ -138,14 +138,38 @@ const BLOCKED_DOMAINS = [
   "javtrailers.com",
   "highporn.net",
   "bestjavporn.com",
+  // Additional user-specified domains
+  "njavtv.com",
+  "njav.tv",
+  "7mmtv.sx",
+  "tktube.com",
+  "av01.tv",
+  "xfree.com",
+  "astalavr.com",
+  "twittervideotools.com",
+  "sexvid.xxx",
+  "tokyomotion.net",
+  "twidouga.net",
+  "aniporn.com",
+  "rule34video.com",
+  "camereonclip.com",
+  "fc2.com",
+  "uraagesage.com",
+  "theclassicporn.com",
+  "sexcelebrity.net",
+  "deepfakeporn.net",
+  "aznude.com",
+  "85po.com",
+  "kissjav.com",
+  "javmix.tv",
+  "popjav.tv",
+  "javgiga.com",
+  "youav.com",
+  "xeroporn.com",
 ];
 
 // Safari Content Blocker limit: 150,000 rules per extension
 const MAX_RULES = 150000;
-
-// Shared identifiers (used by both the main app and the Content Blocker extension)
-const APP_GROUP_ID = "group.rewire.app.com";
-const CUSTOM_DOMAINS_KEY = "custom_blocked_domains";
 
 // StevenBlack hosts file (porn category)
 const BLOCKLIST_URL =
@@ -273,9 +297,10 @@ function generateBlockerRules(domains) {
 // ============================================================
 function withAppGroupsEntitlement(config) {
   return withEntitlementsPlist(config, (config) => {
+    const APP_GROUP = "group.rewire.app.com";
     const groups = config.modResults["com.apple.security.application-groups"] || [];
-    if (!groups.includes(APP_GROUP_ID)) {
-      groups.push(APP_GROUP_ID);
+    if (!groups.includes(APP_GROUP)) {
+      groups.push(APP_GROUP);
     }
     config.modResults["com.apple.security.application-groups"] = groups;
     return config;
@@ -309,8 +334,8 @@ function withExtensionFiles(config) {
       const handlerSwift = `import UIKit
 
 class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
-    private let appGroupId = "${APP_GROUP_ID}"
-    private let customDomainsKey = "${CUSTOM_DOMAINS_KEY}"
+    private let appGroupId = "group.rewire.app.com"
+    private let customDomainsKey = "custom_blocked_domains"
 
     func beginRequest(with context: NSExtensionContext) {
         // 1. Load static rules from blockerList.json
@@ -404,7 +429,7 @@ class ContentBlockerRequestHandler: NSObject, NSExtensionRequestHandling {
 <dict>
 \t<key>com.apple.security.application-groups</key>
 \t<array>
-\t\t<string>${APP_GROUP_ID}</string>
+\t\t<string>group.rewire.app.com</string>
 \t</array>
 </dict>
 </plist>

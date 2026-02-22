@@ -7,9 +7,10 @@ export interface AssessmentOption {
 export interface AssessmentQuestion {
   id: string;
   question: string;
-  type: 'choice' | 'yesno';
+  type: 'choice' | 'yesno' | 'picker';
   options?: AssessmentOption[];
   yesScore?: number;
+  pickerRange?: { min: number; max: number; suffix: string };
 }
 
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
@@ -27,13 +28,8 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 'currentAge',
     question: '現在の年齢は？',
-    type: 'choice',
-    options: [
-      { label: '18〜24歳', value: '18-24', score: 0 },
-      { label: '25〜34歳', value: '25-34', score: 0 },
-      { label: '35〜44歳', value: '35-44', score: 0 },
-      { label: '45歳以上', value: '45+', score: 0 },
-    ],
+    type: 'picker',
+    pickerRange: { min: 11, max: 60, suffix: '歳' },
   },
   {
     id: 'frequency',
