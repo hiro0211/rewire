@@ -26,6 +26,7 @@ import { ScoreResultStep } from '@/components/onboarding/ScoreResultStep';
 import { AnalyzingStep } from '@/components/onboarding/AnalyzingStep';
 import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
 import { EducationQuizStep } from '@/components/onboarding/EducationQuizStep';
+import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
 
 const FEATURES = [
   {
@@ -139,14 +140,15 @@ export default function OnboardingScreen() {
   const [dataAgreed, setDataAgreed] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [quizAnswered, setQuizAnswered] = useState(false);
+  const [notifyTime, setNotifyTime] = useState('22:00');
   const { setUser } = useUserStore();
   const router = useRouter();
   const translateX = useRef(new Animated.Value(0)).current;
   const autoAdvancingRef = useRef(false);
 
   // Refs to access latest state from PanResponder closure
-  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, quizAnswered });
-  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, quizAnswered };
+  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, quizAnswered, notifyTime });
+  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, quizAnswered, notifyTime };
 
   const animateTransition = (direction: number, callback: () => void) => {
     Animated.timing(translateX, {
@@ -219,6 +221,7 @@ export default function OnboardingScreen() {
         params: {
           nickname,
           consentGivenAt: new Date().toISOString(),
+          notifyTime,
         },
       });
     }
@@ -522,11 +525,11 @@ export default function OnboardingScreen() {
 
       case 'notification':
         return (
-          <View style={styles.centeredContent}>
-            <Text style={styles.title}>通知を設定</Text>
-            <Text style={styles.description}>
-              {'毎日の振り返りを習慣化するために、\n通知を許可してください。'}
-            </Text>
+          <View style={styles.fullWidth}>
+            <NotificationSetupStep
+              selectedTime={notifyTime}
+              onTimeChange={setNotifyTime}
+            />
           </View>
         );
 
