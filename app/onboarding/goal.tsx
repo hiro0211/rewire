@@ -7,17 +7,23 @@ import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { useUserStore } from '@/stores/userStore';
+import { notificationClient } from '@/lib/notifications/notificationClient';
 import { format } from 'date-fns';
 import * as Crypto from 'expo-crypto';
 
 export default function GoalSettingScreen() {
-  const { nickname, consentGivenAt } = useLocalSearchParams<{
+  const { nickname, consentGivenAt, notifyTime: notifyTimeParam } = useLocalSearchParams<{
     nickname: string;
     consentGivenAt: string;
+    notifyTime: string;
   }>();
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
   const router = useRouter();
+
+  const resolvedNotifyTime = Array.isArray(notifyTimeParam)
+    ? notifyTimeParam[0]
+    : notifyTimeParam || '22:00';
 
   const handleFinish = async () => {
     const newUser = {
@@ -26,7 +32,7 @@ export default function GoalSettingScreen() {
       goalDays: selectedGoal,
       streakStartDate: format(new Date(), 'yyyy-MM-dd'),
       isPro: false,
-      notifyTime: '22:00',
+      notifyTime: resolvedNotifyTime,
       notifyEnabled: true,
       createdAt: new Date().toISOString(),
       consentGivenAt: Array.isArray(consentGivenAt) ? consentGivenAt[0] : consentGivenAt || null,
@@ -34,6 +40,12 @@ export default function GoalSettingScreen() {
     };
 
     await setUser(newUser);
+
+    const granted = await notificationClient.requestPermissions();
+    if (granted) {
+      await notificationClient.scheduleDailyReminder(resolvedNotifyTime);
+    }
+
     router.replace({ pathname: '/paywall', params: { source: 'onboarding' } });
   };
 

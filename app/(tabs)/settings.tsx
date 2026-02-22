@@ -125,15 +125,23 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {/* Safari Extension Section */}
+        {/* Porn Blocker Section */}
         {Platform.OS === 'ios' && (
-          <SettingSection title="Safari拡張機能">
+          <SettingSection title="ポルノブロッカー">
             <SettingItem
-              label="コンテンツブロッカー"
+              label="ブロック状態"
               value={blockerEnabled ? '有効' : '無効'}
-              onPress={() =>
-                Linking.openURL('App-Prefs:SAFARI&path=EXTENSIONS')
-              }
+              icon="shield-checkmark-outline"
+            />
+            <SettingItem
+              label="Safari設定を開く"
+              icon="open-outline"
+              onPress={() => Linking.openURL('App-Prefs:SAFARI')}
+            />
+            <SettingItem
+              label="設定ガイド"
+              icon="book-outline"
+              onPress={() => router.push('/content-blocker-setup' as any)}
               isLast
             />
           </SettingSection>
@@ -210,6 +218,18 @@ export default function SettingsScreen() {
             destructive
             onPress={handleResetData}
             icon="trash-outline"
+            isLast
+          />
+        </SettingSection>
+
+        {/* Dev Tools */}
+        <SettingSection title="開発者テスト">
+          <SettingItem
+            label="Pro機能を有効化（テスト用）"
+            type="toggle"
+            toggleValue={user.isPro}
+            onToggle={(value) => updateUser({ isPro: value })}
+            icon="bug-outline"
             isLast
           />
         </SettingSection>

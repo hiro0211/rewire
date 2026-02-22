@@ -32,8 +32,8 @@ export const notificationClient = {
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "今日の振り返り",
-        body: "今日の振り返りを記録しましょう。",
+        title: "今日はどうでしたか？",
+        body: "1日の振り返りをしましょう。記録を続けることが、あなたの成長につながります。",
       },
       trigger: {
         type: 'calendar',

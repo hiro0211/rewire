@@ -1,0 +1,1 @@
+'/Users/arimurahiroaki/rewire/.takt/tasks/20260222-015720-task/order.md'このファイルを参考にしてタスクを実行してください

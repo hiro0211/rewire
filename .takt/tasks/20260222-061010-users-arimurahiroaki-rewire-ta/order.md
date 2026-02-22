@@ -1,0 +1,1 @@
+'/Users/arimurahiroaki/rewire/.takt/tasks/20260222-020531-task/order.md'を確認してタスクを実行してください。エージェントチームを組んだうえで
