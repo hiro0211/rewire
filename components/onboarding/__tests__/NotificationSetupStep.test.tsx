@@ -43,8 +43,8 @@ describe('NotificationSetupStep', () => {
     expect(getByText(/何時/)).toBeTruthy();
   });
 
-  it('ストリーク継続の重要性に関する説明文が表示される', () => {
-    const { getByText } = render(<NotificationSetupStep {...defaultProps} />);
-    expect(getByText(/連続/)).toBeTruthy();
+  it('チェックインの重要性に関する説明文が表示される', () => {
+    const { getAllByText } = render(<NotificationSetupStep {...defaultProps} />);
+    expect(getAllByText(/振り返り/).length).toBeGreaterThan(0);
   });
 });

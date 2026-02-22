@@ -21,8 +21,6 @@ for (let i = 0; i < 24; i++) {
   TIME_SLOTS.push(`${hour}:30`);
 }
 
-const STREAK_PREVIEW = [1, 3, 7, 14, 30];
-
 export const NotificationSetupStep = ({
   selectedTime,
   onTimeChange,
@@ -40,15 +38,6 @@ export const NotificationSetupStep = ({
           '連続して記録を続けることで、あなたの変化が\n数字で見えてきます。毎日のチェックインが\n自己成長の第一歩です。'
         }
       </Text>
-
-      <View style={styles.streakRow}>
-        {STREAK_PREVIEW.map((days) => (
-          <View key={days} style={styles.streakItem}>
-            <Text style={styles.streakNumber}>{days}</Text>
-            <Text style={styles.streakLabel}>日</Text>
-          </View>
-        ))}
-      </View>
 
       <Text style={styles.pickerLabel}>何時に振り返りますか？</Text>
 
@@ -112,29 +101,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: SPACING.xl,
-  },
-  streakRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: SPACING.xl,
-  },
-  streakItem: {
-    alignItems: 'center',
-    backgroundColor: COLORS.surfaceHighlight,
-    borderRadius: RADIUS.md,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    minWidth: 48,
-  },
-  streakNumber: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
-  streakLabel: {
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
   },
   pickerLabel: {
     fontSize: FONT_SIZE.md,
