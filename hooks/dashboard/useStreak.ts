@@ -16,5 +16,6 @@ export const useStreak = () => {
     streak,
     goal: user?.goalDays || 30,
     progress: Math.min(streak / (user?.goalDays || 30), 1),
+    streakStartDate: user?.streakStartDate || null,
   };
 };

@@ -27,6 +27,7 @@ import { AnalyzingStep } from '@/components/onboarding/AnalyzingStep';
 import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
 import { EducationQuizStep } from '@/components/onboarding/EducationQuizStep';
 import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
+import { FeatureIntroStep } from '@/components/onboarding/FeatureIntroStep';
 
 const FEATURES = [
   {
@@ -63,6 +64,8 @@ type OnboardingStep =
   | { type: 'damage'; slideIndex: number }
   | { type: 'recovery'; slideIndex: number }
   | { type: 'features' }
+  | { type: 'feature_intro_recording' }
+  | { type: 'feature_intro_breathing' }
   | { type: 'nickname' }
   | { type: 'consent' }
   | { type: 'notification' };
@@ -81,6 +84,8 @@ const STEPS: OnboardingStep[] = [
   ...DAMAGE_SLIDES.map((_, i): OnboardingStep => ({ type: 'damage' as const, slideIndex: i })),
   ...RECOVERY_SLIDES.map((_, i): OnboardingStep => ({ type: 'recovery' as const, slideIndex: i })),
   { type: 'features' },
+  { type: 'feature_intro_recording' },
+  { type: 'feature_intro_breathing' },
   { type: 'nickname' },
   { type: 'consent' },
   { type: 'notification' },
@@ -105,6 +110,8 @@ function canGoBack(stepIndex: number): boolean {
     case 'analyzing':
     case 'score_result':
     case 'features':
+    case 'feature_intro_recording':
+    case 'feature_intro_breathing':
     case 'nickname':
     case 'consent':
     case 'notification':
@@ -449,6 +456,20 @@ export default function OnboardingScreen() {
                 </View>
               ))}
             </View>
+          </View>
+        );
+
+      case 'feature_intro_recording':
+        return (
+          <View style={styles.fullWidth}>
+            <FeatureIntroStep variant="recording" />
+          </View>
+        );
+
+      case 'feature_intro_breathing':
+        return (
+          <View style={styles.fullWidth}>
+            <FeatureIntroStep variant="breathing" />
           </View>
         );
 

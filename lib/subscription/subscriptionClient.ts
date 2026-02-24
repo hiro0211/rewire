@@ -58,9 +58,10 @@ export const subscriptionClient: SubscriptionClient = {
   async initialize(): Promise<void> {
     if (Platform.OS === 'web' || !Purchases) return;
     try {
-      Purchases.setLogLevel(LOG_LEVEL.ERROR);
       const apiKey =
         Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
+      if (!apiKey) return;
+      Purchases.setLogLevel(LOG_LEVEL.ERROR);
       await Purchases.configure({ apiKey });
     } catch (error) {
       console.error('[Subscription] initialize failed:', error);
