@@ -29,7 +29,7 @@ export default function ContentBlockerSetupScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const isPro = useUserStore((s) => s.user?.isPro ?? false) || __DEV__;
+  const isPro = useUserStore((s) => s.user?.isPro ?? false);
 
   useContentBlockerStatus(step, () => {
     setStep(4);

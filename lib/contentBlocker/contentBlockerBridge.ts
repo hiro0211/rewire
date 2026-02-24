@@ -56,11 +56,16 @@ export const contentBlockerBridge: ContentBlockerBridge = {
     if (Platform.OS !== 'ios') return STUB_STATUS;
     try {
       const mod = getNativeModule();
-      if (!mod) return STUB_STATUS;
-      return await mod.getBlockerStatus();
+      if (!mod) {
+        console.warn('[ContentBlocker] Native module not available');
+        return STUB_STATUS;
+      }
+      const status = await mod.getBlockerStatus();
+      console.log('[ContentBlocker] Status:', JSON.stringify(status));
+      return status;
     } catch (error) {
       console.error('[ContentBlocker] getBlockerStatus failed:', error);
-      return STUB_STATUS;
+      return { ...STUB_STATUS, error: String(error) };
     }
   },
 

@@ -19,12 +19,12 @@ export default function SettingsScreen() {
 
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
-  const [blockerEnabled, setBlockerEnabled] = useState(false);
+  const [blockerStatus, setBlockerStatus] = useState<'checking' | 'enabled' | 'disabled'>('checking');
 
   const checkBlockerStatus = async () => {
     if (Platform.OS === 'ios') {
       const status = await contentBlockerBridge.getBlockerStatus();
-      setBlockerEnabled(status.isEnabled);
+      setBlockerStatus(status.isEnabled ? 'enabled' : 'disabled');
     }
   };
 
@@ -130,8 +130,12 @@ export default function SettingsScreen() {
           <SettingSection title="ポルノブロッカー">
             <SettingItem
               label="ブロック状態"
-              value={blockerEnabled ? '有効' : '無効'}
-              icon="shield-checkmark-outline"
+              value={
+                blockerStatus === 'checking' ? '確認中...' :
+                blockerStatus === 'enabled' ? '有効' : '無効'
+              }
+              icon={blockerStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
+              onPress={blockerStatus !== 'enabled' ? () => Linking.openURL('App-Prefs:SAFARI') : undefined}
             />
             <SettingItem
               label="Safari設定を開く"
@@ -218,18 +222,6 @@ export default function SettingsScreen() {
             destructive
             onPress={handleResetData}
             icon="trash-outline"
-            isLast
-          />
-        </SettingSection>
-
-        {/* Dev Tools */}
-        <SettingSection title="開発者テスト">
-          <SettingItem
-            label="Pro機能を有効化（テスト用）"
-            type="toggle"
-            toggleValue={user.isPro}
-            onToggle={(value) => updateUser({ isPro: value })}
-            icon="bug-outline"
             isLast
           />
         </SettingSection>

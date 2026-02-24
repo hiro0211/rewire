@@ -19,17 +19,20 @@ public class ContentBlockerModule: Module {
 
         // Check actual state from SFContentBlockerManager
         AsyncFunction("getBlockerStatus") { () async -> [String: Any] in
+            print("[ContentBlocker] Checking status for extensionBundleId: \(self.extensionBundleId)")
             do {
                 let state = try await SFContentBlockerManager.stateOfContentBlocker(withIdentifier: self.extensionBundleId)
+                print("[ContentBlocker] Status: isEnabled=\(state.isEnabled)")
                 return [
                     "isEnabled": state.isEnabled,
                     "extensionBundleId": self.extensionBundleId,
                 ]
             } catch {
-                print("Failed to get content blocker state: \(error)")
+                print("[ContentBlocker] Failed to get state: \(error.localizedDescription)")
                 return [
                     "isEnabled": false,
                     "extensionBundleId": self.extensionBundleId,
+                    "error": error.localizedDescription,
                 ]
             }
         }
@@ -44,7 +47,7 @@ public class ContentBlockerModule: Module {
             try await SFContentBlockerManager.reloadContentBlocker(withIdentifier: extensionBundleId)
             return true
         } catch {
-            print("Failed to reload content blocker: \(error)")
+            print("[ContentBlocker] Failed to reload: \(error.localizedDescription)")
             return false
         }
     }

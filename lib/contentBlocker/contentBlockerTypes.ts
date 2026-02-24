@@ -1,6 +1,7 @@
 export interface ContentBlockerStatus {
   isEnabled: boolean;
   extensionBundleId: string;
+  error?: string;
 }
 
 export interface ContentBlockerBridge {
