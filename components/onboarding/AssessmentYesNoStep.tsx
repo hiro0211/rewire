@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/Themed';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
 interface AssessmentYesNoStepProps {
@@ -11,6 +12,11 @@ interface AssessmentYesNoStepProps {
   selectedValue: string | undefined;
   onSelect: (value: string) => void;
 }
+
+const YES_NO_OPTIONS = [
+  { label: 'はい', value: 'yes' },
+  { label: 'いいえ', value: 'no' },
+];
 
 export function AssessmentYesNoStep({
   question,
@@ -27,42 +33,40 @@ export function AssessmentYesNoStep({
 
       <Text style={styles.question}>{question.question}</Text>
 
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            selectedValue === 'yes' && styles.buttonSelected,
-          ]}
-          onPress={() => onSelect('yes')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              selectedValue === 'yes' && styles.buttonTextSelected,
-            ]}
-          >
-            はい
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.button,
-            selectedValue === 'no' && styles.buttonSelected,
-          ]}
-          onPress={() => onSelect('no')}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              selectedValue === 'no' && styles.buttonTextSelected,
-            ]}
-          >
-            いいえ
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.options}>
+        {YES_NO_OPTIONS.map((option, index) => {
+          const selected = selectedValue === option.value;
+          return (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.option,
+                selected && styles.optionSelected,
+              ]}
+              onPress={() => onSelect(option.value)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[styles.badge, selected && styles.badgeSelected]}
+                testID={selected ? `badge-checkmark-${index}` : undefined}
+              >
+                {selected ? (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.badgeText}>{index + 1}</Text>
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.optionText,
+                  selected && styles.optionTextSelected,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </View>
   );
@@ -75,8 +79,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   counter: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: 'bold',
+    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
@@ -84,32 +89,50 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: SPACING.xxxl,
+    textAlign: 'left',
+    marginBottom: 40,
   },
-  row: {
+  options: {
+    width: '100%',
+    gap: 16,
+  },
+  option: {
     flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  button: {
-    flex: 1,
-    height: 52,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
+    alignItems: 'center',
+    height: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  optionSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(74, 144, 217, 0.1)',
+  },
+  badge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonSelected: {
-    borderWidth: 2,
-    borderColor: COLORS.primary,
+  badgeSelected: {
+    backgroundColor: COLORS.success,
   },
-  buttonText: {
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  optionText: {
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
+    flex: 1,
   },
-  buttonTextSelected: {
+  optionTextSelected: {
     color: COLORS.primary,
   },
 });

@@ -4,7 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { COLORS } from '@/constants/theme';
 
 export default function Index() {
-  const { user, hasHydrated } = useUserStore();
+  const { hasHydrated } = useUserStore();
 
   if (!hasHydrated) {
     return (
@@ -14,11 +14,6 @@ export default function Index() {
     );
   }
 
-  // If user exists (nickname is set), go to main tabs
-  if (user && user.nickname) {
-    return <Redirect href="/(tabs)" />;
-  }
-
-  // Otherwise, go to onboarding
-  return <Redirect href="/onboarding" />;
+  // Brand screen handles routing to /(tabs) or /onboarding after animation
+  return <Redirect href="/brand" />;
 }

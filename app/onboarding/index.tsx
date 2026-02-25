@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
@@ -246,6 +247,7 @@ export default function OnboardingScreen() {
 
   const handleAssessmentAnswer = (questionId: string, value: string) => {
     if (autoAdvancingRef.current) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
     autoAdvancingRef.current = true;
     setTimeout(() => {
@@ -257,6 +259,7 @@ export default function OnboardingScreen() {
   };
 
   const handlePickerSelect = (questionId: string, value: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/Themed';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
 interface AssessmentChoiceStepProps {
@@ -28,7 +29,7 @@ export function AssessmentChoiceStep({
       <Text style={styles.question}>{question.question}</Text>
 
       <View style={styles.options}>
-        {question.options?.map((option) => {
+        {question.options?.map((option, index) => {
           const selected = selectedValue === option.value;
           return (
             <TouchableOpacity
@@ -40,6 +41,16 @@ export function AssessmentChoiceStep({
               onPress={() => onSelect(option.value)}
               activeOpacity={0.7}
             >
+              <View
+                style={[styles.badge, selected && styles.badgeSelected]}
+                testID={selected ? `badge-checkmark-${index}` : undefined}
+              >
+                {selected ? (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.badgeText}>{index + 1}</Text>
+                )}
+              </View>
               <Text
                 style={[
                   styles.optionText,
@@ -63,8 +74,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   counter: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: 'bold',
+    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
@@ -72,29 +84,48 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: SPACING.xxxl,
+    textAlign: 'left',
+    marginBottom: 40,
   },
   options: {
     width: '100%',
-    gap: SPACING.sm,
+    gap: 16,
   },
   option: {
-    height: 52,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: SPACING.lg,
-    justifyContent: 'center',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 16,
+    gap: 12,
   },
   optionSelected: {
-    borderWidth: 2,
     borderColor: COLORS.primary,
+    backgroundColor: 'rgba(74, 144, 217, 0.1)',
+  },
+  badge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeSelected: {
+    backgroundColor: COLORS.success,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   optionText: {
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
+    flex: 1,
   },
   optionTextSelected: {
     color: COLORS.primary,
