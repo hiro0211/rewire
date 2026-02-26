@@ -9,7 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { trackingClient } from '@/lib/tracking/trackingClient';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
-import { adMobClient } from '@/lib/ads/adMobClient';
+
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { isExpoGo } from '@/lib/nativeGuard';
 
@@ -53,12 +53,6 @@ export default function RootLayout() {
   }, [hasHydrated]);
 
   useEffect(() => {
-    if (hasHydrated) {
-      adMobClient.initialize();
-    }
-  }, [hasHydrated]);
-
-  useEffect(() => {
     if (hasHydrated && user) {
       analyticsClient.setUserProperty('goal_days', String(user.goalDays));
       analyticsClient.setUserProperty('is_pro', String(user.isPro));
@@ -67,22 +61,27 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!hasHydrated) return;
+    let cancelled = false;
 
-    subscriptionClient.initialize();
-    if (!Purchases) return;
-    const listener = (info: { entitlements: { active: Record<string, unknown> } }) => {
-      const isPro = typeof info.entitlements.active['pro'] !== 'undefined';
-      const currentUser = useUserStore.getState().user;
-      if (currentUser && currentUser.isPro !== isPro) {
-        useUserStore.getState().updateUser({ isPro });
+    (async () => {
+      try {
+        await subscriptionClient.initialize();
+      } catch (e) {
+        console.error('[RootLayout] subscription init failed:', e);
       }
-    };
-    Purchases.addCustomerInfoUpdateListener(listener);
+      if (cancelled || !Purchases) return;
+      const listener = (info: { entitlements: { active: Record<string, unknown> } }) => {
+        const isPro = typeof info.entitlements.active['pro'] !== 'undefined';
+        const currentUser = useUserStore.getState().user;
+        if (currentUser && currentUser.isPro !== isPro) {
+          useUserStore.getState().updateUser({ isPro });
+        }
+      };
+      Purchases.addCustomerInfoUpdateListener(listener);
+    })();
 
     return () => {
-      if (Purchases) {
-        Purchases.removeCustomerInfoUpdateListener(listener);
-      }
+      cancelled = true;
     };
   }, [hasHydrated]);
 
@@ -117,7 +116,7 @@ export default function RootLayout() {
         <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
         <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
-        <Stack.Screen name="history/index" options={{ headerShown: false }} />
+        <Stack.Screen name="history/index" options={{ headerShown: true, title: '履歴', headerBackTitle: '戻る' }} />
         <Stack.Screen name="settings" options={{ headerShown: true, title: '設定' }} />
         <Stack.Screen name="achievements" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />

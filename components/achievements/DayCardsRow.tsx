@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { DayCard } from './DayCard';
 import { SPACING } from '@/constants/theme';
+import { BADGES } from '@/constants/badges';
 
 interface DayCardsRowProps {
   streak: number;
@@ -10,19 +11,21 @@ interface DayCardsRowProps {
 const CARD_WIDTH = 64;
 const GAP = SPACING.sm;
 
+const MILESTONE_DAYS = BADGES.map((b) => b.requiredDays);
+
 export function DayCardsRow({ streak }: DayCardsRowProps) {
   const scrollRef = useRef<ScrollView>(null);
-  const maxDay = streak + 5;
+
+  // Find the index of the current (or nearest next) milestone for auto-scroll
+  const currentIndex = MILESTONE_DAYS.findIndex((d) => d > streak);
+  const scrollToIndex = currentIndex === -1 ? MILESTONE_DAYS.length - 1 : Math.max(0, currentIndex - 1);
 
   useEffect(() => {
-    // Auto-scroll to current day position
-    const offset = Math.max(0, streak * (CARD_WIDTH + GAP) - CARD_WIDTH);
+    const offset = Math.max(0, scrollToIndex * (CARD_WIDTH + GAP) - CARD_WIDTH);
     setTimeout(() => {
       scrollRef.current?.scrollTo({ x: offset, animated: false });
     }, 100);
-  }, [streak]);
-
-  const days = Array.from({ length: maxDay + 1 }, (_, i) => i);
+  }, [scrollToIndex]);
 
   return (
     <ScrollView
@@ -31,14 +34,23 @@ export function DayCardsRow({ streak }: DayCardsRowProps) {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
-      {days.map((day) => (
-        <DayCard
-          key={day}
-          day={day}
-          isReached={day <= streak}
-          isCurrent={day === streak}
-        />
-      ))}
+      {BADGES.map((badge) => {
+        const isReached = streak >= badge.requiredDays;
+        // "current" = the latest reached milestone
+        const nextIndex = MILESTONE_DAYS.findIndex((d) => d > streak);
+        const currentMilestoneIndex = nextIndex === -1 ? MILESTONE_DAYS.length - 1 : nextIndex - 1;
+        const isCurrent = MILESTONE_DAYS.indexOf(badge.requiredDays) === currentMilestoneIndex;
+
+        return (
+          <DayCard
+            key={badge.id}
+            day={badge.requiredDays}
+            label={badge.nameJa}
+            isReached={isReached}
+            isCurrent={isCurrent}
+          />
+        );
+      })}
     </ScrollView>
   );
 }

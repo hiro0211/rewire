@@ -43,6 +43,7 @@ describe('PaywallScreen analytics', () => {
     await waitFor(() => {
       expect(mockLogEvent).toHaveBeenCalledWith('paywall_viewed', {
         source: 'onboarding',
+        offering: 'default',
       });
     });
   });

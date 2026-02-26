@@ -36,14 +36,6 @@ jest.mock('@/hooks/dashboard/useDashboardStats', () => ({
   }),
 }));
 
-jest.mock('@/components/ads/BannerAdView', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    BannerAdView: () => <View testID="banner-ad" />,
-  };
-});
-
 jest.mock('@react-native-community/datetimepicker', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -100,5 +92,16 @@ describe('DashboardScreen', () => {
     const { UNSAFE_getByType } = render(<DashboardScreen />);
     const { RefreshControl } = require('react-native');
     expect(UNSAFE_getByType(RefreshControl)).toBeTruthy();
+  });
+
+  it('"今日の結果を入力" ボタンで /checkin に遷移する', () => {
+    const { getByText } = render(<DashboardScreen />);
+    fireEvent.press(getByText('今日の結果を入力'));
+    expect(mockPush).toHaveBeenCalledWith('/checkin');
+  });
+
+  it('ユーザーのnicknameが表示される', () => {
+    const { getByText } = render(<DashboardScreen />);
+    expect(getByText('TestUser')).toBeTruthy();
   });
 });

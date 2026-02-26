@@ -15,7 +15,6 @@ export function ArticleListItem({ article, onPress }: ArticleListItemProps) {
       <Card style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.category}>{article.category}</Text>
-          {article.isLocked && <Text style={styles.lock}>🔒 Pro</Text>}
         </View>
         <Text style={styles.title}>{article.title}</Text>
         <Text style={styles.meta}>読了時間: {article.readTime}分</Text>
@@ -35,11 +34,6 @@ const styles = StyleSheet.create({
   },
   category: {
     color: COLORS.primary,
-    fontSize: FONT_SIZE.xs,
-    fontWeight: 'bold',
-  },
-  lock: {
-    color: COLORS.pro,
     fontSize: FONT_SIZE.xs,
     fontWeight: 'bold',
   },

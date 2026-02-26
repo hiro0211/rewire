@@ -19,16 +19,26 @@ export const StreakEditModal = ({
   onSave,
 }: StreakEditModalProps) => {
   const [selectedDate, setSelectedDate] = useState(() => {
-    const parsed = parseISO(initialDate);
-    const today = startOfDay(new Date());
-    return parsed > today ? today : parsed;
+    try {
+      const parsed = parseISO(initialDate);
+      if (isNaN(parsed.getTime())) return startOfDay(new Date());
+      const today = startOfDay(new Date());
+      return parsed > today ? today : parsed;
+    } catch {
+      return startOfDay(new Date());
+    }
   });
 
   useEffect(() => {
     if (visible) {
-      const parsed = parseISO(initialDate);
-      const today = startOfDay(new Date());
-      setSelectedDate(parsed > today ? today : parsed);
+      try {
+        const parsed = parseISO(initialDate);
+        if (isNaN(parsed.getTime())) return;
+        const today = startOfDay(new Date());
+        setSelectedDate(parsed > today ? today : parsed);
+      } catch {
+        // Invalid date — keep current selection
+      }
     }
   }, [visible, initialDate]);
 

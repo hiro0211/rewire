@@ -35,19 +35,16 @@ const FEATURES = [
     icon: 'shield-checkmark-outline' as const,
     title: 'Safariポルノブロッカー',
     description: 'アダルトサイトへのアクセスを自動ブロック',
-    pro: true,
   },
   {
     icon: 'analytics-outline' as const,
     title: '毎日の振り返り',
     description: '衝動やストレスを記録して自分を客観視',
-    pro: false,
   },
   {
     icon: 'fitness-outline' as const,
     title: '呼吸エクササイズ',
     description: '衝動が来たとき、呼吸で乗り越える',
-    pro: false,
   },
 ];
 
@@ -426,11 +423,6 @@ export default function OnboardingScreen() {
                   <View style={styles.featureTextContainer}>
                     <View style={styles.featureTitleRow}>
                       <Text style={styles.featureTitle}>{feature.title}</Text>
-                      {feature.pro && (
-                        <View style={styles.proBadge}>
-                          <Text style={styles.proBadgeText}>PRO</Text>
-                        </View>
-                      )}
                     </View>
                     <Text style={styles.featureDescription}>
                       {feature.description}
@@ -738,18 +730,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
     fontWeight: '600' as const,
     color: COLORS.text,
-  },
-  proBadge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    marginLeft: 8,
-  },
-  proBadgeText: {
-    fontSize: 10,
-    fontWeight: '700' as const,
-    color: '#FFFFFF',
   },
   featureDescription: {
     fontSize: FONT_SIZE.sm,

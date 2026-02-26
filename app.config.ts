@@ -20,7 +20,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     googleServicesFile: './GoogleService-Info.plist',
     infoPlist: {
       NSUserTrackingUsageDescription:
-        '広告のパーソナライズのために使用します。許可しない場合でもアプリは通常通りご利用いただけます。',
+        'アプリの改善のために利用状況データを収集します。許可しない場合でもアプリは通常通りご利用いただけます。',
       CFBundleAllowMixedLocalizations: true,
       ITSAppUsesNonExemptEncryption: false,
     },
@@ -59,13 +59,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     './plugins/withContentBlocker',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',
-    [
-      'react-native-google-mobile-ads',
-      {
-        androidAppId: process.env.EXPO_PUBLIC_ADMOB_APP_ID_ANDROID ?? 'ca-app-pub-3940256099942544~3347511713',
-        iosAppId: process.env.EXPO_PUBLIC_ADMOB_APP_ID_IOS ?? 'ca-app-pub-3940256099942544~1458002511',
-      },
-    ],
   ],
   extra: {
     eas: {

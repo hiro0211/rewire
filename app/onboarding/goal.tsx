@@ -28,28 +28,32 @@ export default function GoalSettingScreen() {
     : notifyTimeParam || '22:00';
 
   const handleFinish = async () => {
-    const newUser = {
-      id: Crypto.randomUUID(),
-      nickname: Array.isArray(nickname) ? nickname[0] : nickname || 'User',
-      goalDays: selectedGoal,
-      streakStartDate: format(new Date(), 'yyyy-MM-dd'),
-      isPro: false,
-      notifyTime: resolvedNotifyTime,
-      notifyEnabled: true,
-      createdAt: new Date().toISOString(),
-      consentGivenAt: Array.isArray(consentGivenAt) ? consentGivenAt[0] : consentGivenAt || null,
-      ageVerifiedAt: null,
-    };
+    try {
+      const newUser = {
+        id: Crypto.randomUUID(),
+        nickname: Array.isArray(nickname) ? nickname[0] : nickname || 'User',
+        goalDays: selectedGoal,
+        streakStartDate: format(new Date(), 'yyyy-MM-dd'),
+        isPro: false,
+        notifyTime: resolvedNotifyTime,
+        notifyEnabled: true,
+        createdAt: new Date().toISOString(),
+        consentGivenAt: Array.isArray(consentGivenAt) ? consentGivenAt[0] : consentGivenAt || null,
+        ageVerifiedAt: null,
+      };
 
-    await setUser(newUser);
+      await setUser(newUser);
 
-    const granted = await notificationClient.requestPermissions();
-    if (granted) {
-      await notificationClient.scheduleDailyReminder(resolvedNotifyTime);
+      const granted = await notificationClient.requestPermissions();
+      if (granted) {
+        await notificationClient.scheduleDailyReminder(resolvedNotifyTime);
+      }
+
+      analyticsClient.logEvent('onboarding_complete', { goal_days: selectedGoal });
+      router.replace({ pathname: '/paywall', params: { source: 'onboarding' } });
+    } catch (error) {
+      console.error('[Goal] handleFinish failed:', error);
     }
-
-    analyticsClient.logEvent('onboarding_complete', { goal_days: selectedGoal });
-    router.replace({ pathname: '/paywall', params: { source: 'onboarding' } });
   };
 
   return (

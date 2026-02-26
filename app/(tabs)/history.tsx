@@ -5,8 +5,6 @@ import { HistoryCalendar } from '@/components/history/HistoryCalendar';
 import { HistoryList } from '@/components/history/HistoryList';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { BannerAdView } from '@/components/ads/BannerAdView';
-import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 const VIEW_MODES = ['カレンダー', 'リスト'] as const;
 
@@ -31,7 +29,6 @@ export default function HistoryScreen() {
       <View style={styles.content}>
         {viewIndex === 0 ? <HistoryCalendar /> : <HistoryList />}
       </View>
-      <BannerAdView unitId={AD_UNIT_IDS.BANNER_HISTORY} />
     </View>
   );
 }

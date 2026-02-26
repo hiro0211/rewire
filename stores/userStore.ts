@@ -12,7 +12,7 @@ interface UserState {
 }
 
 interface UserActions {
-  setUser: (user: User) => void;
+  setUser: (user: User) => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
   loadUser: () => Promise<void>;
   reset: () => Promise<void>;
@@ -23,9 +23,9 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   isLoading: false,
   hasHydrated: false,
 
-  setUser: (user) => {
+  setUser: async (user) => {
     set({ user });
-    userStorage.save(user);
+    await userStorage.save(user);
   },
 
   updateUser: async (updates) => {
@@ -44,6 +44,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       set({ user, hasHydrated: true });
     } catch (e) {
       console.error('Failed to load user', e);
+      set({ hasHydrated: true });
     } finally {
       set({ isLoading: false });
     }

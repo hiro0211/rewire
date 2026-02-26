@@ -15,7 +15,7 @@ export default function PrivacyPolicyScreen() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.updatedDate}>最終更新日: 2025年1月1日</Text>
+        <Text style={styles.updatedDate}>最終更新日: 2026年2月26日</Text>
 
         <SectionTitle>1. はじめに</SectionTitle>
         <Paragraph>
@@ -43,14 +43,14 @@ export default function PrivacyPolicyScreen() {
           すべてのデータはユーザーのデバイス上にローカルで保存され、暗号化されています。外部サーバーへのデータ送信は行いません。
         </Paragraph>
 
-        <SectionTitle>5. 広告・課金サービスについて</SectionTitle>
+        <SectionTitle>5. 課金サービスについて</SectionTitle>
         <Paragraph>
-          本アプリでは、将来的にGoogle AdMob（広告配信）およびApp Store・Google Play（アプリ内課金）を利用する予定です。これらのサービスの利用に際しては、Apple Inc.およびGoogle LLC.のプライバシーポリシーが適用されます。広告のパーソナライズのため、iOSではApp Tracking Transparency (ATT)の許可を求める場合があります。
+          本アプリでは、App Store（アプリ内課金）を利用しています。課金サービスの利用に際しては、Apple Inc.のプライバシーポリシーが適用されます。
         </Paragraph>
 
         <SectionTitle>6. 第三者への提供</SectionTitle>
         <Paragraph>
-          上記の広告配信サービスおよび課金サービスを除き、ユーザーのデータを第三者に提供することはありません。
+          上記の課金サービスを除き、ユーザーのデータを第三者に提供することはありません。
         </Paragraph>
 
         <SectionTitle>7. データの削除</SectionTitle>

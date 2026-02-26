@@ -1,13 +1,14 @@
 import { BadgePreviewRow } from '@/components/achievements/BadgePreviewRow';
 import { DayCardsRow } from '@/components/achievements/DayCardsRow';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ToolCard } from '@/components/profile/ToolCard';
 import { Text } from '@/components/Themed';
 import { COLORS, FONT_SIZE, SPACING } from '@/constants/theme';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
@@ -42,6 +43,19 @@ export default function ProfileScreen() {
         {/* Day Cards */}
         <View style={styles.section}>
           <DayCardsRow streak={streak} />
+        </View>
+
+        {/* Tool Cards */}
+        <View style={styles.toolCards}>
+          {Platform.OS === 'ios' && (
+            <ToolCard
+              icon="shield-outline"
+              iconColor="#EF4444"
+              title="コンテンツブロッカー"
+              description="Safariの有害サイトをブロック"
+              onPress={() => router.push('/content-blocker-setup' as any)}
+            />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -84,5 +98,10 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
     marginTop: 2,
+  },
+  toolCards: {
+    marginTop: SPACING.xl,
+    paddingHorizontal: SPACING.screenPadding,
+    gap: SPACING.md,
   },
 });

@@ -1,6 +1,10 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ back: jest.fn() }),
+}));
+
 const mockLogEvent = jest.fn();
 jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: {
@@ -51,16 +55,6 @@ jest.mock('@/components/common/SafeAreaWrapper', () => {
     SafeAreaWrapper: ({ children }: any) => <View>{children}</View>,
   };
 });
-
-jest.mock('@/components/ads/BannerAdView', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return { BannerAdView: () => <View /> };
-});
-
-jest.mock('@/lib/ads/adConfig', () => ({
-  AD_UNIT_IDS: { BANNER_RECOVERY: 'test-ad-id' },
-}));
 
 import RecoveryScreen from '../index';
 

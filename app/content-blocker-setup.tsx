@@ -2,15 +2,13 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StepBadge } from '@/components/content-blocker/StepBadge';
 import { ScreenshotStep } from '@/components/content-blocker/ScreenshotStep';
 import { useContentBlockerStatus } from '@/hooks/useContentBlockerStatus';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
-import { useUserStore } from '@/stores/userStore';
-
 const TOTAL_STEPS = 5;
 
 const STEP_IMAGES = {
@@ -29,8 +27,6 @@ export default function ContentBlockerSetupScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const isPro = useUserStore((s) => s.user?.isPro ?? false);
-
   useContentBlockerStatus(step, () => {
     setStep(4);
   });
@@ -61,10 +57,6 @@ export default function ContentBlockerSetupScreen() {
     router.back();
   }, [router]);
 
-  const handleUpgrade = useCallback(() => {
-    router.push('/paywall');
-  }, [router]);
-
   return (
     <SafeAreaWrapper style={styles.container}>
       {/* Header navigation */}
@@ -75,7 +67,9 @@ export default function ContentBlockerSetupScreen() {
             <Text style={styles.headerButtonText}>前へ</Text>
           </TouchableOpacity>
         ) : (
-          <View style={styles.headerButton} />
+          <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
+            <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+          </TouchableOpacity>
         )}
         {step >= 1 && step <= 3 && (
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
@@ -109,23 +103,10 @@ export default function ContentBlockerSetupScreen() {
                 color={COLORS.primary}
               />
             </View>
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>ポルノブロッカー</Text>
-              <View style={styles.proBadge}>
-                <Text style={styles.proBadgeText}>PRO</Text>
-              </View>
-            </View>
+            <Text style={styles.title}>ポルノブロッカー</Text>
             <Text style={styles.description}>
               {'Safariでアダルトサイトを自動ブロック。\n3ステップで設定できます。'}
             </Text>
-            {!isPro && (
-              <View style={styles.proGate}>
-                <Ionicons name="lock-closed" size={24} color={COLORS.pro} />
-                <Text style={styles.proGateText}>
-                  この機能はPro限定です
-                </Text>
-              </View>
-            )}
           </>
         )}
 
@@ -197,17 +178,7 @@ export default function ContentBlockerSetupScreen() {
       {/* Footer */}
       <View style={styles.footer}>
         {step === 0 && (
-          <>
-            {isPro ? (
-              <Button title="セットアップを開始" onPress={handleNext} />
-            ) : (
-              <Button
-                title="Proにアップグレード"
-                onPress={handleUpgrade}
-                style={styles.upgradeButton}
-              />
-            )}
-          </>
+          <Button title="セットアップを開始" onPress={handleNext} />
         )}
 
         {step === 1 && (
@@ -308,28 +279,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xxl,
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-    gap: SPACING.sm,
-  },
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     color: COLORS.text,
     textAlign: 'center',
-  },
-  proBadge: {
-    backgroundColor: COLORS.pro,
-    borderRadius: RADIUS.sm,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-  },
-  proBadgeText: {
-    color: '#FFFFFF',
-    fontSize: FONT_SIZE.xs,
-    fontWeight: 'bold',
+    marginBottom: SPACING.md,
   },
   description: {
     fontSize: FONT_SIZE.md,
@@ -337,16 +292,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: SPACING.xl,
-  },
-  proGate: {
-    alignItems: 'center',
-    gap: SPACING.sm,
-    marginTop: SPACING.md,
-  },
-  proGateText: {
-    color: COLORS.pro,
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
   },
   stepTitle: {
     fontSize: FONT_SIZE.xxl,
@@ -368,8 +313,5 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     marginTop: SPACING.sm,
-  },
-  upgradeButton: {
-    backgroundColor: COLORS.pro,
   },
 });

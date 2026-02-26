@@ -15,7 +15,7 @@ export default function TermsScreen() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.updatedDate}>最終更新日: 2025年1月1日</Text>
+        <Text style={styles.updatedDate}>最終更新日: 2026年2月26日</Text>
 
         <SectionTitle>1. 利用規約の適用</SectionTitle>
         <Paragraph>

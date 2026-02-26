@@ -9,7 +9,7 @@ import { useUserStore } from '@/stores/userStore';
 import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
-import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
+
 import { isExpoGo } from '@/lib/nativeGuard';
 import { Text } from '@/components/Themed';
 
@@ -88,10 +88,6 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleProUpgrade = () => {
-    router.push('/paywall');
-  };
-
   const handleManageSubscription = async () => {
     if (!RevenueCatUI) {
       Alert.alert('エラー', 'サブスクリプション管理は現在利用できません。');
@@ -102,20 +98,6 @@ export default function SettingsScreen() {
     } catch (e) {
       console.error('[Settings] Customer Center failed:', e);
       Alert.alert('エラー', 'サブスクリプション管理を開けませんでした。');
-    }
-  };
-
-  const handleRestorePurchases = async () => {
-    try {
-      const status = await subscriptionClient.restorePurchases();
-      if (status.isActive) {
-        await updateUser({ isPro: true });
-        Alert.alert('復元完了', 'Pro機能が復元されました。');
-      } else {
-        Alert.alert('復元結果', '有効なサブスクリプションが見つかりませんでした。');
-      }
-    } catch (e) {
-      Alert.alert('エラー', '復元に失敗しました。');
     }
   };
 
@@ -184,31 +166,14 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        {/* Pro Section */}
-        <SettingSection title="プレミアム">
-          {user.isPro ? (
-            <SettingItem
-              label="サブスクリプション管理"
-              icon="star"
-              onPress={handleManageSubscription}
-              value="Pro 有効"
-              isLast
-            />
-          ) : (
-            <>
-              <SettingItem
-                label="Proにアップグレード"
-                icon="star"
-                onPress={handleProUpgrade}
-              />
-              <SettingItem
-                label="購入を復元"
-                icon="refresh-outline"
-                onPress={handleRestorePurchases}
-                isLast
-              />
-            </>
-          )}
+        {/* Subscription Section */}
+        <SettingSection title="サブスクリプション">
+          <SettingItem
+            label="サブスクリプション管理"
+            icon="star"
+            onPress={handleManageSubscription}
+            isLast
+          />
         </SettingSection>
 
         {/* Support Section */}

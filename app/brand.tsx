@@ -66,7 +66,14 @@ export function BrandScreen() {
 
     // Navigate
     timeouts.push(setTimeout(() => {
-      const destination = user && user.nickname ? '/(tabs)' : '/onboarding';
+      let destination: string;
+      if (!user || !user.nickname) {
+        destination = '/onboarding';
+      } else if (!user.isPro) {
+        destination = '/paywall?source=onboarding';
+      } else {
+        destination = '/(tabs)';
+      }
       router.replace(destination as any);
     }, TIMINGS.navigate));
 

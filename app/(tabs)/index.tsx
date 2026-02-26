@@ -9,8 +9,6 @@ import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { BannerAdView } from '@/components/ads/BannerAdView';
-import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
 const MOTIVATIONAL_QUOTES = [
   '一歩ずつ。今日の自分を信じよう。',
@@ -98,7 +96,6 @@ export default function DashboardScreen() {
           <SOSButton />
         </View>
 
-        <BannerAdView unitId={AD_UNIT_IDS.BANNER_DASHBOARD} />
       </ScrollView>
     </SafeAreaWrapper>
   );
