@@ -17,6 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'rewire.app.com',
+    googleServicesFile: './GoogleService-Info.plist',
     infoPlist: {
       NSUserTrackingUsageDescription:
         '広告のパーソナライズのために使用します。許可しない場合でもアプリは通常通りご利用いただけます。',
@@ -49,9 +50,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         ios: {
           deploymentTarget: '15.1',
+          useFrameworks: 'static',
+          forceStaticLinking: ['RNFBApp', 'RNFBAnalytics'],
         },
       },
     ],
+    '@react-native-firebase/app',
     './plugins/withContentBlocker',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',

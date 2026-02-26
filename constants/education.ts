@@ -8,18 +8,6 @@ export interface EducationSlide {
     | 'brain_sparkle' | 'vibrant_life';
 }
 
-export interface QuizOption {
-  label: string;
-  value: string;
-}
-
-export interface QuizQuestion {
-  question: string;
-  options: QuizOption[];
-  correctValue: string;
-  explanation: string;
-}
-
 export const EDUCATION_SLIDES: EducationSlide[] = [
   {
     id: 'dopamine_trap',
@@ -38,12 +26,6 @@ export const EDUCATION_SLIDES: EducationSlide[] = [
     title: '日常から輝きが\n失われていく',
     body: 'ドーパミンの基準値が上がった脳は、日常の小さな幸せを感じるセンサーが鈍ります。「何をやっても楽しくない」「集中できない」——これは脳の変化が原因です。',
     illustrationType: 'dimmed_icons',
-  },
-  {
-    id: 'brain_can_change',
-    title: '脳は変われる。\n今日がその始まり',
-    body: '人間の脳には「神経可塑性」という、自らを修復する力があります。ポルノを断つことで、ドーパミンの基準値は徐々に正常に戻ります。本来のあなたを取り戻せます。',
-    illustrationType: 'recovery_progress',
   },
 ];
 
@@ -83,15 +65,3 @@ export const RECOVERY_SLIDES: EducationSlide[] = [
   },
 ];
 
-export const EDUCATION_QUIZ: QuizQuestion = {
-  question: 'ポルノをやめられないのは\n主に何が原因？',
-  options: [
-    { label: '意志が弱いから', value: 'willpower' },
-    { label: '脳の報酬系がハックされるから', value: 'brain_reward' },
-    { label: '暇だから', value: 'boredom' },
-    { label: '性欲が強すぎるから', value: 'libido' },
-  ],
-  correctValue: 'brain_reward',
-  explanation:
-    'ポルノは脳の報酬系を乗っ取り、前頭葉の働きを弱めます。意志の問題ではなく、脳の仕組みの問題です。',
-};

@@ -122,6 +122,26 @@ describe('notificationClient', () => {
       expect(callArg.content.body).toBeTruthy();
       expect(typeof callArg.content.body).toBe('string');
     });
+
+    it('00:00のエッジケース: hour=0, minute=0 でスケジュールされる', async () => {
+      mockNotifications.cancelAllScheduledNotificationsAsync.mockResolvedValue(undefined);
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue('notification-id');
+
+      await notificationClient.scheduleDailyReminder('00:00');
+
+      const callArg = mockNotifications.scheduleNotificationAsync.mock.calls[0][0];
+      expect(callArg.trigger).toMatchObject({ hour: 0, minute: 0, repeats: true });
+    });
+
+    it('23:59のエッジケース: hour=23, minute=59 でスケジュールされる', async () => {
+      mockNotifications.cancelAllScheduledNotificationsAsync.mockResolvedValue(undefined);
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue('notification-id');
+
+      await notificationClient.scheduleDailyReminder('23:59');
+
+      const callArg = mockNotifications.scheduleNotificationAsync.mock.calls[0][0];
+      expect(callArg.trigger).toMatchObject({ hour: 23, minute: 59, repeats: true });
+    });
   });
 
   describe('cancelAllNotifications', () => {

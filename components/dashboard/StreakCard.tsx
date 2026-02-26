@@ -33,12 +33,32 @@ export function StreakCard() {
         </TouchableOpacity>
       </View>
 
+      {/* Mini stats row */}
+      <View testID="streak-stats-row" style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{streak}</Text>
+          <Text style={styles.statLabel}>連続日数</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValue}>{goal}</Text>
+          <Text style={styles.statLabel}>目標</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={[styles.statValue, { color: COLORS.cyan }]}>
+            {Math.round(progress * 100)}%
+          </Text>
+          <Text style={styles.statLabel}>達成率</Text>
+        </View>
+      </View>
+
       <View style={styles.progressContainer}>
         <View style={styles.goalRow}>
           <Text style={styles.goalText}>目標: {goal}日</Text>
           <Text style={styles.percentText}>{Math.round(progress * 100)}%</Text>
         </View>
-        <ProgressBar progress={progress} height={12} />
+        <ProgressBar progress={progress} variant="gradient" />
       </View>
 
       <StreakEditModal
@@ -55,6 +75,8 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: SPACING.lg,
     paddingVertical: SPACING.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.15)',
   },
   label: {
     color: COLORS.textSecondary,
@@ -81,6 +103,34 @@ const styles = StyleSheet.create({
   editButton: {
     marginLeft: SPACING.sm,
     alignSelf: 'center',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    marginBottom: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.surfaceHighlight,
+    borderRadius: 8,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    color: COLORS.text,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: 'bold',
+  },
+  statLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.xs,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: COLORS.border,
   },
   progressContainer: {
     width: '100%',

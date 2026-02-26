@@ -1,58 +1,55 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
-// Note: We'll install vector icons later or use a simple text for MVP
-// import { Ionicons } from '@expo/vector-icons'; 
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export function SOSButton() {
   const router = useRouter();
 
   const handlePress = () => {
+    analyticsClient.logEvent('sos_tapped');
     router.push('/breathing');
   };
 
   return (
     <TouchableOpacity
+      testID="panic-button"
       style={styles.container}
       onPress={handlePress}
       activeOpacity={0.8}
     >
-      {/* <Ionicons name="warning" size={24} color="#FFF" /> */}
-      <View style={styles.iconPlaceholder} /> 
-      <Text style={styles.text}>深呼吸</Text>
+      <View style={styles.iconCircle}>
+        <Ionicons name="warning" size={20} color="#FFFFFF" />
+      </View>
+      <Text style={styles.text}>ポルノを見たくなったら</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    bottom: SPACING.xxl + 60, // Above tab bar
-    right: SPACING.lg,
-    backgroundColor: COLORS.warning,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: '100%',
+    backgroundColor: COLORS.danger,
+    borderRadius: RADIUS.lg,
+    height: 56,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    zIndex: 100,
+    gap: SPACING.sm,
   },
-  iconPlaceholder: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'white',
-    marginBottom: 4,
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: FONT_SIZE.xs,
+    fontSize: FONT_SIZE.md,
   },
 });

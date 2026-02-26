@@ -7,6 +7,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { trackingClient } from '@/lib/tracking/trackingClient';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
 import { adMobClient } from '@/lib/ads/adMobClient';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { isExpoGo } from '@/lib/nativeGuard';
@@ -23,8 +25,10 @@ if (!isExpoGo) {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { loadUser, hasHydrated } = useUserStore();
+  const { loadUser, hasHydrated, user } = useUserStore();
   const trackingRequested = useRef(false);
+
+  useScreenTracking();
 
   // Load fonts if custom fonts are added later
   const [loaded] = useFonts({
@@ -55,6 +59,13 @@ export default function RootLayout() {
   }, [hasHydrated]);
 
   useEffect(() => {
+    if (hasHydrated && user) {
+      analyticsClient.setUserProperty('goal_days', String(user.goalDays));
+      analyticsClient.setUserProperty('is_pro', String(user.isPro));
+    }
+  }, [hasHydrated, user?.goalDays, user?.isPro]);
+
+  useEffect(() => {
     if (!hasHydrated) return;
 
     subscriptionClient.initialize();
@@ -69,7 +80,9 @@ export default function RootLayout() {
     Purchases.addCustomerInfoUpdateListener(listener);
 
     return () => {
-      Purchases.removeCustomerInfoUpdateListener(listener);
+      if (Purchases) {
+        Purchases.removeCustomerInfoUpdateListener(listener);
+      }
     };
   }, [hasHydrated]);
 
@@ -96,7 +109,7 @@ export default function RootLayout() {
         <Stack.Screen name="brand" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/goal" options={{ headerShown: false }} />
-        <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="checkin/index" options={{ headerShown: true, title: '今日の振り返り', headerBackTitle: 'ホーム' }} />
         <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />

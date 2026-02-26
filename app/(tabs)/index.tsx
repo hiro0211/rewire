@@ -1,20 +1,39 @@
-import React, { useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { StreakCard } from '@/components/dashboard/StreakCard';
+import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SOSButton } from '@/components/dashboard/SOSButton';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { BannerAdView } from '@/components/ads/BannerAdView';
 import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
 
+const MOTIVATIONAL_QUOTES = [
+  '一歩ずつ。今日の自分を信じよう。',
+  '変化は一瞬で起きなくていい。続けることが力になる。',
+  '今この瞬間、あなたは前に進んでいる。',
+  '小さな勝利の積み重ねが、大きな変化を生む。',
+  'あなたの脳は回復する力を持っている。',
+  '今日をクリアすれば、明日はもっと楽になる。',
+  '完璧じゃなくていい。続けることが大事。',
+];
+
+function getDailyQuote(): string {
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return MOTIVATIONAL_QUOTES[dayOfYear % MOTIVATIONAL_QUOTES.length];
+}
+
 export default function DashboardScreen() {
   const { user, loadUser } = useUserStore();
-  const { loadCheckins, todayCheckin, checkins } = useCheckinStore();
+  const { loadCheckins, todayCheckin } = useCheckinStore();
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -23,27 +42,32 @@ export default function DashboardScreen() {
     }, [])
   );
 
-  const weeklySummary = useMemo(() => {
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weekCheckins = checkins.filter(
-      (c) => new Date(c.date) >= weekAgo
-    );
-    const cleanDays = weekCheckins.filter((c) => !c.watchedPorn).length;
-    const totalDays = weekCheckins.length;
-    return { cleanDays, totalDays };
-  }, [checkins]);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([loadCheckins(), loadUser()]);
+    setRefreshing(false);
+  }, [loadCheckins, loadUser]);
 
   return (
     <SafeAreaWrapper style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.cyan}
+          />
+        }
+      >
         <View style={styles.header}>
           <Text style={styles.greeting}>おかえりなさい</Text>
           <Text style={styles.username}>{user?.nickname}</Text>
         </View>
 
-        <StreakCard />
+        <StatsRow />
 
+        {/* Today's Check-in */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>今日の振り返り</Text>
           {todayCheckin ? (
@@ -63,30 +87,19 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>週間サマリー</Text>
-          <View style={styles.summaryCard}>
-            {weeklySummary.totalDays > 0 ? (
-              <>
-                <Text style={styles.summaryNumber}>
-                  {weeklySummary.cleanDays}/{weeklySummary.totalDays}
-                </Text>
-                <Text style={styles.summaryLabel}>日間クリア</Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.summaryEmptyText}>
-                  振り返りを始めると{'\n'}週間レポートがここに表示されます
-                </Text>
-              </>
-            )}
-          </View>
+        {/* Motivational Quote */}
+        <View testID="motivational-quote" style={styles.quoteCard}>
+          <Ionicons name="sparkles-outline" size={18} color={COLORS.cyan} />
+          <Text style={styles.quoteText}>{getDailyQuote()}</Text>
+        </View>
+
+        {/* Panic Button (inline) */}
+        <View style={styles.panicButtonContainer}>
+          <SOSButton />
         </View>
 
         <BannerAdView unitId={AD_UNIT_IDS.BANNER_DASHBOARD} />
       </ScrollView>
-      
-      <SOSButton />
     </SafeAreaWrapper>
   );
 }
@@ -97,7 +110,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: 100, // Space for FAB
+    paddingBottom: 40,
   },
   header: {
     marginBottom: SPACING.xl,
@@ -112,7 +125,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   section: {
-    marginBottom: SPACING.xxl,
+    marginBottom: SPACING.xxxl,
   },
   sectionTitle: {
     fontSize: FONT_SIZE.lg,
@@ -126,7 +139,7 @@ const styles = StyleSheet.create({
   doneContainer: {
     backgroundColor: COLORS.surface,
     padding: SPACING.lg,
-    borderRadius: 12,
+    borderRadius: RADIUS.lg,
     alignItems: 'center',
   },
   doneText: {
@@ -149,28 +162,24 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     textDecorationLine: 'underline',
   },
-  summaryCard: {
+  quoteCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     backgroundColor: COLORS.surface,
-    padding: SPACING.xl,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 100,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    gap: SPACING.sm,
+    marginBottom: SPACING.xxxl,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.1)',
   },
-  summaryNumber: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
-  summaryLabel: {
+  quoteText: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textSecondary,
-    marginTop: 4,
+    lineHeight: 22,
+    flex: 1,
   },
-  summaryEmptyText: {
-    color: COLORS.textSecondary,
-    fontSize: FONT_SIZE.sm,
-    textAlign: 'center',
-    lineHeight: 20,
+  panicButtonContainer: {
+    marginBottom: SPACING.xxxl,
   },
 });

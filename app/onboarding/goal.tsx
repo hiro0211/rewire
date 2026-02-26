@@ -6,10 +6,12 @@ import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
+import { StarryBackground } from '@/components/onboarding/StarryBackground';
 import { useUserStore } from '@/stores/userStore';
 import { notificationClient } from '@/lib/notifications/notificationClient';
 import { format } from 'date-fns';
 import * as Crypto from 'expo-crypto';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export default function GoalSettingScreen() {
   const { nickname, consentGivenAt, notifyTime: notifyTimeParam } = useLocalSearchParams<{
@@ -46,34 +48,37 @@ export default function GoalSettingScreen() {
       await notificationClient.scheduleDailyReminder(resolvedNotifyTime);
     }
 
+    analyticsClient.logEvent('onboarding_complete', { goal_days: selectedGoal });
     router.replace({ pathname: '/paywall', params: { source: 'onboarding' } });
   };
 
   return (
-    <SafeAreaWrapper style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>目標を設定</Text>
-        <Text style={styles.description}>
-          まずは何日間、ポルノなしで過ごすことを目指しますか？
-        </Text>
+    <StarryBackground>
+      <SafeAreaWrapper style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>目標を設定</Text>
+          <Text style={styles.description}>
+            まずは何日間、ポルノなしで過ごすことを目指しますか？
+          </Text>
 
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedGoal}
-            onValueChange={(value) => setSelectedGoal(value)}
-            itemStyle={styles.pickerItem}
-          >
-            {GOAL_OPTIONS.map((days) => (
-              <Picker.Item key={days} label={`${days}日`} value={days} />
-            ))}
-          </Picker>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={selectedGoal}
+              onValueChange={(value) => setSelectedGoal(value)}
+              itemStyle={styles.pickerItem}
+            >
+              {GOAL_OPTIONS.map((days) => (
+                <Picker.Item key={days} label={`${days}日`} value={days} />
+              ))}
+            </Picker>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.footer}>
-        <Button title="開始する" onPress={handleFinish} />
-      </View>
-    </SafeAreaWrapper>
+        <View style={styles.footer}>
+          <Button title="開始する" onPress={handleFinish} />
+        </View>
+      </SafeAreaWrapper>
+    </StarryBackground>
   );
 }
 
@@ -100,7 +105,7 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     width: '100%',
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.pillBackground,
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
   },

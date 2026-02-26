@@ -7,6 +7,7 @@ import { BreathingText } from '@/components/breathing/BreathingText';
 import { CycleIndicator } from '@/components/breathing/CycleIndicator';
 import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 // import { Ionicons } from '@expo/vector-icons';
 
 export default function BreathingScreen() {
@@ -14,6 +15,7 @@ export default function BreathingScreen() {
   const { phase, cycleCount, startSession, stopSession } = useBreathingEngine();
 
   useEffect(() => {
+    analyticsClient.logEvent('breathing_started');
     startSession();
     return () => stopSession();
   }, []);

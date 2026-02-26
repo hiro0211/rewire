@@ -326,6 +326,25 @@ function renderIllustration(type: EducationSlide['illustrationType']) {
   }
 }
 
+// --- Page Dots ---
+
+function PageDots({ current, total }: { current: number; total: number }) {
+  return (
+    <View testID="page-dots" style={styles.dotsContainer}>
+      {Array.from({ length: total }, (_, i) => (
+        <View
+          key={i}
+          testID={i === current ? `page-dot-active-${i}` : `page-dot-${i}`}
+          style={[
+            styles.dot,
+            i === current && styles.dotActive,
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
 // --- Main Component ---
 
 export function EducationSlideStep({
@@ -334,10 +353,8 @@ export function EducationSlideStep({
   totalSlides,
 }: EducationSlideStepProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.counter}>
-        {slideIndex + 1} / {totalSlides}
-      </Text>
+    <View testID="education-slide-container" style={styles.container}>
+      <PageDots current={slideIndex} total={totalSlides} />
 
       <View style={styles.illustrationContainer}>
         {renderIllustration(slide.illustrationType)}
@@ -357,11 +374,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: SPACING.xl,
   },
-  counter: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: SPACING.sm,
     marginBottom: SPACING.lg,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  dotActive: {
+    backgroundColor: '#FFFFFF',
+    width: 24,
+    borderRadius: 4,
   },
   illustrationContainer: {
     alignItems: 'center',
@@ -372,13 +400,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
   body: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 24,
   },

@@ -26,7 +26,6 @@ describe('AssessmentYesNoStep（QUITTR風リデザイン）', () => {
   describe('ナンバーバッジ', () => {
     it('「はい」にバッジ番号1が表示される', () => {
       const { getAllByText } = render(<AssessmentYesNoStep {...defaultProps} />);
-      // バッジ内の "1" を確認
       expect(getAllByText('1').length).toBeGreaterThanOrEqual(1);
     });
 
@@ -62,9 +61,22 @@ describe('AssessmentYesNoStep（QUITTR風リデザイン）', () => {
       expect(getByText(/より過激な/)).toBeTruthy();
     });
 
-    it('質問番号が表示される', () => {
+    it('質問番号に "Question #" フォーマットが使われる', () => {
       const { getByText } = render(<AssessmentYesNoStep {...defaultProps} />);
-      expect(getByText(/Q 4\/9/)).toBeTruthy();
+      expect(getByText('Question #4')).toBeTruthy();
+    });
+
+    it('testID="question-heading" が存在する', () => {
+      const { getByTestId } = render(<AssessmentYesNoStep {...defaultProps} />);
+      expect(getByTestId('question-heading')).toBeTruthy();
+    });
+  });
+
+  describe('ピルスタイル', () => {
+    it('「はい」「いいえ」のピルに testID="option-pill-0", "option-pill-1" が存在する', () => {
+      const { getByTestId } = render(<AssessmentYesNoStep {...defaultProps} />);
+      expect(getByTestId('option-pill-0')).toBeTruthy();
+      expect(getByTestId('option-pill-1')).toBeTruthy();
     });
   });
 

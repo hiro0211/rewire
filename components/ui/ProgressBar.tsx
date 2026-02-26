@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { COLORS, RADIUS, SPACING } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, RADIUS } from '@/constants/theme';
 
 interface ProgressBarProps {
   progress: number; // 0 to 1
-  total?: number; // Optional text label logic can be added later
+  total?: number;
   style?: ViewStyle;
   height?: number;
   color?: string;
   trackColor?: string;
+  variant?: 'default' | 'gradient';
 }
 
 export function ProgressBar({
@@ -17,20 +19,35 @@ export function ProgressBar({
   height = 8,
   color = COLORS.primary,
   trackColor = COLORS.surfaceHighlight,
+  variant = 'default',
 }: ProgressBarProps) {
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
+  const barHeight = variant === 'gradient' ? 6 : height;
 
   return (
-    <View style={[styles.container, { height, backgroundColor: trackColor }, style]}>
-      <View
-        style={[
-          styles.fill,
-          {
-            width: `${clampedProgress * 100}%`,
-            backgroundColor: color,
-          },
-        ]}
-      />
+    <View style={[styles.container, { height: barHeight, backgroundColor: trackColor }, style]}>
+      {variant === 'gradient' ? (
+        <LinearGradient
+          testID="progress-gradient"
+          colors={['#4A90D9', '#00D4FF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[
+            styles.fill,
+            { width: `${clampedProgress * 100}%` },
+          ]}
+        />
+      ) : (
+        <View
+          style={[
+            styles.fill,
+            {
+              width: `${clampedProgress * 100}%`,
+              backgroundColor: color,
+            },
+          ]}
+        />
+      )}
     </View>
   );
 }

@@ -9,6 +9,7 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { BannerAdView } from '@/components/ads/BannerAdView';
 import { AD_UNIT_IDS } from '@/lib/ads/adConfig';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 // import { useRouter } from 'expo-router';
 
 export default function RecoveryScreen() {
@@ -19,6 +20,7 @@ export default function RecoveryScreen() {
 
   const handleSelectTrigger = async (selected: string) => {
     setTrigger(selected);
+    analyticsClient.logEvent('recovery_trigger_selected', { trigger: selected });
     if (user && todayCheckin) {
       await recoveryService.saveRecovery(user.id, selected, todayCheckin.id);
     }

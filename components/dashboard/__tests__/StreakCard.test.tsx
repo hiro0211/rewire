@@ -19,6 +19,16 @@ jest.mock('@/stores/userStore', () => ({
   }),
 }));
 
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    LinearGradient: ({ children, testID, ...props }: any) => (
+      <View testID={testID} {...props}>{children}</View>
+    ),
+  };
+});
+
 jest.mock('@react-native-community/datetimepicker', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -59,5 +69,20 @@ describe('StreakCard', () => {
     expect(mockUpdateUser).toHaveBeenCalledWith({
       streakStartDate: '2026-02-17',
     });
+  });
+
+  it('testID="streak-stats-row" が存在する', () => {
+    const { getByTestId } = render(<StreakCard />);
+    expect(getByTestId('streak-stats-row')).toBeTruthy();
+  });
+
+  it('"目標" テキストが表示される', () => {
+    const { getAllByText } = render(<StreakCard />);
+    expect(getAllByText(/目標/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('ProgressBar に gradient variant が適用される', () => {
+    const { getByTestId } = render(<StreakCard />);
+    expect(getByTestId('progress-gradient')).toBeTruthy();
   });
 });

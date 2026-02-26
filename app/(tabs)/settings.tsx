@@ -10,8 +10,17 @@ import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
-import RevenueCatUI from 'react-native-purchases-ui';
+import { isExpoGo } from '@/lib/nativeGuard';
 import { Text } from '@/components/Themed';
+
+let RevenueCatUI: any = null;
+if (!isExpoGo) {
+  try {
+    RevenueCatUI = require('react-native-purchases-ui').default;
+  } catch {
+    // Native module not available
+  }
+}
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -84,10 +93,15 @@ export default function SettingsScreen() {
   };
 
   const handleManageSubscription = async () => {
+    if (!RevenueCatUI) {
+      Alert.alert('エラー', 'サブスクリプション管理は現在利用できません。');
+      return;
+    }
     try {
       await RevenueCatUI.presentCustomerCenter();
     } catch (e) {
       console.error('[Settings] Customer Center failed:', e);
+      Alert.alert('エラー', 'サブスクリプション管理を開けませんでした。');
     }
   };
 

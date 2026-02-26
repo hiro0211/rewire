@@ -7,6 +7,7 @@ import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { useBreathStore } from '@/stores/breathStore';
 import { useUserStore } from '@/stores/userStore';
 import * as Crypto from 'expo-crypto';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export default function BreathingAskScreen() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function BreathingAskScreen() {
   const { user } = useUserStore();
 
   const handleResponse = async (resolved: boolean) => {
+    analyticsClient.logEvent('breathing_completed', { urge_resolved: resolved });
     if (user) {
         await addSession({
             id: Crypto.randomUUID(),

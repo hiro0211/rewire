@@ -13,6 +13,13 @@ export const COLORS = {
   border: '#2A2A35',
   overlay: 'rgba(0, 0, 0, 0.7)',
   overlayLight: 'rgba(255, 255, 255, 0.1)',
+  // QUITTR-inspired additions
+  backgroundDeepNavy: '#0B1026',
+  backgroundNavy: '#0D1B2A',
+  cyan: '#00D4FF',
+  pillBorder: 'rgba(255, 255, 255, 0.12)',
+  pillBackground: 'rgba(255, 255, 255, 0.05)',
+  selectedPillBorder: '#00B4D8',
 };
 
 export const SHADOWS = {

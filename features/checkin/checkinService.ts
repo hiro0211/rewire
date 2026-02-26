@@ -17,10 +17,10 @@ export const checkinService = {
     const user = await userStorage.get();
 
     if (input.watchedPorn) {
-      // バックアップ保存してからリセット
+      // バックアップ保存してからリセット（ISO日時で保存）
       await userStorage.update({
         previousStreakStartDate: user?.streakStartDate ?? null,
-        streakStartDate: today,
+        streakStartDate: new Date().toISOString(),
       });
     } else {
       // やり直し: 今日の既存チェックインが「観ました」なら連続記録を復元
@@ -31,7 +31,7 @@ export const checkinService = {
           previousStreakStartDate: null,
         });
       } else if (user && !user.streakStartDate) {
-        await userStorage.update({ streakStartDate: today });
+        await userStorage.update({ streakStartDate: new Date().toISOString() });
       }
     }
 

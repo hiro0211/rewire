@@ -8,6 +8,7 @@ import { MemoInput } from '@/components/checkin/MemoInput';
 import { useCheckinForm } from '@/hooks/checkin/useCheckinForm';
 import { useCheckinSubmit } from '@/hooks/checkin/useCheckinSubmit';
 import { COLORS, SPACING } from '@/constants/theme';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export default function CheckinScreen() {
   const { formState, setField } = useCheckinForm();
@@ -17,6 +18,11 @@ export default function CheckinScreen() {
   const handleSubmit = async () => {
     const result = await submit(formState);
     if (result.success) {
+      analyticsClient.logEvent('checkin_submitted', {
+        watched_porn: formState.watchedPorn!,
+        urge_level: formState.urgeLevel,
+        stress_level: formState.stressLevel,
+      });
       if (formState.watchedPorn) {
         router.replace('/recovery');
       } else {

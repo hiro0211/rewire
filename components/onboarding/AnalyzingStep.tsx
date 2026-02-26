@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { Text } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
-import { ProgressBar } from '@/components/ui/ProgressBar';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface AnalyzingStepProps {
@@ -18,12 +18,18 @@ const ANALYSIS_ITEMS = [
 ];
 
 const TOTAL_DURATION = ANALYSIS_ITEMS.reduce((sum, item) => sum + item.duration, 0);
+const RING_SIZE = 160;
+const RING_STROKE = 8;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
   const [completedCount, setCompletedCount] = useState(0);
   const [progress, setProgress] = useState(0);
   const itemFades = useRef(ANALYSIS_ITEMS.map(() => new Animated.Value(0))).current;
   const checkFades = useRef(ANALYSIS_ITEMS.map(() => new Animated.Value(0))).current;
+
+  const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress / 100);
 
   useEffect(() => {
     // Progress counter (0 → 100)
@@ -50,7 +56,6 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
     let elapsed = 0;
 
     ANALYSIS_ITEMS.forEach((item, index) => {
-      // Show next item when current starts (except first)
       if (index > 0) {
         const showTimeout = setTimeout(() => {
           Animated.timing(itemFades[index], {
@@ -64,18 +69,15 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
 
       elapsed += item.duration;
 
-      // Complete current item
       const completeTimeout = setTimeout(() => {
         setCompletedCount(index + 1);
 
-        // Fade in checkmark
         Animated.timing(checkFades[index], {
           toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }).start();
 
-        // Haptic feedback with crescendo pattern
         if (index < 2) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         } else if (index === 2) {
@@ -87,7 +89,6 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
       timeouts.push(completeTimeout);
     });
 
-    // Auto-advance after completion + brief pause
     const advanceTimeout = setTimeout(() => {
       onComplete();
     }, TOTAL_DURATION + 500);
@@ -103,10 +104,36 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
     <View style={styles.container}>
       <Text style={styles.title}>分析中...</Text>
 
-      <Text style={styles.percentText}>{Math.round(progress)}%</Text>
-
-      <View style={styles.progressBarWrapper}>
-        <ProgressBar progress={progress / 100} height={8} />
+      {/* Circular Progress Ring */}
+      <View testID="circular-progress-ring" style={styles.ringContainer}>
+        <Svg width={RING_SIZE} height={RING_SIZE}>
+          {/* Background ring */}
+          <Circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            stroke={COLORS.surfaceHighlight}
+            strokeWidth={RING_STROKE}
+            fill="none"
+          />
+          {/* Progress ring */}
+          <Circle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            stroke={COLORS.cyan}
+            strokeWidth={RING_STROKE}
+            fill="none"
+            strokeDasharray={`${RING_CIRCUMFERENCE}`}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            rotation="-90"
+            origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
+          />
+        </Svg>
+        <Text testID="progress-percentage" style={styles.percentText}>
+          {Math.round(progress)}%
+        </Text>
       </View>
 
       {/* Checklist */}
@@ -164,15 +191,18 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.xxl,
   },
-  percentText: {
-    fontSize: FONT_SIZE.display,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: SPACING.lg,
-  },
-  progressBarWrapper: {
-    width: '100%',
+  ringContainer: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: SPACING.xxxl,
+  },
+  percentText: {
+    position: 'absolute',
+    fontSize: FONT_SIZE.xxxl,
+    fontWeight: 'bold',
+    color: COLORS.cyan,
   },
   checklist: {
     width: '100%',
@@ -196,7 +226,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.cyan,
   },
   checkText: {
     fontSize: FONT_SIZE.md,

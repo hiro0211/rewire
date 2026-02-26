@@ -11,14 +11,16 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import * as WebBrowser from 'expo-web-browser';
+import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Card } from '@/components/ui/Card';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
+import { StarryBackground } from '@/components/onboarding/StarryBackground';
 import { useUserStore } from '@/stores/userStore';
 import { ASSESSMENT_QUESTIONS, MAX_SCORE } from '@/constants/assessment';
-import { EDUCATION_SLIDES, EDUCATION_QUIZ, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/education';
+import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/education';
 import { calculateScore } from '@/lib/assessment/scoreCalculator';
 import { AssessmentChoiceStep } from '@/components/onboarding/AssessmentChoiceStep';
 import { AssessmentPickerStep } from '@/components/onboarding/AssessmentPickerStep';
@@ -26,9 +28,7 @@ import { AssessmentYesNoStep } from '@/components/onboarding/AssessmentYesNoStep
 import { ScoreResultStep } from '@/components/onboarding/ScoreResultStep';
 import { AnalyzingStep } from '@/components/onboarding/AnalyzingStep';
 import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
-import { EducationQuizStep } from '@/components/onboarding/EducationQuizStep';
 import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
-import { FeatureIntroStep } from '@/components/onboarding/FeatureIntroStep';
 
 const FEATURES = [
   {
@@ -61,12 +61,9 @@ type OnboardingStep =
   | { type: 'analyzing' }
   | { type: 'score_result' }
   | { type: 'education'; slideIndex: number }
-  | { type: 'education_quiz' }
   | { type: 'damage'; slideIndex: number }
   | { type: 'recovery'; slideIndex: number }
   | { type: 'features' }
-  | { type: 'feature_intro_recording' }
-  | { type: 'feature_intro_breathing' }
   | { type: 'nickname' }
   | { type: 'consent' }
   | { type: 'notification' };
@@ -81,12 +78,9 @@ const STEPS: OnboardingStep[] = [
   { type: 'analyzing' },
   { type: 'score_result' },
   ...EDUCATION_SLIDES.map((_, i): OnboardingStep => ({ type: 'education' as const, slideIndex: i })),
-  { type: 'education_quiz' },
   ...DAMAGE_SLIDES.map((_, i): OnboardingStep => ({ type: 'damage' as const, slideIndex: i })),
   ...RECOVERY_SLIDES.map((_, i): OnboardingStep => ({ type: 'recovery' as const, slideIndex: i })),
   { type: 'features' },
-  { type: 'feature_intro_recording' },
-  { type: 'feature_intro_breathing' },
   { type: 'nickname' },
   { type: 'consent' },
   { type: 'notification' },
@@ -134,8 +128,7 @@ function canGoBack(stepIndex: number): boolean {
 
 /** Check if current step is in the education section (for skip button) */
 function isEducationStep(cs: OnboardingStep): boolean {
-  return cs.type === 'education' || cs.type === 'education_quiz'
-      || cs.type === 'damage' || cs.type === 'recovery';
+  return cs.type === 'education' || cs.type === 'damage' || cs.type === 'recovery';
 }
 
 /** Find the index of the features step (skip target) */
@@ -147,7 +140,6 @@ export default function OnboardingScreen() {
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [dataAgreed, setDataAgreed] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [quizAnswered, setQuizAnswered] = useState(false);
   const [notifyTime, setNotifyTime] = useState('22:00');
   const { setUser } = useUserStore();
   const router = useRouter();
@@ -155,8 +147,8 @@ export default function OnboardingScreen() {
   const autoAdvancingRef = useRef(false);
 
   // Refs to access latest state from PanResponder closure
-  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, quizAnswered, notifyTime });
-  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, quizAnswered, notifyTime };
+  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, notifyTime });
+  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, notifyTime };
 
   const animateTransition = (direction: number, callback: () => void) => {
     Animated.timing(translateX, {
@@ -175,7 +167,7 @@ export default function OnboardingScreen() {
   };
 
   const canAdvanceAt = (s: number) => {
-    const { nickname: n, privacyAgreed: p, dataAgreed: d, answers: a, quizAnswered: qa } = stateRef.current;
+    const { nickname: n, privacyAgreed: p, dataAgreed: d, answers: a } = stateRef.current;
     const cs = STEPS[s];
     switch (cs.type) {
       case 'assessment_choice':
@@ -183,8 +175,6 @@ export default function OnboardingScreen() {
         return !!a[cs.questionId];
       case 'assessment_picker':
         return !!a[cs.questionId];
-      case 'education_quiz':
-        return qa;
       case 'nickname':
         return !!n.trim();
       case 'consent':
@@ -396,16 +386,6 @@ export default function OnboardingScreen() {
           </View>
         );
 
-      case 'education_quiz':
-        return (
-          <View style={styles.fullWidth}>
-            <EducationQuizStep
-              quiz={EDUCATION_QUIZ}
-              onAnswered={() => setQuizAnswered(true)}
-            />
-          </View>
-        );
-
       case 'damage':
         return (
           <View style={styles.fullWidth}>
@@ -462,20 +442,6 @@ export default function OnboardingScreen() {
           </View>
         );
 
-      case 'feature_intro_recording':
-        return (
-          <View style={styles.fullWidth}>
-            <FeatureIntroStep variant="recording" />
-          </View>
-        );
-
-      case 'feature_intro_breathing':
-        return (
-          <View style={styles.fullWidth}>
-            <FeatureIntroStep variant="breathing" />
-          </View>
-        );
-
       case 'nickname':
         return (
           <View style={styles.centeredContent}>
@@ -506,6 +472,7 @@ export default function OnboardingScreen() {
                 {'・性的行動に関する記録\n・ストレスレベル・衝動レベル\n・呼吸エクササイズの記録\n・振り返り記録・日記'}
               </Text>
               <TouchableOpacity
+                testID="checkbox-privacy"
                 style={styles.checkboxRow}
                 onPress={() => setPrivacyAgreed(!privacyAgreed)}
                 activeOpacity={0.7}
@@ -521,10 +488,18 @@ export default function OnboardingScreen() {
                   )}
                 </View>
                 <Text style={styles.checkboxLabel}>
-                  プライバシーポリシーに同意します
+                  <Text
+                    testID="link-privacy-policy"
+                    style={styles.linkText}
+                    onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#privacy')}
+                  >
+                    プライバシーポリシー
+                  </Text>
+                  {' に同意します'}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                testID="checkbox-terms"
                 style={styles.checkboxRow}
                 onPress={() => setDataAgreed(!dataAgreed)}
                 activeOpacity={0.7}
@@ -540,7 +515,14 @@ export default function OnboardingScreen() {
                   )}
                 </View>
                 <Text style={styles.checkboxLabel}>
-                  上記データの保存に同意します
+                  <Text
+                    testID="link-terms"
+                    style={styles.linkText}
+                    onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#terms')}
+                  >
+                    利用規約
+                  </Text>
+                  {' に同意し、データの保存を許可します'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -562,8 +544,8 @@ export default function OnboardingScreen() {
     }
   };
 
-  return (
-    <SafeAreaWrapper style={styles.container}>
+  const content = (
+    <>
       {/* Header: back button + skip + progress bar */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
@@ -573,7 +555,9 @@ export default function OnboardingScreen() {
               onPress={handleBack}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="chevron-back" size={24} color={COLORS.text} />
+              <View style={styles.backButtonCircle}>
+                <Ionicons name="chevron-back" size={20} color={COLORS.text} />
+              </View>
             </TouchableOpacity>
           ) : (
             <View style={styles.backButtonPlaceholder} />
@@ -592,6 +576,7 @@ export default function OnboardingScreen() {
         <ProgressBar
           progress={step / (STEPS.length - 1)}
           height={4}
+          variant="gradient"
         />
       </View>
 
@@ -613,7 +598,15 @@ export default function OnboardingScreen() {
           />
         </View>
       )}
-    </SafeAreaWrapper>
+    </>
+  );
+
+  return (
+    <StarryBackground>
+      <SafeAreaWrapper style={styles.container}>
+        {content}
+      </SafeAreaWrapper>
+    </StarryBackground>
   );
 }
 
@@ -632,14 +625,22 @@ const styles = StyleSheet.create({
     minHeight: 32,
   },
   backButton: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backButtonCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backButtonPlaceholder: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
   },
   skipText: {
     fontSize: FONT_SIZE.md,
@@ -786,5 +787,9 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
+  },
+  linkText: {
+    color: COLORS.cyan,
+    textDecorationLine: 'underline',
   },
 });

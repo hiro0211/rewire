@@ -46,17 +46,20 @@ describe('AssessmentChoiceStep（QUITTR風リデザイン）', () => {
       const { getByText } = render(
         <AssessmentChoiceStep {...defaultProps} selectedValue="daily" />
       );
-      // index 0 ('multiple_daily') は未選択なので番号 "1" が表示
       expect(getByText('1')).toBeTruthy();
-      // index 2 ('weekly') は未選択なので番号 "3" が表示
       expect(getByText('3')).toBeTruthy();
     });
   });
 
   describe('質問表示', () => {
-    it('質問番号が表示される', () => {
+    it('質問番号に "Question #" フォーマットが使われる', () => {
       const { getByText } = render(<AssessmentChoiceStep {...defaultProps} />);
-      expect(getByText(/Q 3\/9/)).toBeTruthy();
+      expect(getByText('Question #3')).toBeTruthy();
+    });
+
+    it('testID="question-heading" が存在する', () => {
+      const { getByTestId } = render(<AssessmentChoiceStep {...defaultProps} />);
+      expect(getByTestId('question-heading')).toBeTruthy();
     });
 
     it('質問テキストが表示される', () => {
@@ -69,6 +72,15 @@ describe('AssessmentChoiceStep（QUITTR風リデザイン）', () => {
       expect(getByText('1日1回以上')).toBeTruthy();
       expect(getByText('1日1回')).toBeTruthy();
       expect(getByText('週に数回')).toBeTruthy();
+    });
+  });
+
+  describe('ピルスタイル', () => {
+    it('各ピルに testID="option-pill-{index}" が存在する', () => {
+      const { getByTestId } = render(<AssessmentChoiceStep {...defaultProps} />);
+      expect(getByTestId('option-pill-0')).toBeTruthy();
+      expect(getByTestId('option-pill-1')).toBeTruthy();
+      expect(getByTestId('option-pill-2')).toBeTruthy();
     });
   });
 

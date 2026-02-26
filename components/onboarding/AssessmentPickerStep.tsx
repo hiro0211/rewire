@@ -31,8 +31,8 @@ export function AssessmentPickerStep({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.counter}>
-        Q {questionIndex + 1}/{totalQuestions}
+      <Text testID="question-heading" style={styles.counter}>
+        Question #{questionIndex + 1}
       </Text>
 
       <Text style={styles.question}>{question.question}</Text>
@@ -66,8 +66,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   counter: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     width: '100%',
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.pillBackground,
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
   },

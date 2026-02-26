@@ -16,6 +16,7 @@ export interface SubscriptionPackage {
 }
 
 export interface SubscriptionClient {
+  isReady(): boolean;
   initialize(): Promise<void>;
   getOfferings(): Promise<SubscriptionPackage[]>;
   purchase(packageId: string): Promise<SubscriptionStatus>;

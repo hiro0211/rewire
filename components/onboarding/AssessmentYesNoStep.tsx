@@ -27,8 +27,8 @@ export function AssessmentYesNoStep({
 }: AssessmentYesNoStepProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.counter}>
-        Q {questionIndex + 1}/{totalQuestions}
+      <Text testID="question-heading" style={styles.counter}>
+        Question #{questionIndex + 1}
       </Text>
 
       <Text style={styles.question}>{question.question}</Text>
@@ -39,6 +39,7 @@ export function AssessmentYesNoStep({
           return (
             <TouchableOpacity
               key={option.value}
+              testID={`option-pill-${index}`}
               style={[
                 styles.option,
                 selected && styles.optionSelected,
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   counter: {
-    fontSize: FONT_SIZE.lg,
+    fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.text,
     textAlign: 'center',
@@ -99,23 +100,23 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 56,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 28,
+    height: 64,
+    backgroundColor: COLORS.pillBackground,
+    borderRadius: 32,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: COLORS.pillBorder,
     paddingHorizontal: 16,
     gap: 12,
   },
   optionSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(74, 144, 217, 0.1)',
+    borderColor: COLORS.selectedPillBorder,
+    backgroundColor: 'rgba(0, 180, 216, 0.1)',
   },
   badge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.selectedPillBorder,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -133,6 +134,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionTextSelected: {
-    color: COLORS.primary,
+    color: COLORS.selectedPillBorder,
   },
 });

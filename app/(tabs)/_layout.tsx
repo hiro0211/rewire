@@ -9,11 +9,11 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: COLORS.surface,
-          borderTopColor: COLORS.surfaceHighlight,
+          borderTopColor: 'rgba(0, 212, 255, 0.08)',
           height: 60,
           paddingBottom: SPACING.xs,
         },
-        tabBarActiveTintColor: COLORS.primary,
+        tabBarActiveTintColor: COLORS.cyan,
         tabBarInactiveTintColor: COLORS.textSecondary,
         // iOS Large Title style for tab headers
         headerStyle: { backgroundColor: COLORS.background },

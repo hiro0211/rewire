@@ -54,7 +54,13 @@ function buildStatusFromCustomerInfo(
   };
 }
 
+let _isInitialized = false;
+
 export const subscriptionClient: SubscriptionClient = {
+  isReady(): boolean {
+    return _isInitialized;
+  },
+
   async initialize(): Promise<void> {
     if (Platform.OS === 'web' || !Purchases) return;
     try {
@@ -63,8 +69,10 @@ export const subscriptionClient: SubscriptionClient = {
       if (!apiKey) return;
       Purchases.setLogLevel(LOG_LEVEL.ERROR);
       await Purchases.configure({ apiKey });
+      _isInitialized = true;
     } catch (error) {
       console.error('[Subscription] initialize failed:', error);
+      _isInitialized = false;
     }
   },
 
