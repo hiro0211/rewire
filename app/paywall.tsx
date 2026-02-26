@@ -51,7 +51,7 @@ export default function PaywallScreen() {
     if (isFromOnboarding) {
       router.replace('/(tabs)');
     } else {
-      router.back();
+      router.dismiss();
     }
   };
 

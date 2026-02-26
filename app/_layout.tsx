@@ -118,6 +118,8 @@ export default function RootLayout() {
         <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
         <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
         <Stack.Screen name="history/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: true, title: '設定' }} />
+        <Stack.Screen name="achievements" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
         <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
       </Stack>
