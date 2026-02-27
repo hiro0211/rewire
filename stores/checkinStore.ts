@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { checkinStorage } from '@/lib/storage/checkinStorage';
 import { format } from 'date-fns';
 import type { DailyCheckin } from '@/types/models';
+import { syncWidgetData } from '@/lib/widget/widgetDataSync';
+import { calculateRelapseCount } from '@/lib/stats/statsCalculator';
+import { useUserStore } from './userStore';
 
 interface CheckinState {
   checkins: DailyCheckin[];
@@ -43,16 +46,35 @@ export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) 
     set({ checkins: newCheckins, todayCheckin: checkin });
 
     await checkinStorage.save(checkin);
+
+    const user = useUserStore.getState().user;
+    if (user) {
+      syncWidgetData({
+        streakStartDate: user.streakStartDate,
+        goalDays: user.goalDays,
+        relapseCount: calculateRelapseCount(newCheckins),
+      });
+    }
   },
 
   removeTodayCheckin: async () => {
     const today = format(new Date(), 'yyyy-MM-dd');
     await checkinStorage.remove(today);
     const { checkins } = get();
+    const newCheckins = checkins.filter((c) => c.date !== today);
     set({
-      checkins: checkins.filter((c) => c.date !== today),
+      checkins: newCheckins,
       todayCheckin: null,
     });
+
+    const user = useUserStore.getState().user;
+    if (user) {
+      syncWidgetData({
+        streakStartDate: user.streakStartDate,
+        goalDays: user.goalDays,
+        relapseCount: calculateRelapseCount(newCheckins),
+      });
+    }
   },
 
   refreshTodayCheckin: () => {

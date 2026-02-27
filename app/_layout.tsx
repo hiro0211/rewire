@@ -103,7 +103,7 @@ export default function RootLayout() {
           headerBackTitleVisible: false,
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', headerBackTitle: '戻る' }} />
         <Stack.Screen name="index" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="brand" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
@@ -118,7 +118,7 @@ export default function RootLayout() {
         <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
         <Stack.Screen name="history/index" options={{ headerShown: true, title: '履歴', headerBackTitle: '戻る' }} />
         <Stack.Screen name="settings" options={{ headerShown: true, title: '設定' }} />
-        <Stack.Screen name="achievements" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="achievements" options={{ headerShown: true, title: 'Achievements', headerBackTitle: '戻る' }} />
         <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
         <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
       </Stack>

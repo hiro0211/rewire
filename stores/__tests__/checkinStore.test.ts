@@ -10,6 +10,19 @@ jest.mock('@/lib/storage/checkinStorage', () => ({
   },
 }));
 
+jest.mock('@/lib/widget/widgetDataSync', () => ({
+  syncWidgetData: jest.fn().mockResolvedValue(undefined),
+  clearWidgetData: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('@/stores/userStore', () => ({
+  useUserStore: {
+    getState: () => ({
+      user: { streakStartDate: '2025-01-01', goalDays: 30 },
+    }),
+  },
+}));
+
 import { useCheckinStore } from '../checkinStore';
 import type { DailyCheckin } from '@/types/models';
 import { format } from 'date-fns';

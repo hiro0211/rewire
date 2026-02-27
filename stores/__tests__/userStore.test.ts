@@ -19,11 +19,16 @@ jest.mock('@/lib/storage/asyncStorageClient', () => ({
 }));
 
 jest.mock('@/stores/checkinStore', () => ({
-  useCheckinStore: { getState: () => ({ reset: jest.fn() }) },
+  useCheckinStore: { getState: () => ({ reset: jest.fn(), checkins: [] }) },
 }));
 
 jest.mock('@/stores/breathStore', () => ({
   useBreathStore: { getState: () => ({ reset: jest.fn() }) },
+}));
+
+jest.mock('@/lib/widget/widgetDataSync', () => ({
+  syncWidgetData: jest.fn().mockResolvedValue(undefined),
+  clearWidgetData: jest.fn().mockResolvedValue(undefined),
 }));
 
 import { useUserStore } from '../userStore';

@@ -57,6 +57,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     '@react-native-firebase/app',
     './plugins/withContentBlocker',
+    './plugins/withWidget',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',
   ],
@@ -70,6 +71,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
               {
                 targetName: 'ContentBlockerExtension',
                 bundleIdentifier: 'rewire.app.com.ContentBlockerExtension',
+                entitlements: {
+                  'com.apple.security.application-groups': [
+                    'group.rewire.app.com',
+                  ],
+                },
+              },
+              {
+                targetName: 'RewireWidget',
+                bundleIdentifier: 'rewire.app.com.RewireWidget',
                 entitlements: {
                   'com.apple.security.application-groups': [
                     'group.rewire.app.com',

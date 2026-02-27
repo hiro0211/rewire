@@ -3,6 +3,8 @@ import { userStorage } from '@/lib/storage/userStorage';
 import { asyncStorageClient } from '@/lib/storage/asyncStorageClient';
 import { useCheckinStore } from './checkinStore';
 import { useBreathStore } from './breathStore';
+import { syncWidgetData, clearWidgetData } from '@/lib/widget/widgetDataSync';
+import { calculateRelapseCount } from '@/lib/stats/statsCalculator';
 import type { User } from '@/types/models';
 
 interface UserState {
@@ -26,6 +28,12 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   setUser: async (user) => {
     set({ user });
     await userStorage.save(user);
+    const checkins = useCheckinStore.getState().checkins;
+    syncWidgetData({
+      streakStartDate: user.streakStartDate,
+      goalDays: user.goalDays,
+      relapseCount: calculateRelapseCount(checkins),
+    });
   },
 
   updateUser: async (updates) => {
@@ -34,6 +42,12 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       const updatedUser = { ...user, ...updates };
       set({ user: updatedUser });
       await userStorage.save(updatedUser);
+      const checkins = useCheckinStore.getState().checkins;
+      syncWidgetData({
+        streakStartDate: updatedUser.streakStartDate,
+        goalDays: updatedUser.goalDays,
+        relapseCount: calculateRelapseCount(checkins),
+      });
     }
   },
 
@@ -42,6 +56,14 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     try {
       const user = await userStorage.get();
       set({ user, hasHydrated: true });
+      if (user) {
+        const checkins = useCheckinStore.getState().checkins;
+        syncWidgetData({
+          streakStartDate: user.streakStartDate,
+          goalDays: user.goalDays,
+          relapseCount: calculateRelapseCount(checkins),
+        });
+      }
     } catch (e) {
       console.error('Failed to load user', e);
       set({ hasHydrated: true });
@@ -55,5 +77,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     await asyncStorageClient.clearAll();
     useCheckinStore.getState().reset();
     useBreathStore.getState().reset();
+    clearWidgetData();
   },
 }));
