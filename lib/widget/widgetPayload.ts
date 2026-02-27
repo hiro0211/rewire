@@ -11,9 +11,15 @@ export interface WidgetDataInput {
   relapseCount: number;
 }
 
+function normalizeDate(date: string | null): string | null {
+  if (!date) return null;
+  if (date.includes('T')) return date;
+  return `${date}T00:00:00.000Z`;
+}
+
 export function createWidgetPayload(input: WidgetDataInput): WidgetPayload {
   return {
-    streakStartDate: input.streakStartDate,
+    streakStartDate: normalizeDate(input.streakStartDate),
     goalDays: input.goalDays,
     relapseCount: input.relapseCount,
     updatedAt: new Date().toISOString(),

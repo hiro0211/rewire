@@ -71,8 +71,18 @@ struct RewireWidgetProvider: TimelineProvider {
 
         if let startDateStr = data.streakStartDate {
             let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withFullDate]
-            if let startDate = formatter.date(from: startDateStr) {
+            var startDate: Date?
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            startDate = formatter.date(from: startDateStr)
+            if startDate == nil {
+                formatter.formatOptions = [.withInternetDateTime]
+                startDate = formatter.date(from: startDateStr)
+            }
+            if startDate == nil {
+                formatter.formatOptions = [.withFullDate]
+                startDate = formatter.date(from: startDateStr)
+            }
+            if let startDate = startDate {
                 let components = Calendar.current.dateComponents([.day, .hour, .minute], from: startDate, to: date)
                 days = max(0, components.day ?? 0)
                 hours = max(0, components.hour ?? 0)

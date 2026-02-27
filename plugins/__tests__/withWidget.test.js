@@ -42,6 +42,17 @@ describe('withWidget config plugin', () => {
     expect(viewLines.length).toBeLessThanOrEqual(1);
   });
 
+  test('generateWidgetSwift → ISO8601パーサーがフルISO形式に対応', () => {
+    const swift = withWidget.generateWidgetSwift();
+    expect(swift).toContain('.withInternetDateTime');
+    expect(swift).toContain('.withFractionalSeconds');
+  });
+
+  test('generateWidgetSwift → YYYY-MM-DDフォールバックも保持', () => {
+    const swift = withWidget.generateWidgetSwift();
+    expect(swift).toContain('.withFullDate');
+  });
+
   test('generateInfoPlist → com.apple.widgetkit-extension', () => {
     const plist = withWidget.generateInfoPlist();
     expect(plist).toContain('com.apple.widgetkit-extension');

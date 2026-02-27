@@ -103,22 +103,22 @@ export default function RootLayout() {
           headerBackTitleVisible: false,
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', headerBackTitle: '戻る' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', headerBackTitle: '' }} />
         <Stack.Screen name="index" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="brand" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/goal" options={{ headerShown: false }} />
         <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="checkin/index" options={{ headerShown: true, title: '今日の振り返り', headerBackTitle: 'ホーム' }} />
+        <Stack.Screen name="checkin/index" options={{ headerShown: true, title: '今日の振り返り' }} />
         <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/index" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
         <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
         <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
-        <Stack.Screen name="history/index" options={{ headerShown: true, title: '履歴', headerBackTitle: '戻る' }} />
+        <Stack.Screen name="history/index" options={{ headerShown: true, title: '履歴' }} />
         <Stack.Screen name="settings" options={{ headerShown: true, title: '設定' }} />
-        <Stack.Screen name="achievements" options={{ headerShown: true, title: 'Achievements', headerBackTitle: '戻る' }} />
+        <Stack.Screen name="achievements" options={{ headerShown: true, title: 'Achievements' }} />
         <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
         <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
       </Stack>
