@@ -9,9 +9,6 @@ import { useAchievements } from '@/hooks/achievements/useAchievements';
 export default function AchievementsScreen() {
   const { achievements, summary } = useAchievements();
 
-  // Reverse order: highest milestone at top
-  const reversed = [...achievements].reverse();
-
   return (
     <View style={styles.container}>
       {/* Summary */}
@@ -26,13 +23,13 @@ export default function AchievementsScreen() {
 
       {/* Timeline */}
       <ScrollView contentContainerStyle={styles.timeline}>
-        {reversed.map(({ badge, isUnlocked }, index) => (
+        {achievements.map(({ badge, isUnlocked }, index) => (
           <AchievementTimelineItem
             key={badge.id}
             badge={badge}
             isUnlocked={isUnlocked}
             position={index % 2 === 0 ? 'left' : 'right'}
-            isLast={index === reversed.length - 1}
+            isLast={index === achievements.length - 1}
           />
         ))}
       </ScrollView>

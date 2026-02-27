@@ -80,13 +80,15 @@ describe('createWidgetPayload', () => {
     expect(json).toContain('"streakStartDate":null');
   });
 
-  it('YYYY-MM-DD形式のstreakStartDateがフルISO形式に正規化される', () => {
+  it('YYYY-MM-DD形式のstreakStartDateがローカル午前0時基準のISO形式に正規化される', () => {
     const payload = createWidgetPayload({
       streakStartDate: '2026-02-27',
       goalDays: 30,
       relapseCount: 0,
     });
-    expect(payload.streakStartDate).toBe('2026-02-27T00:00:00.000Z');
+    // ローカル午前0時をUTCに変換した値と一致すること
+    const expected = new Date('2026-02-27T00:00:00').toISOString();
+    expect(payload.streakStartDate).toBe(expected);
   });
 
   it('フルISO形式のstreakStartDateはそのまま維持される', () => {

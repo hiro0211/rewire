@@ -29,7 +29,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     set({ user });
     await userStorage.save(user);
     const checkins = useCheckinStore.getState().checkins;
-    syncWidgetData({
+    await syncWidgetData({
       streakStartDate: user.streakStartDate,
       goalDays: user.goalDays,
       relapseCount: calculateRelapseCount(checkins),
@@ -43,7 +43,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       set({ user: updatedUser });
       await userStorage.save(updatedUser);
       const checkins = useCheckinStore.getState().checkins;
-      syncWidgetData({
+      await syncWidgetData({
         streakStartDate: updatedUser.streakStartDate,
         goalDays: updatedUser.goalDays,
         relapseCount: calculateRelapseCount(checkins),
@@ -58,7 +58,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
       set({ user, hasHydrated: true });
       if (user) {
         const checkins = useCheckinStore.getState().checkins;
-        syncWidgetData({
+        await syncWidgetData({
           streakStartDate: user.streakStartDate,
           goalDays: user.goalDays,
           relapseCount: calculateRelapseCount(checkins),
@@ -77,6 +77,6 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
     await asyncStorageClient.clearAll();
     useCheckinStore.getState().reset();
     useBreathStore.getState().reset();
-    clearWidgetData();
+    await clearWidgetData();
   },
 }));

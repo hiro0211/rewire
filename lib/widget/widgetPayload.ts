@@ -14,7 +14,8 @@ export interface WidgetDataInput {
 function normalizeDate(date: string | null): string | null {
   if (!date) return null;
   if (date.includes('T')) return date;
-  return `${date}T00:00:00.000Z`;
+  const d = new Date(`${date}T00:00:00`);
+  return d.toISOString();
 }
 
 export function createWidgetPayload(input: WidgetDataInput): WidgetPayload {

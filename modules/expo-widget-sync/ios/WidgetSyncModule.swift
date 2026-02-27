@@ -11,11 +11,12 @@ public class WidgetSyncModule: Module {
         AsyncFunction("syncData") { (json: String) in
             guard let defaults = UserDefaults(suiteName: self.appGroupId) else { return }
             defaults.set(json, forKey: self.dataKey)
+            defaults.synchronize()
         }
 
         AsyncFunction("reloadTimelines") { () in
             if #available(iOS 14.0, *) {
-                WidgetCenter.shared.reloadAllTimelines()
+                WidgetCenter.shared.reloadTimelines(ofKind: "RewireWidget")
             }
         }
     }

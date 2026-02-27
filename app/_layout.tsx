@@ -101,9 +101,10 @@ export default function RootLayout() {
           headerTitleStyle: { color: COLORS.text, fontSize: 17, fontWeight: '600' },
           headerShadowVisible: false,
           headerBackTitleVisible: false,
+          headerBackButtonDisplayMode: 'minimal' as const,
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', headerBackTitle: '' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="index" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="brand" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />

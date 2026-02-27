@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BreathingCircle } from '@/components/breathing/BreathingCircle';
 import { BreathingText } from '@/components/breathing/BreathingText';
-import { CycleIndicator } from '@/components/breathing/CycleIndicator';
+
 import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
 import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
@@ -39,7 +39,7 @@ export default function BreathingScreen() {
       <View style={styles.center}>
         <BreathingText phase={phase} />
         <BreathingCircle phase={phase} />
-        <CycleIndicator currentCycle={cycleCount} />
+
       </View>
     </View>
   );
