@@ -55,6 +55,7 @@ function buildStatusFromCustomerInfo(
 }
 
 let _isInitialized = false;
+let _initPromise: Promise<void> | null = null;
 
 export const subscriptionClient: SubscriptionClient = {
   isReady(): boolean {
@@ -62,18 +63,27 @@ export const subscriptionClient: SubscriptionClient = {
   },
 
   async initialize(): Promise<void> {
+    if (_isInitialized) return;
+    if (_initPromise) return _initPromise;
     if (Platform.OS === 'web' || !Purchases) return;
-    try {
-      const apiKey =
-        Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
-      if (!apiKey) return;
-      Purchases.setLogLevel(LOG_LEVEL.ERROR);
-      await Purchases.configure({ apiKey });
-      _isInitialized = true;
-    } catch (error) {
-      console.error('[Subscription] initialize failed:', error);
-      _isInitialized = false;
-    }
+
+    _initPromise = (async () => {
+      try {
+        const apiKey =
+          Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
+        if (!apiKey) return;
+        Purchases.setLogLevel(LOG_LEVEL.ERROR);
+        await Purchases.configure({ apiKey });
+        _isInitialized = true;
+      } catch (error) {
+        console.error('[Subscription] initialize failed:', error);
+        _isInitialized = false;
+      } finally {
+        _initPromise = null;
+      }
+    })();
+
+    return _initPromise;
   },
 
   async getOfferings(): Promise<SubscriptionPackage[]> {
@@ -139,5 +149,11 @@ export const subscriptionClient: SubscriptionClient = {
       const isPro = typeof info.entitlements.active[ENTITLEMENT_ID] !== 'undefined';
       callback(isPro);
     });
+  },
+
+  /** @internal テスト用: 内部状態をリセット */
+  _resetForTesting(): void {
+    _isInitialized = false;
+    _initPromise = null;
   },
 };

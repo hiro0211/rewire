@@ -1,11 +1,13 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { COLORS, RADIUS, SPACING, FONT_SIZE, LAYOUT } from '@/constants/theme';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { COLORS, RADIUS, SPACING, FONT_SIZE, LAYOUT, GRADIENTS, GLOW } from '@/constants/theme';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'gradient';
   size?: 'md' | 'lg';
   loading?: boolean;
   disabled?: boolean;
@@ -23,6 +25,13 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
+  const height = size === 'lg' ? 58 : LAYOUT.buttonHeight;
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
   const getBackgroundColor = () => {
     if (disabled) return COLORS.surfaceHighlight;
     switch (variant) {
@@ -30,6 +39,7 @@ export function Button({
       case 'secondary': return COLORS.surfaceHighlight;
       case 'danger': return COLORS.danger;
       case 'ghost': return 'transparent';
+      case 'gradient': return 'transparent';
       default: return COLORS.primary;
     }
   };
@@ -39,9 +49,36 @@ export function Button({
     switch (variant) {
       case 'primary': return '#FFFFFF';
       case 'ghost': return COLORS.primary;
+      case 'gradient': return '#FFFFFF';
       default: return COLORS.text;
     }
   };
+
+  if (variant === 'gradient' && !disabled) {
+    return (
+      <TouchableOpacity
+        style={[styles.gradientOuter, { height }, style]}
+        onPress={handlePress}
+        activeOpacity={0.7}
+        disabled={disabled || loading}
+      >
+        <LinearGradient
+          colors={[...GRADIENTS.button]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={[styles.gradientInner, { height }]}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={[styles.text, { color: '#FFFFFF' }, textStyle]}>
+              {title}
+            </Text>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -49,12 +86,12 @@ export function Button({
         styles.container,
         {
           backgroundColor: getBackgroundColor(),
-          height: size === 'lg' ? 58 : LAYOUT.buttonHeight,
+          height,
         },
         disabled && styles.disabled,
         style,
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.7}
       disabled={disabled || loading}
     >
@@ -82,5 +119,20 @@ const styles = StyleSheet.create({
   text: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
+  },
+  gradientOuter: {
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    shadowColor: GLOW.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  gradientInner: {
+    borderRadius: RADIUS.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
   },
 });

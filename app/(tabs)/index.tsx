@@ -3,29 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } 
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SOSButton } from '@/components/dashboard/SOSButton';
+import { GradientCard } from '@/components/ui/GradientCard';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
-
-const MOTIVATIONAL_QUOTES = [
-  '一歩ずつ。今日の自分を信じよう。',
-  '変化は一瞬で起きなくていい。続けることが力になる。',
-  '今この瞬間、あなたは前に進んでいる。',
-  '小さな勝利の積み重ねが、大きな変化を生む。',
-  'あなたの脳は回復する力を持っている。',
-  '今日をクリアすれば、明日はもっと楽になる。',
-  '完璧じゃなくていい。続けることが大事。',
-];
-
-function getDailyQuote(): string {
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
-  );
-  return MOTIVATIONAL_QUOTES[dayOfYear % MOTIVATIONAL_QUOTES.length];
-}
 
 export default function DashboardScreen() {
   const { user, loadUser } = useUserStore();
@@ -69,26 +52,23 @@ export default function DashboardScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>今日の振り返り</Text>
           {todayCheckin ? (
-            <View style={styles.doneContainer}>
-              <Text style={styles.doneText}>完了済み</Text>
-              <Text style={styles.doneSubText}>明日も続けましょう。</Text>
-              <TouchableOpacity onPress={() => router.push('/checkin')} style={styles.redoButton}>
-                <Text style={styles.redoText}>やり直す</Text>
-              </TouchableOpacity>
-            </View>
+            <GradientCard>
+              <View style={styles.doneInner}>
+                <Text style={styles.doneText}>完了済み</Text>
+                <Text style={styles.doneSubText}>明日も続けましょう。</Text>
+                <TouchableOpacity onPress={() => router.push('/checkin')} style={styles.redoButton}>
+                  <Text style={styles.redoText}>やり直す</Text>
+                </TouchableOpacity>
+              </View>
+            </GradientCard>
           ) : (
             <Button
               title="今日の結果を入力"
               onPress={() => router.push('/checkin')}
+              variant="gradient"
               style={styles.checkinButton}
             />
           )}
-        </View>
-
-        {/* Motivational Quote */}
-        <View testID="motivational-quote" style={styles.quoteCard}>
-          <Ionicons name="sparkles-outline" size={18} color={COLORS.cyan} />
-          <Text style={styles.quoteText}>{getDailyQuote()}</Text>
         </View>
 
         {/* Panic Button (inline) */}
@@ -133,10 +113,7 @@ const styles = StyleSheet.create({
   checkinButton: {
     marginTop: SPACING.xs,
   },
-  doneContainer: {
-    backgroundColor: COLORS.surface,
-    padding: SPACING.lg,
-    borderRadius: RADIUS.lg,
+  doneInner: {
     alignItems: 'center',
   },
   doneText: {
@@ -159,24 +136,8 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     textDecorationLine: 'underline',
   },
-  quoteCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    gap: SPACING.sm,
-    marginBottom: SPACING.xxxl,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.1)',
-  },
-  quoteText: {
-    fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-    lineHeight: 22,
-    flex: 1,
-  },
   panicButtonContainer: {
+    marginTop: SPACING.xxxl,
     marginBottom: SPACING.xxxl,
   },
 });

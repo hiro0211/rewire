@@ -51,6 +51,24 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   },
 }));
 
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    LinearGradient: ({ children, ...props }: any) => (
+      <View {...props}>{children}</View>
+    ),
+  };
+});
+
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'Light', Medium: 'Medium', Heavy: 'Heavy' },
+  NotificationFeedbackType: { Warning: 'Warning', Success: 'Success', Error: 'Error' },
+}));
+
 import DashboardScreen from '../index';
 
 describe('DashboardScreen', () => {
@@ -76,11 +94,6 @@ describe('DashboardScreen', () => {
   it('"今日の振り返り" セクションが表示される', () => {
     const { getByText } = render(<DashboardScreen />);
     expect(getByText('今日の振り返り')).toBeTruthy();
-  });
-
-  it('testID="motivational-quote" が存在する', () => {
-    const { getByTestId } = render(<DashboardScreen />);
-    expect(getByTestId('motivational-quote')).toBeTruthy();
   });
 
   it('testID="panic-button" が存在する', () => {

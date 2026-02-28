@@ -3,6 +3,7 @@ import { DayCardsRow } from '@/components/achievements/DayCardsRow';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ToolCard } from '@/components/profile/ToolCard';
 import { Text } from '@/components/Themed';
+import { GradientCard } from '@/components/ui/GradientCard';
 import { COLORS, FONT_SIZE, SPACING } from '@/constants/theme';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,19 +27,23 @@ export default function ProfileScreen() {
         </View>
 
         {/* Achievements Link */}
-        <TouchableOpacity
-          style={styles.achievementsLink}
-          onPress={() => router.push('/achievements')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.achievementsLinkLeft}>
-            <Text style={styles.achievementsLabel}>Achievements</Text>
-            <Text style={styles.achievementsCount}>
-              {summary.unlocked}/{summary.total} Unlocked
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
-        </TouchableOpacity>
+        <View style={styles.achievementsContainer}>
+          <GradientCard>
+            <TouchableOpacity
+              style={styles.achievementsLink}
+              onPress={() => router.push('/achievements')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.achievementsLinkLeft}>
+                <Text style={styles.achievementsLabel}>Achievements</Text>
+                <Text style={styles.achievementsCount}>
+                  {summary.unlocked}/{summary.total} Unlocked
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+          </GradientCard>
+        </View>
 
         {/* Day Cards */}
         <View style={styles.section}>
@@ -73,18 +78,14 @@ const styles = StyleSheet.create({
   section: {
     marginTop: SPACING.lg,
   },
+  achievementsContainer: {
+    marginHorizontal: SPACING.screenPadding,
+    marginTop: SPACING.xl,
+  },
   achievementsLink: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: SPACING.screenPadding,
-    marginTop: SPACING.xl,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   achievementsLinkLeft: {
     flex: 1,

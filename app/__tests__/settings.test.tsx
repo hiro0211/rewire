@@ -166,11 +166,12 @@ describe('SettingsScreen', () => {
     expect(getByText('サブスクリプション管理')).toBeTruthy();
   });
 
-  it('RevenueCatUI未接続時にサブスク管理タップでAlertが表示される', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert');
+  it('RevenueCatUI未接続時にサブスク管理タップでApp Storeに遷移する', async () => {
+    const linkingSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
     const { getByTestId } = render(<SettingsScreen />);
     await fireEvent.press(getByTestId('setting-サブスクリプション管理'));
-    expect(alertSpy).toHaveBeenCalledWith('エラー', 'サブスクリプション管理は現在利用できません。');
+    expect(linkingSpy).toHaveBeenCalledWith('https://apps.apple.com/account/subscriptions');
+    linkingSpy.mockRestore();
   });
 
   it('通知セクションが表示される', () => {

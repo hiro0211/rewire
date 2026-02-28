@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW } from '@/constants/theme';
+import { GradientCard } from '@/components/ui/GradientCard';
+import { GlowDivider } from '@/components/ui/GlowDivider';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 import { useUserStore } from '@/stores/userStore';
 import { StreakEditModal } from './StreakEditModal';
@@ -27,45 +29,49 @@ export function StatsRow() {
 
   return (
     <View testID="stats-row" style={styles.wrapper}>
-      {/* ヒーローカード: 現在の記録 */}
-      <TouchableOpacity
-        testID="stat-stopwatch"
-        style={styles.heroCard}
-        onLongPress={() => setEditModalVisible(true)}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.heroLabel}>現在の記録</Text>
-        <Text
-          style={styles.heroValue}
-          adjustsFontSizeToFit
-          numberOfLines={1}
+      <GradientCard variant="hero" testID="stat-stopwatch">
+        <TouchableOpacity
+          testID="hero-card-touch"
+          onLongPress={() => setEditModalVisible(true)}
+          activeOpacity={0.7}
+          style={styles.heroInner}
         >
-          {stopwatch.formatted}
-        </Text>
-        {streakStartDate ? (
-          <Text style={styles.heroSince}>{formatStartDate(streakStartDate)}</Text>
-        ) : null}
-      </TouchableOpacity>
-
-      {/* ミニカード行: リセット回数 + 目標日数 */}
-      <View style={styles.miniRow}>
-        <View testID="stat-relapse" style={styles.miniCard}>
-          <Text style={styles.miniLabel}>リセット回数</Text>
+          <Text style={styles.heroLabel}>現在の記録</Text>
           <Text
-            style={[
-              styles.miniValue,
-              { color: relapseCount === 0 ? COLORS.success : COLORS.danger },
-            ]}
+            style={styles.heroValue}
+            adjustsFontSizeToFit
+            numberOfLines={1}
           >
-            {relapseCount}
+            {stopwatch.formatted}
           </Text>
-        </View>
+          {streakStartDate ? (
+            <Text style={styles.heroSince}>{formatStartDate(streakStartDate)}</Text>
+          ) : null}
 
-        <View testID="stat-goal" style={styles.miniCard}>
-          <Text style={styles.miniLabel}>目標日数</Text>
-          <Text style={styles.miniValue}>{goalDays}日</Text>
-        </View>
-      </View>
+          <GlowDivider />
+
+          <View style={styles.inlineStats}>
+            <View testID="stat-relapse" style={styles.inlineStat}>
+              <Text style={styles.miniLabel}>リセット回数</Text>
+              <Text
+                style={[
+                  styles.miniValue,
+                  { color: relapseCount === 0 ? COLORS.success : COLORS.danger },
+                ]}
+              >
+                {relapseCount}
+              </Text>
+            </View>
+
+            <View style={styles.inlineDivider} />
+
+            <View testID="stat-goal" style={styles.inlineStat}>
+              <Text style={styles.miniLabel}>目標日数</Text>
+              <Text style={styles.miniValue}>{goalDays}日</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </GradientCard>
 
       <StreakEditModal
         visible={editModalVisible}
@@ -80,14 +86,8 @@ export function StatsRow() {
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: SPACING.xxxl,
-    gap: SPACING.sm,
   },
-  heroCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.xl,
+  heroInner: {
     alignItems: 'center',
   },
   heroLabel: {
@@ -105,20 +105,23 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     color: COLORS.textSecondary,
   },
-  miniRow: {
+  inlineStats: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    width: '100%',
+    justifyContent: 'space-around',
   },
-  miniCard: {
+  inlineStat: {
     flex: 1,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.md,
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 70,
+  },
+  inlineDivider: {
+    width: 1,
+    backgroundColor: GLOW.purple,
+    shadowColor: GLOW.purple,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 2,
   },
   miniLabel: {
     fontSize: FONT_SIZE.xs,

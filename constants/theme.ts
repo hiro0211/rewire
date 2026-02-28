@@ -75,6 +75,20 @@ export const FONT_SIZE = {
   display: 48,
 };
 
+export const GRADIENTS = {
+  card: ['#2D1B69', '#1A1035', '#0A0A0F'] as const,
+  hero: ['#1E0A3C', '#0D0620'] as const,
+  button: ['#8B5CF6', '#6D28D9'] as const,
+  danger: ['#EF4444', '#7F1D1D'] as const,
+  accent: ['#00D4FF', '#8B5CF6'] as const,
+};
+
+export const GLOW = {
+  purple: 'rgba(139, 92, 246, 0.3)',
+  cyan: 'rgba(0, 212, 255, 0.2)',
+  danger: 'rgba(239, 68, 68, 0.3)',
+};
+
 export const LAYOUT = {
   buttonHeight: 52,
 };

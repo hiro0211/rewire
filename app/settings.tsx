@@ -12,6 +12,7 @@ import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge'
 
 import { isExpoGo } from '@/lib/nativeGuard';
 import { Text } from '@/components/Themed';
+import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 
 let RevenueCatUI: any = null;
 if (!isExpoGo) {
@@ -89,15 +90,25 @@ export default function SettingsScreen() {
   };
 
   const handleManageSubscription = async () => {
-    if (!RevenueCatUI) {
-      Alert.alert('エラー', 'サブスクリプション管理は現在利用できません。');
+    if (!RevenueCatUI || !subscriptionClient.isReady()) {
+      if (Platform.OS === 'ios') {
+        // RevenueCat未初期化時はAppleのサブスク管理ページへ直接遷移
+        Linking.openURL('https://apps.apple.com/account/subscriptions');
+      } else {
+        Alert.alert('サブスクリプション管理', 'App Storeの設定からサブスクリプションを管理できます。');
+      }
       return;
     }
     try {
       await RevenueCatUI.presentCustomerCenter();
     } catch (e) {
       console.error('[Settings] Customer Center failed:', e);
-      Alert.alert('エラー', 'サブスクリプション管理を開けませんでした。');
+      // フォールバック: Appleのサブスク管理ページ
+      if (Platform.OS === 'ios') {
+        Linking.openURL('https://apps.apple.com/account/subscriptions');
+      } else {
+        Alert.alert('エラー', 'サブスクリプション管理を開けませんでした。');
+      }
     }
   };
 

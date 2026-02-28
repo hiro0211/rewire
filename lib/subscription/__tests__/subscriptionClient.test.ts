@@ -32,6 +32,7 @@ const { subscriptionClient } = require('../subscriptionClient') as typeof import
 describe('subscriptionClient', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (subscriptionClient as any)._resetForTesting();
   });
 
   describe('initialize', () => {

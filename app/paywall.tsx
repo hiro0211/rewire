@@ -6,6 +6,9 @@ import { useUserStore } from '@/stores/userStore';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { PaywallDefault } from '@/components/paywall/PaywallDefault';
+import { PaywallDiscount } from '@/components/paywall/PaywallDiscount';
+import { PaywallTrial } from '@/components/paywall/PaywallTrial';
 
 class PaywallErrorBoundary extends Component<
   { children: React.ReactNode; onError: () => void },
@@ -23,11 +26,9 @@ class PaywallErrorBoundary extends Component<
   }
 }
 
-let RevenueCatUI: any = null;
 let Purchases: any = null;
 if (!isExpoGo) {
   try {
-    RevenueCatUI = require('react-native-purchases-ui').default;
     Purchases = require('react-native-purchases').default;
   } catch {
     // Native module not available
@@ -42,7 +43,7 @@ export default function PaywallScreen() {
 
   const [paywallState, setPaywallState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const [currentOffering, setCurrentOffering] = useState<any>(null);
-  const [offeringType, setOfferingType] = useState<'default' | 'discount'>('default');
+  const [offeringType, setOfferingType] = useState<'default' | 'discount' | 'trial'>('default');
   const [paywallKey, setPaywallKey] = useState(0);
 
   useEffect(() => {
@@ -53,8 +54,21 @@ export default function PaywallScreen() {
     let mounted = true;
     (async () => {
       try {
-        if (!RevenueCatUI || !Purchases || !subscriptionClient.isReady()) {
+        if (!Purchases) {
           if (mounted) setPaywallState('unavailable');
+          return;
+        }
+        // 初期化が完了していなければ待つ
+        if (!subscriptionClient.isReady()) {
+          try {
+            await subscriptionClient.initialize();
+          } catch {
+            // 初期化失敗
+          }
+        }
+        if (!mounted) return;
+        if (!subscriptionClient.isReady()) {
+          setPaywallState('unavailable');
           return;
         }
         const offerings = await Purchases.getOfferings();
@@ -64,9 +78,14 @@ export default function PaywallScreen() {
           return;
         }
 
-        const targetOffering = offeringType === 'discount'
-          ? (offerings.all?.['discount'] ?? offerings.current)
-          : offerings.current;
+        let targetOffering;
+        if (offeringType === 'trial') {
+          targetOffering = offerings.all?.['trial'] ?? offerings.all?.['discount'] ?? offerings.current;
+        } else if (offeringType === 'discount') {
+          targetOffering = offerings.all?.['discount'] ?? offerings.current;
+        } else {
+          targetOffering = offerings.current;
+        }
 
         if (targetOffering) {
           setCurrentOffering(targetOffering);
@@ -84,12 +103,17 @@ export default function PaywallScreen() {
   const handleDismiss = useCallback(() => {
     if (isFromOnboarding) {
       if (offeringType === 'default') {
-        // First dismiss → switch to discount offering with free trial
+        // 1st dismiss → discount offering（69%OFF・5分タイマー・トライアルなし）
         setOfferingType('discount');
         setPaywallState('loading');
         setPaywallKey((k) => k + 1);
+      } else if (offeringType === 'discount') {
+        // 2nd dismiss → trial offering（3日間無料体験）
+        setOfferingType('trial');
+        setPaywallState('loading');
+        setPaywallKey((k) => k + 1);
       }
-      // Second+ dismiss on discount → do nothing (hard paywall)
+      // 3rd+ dismiss on trial → do nothing (hard paywall)
     } else {
       router.dismiss();
     }
@@ -121,7 +145,7 @@ export default function PaywallScreen() {
       );
     }
 
-    if (paywallState === 'unavailable' || !RevenueCatUI) {
+    if (paywallState === 'unavailable') {
       return (
         <View style={styles.fallback}>
           <Text style={styles.unavailableTitle}>現在ご利用いただけません</Text>
@@ -150,10 +174,32 @@ export default function PaywallScreen() {
       );
     }
 
+    if (offeringType === 'discount') {
+      return (
+        <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
+          <PaywallDiscount
+            offering={currentOffering}
+            onDismiss={handleDismiss}
+            onPurchaseCompleted={handlePurchaseCompleted}
+            onRestoreCompleted={handleRestoreCompleted}
+          />
+        </PaywallErrorBoundary>
+      );
+    }
+    if (offeringType === 'trial') {
+      return (
+        <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
+          <PaywallTrial
+            offering={currentOffering}
+            onPurchaseCompleted={handlePurchaseCompleted}
+            onRestoreCompleted={handleRestoreCompleted}
+          />
+        </PaywallErrorBoundary>
+      );
+    }
     return (
       <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
-        <RevenueCatUI.Paywall
-          key={paywallKey}
+        <PaywallDefault
           offering={currentOffering}
           onDismiss={handleDismiss}
           onPurchaseCompleted={handlePurchaseCompleted}

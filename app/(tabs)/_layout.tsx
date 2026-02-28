@@ -1,21 +1,32 @@
 import { Tabs } from 'expo-router';
 import { COLORS, SPACING } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
 export default function TabLayout() {
   return (
     <Tabs
+      screenListeners={{
+        tabPress: () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        },
+      }}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: COLORS.surface,
-          borderTopColor: 'rgba(0, 212, 255, 0.08)',
+          backgroundColor: '#0D0D14',
+          borderTopColor: 'rgba(139, 92, 246, 0.15)',
+          borderTopWidth: 1,
           height: 60,
           paddingBottom: SPACING.xs,
+          shadowColor: 'rgba(139, 92, 246, 0.3)',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8,
         },
         tabBarActiveTintColor: COLORS.cyan,
         tabBarInactiveTintColor: COLORS.textSecondary,
-        // iOS Large Title style for tab headers
         headerStyle: { backgroundColor: COLORS.background },
         headerTitleStyle: {
           fontSize: 28,
@@ -35,17 +46,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
-      {/* Safari Web Extension トラッキング実装後に有効化
-      <Tabs.Screen
-        name="stats"
-        options={{
-          title: '統計',
-          headerShown: true,
-          tabBarLabel: '統計',
-          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart-outline" size={size} color={color} />,
-        }}
-      />
-      */}
+      {/* Safari Web Extension トラッキング実装後に有効化 */}
       <Tabs.Screen
         name="stats"
         options={{ href: null }}

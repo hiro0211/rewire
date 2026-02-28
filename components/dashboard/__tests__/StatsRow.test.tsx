@@ -19,6 +19,16 @@ jest.mock('@/stores/userStore', () => ({
   }),
 }));
 
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    LinearGradient: ({ children, ...props }: any) => (
+      <View {...props}>{children}</View>
+    ),
+  };
+});
+
 jest.mock('@react-native-community/datetimepicker', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -41,7 +51,7 @@ describe('StatsRow', () => {
     jest.clearAllMocks();
   });
 
-  it('ヒーローカードとミニカード2つが表示される', () => {
+  it('ヒーローカードとインライン統計が表示される', () => {
     const { getByTestId } = render(<StatsRow />);
     expect(getByTestId('stat-stopwatch')).toBeTruthy();
     expect(getByTestId('stat-relapse')).toBeTruthy();
@@ -56,25 +66,29 @@ describe('StatsRow', () => {
 
   it('ヒーローカードに開始日が表示される', () => {
     const { getByText } = render(<StatsRow />);
-    // UTC 2026-02-24T19:00:00Z → ローカルTZでフォーマットされる
     expect(getByText(/から$/)).toBeTruthy();
   });
 
-  it('リセット回数ミニカードが表示される', () => {
+  it('リセット回数が表示される', () => {
     const { getByText } = render(<StatsRow />);
     expect(getByText('リセット回数')).toBeTruthy();
     expect(getByText('2')).toBeTruthy();
   });
 
-  it('目標日数ミニカードが表示される', () => {
+  it('目標日数が表示される', () => {
     const { getByText } = render(<StatsRow />);
     expect(getByText('目標日数')).toBeTruthy();
     expect(getByText('90日')).toBeTruthy();
   });
 
+  it('GlowDivider が表示される', () => {
+    const { getByTestId } = render(<StatsRow />);
+    expect(getByTestId('glow-divider')).toBeTruthy();
+  });
+
   it('ヒーローカード長押しでStreakEditModalが表示される', () => {
     const { getByTestId, getByText } = render(<StatsRow />);
-    fireEvent(getByTestId('stat-stopwatch'), 'onLongPress');
+    fireEvent(getByTestId('hero-card-touch'), 'onLongPress');
     expect(getByText('開始日を編集')).toBeTruthy();
   });
 });

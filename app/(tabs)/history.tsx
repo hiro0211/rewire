@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { COLORS, SPACING } from '@/constants/theme';
+import { GradientCard } from '@/components/ui/GradientCard';
 import { HistoryCalendar } from '@/components/history/HistoryCalendar';
 import { HistoryList } from '@/components/history/HistoryList';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
@@ -27,7 +28,9 @@ export default function HistoryScreen() {
       </View>
 
       <View style={styles.content}>
-        {viewIndex === 0 ? <HistoryCalendar /> : <HistoryList />}
+        <GradientCard style={styles.calendarCard}>
+          {viewIndex === 0 ? <HistoryCalendar /> : <HistoryList />}
+        </GradientCard>
       </View>
     </View>
   );
@@ -45,5 +48,8 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: SPACING.md,
+  },
+  calendarCard: {
+    flex: 1,
   },
 });

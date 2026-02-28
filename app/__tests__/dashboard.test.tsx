@@ -110,11 +110,6 @@ describe('DashboardScreen', () => {
     expect(mockLoadUser).toHaveBeenCalled();
   });
 
-  it('モチベーション名言が表示される', () => {
-    const { getByTestId } = render(<DashboardScreen />);
-    expect(getByTestId('motivational-quote')).toBeTruthy();
-  });
-
   it('ユーザーがnullでもクラッシュしない', () => {
     mockUser = null;
     expect(() => render(<DashboardScreen />)).not.toThrow();

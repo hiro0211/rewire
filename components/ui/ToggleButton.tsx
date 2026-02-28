@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolateColor } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { COLORS, RADIUS, SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface ToggleButtonProps {
@@ -12,6 +13,10 @@ interface ToggleButtonProps {
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export function ToggleButton({ title, active, onPress }: ToggleButtonProps) {
+  const handlePress = () => {
+    Haptics.selectionAsync();
+    onPress();
+  };
   const progress = useSharedValue(active ? 1 : 0);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ export function ToggleButton({ title, active, onPress }: ToggleButtonProps) {
   return (
     <AnimatedTouchableOpacity
       style={[styles.container, animatedStyle]}
-      onPress={onPress}
+      onPress={handlePress}
       activeOpacity={0.8}
     >
       <Animated.Text style={[styles.text, animatedTextStyle]}>

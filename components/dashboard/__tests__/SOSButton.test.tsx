@@ -14,6 +14,22 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   },
 }));
 
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    LinearGradient: ({ children, ...props }: any) => (
+      <View testID="linear-gradient" {...props}>{children}</View>
+    ),
+  };
+});
+
+const mockNotificationAsync = jest.fn();
+jest.mock('expo-haptics', () => ({
+  notificationAsync: (...args: any[]) => mockNotificationAsync(...args),
+  NotificationFeedbackType: { Warning: 'Warning', Success: 'Success', Error: 'Error' },
+}));
+
 describe('SOSButton (PanicButton)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -48,5 +64,16 @@ describe('SOSButton (PanicButton)', () => {
     const { getByTestId } = render(<SOSButton />);
     fireEvent.press(getByTestId('panic-button'));
     expect(mockLogEvent).toHaveBeenCalledWith('sos_tapped');
+  });
+
+  it('ボタン押下でハプティクス(Warning)が呼ばれる', () => {
+    const { getByTestId } = render(<SOSButton />);
+    fireEvent.press(getByTestId('panic-button'));
+    expect(mockNotificationAsync).toHaveBeenCalledWith('Warning');
+  });
+
+  it('LinearGradient が描画される', () => {
+    const { getByTestId } = render(<SOSButton />);
+    expect(getByTestId('linear-gradient')).toBeTruthy();
   });
 });
