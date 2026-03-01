@@ -33,7 +33,13 @@ yarn-error.*
 # local env files
 .env
 .env*.local
+.env.line
+.env.discord
 .secret*
+
+# LINE Bot runtime files
+TASKS.md
+MEMOS.md
 
 # credentials
 credentials.json
