@@ -17,7 +17,7 @@ jest.mock('expo-web-browser', () => ({
 import { TrialBottomSheet } from '../TrialBottomSheet';
 
 const mockOffering = {
-  annual: { product: { price: 2500, priceString: '¥2,500' } },
+  annual: { product: { price: 2500, priceString: '¥2,500', currencyCode: 'JPY' } },
 };
 
 describe('TrialBottomSheet', () => {

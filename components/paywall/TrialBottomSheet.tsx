@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
+import { formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
 import { isExpoGo } from '@/lib/nativeGuard';
 
@@ -29,11 +30,16 @@ export function TrialBottomSheet({
 }: TrialBottomSheetProps) {
   const [purchasing, setPurchasing] = useState(false);
 
-  const annualPackage = offering?.annual;
+  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const annualPrice = annualPackage?.product?.price ?? 2500;
+  const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
 
   const handlePurchase = async () => {
-    if (!Purchases || purchasing || !annualPackage) return;
+    if (!Purchases || purchasing) return;
+    if (!annualPackage) {
+      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
+      return;
+    }
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(annualPackage);
@@ -87,7 +93,7 @@ export function TrialBottomSheet({
 
           {/* Price info */}
           <Text style={styles.priceText}>
-            3日間無料、その後 ¥{annualPrice.toLocaleString()}/年
+            3日間無料、その後 {formatPrice(annualPrice, currencyCode)}/年
           </Text>
 
           {/* Highlight */}

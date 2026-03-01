@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW } from '@/constants/theme';
-import { calcMonthlyPrice } from './paywallUtils';
+import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 
 interface PlanSelectorProps {
   annualPackage: any;
   monthlyPackage: any;
   selectedPlan: 'annual' | 'monthly';
   onSelectPlan: (plan: 'annual' | 'monthly') => void;
+  currencyCode?: string;
 }
 
 export function PlanSelector({
@@ -15,6 +16,7 @@ export function PlanSelector({
   monthlyPackage,
   selectedPlan,
   onSelectPlan,
+  currencyCode = 'JPY',
 }: PlanSelectorProps) {
   const annualPrice = annualPackage?.product?.price ?? 5400;
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
@@ -36,7 +38,7 @@ export function PlanSelector({
         activeOpacity={0.7}
       >
         <Text style={[styles.planLabel, { marginTop: SPACING.xxl }]}>Annual</Text>
-        <Text style={styles.priceMain}>¥{annualMonthly}</Text>
+        <Text style={styles.priceMain}>{formatPrice(annualMonthly, currencyCode)}</Text>
         <Text style={styles.priceSub}>/月</Text>
       </TouchableOpacity>
 

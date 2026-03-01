@@ -114,7 +114,7 @@ describe('subscriptionClient', () => {
         customerInfo: {
           entitlements: {
             active: {
-              pro: { expirationDate: '2027-01-01', willRenew: true, productIdentifier: 'monthly' },
+              'Rewire Pro': { expirationDate: '2027-01-01', willRenew: true, productIdentifier: 'monthly' },
             },
           },
         },
@@ -143,7 +143,7 @@ describe('subscriptionClient', () => {
       mockRestorePurchases.mockResolvedValue({
         entitlements: {
           active: {
-            pro: { expirationDate: '2027-01-01', willRenew: true, productIdentifier: 'yearly' },
+            'Rewire Pro': { expirationDate: '2027-01-01', willRenew: true, productIdentifier: 'yearly' },
           },
         },
       });
@@ -165,7 +165,7 @@ describe('subscriptionClient', () => {
       mockGetCustomerInfo.mockResolvedValue({
         entitlements: {
           active: {
-            pro: { expirationDate: '2027-01-01', willRenew: true, productIdentifier: 'monthly' },
+            'Rewire Pro': { expirationDate: '2027-01-01', willRenew: true, productIdentifier: 'monthly' },
           },
         },
       });
@@ -188,7 +188,7 @@ describe('subscriptionClient', () => {
       mockGetCustomerInfo.mockResolvedValue({
         entitlements: {
           active: {
-            pro: { expirationDate: null, willRenew: false, productIdentifier: 'lifetime_pro' },
+            'Rewire Pro': { expirationDate: null, willRenew: false, productIdentifier: 'lifetime_pro' },
           },
         },
       });

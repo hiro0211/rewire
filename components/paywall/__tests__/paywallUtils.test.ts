@@ -1,4 +1,4 @@
-import { calcMonthlyPrice, calcRelativeDiscount } from '../paywallUtils';
+import { calcMonthlyPrice, calcRelativeDiscount, formatPrice } from '../paywallUtils';
 
 describe('paywallUtils', () => {
   describe('calcMonthlyPrice', () => {
@@ -30,6 +30,28 @@ describe('paywallUtils', () => {
 
     it('月額が負の場合は0を返す', () => {
       expect(calcRelativeDiscount(-100, 5400)).toBe(0);
+    });
+  });
+
+  describe('formatPrice', () => {
+    it('JPYを通貨記号付きでフォーマットする', () => {
+      expect(formatPrice(2500, 'JPY')).toBe('¥2,500');
+    });
+
+    it('デフォルトはJPY', () => {
+      expect(formatPrice(450)).toBe('¥450');
+    });
+
+    it('USDを小数点付きでフォーマットする', () => {
+      expect(formatPrice(24.99, 'USD')).toBe('$24.99');
+    });
+
+    it('0の場合', () => {
+      expect(formatPrice(0, 'JPY')).toBe('¥0');
+    });
+
+    it('JPYは小数点なしで丸める', () => {
+      expect(formatPrice(208.33, 'JPY')).toBe('¥208');
     });
   });
 });

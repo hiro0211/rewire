@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
 import { PlanSelector } from './PlanSelector';
 import { FeatureCard } from './FeatureCard';
-import { calcMonthlyPrice } from './paywallUtils';
+import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
 import { isExpoGo } from '@/lib/nativeGuard';
 
@@ -41,19 +41,25 @@ export function PaywallDefault({
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
   const [purchasing, setPurchasing] = useState(false);
 
-  const annualPackage = offering?.annual;
+  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const monthlyPackage = offering?.monthly;
   const selectedPackage = selectedPlan === 'annual' ? annualPackage : monthlyPackage;
 
   const annualPrice = annualPackage?.product?.price ?? 5400;
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
+  const annualCurrencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
+  const monthlyCurrencyCode = monthlyPackage?.product?.currencyCode ?? 'JPY';
   const billingText =
     selectedPlan === 'annual'
-      ? `Billed as ¥${annualPrice.toLocaleString()} per year`
-      : `Billed as ¥${monthlyPrice.toLocaleString()} per month`;
+      ? `Billed as ${formatPrice(annualPrice, annualCurrencyCode)} per year`
+      : `Billed as ${formatPrice(monthlyPrice, monthlyCurrencyCode)} per month`;
 
   const handlePurchase = async () => {
-    if (!Purchases || purchasing || !selectedPackage) return;
+    if (!Purchases || purchasing) return;
+    if (!selectedPackage) {
+      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
+      return;
+    }
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
@@ -118,6 +124,7 @@ export function PaywallDefault({
               monthlyPackage={monthlyPackage}
               selectedPlan={selectedPlan}
               onSelectPlan={setSelectedPlan}
+              currencyCode={annualCurrencyCode}
             />
           </View>
 

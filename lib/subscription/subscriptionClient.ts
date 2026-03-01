@@ -22,7 +22,7 @@ if (!isExpoGo) {
 const REVENUECAT_API_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS ?? '';
 const REVENUECAT_API_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID ?? '';
 
-const ENTITLEMENT_ID = 'pro';
+const ENTITLEMENT_ID = 'Rewire Pro';
 
 const FREE_STATUS: SubscriptionStatus = {
   isActive: false,

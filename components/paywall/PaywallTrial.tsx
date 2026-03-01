@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SPACING, FONT_SIZE, RADIUS, GRADIENTS } from '@/constants/theme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
+import { formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
 import { isExpoGo } from '@/lib/nativeGuard';
 
@@ -29,11 +30,16 @@ export function PaywallTrial({
 }: PaywallTrialProps) {
   const [purchasing, setPurchasing] = useState(false);
 
-  const annualPackage = offering?.annual;
+  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const annualPrice = annualPackage?.product?.price ?? 2500;
+  const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
 
   const handlePurchase = async () => {
-    if (!Purchases || purchasing || !annualPackage) return;
+    if (!Purchases || purchasing) return;
+    if (!annualPackage) {
+      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
+      return;
+    }
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(annualPackage);
@@ -118,7 +124,7 @@ export function PaywallTrial({
         {/* Trial info */}
         <Text style={styles.trialTitle}>Rewireを3日間無料でお試し</Text>
         <Text style={styles.trialSub}>
-          3日間無料、その後 ¥{annualPrice.toLocaleString()}/年
+          3日間無料、その後 {formatPrice(annualPrice, currencyCode)}/年
         </Text>
         <Text style={styles.trialHighlight}>今すぐ支払いなし</Text>
 

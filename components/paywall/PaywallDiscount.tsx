@@ -6,7 +6,7 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { CountdownTimer } from './CountdownTimer';
-import { calcMonthlyPrice } from './paywallUtils';
+import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { useDiscountExpiryTracker } from '@/hooks/paywall/useDiscountExpiryTracker';
@@ -36,12 +36,17 @@ export function PaywallDiscount({
   useDiscountExpiryTracker();
   const [purchasing, setPurchasing] = useState(false);
 
-  const annualPackage = offering?.annual;
+  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const annualPrice = annualPackage?.product?.price ?? 2500;
+  const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
   const monthlyEquivalent = calcMonthlyPrice(annualPrice);
 
   const handlePurchase = async () => {
-    if (!Purchases || purchasing || !annualPackage) return;
+    if (!Purchases || purchasing) return;
+    if (!annualPackage) {
+      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
+      return;
+    }
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(annualPackage);
@@ -134,9 +139,9 @@ export function PaywallDiscount({
           <View style={styles.priceRow}>
             <View>
               <Text style={styles.priceLabel}>Yearly</Text>
-              <Text style={styles.priceDetail}>12ヶ月 · ¥{annualPrice.toLocaleString()}</Text>
+              <Text style={styles.priceDetail}>12ヶ月 · {formatPrice(annualPrice, currencyCode)}</Text>
             </View>
-            <Text style={styles.priceAmount}>¥{monthlyEquivalent}/月</Text>
+            <Text style={styles.priceAmount}>{formatPrice(monthlyEquivalent, currencyCode)}/月</Text>
           </View>
         </GradientCard>
 

@@ -21,7 +21,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { PaywallTrial } from '../PaywallTrial';
 
 const mockOffering = {
-  annual: { product: { price: 2500, priceString: '¥2,500' } },
+  annual: { product: { price: 2500, priceString: '¥2,500', currencyCode: 'JPY' } },
 };
 
 describe('PaywallTrial', () => {
