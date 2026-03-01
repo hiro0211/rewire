@@ -109,6 +109,7 @@ export default function RootLayout() {
         <Stack.Screen name="brand" options={{ headerShown: false, animation: 'fade' }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/goal" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/benefits" options={{ headerShown: false }} />
         <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="checkin/index" options={{ headerShown: true, title: '今日の振り返り' }} />

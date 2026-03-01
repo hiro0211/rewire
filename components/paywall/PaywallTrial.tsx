@@ -16,12 +16,14 @@ if (!isExpoGo) {
 
 interface PaywallTrialProps {
   offering: any;
+  onDismiss: () => void;
   onPurchaseCompleted: () => void;
   onRestoreCompleted: () => void;
 }
 
 export function PaywallTrial({
   offering,
+  onDismiss,
   onPurchaseCompleted,
   onRestoreCompleted,
 }: PaywallTrialProps) {
@@ -69,7 +71,15 @@ export function PaywallTrial({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* No close button - hard paywall */}
+        {/* Close button */}
+        <TouchableOpacity
+          testID="close-button"
+          style={styles.closeButton}
+          onPress={onDismiss}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Text style={styles.closeText}>✕</Text>
+        </TouchableOpacity>
 
         {/* Logo */}
         <Image
@@ -79,8 +89,8 @@ export function PaywallTrial({
         />
 
         {/* Headline */}
-        <Text style={styles.offerTitle}>ONE TIME OFFER</Text>
-        <Text style={styles.offerSub}>この特別価格は二度と表示されません</Text>
+        <Text style={styles.offerTitle}>SPECIAL OFFER</Text>
+        <Text style={styles.offerSub}>あなたへの特別オファー</Text>
 
         {/* Big discount card */}
         <LinearGradient
@@ -141,6 +151,22 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xxxl,
     paddingBottom: SPACING.xxxl,
     alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: SPACING.xl,
+    right: SPACING.screenPadding,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.surfaceHighlight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeText: {
+    color: COLORS.textSecondary,
+    fontSize: FONT_SIZE.md,
   },
   logo: {
     width: 64,

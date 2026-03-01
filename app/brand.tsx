@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, Image, StyleSheet, View } from 'react-native';
 
 export const BRAND_CATCHPHRASES = [
   '変わる覚悟はあるか。',
@@ -86,7 +86,13 @@ export function BrandScreen() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Animated.Text style={[styles.logo, { opacity: logoOpacity }]}>
+        <Animated.Image
+          source={require('@/assets/images/icon.png')}
+          style={[styles.logoImage, { opacity: logoOpacity }]}
+          resizeMode="contain"
+          testID="brand-logo-image"
+        />
+        <Animated.Text style={[styles.logoText, { opacity: logoOpacity }]}>
           Rewire
         </Animated.Text>
 
@@ -123,7 +129,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
   },
-  logo: {
+  logoImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 24,
+    marginBottom: 16,
+  },
+  logoText: {
     fontSize: 42,
     fontWeight: 'bold',
     color: '#E8E8ED',

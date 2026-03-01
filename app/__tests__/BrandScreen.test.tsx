@@ -52,6 +52,11 @@ describe('BrandScreen（ブランド起動画面）', () => {
       expect(getByText('Rewire')).toBeTruthy();
     });
 
+    it('アプリアイコン画像が表示される', () => {
+      const { getByTestId } = render(<BrandScreen />);
+      expect(getByTestId('brand-logo-image')).toBeTruthy();
+    });
+
     it('3行のキャッチフレーズテキストが存在する', () => {
       const { getByText } = render(<BrandScreen />);
       BRAND_CATCHPHRASES.forEach((phrase) => {
@@ -74,7 +79,7 @@ describe('BrandScreen（ブランド起動画面）', () => {
     it('各キャッチフレーズ表示時に振動が発生する', () => {
       render(<BrandScreen />);
       // ロゴ (300ms) + 3行のキャッチフレーズ (900, 1500, 2100ms)
-      act(() => { jest.advanceTimersByTime(2200); });
+      act(() => { jest.advanceTimersByTime(3100); });
       // ロゴ1回 + キャッチフレーズ3回 = 合計4回
       expect(Haptics.impactAsync).toHaveBeenCalledTimes(4);
     });

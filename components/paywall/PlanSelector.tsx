@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW } from '@/constants/theme';
-import { CountdownTimer } from './CountdownTimer';
 import { calcMonthlyPrice } from './paywallUtils';
 
 interface PlanSelectorProps {
@@ -36,19 +35,9 @@ export function PlanSelector({
         onPress={() => onSelectPlan('annual')}
         activeOpacity={0.7}
       >
-        {/* Timer badge */}
-        <View style={styles.timerBadge}>
-          <Text style={styles.timerIcon}>⏳</Text>
-          <CountdownTimer
-            initialSeconds={300}
-            style={styles.timerText}
-          />
-        </View>
-
-        <Text style={styles.planLabel}>Annual</Text>
+        <Text style={[styles.planLabel, { marginTop: SPACING.xxl }]}>Annual</Text>
         <Text style={styles.priceMain}>¥{annualMonthly}</Text>
         <Text style={styles.priceSub}>/月</Text>
-        <Text style={styles.dealText}>Special deal ends in 5 min</Text>
       </TouchableOpacity>
 
       {/* Monthly Card */}
@@ -94,24 +83,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
   },
-  timerBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(240, 160, 48, 0.15)',
-    borderRadius: RADIUS.full,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-    marginBottom: SPACING.sm,
-  },
-  timerIcon: {
-    fontSize: 12,
-    marginRight: 4,
-  },
-  timerText: {
-    fontSize: FONT_SIZE.xs,
-    color: COLORS.warning,
-    fontWeight: '700',
-  },
   planLabel: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
@@ -127,12 +98,5 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.xs,
-  },
-  dealText: {
-    color: COLORS.warning,
-    fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: SPACING.xs,
   },
 });

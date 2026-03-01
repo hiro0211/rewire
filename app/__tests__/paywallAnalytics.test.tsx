@@ -23,6 +23,18 @@ jest.mock('@/lib/nativeGuard', () => ({
   isExpoGo: true,
 }));
 
+jest.mock('@/lib/paywall/discountExpiry', () => ({
+  discountExpiry: {
+    isDiscountExpired: jest.fn().mockResolvedValue(false),
+    recordFirstExposure: jest.fn().mockResolvedValue(undefined),
+    EXPIRY_HOURS: 48,
+  },
+}));
+
+jest.mock('@/hooks/paywall/useDiscountExpiryTracker', () => ({
+  useDiscountExpiryTracker: jest.fn(),
+}));
+
 jest.mock('@/lib/subscription/subscriptionClient', () => ({
   subscriptionClient: {
     isReady: () => false,

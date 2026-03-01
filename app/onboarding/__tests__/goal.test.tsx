@@ -105,8 +105,8 @@ describe('GoalSettingScreen', () => {
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith({
-        pathname: '/paywall',
-        params: { source: 'onboarding' },
+        pathname: '/onboarding/benefits',
+        params: expect.objectContaining({ source: 'onboarding' }),
       });
     });
   });

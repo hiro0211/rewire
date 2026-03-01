@@ -9,6 +9,8 @@ import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { PaywallDefault } from '@/components/paywall/PaywallDefault';
 import { PaywallDiscount } from '@/components/paywall/PaywallDiscount';
 import { PaywallTrial } from '@/components/paywall/PaywallTrial';
+import { TrialBottomSheet } from '@/components/paywall/TrialBottomSheet';
+import { discountExpiry } from '@/lib/paywall/discountExpiry';
 
 class PaywallErrorBoundary extends Component<
   { children: React.ReactNode; onError: () => void },
@@ -38,13 +40,16 @@ if (!isExpoGo) {
 export default function PaywallScreen() {
   const router = useRouter();
   const { source } = useLocalSearchParams<{ source?: string }>();
-  const { updateUser } = useUserStore();
+  const { user, updateUser } = useUserStore();
   const isFromOnboarding = source === 'onboarding';
 
   const [paywallState, setPaywallState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const [currentOffering, setCurrentOffering] = useState<any>(null);
   const [offeringType, setOfferingType] = useState<'default' | 'discount' | 'trial'>('default');
   const [paywallKey, setPaywallKey] = useState(0);
+  const [showTrialSheet, setShowTrialSheet] = useState(false);
+  const [trialOffering, setTrialOffering] = useState<any>(null);
+  const [discountRemainingSeconds, setDiscountRemainingSeconds] = useState<number>(0);
 
   useEffect(() => {
     analyticsClient.logEvent('paywall_viewed', { source: source || 'unknown', offering: offeringType });
@@ -83,6 +88,9 @@ export default function PaywallScreen() {
           targetOffering = offerings.all?.['trial'] ?? offerings.all?.['discount plan'] ?? offerings.current;
         } else if (offeringType === 'discount') {
           targetOffering = offerings.all?.['discount plan'] ?? offerings.current;
+          // trial offering もプリロード
+          const trialOff = offerings.all?.['trial'] ?? offerings.all?.['discount plan'] ?? offerings.current;
+          setTrialOffering(trialOff);
         } else {
           targetOffering = offerings.current;
         }
@@ -100,24 +108,47 @@ export default function PaywallScreen() {
     return () => { mounted = false; };
   }, [offeringType, paywallKey]);
 
-  const handleDismiss = useCallback(() => {
+  const handleDismiss = useCallback(async () => {
     if (isFromOnboarding) {
       if (offeringType === 'default') {
-        // 1st dismiss → discount offering（69%OFF・5分タイマー・トライアルなし）
-        setOfferingType('discount');
+        // 1st dismiss → discount or trial（24h経過でdiscountスキップ）
+        const remaining = await discountExpiry.getRemainingSeconds();
+        if (remaining <= 0) {
+          setOfferingType('trial');
+        } else {
+          setDiscountRemainingSeconds(remaining);
+          setOfferingType('discount');
+        }
         setPaywallState('loading');
         setPaywallKey((k) => k + 1);
       } else if (offeringType === 'discount') {
-        // 2nd dismiss → trial offering（3日間無料体験）
-        setOfferingType('trial');
-        setPaywallState('loading');
-        setPaywallKey((k) => k + 1);
+        // 2nd dismiss → ボトムシートでトライアルオファーを表示
+        setShowTrialSheet(true);
+      } else if (offeringType === 'trial') {
+        // trial dismiss → benefits 画面に戻る
+        router.replace({
+          pathname: '/onboarding/benefits',
+          params: {
+            nickname: user?.nickname || '',
+            goalDays: String(user?.goalDays || 30),
+          },
+        } as any);
       }
-      // 3rd+ dismiss on trial → do nothing (hard paywall)
     } else {
       router.dismiss();
     }
   }, [isFromOnboarding, offeringType, router]);
+
+  const handleTrialSheetDismiss = useCallback(() => {
+    setShowTrialSheet(false);
+    router.replace({
+      pathname: '/onboarding/benefits',
+      params: {
+        nickname: user?.nickname || '',
+        goalDays: String(user?.goalDays || 30),
+      },
+    } as any);
+  }, [router, user]);
 
   const handlePurchaseCompleted = useCallback(async () => {
     try {
@@ -187,7 +218,15 @@ export default function PaywallScreen() {
         <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
           <PaywallDiscount
             offering={currentOffering}
+            initialSeconds={discountRemainingSeconds}
             onDismiss={handleDismiss}
+            onPurchaseCompleted={handlePurchaseCompleted}
+            onRestoreCompleted={handleRestoreCompleted}
+          />
+          <TrialBottomSheet
+            visible={showTrialSheet}
+            offering={trialOffering ?? currentOffering}
+            onDismiss={handleTrialSheetDismiss}
             onPurchaseCompleted={handlePurchaseCompleted}
             onRestoreCompleted={handleRestoreCompleted}
           />
@@ -199,6 +238,7 @@ export default function PaywallScreen() {
         <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
           <PaywallTrial
             offering={currentOffering}
+            onDismiss={handleDismiss}
             onPurchaseCompleted={handlePurchaseCompleted}
             onRestoreCompleted={handleRestoreCompleted}
           />

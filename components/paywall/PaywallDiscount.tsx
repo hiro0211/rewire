@@ -9,6 +9,7 @@ import { CountdownTimer } from './CountdownTimer';
 import { calcMonthlyPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
 import { isExpoGo } from '@/lib/nativeGuard';
+import { useDiscountExpiryTracker } from '@/hooks/paywall/useDiscountExpiryTracker';
 
 let Purchases: any = null;
 if (!isExpoGo) {
@@ -19,6 +20,7 @@ if (!isExpoGo) {
 
 interface PaywallDiscountProps {
   offering: any;
+  initialSeconds?: number;
   onDismiss: () => void;
   onPurchaseCompleted: () => void;
   onRestoreCompleted: () => void;
@@ -26,10 +28,12 @@ interface PaywallDiscountProps {
 
 export function PaywallDiscount({
   offering,
+  initialSeconds = 300,
   onDismiss,
   onPurchaseCompleted,
   onRestoreCompleted,
 }: PaywallDiscountProps) {
+  useDiscountExpiryTracker();
   const [purchasing, setPurchasing] = useState(false);
 
   const annualPackage = offering?.annual;
@@ -93,8 +97,8 @@ export function PaywallDiscount({
         />
 
         {/* Headline */}
-        <Text style={styles.offerTitle}>ONE TIME OFFER</Text>
-        <Text style={styles.offerSub}>この特別価格は二度と表示されません</Text>
+        <Text style={styles.offerTitle}>SPECIAL OFFER</Text>
+        <Text style={styles.offerSub}>今だけの特別割引</Text>
 
         {/* Big discount card */}
         <LinearGradient
@@ -110,8 +114,9 @@ export function PaywallDiscount({
         {/* Timer */}
         <Text style={styles.timerLabel}>この特別価格の期限:</Text>
         <CountdownTimer
-          initialSeconds={300}
+          initialSeconds={initialSeconds}
           style={styles.timerDisplay}
+          onExpire={onDismiss}
         />
 
         {/* Price card */}

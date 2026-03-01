@@ -29,6 +29,7 @@ const FEATURES = [
   { emoji: '🔥', title: 'SOS呼吸法', description: '衝動を冷静にコントロール' },
   { emoji: '📊', title: 'デイリーチェックイン', description: '自分の変化を追跡' },
   { emoji: '🏆', title: '実績バッジ', description: '達成感でモチベーション維持' },
+  { emoji: '⏱️', title: 'ウィジェット対応', description: 'アプリを開かずホーム画面で経過時間をチェック' },
 ];
 
 export function PaywallDefault({
@@ -108,7 +109,7 @@ export function PaywallDefault({
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.tagline}>Reclaim yourself.</Text>
+          <Text style={styles.tagline}>自分を、取り戻そう。</Text>
 
           {/* Plan Selector */}
           <View style={styles.planSelectorWrap}>

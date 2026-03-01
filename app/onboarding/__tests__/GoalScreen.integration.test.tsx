@@ -113,14 +113,14 @@ describe('GoalScreen integration - handleFinish', () => {
     expect(mockScheduleReminder).not.toHaveBeenCalled();
   });
 
-  it('/paywall?source=onboardingに遷移する', async () => {
+  it('/onboarding/benefits?source=onboardingに遷移する', async () => {
     const { getByText } = render(<GoalSettingScreen />);
     fireEvent.press(getByText('開始する'));
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith({
-        pathname: '/paywall',
-        params: { source: 'onboarding' },
+        pathname: '/onboarding/benefits',
+        params: expect.objectContaining({ source: 'onboarding' }),
       });
     });
   });

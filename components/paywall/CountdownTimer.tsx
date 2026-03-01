@@ -5,11 +5,18 @@ import { COLORS, FONT_SIZE } from '@/constants/theme';
 interface CountdownTimerProps {
   initialSeconds: number;
   style?: TextStyle;
+  onExpire?: () => void;
 }
 
-export function CountdownTimer({ initialSeconds, style }: CountdownTimerProps) {
+export function CountdownTimer({ initialSeconds, style, onExpire }: CountdownTimerProps) {
   const [seconds, setSeconds] = useState(initialSeconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const onExpireRef = useRef(onExpire);
+
+  // Keep ref in sync without re-triggering effect
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -27,9 +34,19 @@ export function CountdownTimer({ initialSeconds, style }: CountdownTimerProps) {
     };
   }, []);
 
-  const minutes = Math.floor(seconds / 60);
+  // onExpireをsetState外から呼ぶことで "Cannot update a component while rendering" エラーを防ぐ
+  useEffect(() => {
+    if (seconds === 0) {
+      onExpireRef.current?.();
+    }
+  }, [seconds]);
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  const display = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  const display = initialSeconds >= 3600
+    ? `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+    : `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   return (
     <Text

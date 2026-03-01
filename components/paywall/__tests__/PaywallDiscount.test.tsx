@@ -2,6 +2,9 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
+jest.mock('@/hooks/paywall/useDiscountExpiryTracker', () => ({
+  useDiscountExpiryTracker: jest.fn(),
+}));
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light' },
@@ -45,9 +48,14 @@ describe('PaywallDiscount', () => {
     expect(() => render(<PaywallDiscount {...defaultProps} />)).not.toThrow();
   });
 
-  it('ONE TIME OFFERが表示される', () => {
+  it('SPECIAL OFFERが表示される', () => {
     const { getByText } = render(<PaywallDiscount {...defaultProps} />);
-    expect(getByText('ONE TIME OFFER')).toBeTruthy();
+    expect(getByText('SPECIAL OFFER')).toBeTruthy();
+  });
+
+  it('今だけの特別割引が表示される', () => {
+    const { getByText } = render(<PaywallDiscount {...defaultProps} />);
+    expect(getByText('今だけの特別割引')).toBeTruthy();
   });
 
   it('69% OFFが表示される', () => {
@@ -116,5 +124,12 @@ describe('PaywallDiscount', () => {
     expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
       'https://hiro0211.github.io/rewire-support/#privacy'
     );
+  });
+
+  it('タイマーが0になるとonDismissが呼ばれる', () => {
+    const { act } = require('@testing-library/react-native');
+    render(<PaywallDiscount {...defaultProps} />);
+    act(() => { jest.advanceTimersByTime(300_000); });
+    expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 });

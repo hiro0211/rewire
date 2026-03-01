@@ -51,7 +51,7 @@ describe('PaywallDefault', () => {
     const { Image } = require('react-native');
     const images = UNSAFE_getAllByType(Image);
     expect(images.length).toBeGreaterThanOrEqual(1);
-    expect(getByText('Reclaim yourself.')).toBeTruthy();
+    expect(getByText('自分を、取り戻そう。')).toBeTruthy();
   });
 
   it('機能カードが表示される', () => {
@@ -60,6 +60,7 @@ describe('PaywallDefault', () => {
     expect(getByText('SOS呼吸法')).toBeTruthy();
     expect(getByText('デイリーチェックイン')).toBeTruthy();
     expect(getByText('実績バッジ')).toBeTruthy();
+    expect(getByText('ウィジェット対応')).toBeTruthy();
   });
 
   it('CTAボタンが表示される', () => {

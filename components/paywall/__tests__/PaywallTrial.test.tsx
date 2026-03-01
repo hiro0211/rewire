@@ -27,6 +27,7 @@ const mockOffering = {
 describe('PaywallTrial', () => {
   const defaultProps = {
     offering: mockOffering,
+    onDismiss: jest.fn(),
     onPurchaseCompleted: jest.fn(),
     onRestoreCompleted: jest.fn(),
   };
@@ -39,9 +40,14 @@ describe('PaywallTrial', () => {
     expect(() => render(<PaywallTrial {...defaultProps} />)).not.toThrow();
   });
 
-  it('ONE TIME OFFERが表示される', () => {
+  it('SPECIAL OFFERが表示される', () => {
     const { getByText } = render(<PaywallTrial {...defaultProps} />);
-    expect(getByText('ONE TIME OFFER')).toBeTruthy();
+    expect(getByText('SPECIAL OFFER')).toBeTruthy();
+  });
+
+  it('あなたへの特別オファーが表示される', () => {
+    const { getByText } = render(<PaywallTrial {...defaultProps} />);
+    expect(getByText('あなたへの特別オファー')).toBeTruthy();
   });
 
   it('69% OFFが表示される', () => {
@@ -62,9 +68,15 @@ describe('PaywallTrial', () => {
     expect(getByText('今すぐ支払いなし')).toBeTruthy();
   });
 
-  it('閉じるボタンが存在しない（ハードペイウォール）', () => {
-    const { queryByTestId } = render(<PaywallTrial {...defaultProps} />);
-    expect(queryByTestId('close-button')).toBeNull();
+  it('閉じるボタンが表示される', () => {
+    const { getByTestId } = render(<PaywallTrial {...defaultProps} />);
+    expect(getByTestId('close-button')).toBeTruthy();
+  });
+
+  it('閉じるボタン押下で onDismiss が呼ばれる', () => {
+    const { getByTestId } = render(<PaywallTrial {...defaultProps} />);
+    fireEvent.press(getByTestId('close-button'));
+    expect(defaultProps.onDismiss).toHaveBeenCalledTimes(1);
   });
 
   it('CTAボタンが表示される', () => {

@@ -50,7 +50,14 @@ export default function GoalSettingScreen() {
       }
 
       analyticsClient.logEvent('onboarding_complete', { goal_days: selectedGoal });
-      router.replace({ pathname: '/paywall', params: { source: 'onboarding' } });
+      router.replace({
+        pathname: '/onboarding/benefits',
+        params: {
+          nickname: newUser.nickname,
+          goalDays: String(selectedGoal),
+          source: 'onboarding',
+        },
+      });
     } catch (error) {
       console.error('[Goal] handleFinish failed:', error);
     }
