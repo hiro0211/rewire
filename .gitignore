@@ -37,9 +37,12 @@ yarn-error.*
 .env.discord
 .secret*
 
-# LINE Bot runtime files
+# Bot runtime files
 TASKS.md
 MEMOS.md
+
+# OpenClaw (API keys are stored in ~/.openclaw/)
+.openclaw/
 
 # credentials
 credentials.json
