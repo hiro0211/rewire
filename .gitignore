@@ -35,6 +35,10 @@ yarn-error.*
 .env*.local
 .secret*
 
+# credentials
+credentials.json
+credentials/
+
 # Firebase
 GoogleService-Info.plist
 google-services.json
