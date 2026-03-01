@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { FONT_SIZE } from '@/constants/theme';
+import { useUserStore } from '@/stores/userStore';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useUserStore } from '@/stores/userStore';
-import { FONT_SIZE } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
 
 export const BRAND_CATCHPHRASES = [
   '変わる覚悟はあるか。',
@@ -14,9 +14,9 @@ export const BRAND_CATCHPHRASES = [
 
 const TIMINGS = {
   logo: 300,
-  line1: 900,
-  line2: 1500,
-  line3: 2100,
+  line1: 3000,
+  line2: 3000,
+  line3: 3000,
   navigate: 2800,
 };
 
@@ -86,11 +86,9 @@ export function BrandScreen() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Animated.Image
-          source={require('@/assets/images/icon.png')}
-          style={[styles.logo, { opacity: logoOpacity }]}
-          resizeMode="contain"
-        />
+        <Animated.Text style={[styles.logo, { opacity: logoOpacity }]}>
+          Rewire
+        </Animated.Text>
 
         <View style={styles.catchphrases}>
           {BRAND_CATCHPHRASES.map((phrase, index) => (
@@ -126,9 +124,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 28,
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#E8E8ED',
+    letterSpacing: 2,
     marginBottom: 32,
   },
   catchphrases: {
