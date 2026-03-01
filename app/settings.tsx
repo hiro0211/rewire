@@ -90,9 +90,9 @@ export default function SettingsScreen() {
   };
 
   const handleManageSubscription = async () => {
-    if (!RevenueCatUI || !subscriptionClient.isReady()) {
+    // iPadではRevenueCatUIのCustomerCenterが不安定なため直接Appleへ遷移
+    if (Platform.isPad || !RevenueCatUI || !subscriptionClient.isReady()) {
       if (Platform.OS === 'ios') {
-        // RevenueCat未初期化時はAppleのサブスク管理ページへ直接遷移
         Linking.openURL('https://apps.apple.com/account/subscriptions');
       } else {
         Alert.alert('サブスクリプション管理', 'App Storeの設定からサブスクリプションを管理できます。');
@@ -103,7 +103,6 @@ export default function SettingsScreen() {
       await RevenueCatUI.presentCustomerCenter();
     } catch (e) {
       console.error('[Settings] Customer Center failed:', e);
-      // フォールバック: Appleのサブスク管理ページ
       if (Platform.OS === 'ios') {
         Linking.openURL('https://apps.apple.com/account/subscriptions');
       } else {

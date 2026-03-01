@@ -1,5 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
+import { Platform, Linking, Alert } from 'react-native';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -31,6 +32,41 @@ jest.mock('@/components/settings/ProfileEditModal', () => {
 jest.mock('@/components/settings/TimePickerModal', () => {
   const { View } = require('react-native');
   return { TimePickerModal: (props: any) => <View testID="time-modal" /> };
+});
+
+jest.mock('@/components/settings/SettingItem', () => {
+  const { TouchableOpacity, Text, Switch, View } = require('react-native');
+  return {
+    SettingItem: ({ label, value, onPress, destructive, type, toggleValue, onToggle }: any) => (
+      <View>
+        {type === 'toggle' ? (
+          <View>
+            <Text>{label}</Text>
+            <Switch testID={`toggle-${label}`} value={toggleValue} onValueChange={onToggle} />
+          </View>
+        ) : (
+          <TouchableOpacity testID={`setting-${label}`} onPress={onPress}>
+            <Text>{label}</Text>
+            {value && <Text>{value}</Text>}
+          </TouchableOpacity>
+        )}
+      </View>
+    ),
+  };
+});
+
+jest.mock('@/components/settings/SettingSection', () => {
+  const { View, Text } = require('react-native');
+  return {
+    SettingSection: ({ title, children }: any) => (
+      <View><Text>{title}</Text>{children}</View>
+    ),
+  };
+});
+
+jest.mock('@/components/Themed', () => {
+  const { Text } = require('react-native');
+  return { Text };
 });
 
 let mockUser: any = null;
@@ -92,6 +128,72 @@ describe('SettingsScreen crash prevention', () => {
 
   it('goalDays=0 → クラッシュしない', () => {
     mockUser = { nickname: 'Test', goalDays: 0 };
+    expect(() => render(<SettingsScreen />)).not.toThrow();
+  });
+});
+
+describe('SettingsScreen iPad / subscription management crash prevention', () => {
+  const originalIsPad = Platform.isPad;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUser = { nickname: 'Test', goalDays: 30, isPro: false };
+  });
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'isPad', { value: originalIsPad, writable: true });
+  });
+
+  it('iPad環境でサブスクリプション管理ボタンタップ → クラッシュしない', async () => {
+    Object.defineProperty(Platform, 'isPad', { value: true, writable: true });
+    const linkingSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
+
+    const { getByTestId } = render(<SettingsScreen />);
+    await fireEvent.press(getByTestId('setting-サブスクリプション管理'));
+
+    expect(linkingSpy).toHaveBeenCalledWith('https://apps.apple.com/account/subscriptions');
+    linkingSpy.mockRestore();
+  });
+
+  it('iPadでPlatform.isPad=true → Apple URLが開かれる（presentCustomerCenter不使用）', async () => {
+    Object.defineProperty(Platform, 'isPad', { value: true, writable: true });
+    const linkingSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
+
+    const { getByTestId } = render(<SettingsScreen />);
+    await fireEvent.press(getByTestId('setting-サブスクリプション管理'));
+
+    expect(linkingSpy).toHaveBeenCalledTimes(1);
+    expect(linkingSpy).toHaveBeenCalledWith('https://apps.apple.com/account/subscriptions');
+    linkingSpy.mockRestore();
+  });
+
+  it('RevenueCatUI=null（isExpoGo）の場合 → フォールバック動作', async () => {
+    Object.defineProperty(Platform, 'isPad', { value: false, writable: true });
+    const linkingSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
+
+    const { getByTestId } = render(<SettingsScreen />);
+    await fireEvent.press(getByTestId('setting-サブスクリプション管理'));
+
+    // isExpoGoのためRevenueCatUI=null → フォールバック
+    expect(linkingSpy).toHaveBeenCalledWith('https://apps.apple.com/account/subscriptions');
+    linkingSpy.mockRestore();
+  });
+
+  it('subscriptionClient未初期化 → フォールバック', async () => {
+    Object.defineProperty(Platform, 'isPad', { value: false, writable: true });
+    const linkingSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
+
+    const { getByTestId } = render(<SettingsScreen />);
+    await fireEvent.press(getByTestId('setting-サブスクリプション管理'));
+
+    // subscriptionClient.isReady()=false → フォールバック
+    expect(linkingSpy).toHaveBeenCalledWith('https://apps.apple.com/account/subscriptions');
+    linkingSpy.mockRestore();
+  });
+
+  it('iPad + user=null → クラッシュしない', () => {
+    Object.defineProperty(Platform, 'isPad', { value: true, writable: true });
+    mockUser = null;
     expect(() => render(<SettingsScreen />)).not.toThrow();
   });
 });
