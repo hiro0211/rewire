@@ -13,7 +13,11 @@ jest.mock('expo-linear-gradient', () => {
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
+jest.mock('expo-web-browser', () => ({
+  openBrowserAsync: jest.fn(),
+}));
 
+import * as WebBrowser from 'expo-web-browser';
 import { PaywallDefault } from '../PaywallDefault';
 
 const mockOffering = {
@@ -43,8 +47,10 @@ describe('PaywallDefault', () => {
   });
 
   it('ロゴとタグラインが表示される', () => {
-    const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('Rewire')).toBeTruthy();
+    const { getByText, UNSAFE_getAllByType } = render(<PaywallDefault {...defaultProps} />);
+    const { Image } = require('react-native');
+    const images = UNSAFE_getAllByType(Image);
+    expect(images.length).toBeGreaterThanOrEqual(1);
     expect(getByText('Reclaim yourself.')).toBeTruthy();
   });
 
@@ -81,5 +87,36 @@ describe('PaywallDefault', () => {
   it('購入復元リンクが表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
     expect(getByText('購入の復元')).toBeTruthy();
+  });
+
+  it('自動更新に関する説明テキストが表示される', () => {
+    const { getByText } = render(<PaywallDefault {...defaultProps} />);
+    expect(getByText(/サブスクリプションは期間終了の24時間前までにキャンセルしない限り自動更新されます/)).toBeTruthy();
+  });
+
+  it('利用規約リンクが表示される', () => {
+    const { getByText } = render(<PaywallDefault {...defaultProps} />);
+    expect(getByText('利用規約')).toBeTruthy();
+  });
+
+  it('プライバシーポリシーリンクが表示される', () => {
+    const { getByText } = render(<PaywallDefault {...defaultProps} />);
+    expect(getByText('プライバシーポリシー')).toBeTruthy();
+  });
+
+  it('利用規約タップでWebBrowserが開く', () => {
+    const { getByText } = render(<PaywallDefault {...defaultProps} />);
+    fireEvent.press(getByText('利用規約'));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
+      'https://hiro0211.github.io/rewire-support/#terms'
+    );
+  });
+
+  it('プライバシーポリシータップでWebBrowserが開く', () => {
+    const { getByText } = render(<PaywallDefault {...defaultProps} />);
+    fireEvent.press(getByText('プライバシーポリシー'));
+    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
+      'https://hiro0211.github.io/rewire-support/#privacy'
+    );
   });
 });

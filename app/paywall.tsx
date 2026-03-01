@@ -80,9 +80,9 @@ export default function PaywallScreen() {
 
         let targetOffering;
         if (offeringType === 'trial') {
-          targetOffering = offerings.all?.['trial'] ?? offerings.all?.['discount'] ?? offerings.current;
+          targetOffering = offerings.all?.['trial'] ?? offerings.all?.['discount plan'] ?? offerings.current;
         } else if (offeringType === 'discount') {
-          targetOffering = offerings.all?.['discount'] ?? offerings.current;
+          targetOffering = offerings.all?.['discount plan'] ?? offerings.current;
         } else {
           targetOffering = offerings.current;
         }
@@ -120,13 +120,21 @@ export default function PaywallScreen() {
   }, [isFromOnboarding, offeringType, router]);
 
   const handlePurchaseCompleted = useCallback(async () => {
-    analyticsClient.logEvent('pro_purchase_completed', { offering: offeringType });
-    await updateUser({ isPro: true });
+    try {
+      analyticsClient.logEvent('pro_purchase_completed', { offering: offeringType });
+      await updateUser({ isPro: true });
+    } catch (e) {
+      console.error('[Paywall] updateUser failed after purchase:', e);
+    }
     router.replace('/(tabs)');
   }, [offeringType, updateUser, router]);
 
   const handleRestoreCompleted = useCallback(async () => {
-    await updateUser({ isPro: true });
+    try {
+      await updateUser({ isPro: true });
+    } catch (e) {
+      console.error('[Paywall] updateUser failed after restore:', e);
+    }
     router.replace('/(tabs)');
   }, [updateUser, router]);
 

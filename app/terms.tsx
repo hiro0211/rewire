@@ -49,9 +49,9 @@ export default function TermsScreen() {
         <SectionTitle>6. アプリ内課金について</SectionTitle>
         <Paragraph>
           本アプリでは、以下のサブスクリプションプランを提供しています。{'\n\n'}
-          ・月額プラン（Rewire Pro Monthly）：¥580/月{'\n'}
-          ・年額プラン（Rewire Pro Annual）：¥4,200/年{'\n\n'}
-          いずれのプランにも7日間の無料トライアル期間があります。無料トライアル終了後、サブスクリプション料金がApple IDに請求されます。{'\n\n'}
+          ・月額プラン（Rewire Pro Monthly）：¥680/月{'\n'}
+          ・年額プラン（Rewire Pro Annual）：¥5,400/年{'\n\n'}
+          いずれのプランにも3日間の無料トライアル期間があります。無料トライアル終了後、サブスクリプション料金がApple IDに請求されます。{'\n\n'}
           サブスクリプションは有効期間終了の24時間前までにキャンセルしない限り自動更新されます。解約はiPhoneの「設定」→「Apple ID」→「サブスクリプション」から行うことができます。
         </Paragraph>
 

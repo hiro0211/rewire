@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -86,9 +86,11 @@ export function BrandScreen() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Animated.Text style={[styles.logo, { opacity: logoOpacity }]}>
-          Rewire
-        </Animated.Text>
+        <Animated.Image
+          source={require('@/assets/images/icon.png')}
+          style={[styles.logo, { opacity: logoOpacity }]}
+          resizeMode="contain"
+        />
 
         <View style={styles.catchphrases}>
           {BRAND_CATCHPHRASES.map((phrase, index) => (
@@ -124,10 +126,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   logo: {
-    fontSize: 42,
-    fontWeight: 'bold',
-    color: '#E8E8ED',
-    letterSpacing: 2,
+    width: 120,
+    height: 120,
+    borderRadius: 28,
     marginBottom: 32,
   },
   catchphrases: {

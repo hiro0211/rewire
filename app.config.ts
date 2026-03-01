@@ -2,7 +2,7 @@ import { ExpoConfig, ConfigContext } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'rewire',
+  name: 'Rewire',
   slug: 'rewire',
   version: '1.0.0',
   icon: './assets/images/icon.png',

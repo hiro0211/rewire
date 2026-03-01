@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW, GRADIENTS } from '@/constants/theme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { CountdownTimer } from './CountdownTimer';
 import { calcMonthlyPrice } from './paywallUtils';
+import { SubscriptionTerms } from './SubscriptionTerms';
 import { isExpoGo } from '@/lib/nativeGuard';
 
 let Purchases: any = null;
@@ -40,11 +41,11 @@ export function PaywallDiscount({
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(annualPackage);
-      if (customerInfo.entitlements.active['pro']) {
+      if (customerInfo.entitlements.active['Rewire Pro']) {
         onPurchaseCompleted();
       }
     } catch (error: any) {
-      if (error.userCancelled) return;
+      if (error.userCancelled || error.code === '1' || error.code === 'PURCHASE_CANCELLED') return;
       Alert.alert('購入エラー', 'お支払い処理中にエラーが発生しました。');
     } finally {
       setPurchasing(false);
@@ -56,7 +57,7 @@ export function PaywallDiscount({
     setPurchasing(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
-      if (customerInfo.entitlements.active['pro']) {
+      if (customerInfo.entitlements.active['Rewire Pro']) {
         onRestoreCompleted();
       } else {
         Alert.alert('復元結果', '有効なサブスクリプションが見つかりませんでした。');
@@ -85,7 +86,11 @@ export function PaywallDiscount({
         </TouchableOpacity>
 
         {/* Logo */}
-        <Text style={styles.logo}>Rewire</Text>
+        <Image
+          source={require('@/assets/images/icon.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
         {/* Headline */}
         <Text style={styles.offerTitle}>ONE TIME OFFER</Text>
@@ -145,6 +150,7 @@ export function PaywallDiscount({
         <Text style={styles.footerNote}>
           いつでもキャンセル · 集中力を取り戻す
         </Text>
+        <SubscriptionTerms />
         <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
           <Text style={styles.restoreText}>購入の復元</Text>
         </TouchableOpacity>
@@ -177,9 +183,9 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.md,
   },
   logo: {
-    color: COLORS.text,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    width: 64,
+    height: 64,
+    borderRadius: 16,
     marginTop: SPACING.xxxl,
     marginBottom: SPACING.xl,
   },
@@ -281,6 +287,7 @@ const styles = StyleSheet.create({
   restoreText: {
     color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
+    marginTop: SPACING.sm,
     textDecorationLine: 'underline',
   },
 });

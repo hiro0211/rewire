@@ -71,7 +71,7 @@ export default function RootLayout() {
       }
       if (cancelled || !Purchases) return;
       const listener = (info: { entitlements: { active: Record<string, unknown> } }) => {
-        const isPro = typeof info.entitlements.active['pro'] !== 'undefined';
+        const isPro = typeof info.entitlements.active['Rewire Pro'] !== 'undefined';
         const currentUser = useUserStore.getState().user;
         if (currentUser && currentUser.isPro !== isPro) {
           useUserStore.getState().updateUser({ isPro });
