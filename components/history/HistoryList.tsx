@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { COLORS, SPACING, SHADOWS } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -9,47 +10,48 @@ import type { DailyCheckin } from '@/types/models';
 
 export const HistoryList = () => {
   const checkins = useCheckinStore((state) => state.checkins);
+  const { colors, shadows } = useTheme();
 
-  const sortedCheckins = [...checkins].sort((a, b) => 
+  const sortedCheckins = [...checkins].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   const renderItem = ({ item }: { item: DailyCheckin }) => {
     const isRelapse = item.watchedPorn;
-    
+
     return (
-      <View style={styles.itemContainer}>
-        <View style={[styles.statusIndicator, isRelapse ? styles.relapse : styles.clean]} />
-        
+      <View style={[styles.itemContainer, { backgroundColor: colors.surface }, shadows.small]}>
+        <View style={[styles.statusIndicator, { backgroundColor: colors.textSecondary }, isRelapse ? { backgroundColor: colors.error } : { backgroundColor: colors.success }]} />
+
         <View style={styles.contentContainer}>
           <View style={styles.headerRow}>
-            <Text style={styles.dateText}>
+            <Text style={[styles.dateText, { color: colors.text }]}>
               {format(new Date(item.date), 'yyyy年MM月dd日 (EEE)', { locale: ja })}
             </Text>
-            <View style={[styles.badge, isRelapse ? styles.relapseBadge : styles.cleanBadge]}>
-                <Text style={[styles.badgeText, isRelapse ? styles.relapseText : styles.cleanText]}>
+            <View style={[styles.badge, isRelapse ? { backgroundColor: colors.error + '20' } : { backgroundColor: colors.success + '20' }]}>
+                <Text style={[styles.badgeText, isRelapse ? { color: colors.error } : { color: colors.success }]}>
                     {isRelapse ? 'リセット' : '達成'}
                 </Text>
             </View>
           </View>
-          
+
           {item.watchedPorn && (
              <View style={styles.tagsRow}>
-                <Text style={styles.tag}>ポルノ視聴</Text>
+                <Text style={[styles.tag, { color: colors.textSecondary, backgroundColor: colors.background, borderColor: colors.border }]}>ポルノ視聴</Text>
              </View>
           )}
 
           {item.memo ? (
-            <Text style={styles.memoText} numberOfLines={2}>
+            <Text style={[styles.memoText, { color: colors.textSecondary }]} numberOfLines={2}>
               {item.memo}
             </Text>
           ) : null}
         </View>
-        
-        <Ionicons 
-            name={isRelapse ? "alert-circle-outline" : "checkmark-circle-outline"} 
-            size={24} 
-            color={isRelapse ? COLORS.error : COLORS.success} 
+
+        <Ionicons
+            name={isRelapse ? "alert-circle-outline" : "checkmark-circle-outline"}
+            size={24}
+            color={isRelapse ? colors.error : colors.success}
         />
       </View>
     );
@@ -58,7 +60,7 @@ export const HistoryList = () => {
   if (checkins.length === 0) {
       return (
           <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>まだ記録がありません</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>まだ記録がありません</Text>
           </View>
       );
   }
@@ -80,25 +82,16 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surface,
     borderRadius: 12,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     alignItems: 'center',
     gap: SPACING.sm,
-    ...SHADOWS.small,
   },
   statusIndicator: {
     width: 4,
     height: '100%',
     borderRadius: 2,
-    backgroundColor: COLORS.textSecondary,
-  },
-  clean: {
-    backgroundColor: COLORS.success,
-  },
-  relapse: {
-    backgroundColor: COLORS.error,
   },
   contentContainer: {
     flex: 1,
@@ -112,28 +105,15 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     fontWeight: '600',
-    color: COLORS.text,
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  cleanBadge: {
-    backgroundColor: COLORS.success + '20', // 20% opacity
-  },
-  relapseBadge: {
-    backgroundColor: COLORS.error + '20',
-  },
   badgeText: {
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  cleanText: {
-    color: COLORS.success,
-  },
-  relapseText: {
-    color: COLORS.error,
   },
   tagsRow: {
     flexDirection: 'row',
@@ -142,17 +122,13 @@ const styles = StyleSheet.create({
   },
   tag: {
     fontSize: 12,
-    color: COLORS.textSecondary,
-    backgroundColor: COLORS.background,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   memoText: {
     fontSize: 14,
-    color: COLORS.textSecondary,
     marginTop: 4,
   },
   emptyContainer: {
@@ -160,7 +136,6 @@ const styles = StyleSheet.create({
       alignItems: 'center',
   },
   emptyText: {
-      color: COLORS.textSecondary,
       fontSize: 16,
   }
 });

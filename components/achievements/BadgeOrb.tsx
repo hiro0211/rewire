@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Ellipse } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { BADGE_TIER_COLORS, type BadgeDefinition } from '@/constants/badges';
+import { useTheme } from '@/hooks/useTheme';
 
 const SIZES = {
   small: 48,
@@ -28,12 +29,13 @@ export function BadgeOrb({ badge, isUnlocked, size = 'medium', onPress }: BadgeO
   const dim = SIZES[size];
   const iconSize = ICON_SIZES[size];
   const tierColor = BADGE_TIER_COLORS[badge.tier];
+  const { colors } = useTheme();
 
   const gradientColors = isUnlocked
     ? (badge.gradientColors as [string, string, ...string[]])
     : ['#2A2A35', '#1A1A22'] as [string, string];
   const iconName = isUnlocked ? badge.iconName : 'lock-closed';
-  const iconColor = isUnlocked ? '#FFFFFF' : '#555555';
+  const iconColor = isUnlocked ? colors.contrastText : colors.textSecondary;
 
   const content = (
     <View

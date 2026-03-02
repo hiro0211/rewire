@@ -1,15 +1,19 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { GLOW, SPACING } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface GlowDividerProps {
   color?: string;
 }
 
-export function GlowDivider({ color = GLOW.purple }: GlowDividerProps) {
+export function GlowDivider({ color }: GlowDividerProps) {
+  const { glow } = useTheme();
+  const resolvedColor = color ?? glow.purple;
+
   return (
     <View testID="glow-divider" style={styles.container}>
-      <View style={[styles.line, { backgroundColor: color, shadowColor: color }]} />
+      <View style={[styles.line, { backgroundColor: resolvedColor, shadowColor: resolvedColor }]} />
     </View>
   );
 }

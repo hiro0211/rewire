@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, StyleSheet, ImageSourcePropType } from 'react-native';
-import { COLORS, RADIUS } from '@/constants/theme';
+import { RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface HighlightPosition {
   top: number;
@@ -15,9 +16,11 @@ interface ScreenshotStepProps {
 }
 
 export function ScreenshotStep({ image, highlight }: ScreenshotStepProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
-      <Image source={image} style={styles.image} resizeMode="contain" />
+    <View style={[styles.container, { borderColor: colors.border }]}>
+      <Image source={image} style={[styles.image, { backgroundColor: colors.surface }]} resizeMode="contain" />
       <View
         style={[
           styles.highlight,
@@ -26,6 +29,8 @@ export function ScreenshotStep({ image, highlight }: ScreenshotStepProps) {
             left: `${highlight.left}%` as any,
             width: `${highlight.width}%` as any,
             height: `${highlight.height}%` as any,
+            borderColor: colors.primary,
+            backgroundColor: `${colors.primary}26`,
           },
         ]}
       />
@@ -37,7 +42,6 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: COLORS.border,
     overflow: 'hidden',
     position: 'relative',
   },
@@ -45,13 +49,10 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 9 / 16,
     maxHeight: 340,
-    backgroundColor: COLORS.surface,
   },
   highlight: {
     position: 'absolute',
     borderWidth: 2,
-    borderColor: COLORS.primary,
     borderRadius: RADIUS.sm,
-    backgroundColor: `${COLORS.primary}26`,
   },
 });

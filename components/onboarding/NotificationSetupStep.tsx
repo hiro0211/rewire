@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface NotificationSetupStepProps {
   selectedTime: string;
@@ -20,25 +21,27 @@ export const NotificationSetupStep = ({
   selectedTime,
   onTimeChange,
 }: NotificationSetupStepProps) => {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
-      <View style={styles.iconContainer}>
-        <Ionicons name="notifications-outline" size={48} color={COLORS.primary} />
+      <View style={[styles.iconContainer, { backgroundColor: colors.surfaceHighlight }]}>
+        <Ionicons name="notifications-outline" size={48} color={colors.primary} />
       </View>
 
-      <Text style={styles.title}>{'毎日の振り返りが\n成長の鍵です'}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{'毎日の振り返りが\n成長の鍵です'}</Text>
 
-      <Text style={styles.description}>
+      <Text style={[styles.description, { color: colors.textSecondary }]}>
         {'記録を続けることで、あなたの変化が\n数字として見えてきます。'}
       </Text>
 
-      <Text style={styles.pickerLabel}>何時に振り返りますか？</Text>
+      <Text style={[styles.pickerLabel, { color: colors.text }]}>何時に振り返りますか？</Text>
 
-      <View style={styles.pickerContainer}>
+      <View style={[styles.pickerContainer, { backgroundColor: colors.pillBackground }]}>
         <Picker
           selectedValue={selectedTime}
           onValueChange={(value) => onTimeChange(value)}
-          itemStyle={styles.pickerItem}
+          itemStyle={[styles.pickerItem, { color: colors.text }]}
         >
           {TIME_SLOTS.map((time) => (
             <Picker.Item key={time} label={time} value={time} />
@@ -59,7 +62,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.lg,
@@ -67,14 +69,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.md,
     lineHeight: 34,
   },
   description: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: SPACING.xl,
@@ -82,18 +82,15 @@ const styles = StyleSheet.create({
   pickerLabel: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
-    color: COLORS.text,
     marginBottom: SPACING.sm,
     alignSelf: 'flex-start',
   },
   pickerContainer: {
     width: '100%',
-    backgroundColor: COLORS.pillBackground,
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
   },
   pickerItem: {
-    color: COLORS.text,
     fontSize: 22,
   },
 });

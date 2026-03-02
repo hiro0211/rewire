@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { View, StyleSheet, Text } from 'react-native';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { getScoreLevel } from '@/lib/assessment/scoreCalculator';
 
 interface ScoreResultStepProps {
@@ -16,10 +16,11 @@ export function ScoreResultStep({ score, maxScore }: ScoreResultStepProps) {
   const yourRatio = Math.min(score / maxScore, 1);
   const averageRatio = AVERAGE_SCORE_RATIO;
   const MAX_BAR_HEIGHT = 160;
+  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>分析完了</Text>
+      <Text style={[styles.title, { color: colors.text }]}>分析完了</Text>
 
       <Text style={[styles.levelLabel, { color: scoreLevel.color }]}>
         {scoreLevel.label}
@@ -42,7 +43,7 @@ export function ScoreResultStep({ score, maxScore }: ScoreResultStepProps) {
               },
             ]}
           />
-          <Text style={styles.barLabel}>あなた</Text>
+          <Text style={[styles.barLabel, { color: colors.textSecondary }]}>あなた</Text>
         </View>
         <View style={styles.barColumn}>
           <View
@@ -51,15 +52,15 @@ export function ScoreResultStep({ score, maxScore }: ScoreResultStepProps) {
               styles.bar,
               {
                 height: Math.max(averageRatio * MAX_BAR_HEIGHT, 20),
-                backgroundColor: COLORS.textSecondary,
+                backgroundColor: colors.textSecondary,
               },
             ]}
           />
-          <Text style={styles.barLabel}>平均</Text>
+          <Text style={[styles.barLabel, { color: colors.textSecondary }]}>平均</Text>
         </View>
       </View>
 
-      <Text style={styles.message}>{scoreLevel.message}</Text>
+      <Text style={[styles.message, { color: colors.textSecondary }]}>{scoreLevel.message}</Text>
     </View>
   );
 }
@@ -74,7 +75,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xl,
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.lg,
   },
   score: {
@@ -105,11 +105,9 @@ const styles = StyleSheet.create({
   },
   barLabel: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
   },
   message: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '@/components/ui/Card';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import type { DailyUsage } from '@/types/usage';
 
 interface WeeklyBarChartProps {
@@ -28,17 +29,18 @@ function formatMinutes(ms: number): string {
 
 export function WeeklyBarChart({ data }: WeeklyBarChartProps) {
   const maxDuration = Math.max(...data.map((d) => d.totalDuration), 1);
+  const { colors } = useTheme();
 
   return (
     <Card style={styles.container}>
-      <Text style={styles.title}>週間推移</Text>
+      <Text style={[styles.title, { color: colors.text }]}>週間推移</Text>
       <View style={styles.chartArea}>
         {data.map((day, i) => {
           const height = (day.totalDuration / maxDuration) * BAR_MAX_HEIGHT;
           const isToday = i === data.length - 1;
           return (
             <View key={day.date} style={styles.barColumn}>
-              <Text style={styles.barValue}>
+              <Text style={[styles.barValue, { color: colors.textSecondary }]}>
                 {day.totalDuration > 0 ? formatMinutes(day.totalDuration) : ''}
               </Text>
               <View style={styles.barTrack}>
@@ -48,13 +50,13 @@ export function WeeklyBarChart({ data }: WeeklyBarChartProps) {
                     {
                       height: Math.max(height, 2),
                       backgroundColor: isToday
-                        ? COLORS.primary
-                        : `${COLORS.primary}80`,
+                        ? colors.primary
+                        : `${colors.primary}80`,
                     },
                   ]}
                 />
               </View>
-              <Text style={[styles.dayLabel, isToday && styles.dayLabelActive]}>
+              <Text style={[styles.dayLabel, { color: colors.textSecondary }, isToday && { color: colors.primary, fontWeight: '600' }]}>
                 {getDayLabel(day.date)}
               </Text>
             </View>
@@ -70,7 +72,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   title: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
     marginBottom: SPACING.lg,
@@ -86,7 +87,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   barValue: {
-    color: COLORS.textSecondary,
     fontSize: 10,
     marginBottom: 4,
     height: 14,
@@ -104,12 +104,7 @@ const styles = StyleSheet.create({
     minHeight: 2,
   },
   dayLabel: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.xs,
-  },
-  dayLabelActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
   },
 });

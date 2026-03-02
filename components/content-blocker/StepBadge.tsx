@@ -1,29 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface StepBadgeProps {
   step: number;
 }
 
 export function StepBadge({ step }: StepBadgeProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.badge}>
-      <Text style={styles.text}>STEP {step}</Text>
+    <View style={[styles.badge, { backgroundColor: `${colors.primary}26` }]}>
+      <Text style={[styles.text, { color: colors.primary }]}>STEP {step}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: `${COLORS.primary}26`,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     alignSelf: 'flex-start',
   },
   text: {
-    color: COLORS.primary,
     fontWeight: 'bold',
     fontSize: FONT_SIZE.xs,
   },

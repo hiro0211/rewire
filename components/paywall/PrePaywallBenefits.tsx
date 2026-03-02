@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, SPACING, FONT_SIZE, RADIUS, GRADIENTS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
@@ -24,6 +24,7 @@ interface PrePaywallBenefitsProps {
 }
 
 export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywallBenefitsProps) {
+  const { colors } = useTheme();
   const targetDate = calcTargetDate(goalDays);
 
   return (
@@ -35,26 +36,26 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
         >
           {/* ── パーソナライズヘッダー ── */}
           <View style={styles.headerSection}>
-            <Text style={styles.checkmark}>✓</Text>
+            <Text style={[styles.checkmark, { color: colors.success }]}>✓</Text>
             <Image
               source={require('@/assets/images/icon.png')}
               style={styles.appIcon}
               resizeMode="contain"
             />
-            <Text style={styles.headerTitle}>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
               {nickname}さん、{'\n'}あなた専用のプランを{'\n'}作成しました。
             </Text>
-            <Text style={styles.headerSub}>目標達成日:</Text>
-            <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>{targetDate}</Text>
+            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>目標達成日:</Text>
+            <View style={[styles.dateBadge, { backgroundColor: colors.surfaceHighlight }]}>
+              <Text style={[styles.dateText, { color: colors.text }]}>{targetDate}</Text>
             </View>
           </View>
 
           {/* ── ベネフィットタグ群 ── */}
-          <Text style={styles.sectionHeadline}>
+          <Text style={[styles.sectionHeadline, { color: colors.text }]}>
             Rewireで{'\n'}自分を変える。
           </Text>
-          <Text style={styles.sectionSubheadline}>
+          <Text style={[styles.sectionSubheadline, { color: colors.textSecondary }]}>
             ポルノを見て後悔するの{'\n'}今日でやめませんか？
           </Text>
 
@@ -85,9 +86,9 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
 
           {/* ── 目標日付の再表示 ── */}
           <View style={styles.goalReminder}>
-            <Text style={styles.goalReminderSub}>目標達成日:</Text>
-            <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>{targetDate}</Text>
+            <Text style={[styles.goalReminderSub, { color: colors.textSecondary }]}>目標達成日:</Text>
+            <View style={[styles.dateBadge, { backgroundColor: colors.surfaceHighlight }]}>
+              <Text style={[styles.dateText, { color: colors.text }]}>{targetDate}</Text>
             </View>
           </View>
 
@@ -110,7 +111,7 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
         </ScrollView>
 
         {/* ── 固定フッター ── */}
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
           <Button
             title="Rewireを始める"
             onPress={onContinue}
@@ -118,7 +119,7 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
             size="lg"
             style={styles.ctaButton}
           />
-          <Text style={styles.footerNote}>
+          <Text style={[styles.footerNote, { color: colors.textSecondary }]}>
             いつでもキャンセル可能
           </Text>
         </View>
@@ -144,7 +145,6 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 40,
-    color: COLORS.success,
     marginBottom: SPACING.md,
   },
   appIcon: {
@@ -154,7 +154,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   headerTitle: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: '800',
     textAlign: 'center',
@@ -162,32 +161,27 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   headerSub: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.sm,
   },
   dateBadge: {
-    backgroundColor: COLORS.surfaceHighlight,
     paddingHorizontal: SPACING.xl,
     paddingVertical: SPACING.md,
     borderRadius: RADIUS.full,
   },
   dateText: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
   },
 
   // ── ベネフィットタグ ──
   sectionHeadline: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxxl,
     fontWeight: '900',
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   sectionSubheadline: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
     textAlign: 'center',
@@ -206,7 +200,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xxl,
   },
   goalReminderSub: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.sm,
   },
@@ -220,9 +213,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.screenPadding,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.xl,
-    backgroundColor: COLORS.background,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
     alignItems: 'center',
   },
   ctaButton: {
@@ -230,7 +221,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   footerNote: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     textAlign: 'center',
   },

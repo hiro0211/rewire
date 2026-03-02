@@ -1,20 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export function UsageEmptyState() {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
-      <View style={styles.iconContainer}>
+      <View style={[styles.iconContainer, { backgroundColor: colors.surfaceHighlight }]}>
         <Ionicons
           name="bar-chart-outline"
           size={64}
-          color={COLORS.textSecondary}
+          color={colors.textSecondary}
         />
       </View>
-      <Text style={styles.title}>データがありません</Text>
-      <Text style={styles.description}>
+      <Text style={[styles.title, { color: colors.text }]}>データがありません</Text>
+      <Text style={[styles.description, { color: colors.textSecondary }]}>
         {'チェックインを続けると\nここに統計が表示されます'}
       </Text>
     </View>
@@ -32,19 +35,16 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xxl,
   },
   title: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     marginBottom: SPACING.sm,
   },
   description: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
     lineHeight: 24,

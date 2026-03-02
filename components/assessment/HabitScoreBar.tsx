@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet } from 'react-native';
+import { View, Animated, StyleSheet, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Text } from '@/components/Themed';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface HabitScoreBarProps {
   score: number;
@@ -13,6 +13,7 @@ interface HabitScoreBarProps {
 export function HabitScoreBar({ score, maxScore, animated = false }: HabitScoreBarProps) {
   const percentage = Math.min((score / maxScore) * 100, 100);
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (animated) {
@@ -41,15 +42,15 @@ export function HabitScoreBar({ score, maxScore, animated = false }: HabitScoreB
           style={styles.gradient}
         />
         <Animated.View style={[styles.markerContainer, { left: markerLeft }]}>
-          <View style={styles.marker} />
+          <View style={[styles.marker, { borderTopColor: colors.text }]} />
         </Animated.View>
       </View>
 
       <View style={styles.labels}>
-        <Text style={styles.label}>影響 小</Text>
-        <Text style={styles.label}>影響 中</Text>
-        <Text style={styles.label}>影響 大</Text>
-        <Text style={styles.label}>深刻</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>影響 小</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>影響 中</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>影響 大</Text>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>深刻</Text>
       </View>
     </View>
   );
@@ -80,7 +81,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: COLORS.text,
   },
   labels: {
     flexDirection: 'row',
@@ -89,6 +89,5 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
   },
 });

@@ -3,11 +3,13 @@ import { Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { ARTICLES } from '@/constants/articles';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
   const article = ARTICLES.find((a) => a.id === id);
+  const { colors } = useTheme();
 
   if (!article) return null;
 
@@ -17,13 +19,13 @@ export default function ArticleDetailScreen() {
             headerShown: true,
             headerTitle: '',
             headerBackTitle: '戻る',
-            headerStyle: { backgroundColor: COLORS.background },
-            headerTintColor: COLORS.text,
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
         }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.category}>{article.category}</Text>
-        <Text style={styles.title}>{article.title}</Text>
-        <Text style={styles.body}>{article.content}</Text>
+        <Text style={[styles.category, { color: colors.primary }]}>{article.category}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{article.title}</Text>
+        <Text style={[styles.body, { color: colors.text }]}>{article.content}</Text>
       </ScrollView>
     </SafeAreaWrapper>
   );
@@ -34,19 +36,16 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
   },
   category: {
-    color: COLORS.primary,
     fontSize: FONT_SIZE.sm,
     fontWeight: 'bold',
     marginBottom: SPACING.sm,
   },
   title: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
     marginBottom: SPACING.xl,
   },
   body: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
     lineHeight: 24,
   },

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, SPACING, FONT_SIZE, RADIUS, GRADIENTS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
@@ -28,6 +29,7 @@ export function PaywallTrial({
   onPurchaseCompleted,
   onRestoreCompleted,
 }: PaywallTrialProps) {
+  const { colors, gradients } = useTheme();
   const [purchasing, setPurchasing] = useState(false);
 
   const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
@@ -80,11 +82,11 @@ export function PaywallTrial({
         {/* Close button */}
         <TouchableOpacity
           testID="close-button"
-          style={styles.closeButton}
+          style={[styles.closeButton, { backgroundColor: colors.surfaceHighlight }]}
           onPress={onDismiss}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <Text style={styles.closeText}>✕</Text>
+          <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
         </TouchableOpacity>
 
         {/* Logo */}
@@ -95,8 +97,8 @@ export function PaywallTrial({
         />
 
         {/* Headline */}
-        <Text style={styles.offerTitle}>SPECIAL OFFER</Text>
-        <Text style={styles.offerSub}>あなたへの特別オファー</Text>
+        <Text style={[styles.offerTitle, { color: colors.text }]}>SPECIAL OFFER</Text>
+        <Text style={[styles.offerSub, { color: colors.textSecondary }]}>あなたへの特別オファー</Text>
 
         {/* Big discount card */}
         <LinearGradient
@@ -105,28 +107,28 @@ export function PaywallTrial({
           end={{ x: 1, y: 1 }}
           style={styles.discountCard}
         >
-          <Text style={styles.discountNumber}>69%</Text>
+          <Text style={[styles.discountNumber, { color: colors.contrastText }]}>69%</Text>
           <Text style={styles.discountOff}>OFF</Text>
         </LinearGradient>
 
         {/* FREE TRIAL Ribbon */}
         <View style={styles.ribbonContainer}>
           <LinearGradient
-            colors={[...GRADIENTS.accent]}
+            colors={gradients.accent as [string, string, ...string[]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.ribbon}
           >
-            <Text style={styles.ribbonText}>FREE TRIAL</Text>
+            <Text style={[styles.ribbonText, { color: colors.contrastText }]}>FREE TRIAL</Text>
           </LinearGradient>
         </View>
 
         {/* Trial info */}
-        <Text style={styles.trialTitle}>Rewireを3日間無料でお試し</Text>
-        <Text style={styles.trialSub}>
+        <Text style={[styles.trialTitle, { color: colors.text }]}>Rewireを3日間無料でお試し</Text>
+        <Text style={[styles.trialSub, { color: colors.textSecondary }]}>
           3日間無料、その後 {formatPrice(annualPrice, currencyCode)}/年
         </Text>
-        <Text style={styles.trialHighlight}>今すぐ支払いなし</Text>
+        <Text style={[styles.trialHighlight, { color: colors.text }]}>今すぐ支払いなし</Text>
 
         {/* CTA */}
         <Button
@@ -144,7 +146,7 @@ export function PaywallTrial({
 
         {/* Restore */}
         <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-          <Text style={styles.restoreText}>購入の復元</Text>
+          <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaWrapper>
@@ -166,12 +168,10 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
   },
   logo: {
@@ -181,14 +181,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   offerTitle: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxxl,
     fontWeight: '900',
     textAlign: 'center',
     letterSpacing: 2,
   },
   offerSub: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     textAlign: 'center',
     marginTop: SPACING.sm,
@@ -205,7 +203,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   discountNumber: {
-    color: '#FFFFFF',
     fontSize: 64,
     fontWeight: '900',
   },
@@ -225,26 +222,22 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.sm,
   },
   ribbonText: {
-    color: '#FFFFFF',
     fontSize: FONT_SIZE.lg,
     fontWeight: '900',
     letterSpacing: 3,
   },
   trialTitle: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xl,
     fontWeight: '800',
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   trialSub: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   trialHighlight: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
     textAlign: 'center',
@@ -255,7 +248,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   restoreText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.sm,
     textDecorationLine: 'underline',

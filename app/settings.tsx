@@ -1,34 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Linking, Platform, AppState } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { View, StyleSheet, ScrollView, Alert, Linking, Platform, AppState, Text } from 'react-native';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
 import { SettingSection } from '@/components/settings/SettingSection';
 import { ProfileEditModal } from '@/components/settings/ProfileEditModal';
 import { TimePickerModal } from '@/components/settings/TimePickerModal';
+import { ThemePickerModal } from '@/components/settings/ThemePickerModal';
 import { useUserStore } from '@/stores/userStore';
+import { useThemeStore } from '@/stores/themeStore';
+import { useTheme } from '@/hooks/useTheme';
 import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
 import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
 
-import { isExpoGo } from '@/lib/nativeGuard';
-import { Text } from '@/components/Themed';
-import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
+import type { ThemePreference } from '@/types/theme';
 
-let RevenueCatUI: any = null;
-if (!isExpoGo) {
-  try {
-    RevenueCatUI = require('react-native-purchases-ui').default;
-  } catch {
-    // Native module not available
-  }
-}
+const THEME_LABELS: Record<ThemePreference, string> = {
+  system: 'システム設定',
+  light: 'ライトモード',
+  dark: 'ダークモード',
+};
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, updateUser, reset } = useUserStore();
+  const { colors } = useTheme();
+  const themePreference = useThemeStore((s) => s.themePreference);
 
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
+  const [isThemePickerVisible, setThemePickerVisible] = useState(false);
   const [blockerStatus, setBlockerStatus] = useState<'checking' | 'enabled' | 'disabled'>('checking');
 
   const checkBlockerStatus = async () => {
@@ -89,32 +90,18 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleManageSubscription = async () => {
-    // iPadではRevenueCatUIのCustomerCenterが不安定なため直接Appleへ遷移
-    if (Platform.isPad || !RevenueCatUI || !subscriptionClient.isReady()) {
-      if (Platform.OS === 'ios') {
-        Linking.openURL('https://apps.apple.com/account/subscriptions');
-      } else {
-        Alert.alert('サブスクリプション管理', 'App Storeの設定からサブスクリプションを管理できます。');
-      }
-      return;
-    }
-    try {
-      await RevenueCatUI.presentCustomerCenter();
-    } catch (e) {
-      console.error('[Settings] Customer Center failed:', e);
-      if (Platform.OS === 'ios') {
-        Linking.openURL('https://apps.apple.com/account/subscriptions');
-      } else {
-        Alert.alert('エラー', 'サブスクリプション管理を開けませんでした。');
-      }
+  const handleManageSubscription = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('https://apps.apple.com/account/subscriptions');
+    } else {
+      Alert.alert('サブスクリプション管理', 'App Storeの設定からサブスクリプションを管理できます。');
     }
   };
 
   if (!user) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* Profile Section */}
         <SettingSection title="プロフィール">
@@ -176,6 +163,17 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
+        {/* Appearance Section */}
+        <SettingSection title="外観">
+          <SettingItem
+            label="テーマ"
+            value={THEME_LABELS[themePreference]}
+            icon="color-palette-outline"
+            onPress={() => setThemePickerVisible(true)}
+            isLast
+          />
+        </SettingSection>
+
         {/* Subscription Section */}
         <SettingSection title="サブスクリプション">
           <SettingItem
@@ -215,7 +213,7 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        <Text style={styles.version}>Version 1.0.0 (Build 1)</Text>
+        <Text style={[styles.version, { color: colors.textSecondary }]}>Version 1.0.0 (Build 1)</Text>
       </ScrollView>
 
       {/* Modals */}
@@ -233,6 +231,16 @@ export default function SettingsScreen() {
         onClose={() => setTimePickerVisible(false)}
         onSave={handleTimeChange}
       />
+
+      <ThemePickerModal
+        visible={isThemePickerVisible}
+        currentPreference={themePreference}
+        onSelect={(pref) => {
+          useThemeStore.getState().setThemePreference(pref);
+          setThemePickerVisible(false);
+        }}
+        onClose={() => setThemePickerVisible(false)}
+      />
     </View>
   );
 }
@@ -240,14 +248,12 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   content: {
     paddingBottom: SPACING.xl,
   },
   version: {
     textAlign: 'center',
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.xl,
     marginBottom: SPACING.lg,

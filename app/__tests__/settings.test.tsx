@@ -86,10 +86,32 @@ jest.mock('@/components/settings/TimePickerModal', () => {
   return { TimePickerModal: () => <View /> };
 });
 
-jest.mock('@/components/Themed', () => {
-  const { Text } = require('react-native');
-  return { Text };
+jest.mock('@/stores/themeStore', () => ({
+  useThemeStore: Object.assign(
+    (selector: any) => selector({ themePreference: 'dark' }),
+    { getState: () => ({ themePreference: 'dark', setThemePreference: jest.fn() }) }
+  ),
+}));
+
+jest.mock('@/hooks/useTheme', () => ({
+  useTheme: () => ({
+    colors: require('@/constants/colorPalettes').DARK_COLORS,
+    gradients: require('@/constants/colorPalettes').DARK_GRADIENTS,
+    glow: require('@/constants/colorPalettes').DARK_GLOW,
+    shadows: require('@/constants/colorPalettes').DARK_SHADOWS,
+    mode: 'dark',
+    isDark: true,
+  }),
+}));
+
+jest.mock('@/components/settings/ThemePickerModal', () => {
+  const { View } = require('react-native');
+  return { ThemePickerModal: () => <View /> };
 });
+
+jest.mock('@/lib/subscription/subscriptionClient', () => ({
+  subscriptionClient: { isReady: () => false },
+}));
 
 import SettingsScreen from '../settings';
 

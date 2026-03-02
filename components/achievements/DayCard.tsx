@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
-import { COLORS, RADIUS, FONT_SIZE } from '@/constants/theme';
+import { View, StyleSheet, Text } from 'react-native';
+import { RADIUS, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface DayCardProps {
   day: number;
@@ -11,18 +11,29 @@ interface DayCardProps {
 }
 
 export function DayCard({ day, label, isReached, isCurrent }: DayCardProps) {
+  const { colors } = useTheme();
+
   return (
     <View
       style={[
         styles.card,
-        isReached && styles.reached,
-        isCurrent && styles.current,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+        isReached && { backgroundColor: 'rgba(0, 212, 255, 0.12)', borderColor: colors.cyan },
+        isCurrent && {
+          borderWidth: 2,
+          borderColor: colors.cyan,
+          shadowColor: colors.cyan,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.4,
+          shadowRadius: 8,
+          elevation: 4,
+        },
       ]}
     >
-      <Text style={[styles.dayLabel, isReached && styles.reachedText]}>DAY</Text>
-      <Text style={[styles.day, isReached && styles.reachedText]}>{day}</Text>
+      <Text style={[styles.dayLabel, { color: colors.textSecondary }, isReached && { color: colors.cyan }]}>DAY</Text>
+      <Text style={[styles.day, { color: colors.textSecondary }, isReached && { color: colors.cyan }]}>{day}</Text>
       {label ? (
-        <Text style={[styles.name, isReached && styles.reachedText]} numberOfLines={1}>
+        <Text style={[styles.name, { color: colors.textSecondary }, isReached && { color: colors.cyan }]} numberOfLines={1}>
           {label}
         </Text>
       ) : null}
@@ -35,41 +46,20 @@ const styles = StyleSheet.create({
     width: 72,
     height: 88,
     borderRadius: RADIUS.md,
-    backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 4,
-  },
-  reached: {
-    backgroundColor: 'rgba(0, 212, 255, 0.12)',
-    borderColor: COLORS.cyan,
-  },
-  current: {
-    borderWidth: 2,
-    borderColor: COLORS.cyan,
-    shadowColor: COLORS.cyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 4,
   },
   dayLabel: {
     fontSize: 10,
-    color: COLORS.textSecondary,
   },
   day: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
-    color: COLORS.textSecondary,
   },
   name: {
     fontSize: 9,
-    color: COLORS.textSecondary,
     marginTop: 2,
-  },
-  reachedText: {
-    color: COLORS.cyan,
   },
 });

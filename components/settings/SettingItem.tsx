@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SettingItemProps {
   label: string;
@@ -26,9 +27,15 @@ export const SettingItem = ({
   destructive = false,
   isLast = false,
 }: SettingItemProps) => {
+  const { colors } = useTheme();
+
   return (
     <TouchableOpacity
-      style={[styles.container, isLast && styles.containerLast]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface, borderBottomColor: colors.surfaceHighlight },
+        isLast && styles.containerLast,
+      ]}
       onPress={type === 'toggle' ? () => onToggle?.(!toggleValue) : onPress}
       disabled={type === 'toggle' || !onPress}
       activeOpacity={type === 'toggle' ? 1 : 0.7}
@@ -39,32 +46,32 @@ export const SettingItem = ({
             <Ionicons
               name={icon}
               size={20}
-              color={destructive ? COLORS.error : COLORS.textSecondary}
+              color={destructive ? colors.error : colors.textSecondary}
             />
           </View>
         )}
-        <Text style={[styles.label, destructive && styles.destructiveLabel]}>
+        <Text style={[styles.label, { color: colors.text }, destructive && { color: colors.error }]}>
           {label}
         </Text>
       </View>
 
       <View style={styles.rightContent}>
         {type === 'value' && (
-          <Text style={styles.valueText}>{value}</Text>
+          <Text style={[styles.valueText, { color: colors.textSecondary }]}>{value}</Text>
         )}
 
         {type === 'toggle' && (
           <Switch
             value={toggleValue}
             onValueChange={onToggle}
-            trackColor={{ false: COLORS.surfaceHighlight, true: COLORS.primary }}
-            thumbColor={'#FFF'}
-            ios_backgroundColor={COLORS.surfaceHighlight}
+            trackColor={{ false: colors.surfaceHighlight, true: colors.primary }}
+            thumbColor={colors.surface}
+            ios_backgroundColor={colors.surfaceHighlight}
           />
         )}
 
         {onPress && (type === 'link' || type === 'value') && (
-          <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
         )}
       </View>
     </TouchableOpacity>
@@ -78,9 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceHighlight,
   },
   containerLast: {
     borderBottomWidth: 0,
@@ -96,10 +101,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
-  },
-  destructiveLabel: {
-    color: COLORS.error,
   },
   rightContent: {
     flexDirection: 'row',
@@ -108,6 +109,5 @@ const styles = StyleSheet.create({
   },
   valueText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
   },
 });

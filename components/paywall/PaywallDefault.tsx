@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW, GRADIENTS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
@@ -38,6 +39,7 @@ export function PaywallDefault({
   onPurchaseCompleted,
   onRestoreCompleted,
 }: PaywallDefaultProps) {
+  const { colors } = useTheme();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
   const [purchasing, setPurchasing] = useState(false);
 
@@ -102,11 +104,11 @@ export function PaywallDefault({
           {/* Close button */}
           <TouchableOpacity
             testID="close-button"
-            style={styles.closeButton}
+            style={[styles.closeButton, { backgroundColor: colors.surfaceHighlight }]}
             onPress={onDismiss}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Text style={styles.closeText}>✕</Text>
+            <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
           </TouchableOpacity>
 
           {/* Logo + Tagline */}
@@ -115,7 +117,7 @@ export function PaywallDefault({
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.tagline}>自分を、取り戻そう。</Text>
+          <Text style={[styles.tagline, { color: colors.cyan }]}>自分を、取り戻そう。</Text>
 
           {/* Plan Selector */}
           <View style={styles.planSelectorWrap}>
@@ -131,10 +133,10 @@ export function PaywallDefault({
           <GlowDivider />
 
           {/* Headline */}
-          <Text style={styles.headline}>
+          <Text style={[styles.headline, { color: colors.text }]}>
             意志力の問題じゃない。{'\n'}ポルノを自動ブロック。
           </Text>
-          <Text style={styles.subHeadline}>
+          <Text style={[styles.subHeadline, { color: colors.textSecondary }]}>
             Rewireが科学的に設計されたプログラムであなたの回復をサポートします
           </Text>
 
@@ -147,8 +149,8 @@ export function PaywallDefault({
         </ScrollView>
 
         {/* Fixed Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.cancelNote}>いつでもキャンセル可能</Text>
+        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
+          <Text style={[styles.cancelNote, { color: colors.textSecondary }]}>いつでもキャンセル可能</Text>
           <Button
             title="今すぐ始める"
             onPress={handlePurchase}
@@ -158,10 +160,10 @@ export function PaywallDefault({
             disabled={purchasing}
             style={styles.ctaButton}
           />
-          <Text style={styles.billingNote}>{billingText}</Text>
+          <Text style={[styles.billingNote, { color: colors.textSecondary }]}>{billingText}</Text>
           <SubscriptionTerms />
           <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-            <Text style={styles.restoreText}>購入の復元</Text>
+            <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -189,12 +191,10 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
   },
   logo: {
@@ -205,7 +205,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
   },
   tagline: {
-    color: COLORS.cyan,
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
     textAlign: 'center',
@@ -215,7 +214,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   headline: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xl,
     fontWeight: '800',
     textAlign: 'center',
@@ -223,7 +221,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   subHeadline: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     textAlign: 'center',
     marginTop: SPACING.sm,
@@ -238,12 +235,9 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.md,
     paddingBottom: SPACING.sm,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    backgroundColor: COLORS.background,
     alignItems: 'center',
   },
   cancelNote: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginBottom: SPACING.sm,
   },
@@ -251,12 +245,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   billingNote: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.sm,
   },
   restoreText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.sm,
     textDecorationLine: 'underline',

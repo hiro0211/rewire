@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, StatusBar, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SafeAreaWrapperProps {
   children: React.ReactNode;
@@ -10,14 +10,15 @@ interface SafeAreaWrapperProps {
 
 export function SafeAreaWrapper({ children, style }: SafeAreaWrapperProps) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
 
   return (
     <View style={[
       styles.container,
-      { paddingTop: insets.top, paddingBottom: insets.bottom },
+      { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom },
       style
     ]}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       {children}
     </View>
   );
@@ -26,6 +27,5 @@ export function SafeAreaWrapper({ children, style }: SafeAreaWrapperProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
 });

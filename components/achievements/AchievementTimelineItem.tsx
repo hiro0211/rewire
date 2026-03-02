@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
+import { View, StyleSheet, Text } from 'react-native';
 import { BadgeOrb } from './BadgeOrb';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { BADGE_TIER_COLORS, type BadgeDefinition } from '@/constants/badges';
 
 interface AchievementTimelineItemProps {
@@ -20,6 +20,7 @@ export function AchievementTimelineItem({
 }: AchievementTimelineItemProps) {
   const tierColor = BADGE_TIER_COLORS[badge.tier];
   const isLeft = position === 'left';
+  const { colors } = useTheme();
 
   return (
     <View style={styles.wrapper}>
@@ -29,7 +30,7 @@ export function AchievementTimelineItem({
           <View
             style={[
               styles.connector,
-              { borderColor: isUnlocked ? tierColor : COLORS.border },
+              { borderColor: isUnlocked ? tierColor : colors.border },
             ]}
           />
         </View>
@@ -44,6 +45,7 @@ export function AchievementTimelineItem({
           <Text
             style={[
               styles.name,
+              { color: colors.text },
               !isUnlocked && styles.locked,
             ]}
           >
@@ -52,12 +54,14 @@ export function AchievementTimelineItem({
           <View
             style={[
               styles.dayPill,
+              { borderColor: colors.border },
               isUnlocked && { borderColor: tierColor },
             ]}
           >
             <Text
               style={[
                 styles.dayText,
+                { color: colors.textSecondary },
                 isUnlocked && { color: tierColor },
               ]}
             >
@@ -67,6 +71,7 @@ export function AchievementTimelineItem({
           <Text
             style={[
               styles.description,
+              { color: colors.textSecondary },
               !isUnlocked && styles.locked,
             ]}
             numberOfLines={2}
@@ -121,7 +126,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
-    color: COLORS.text,
     marginBottom: 4,
   },
   dayPill: {
@@ -129,17 +133,14 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: RADIUS.full,
     borderWidth: 1,
-    borderColor: COLORS.border,
     marginBottom: 4,
   },
   dayText: {
     fontSize: FONT_SIZE.xs,
     fontWeight: '600',
-    color: COLORS.textSecondary,
   },
   description: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     lineHeight: 20,
   },
   locked: {

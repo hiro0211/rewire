@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface TodayUsageCardProps {
   todayMs: number;
@@ -21,10 +22,11 @@ function formatDuration(ms: number): { value: string; unit: string } {
 
 export function TodayUsageCard({ todayMs, yesterdayMs }: TodayUsageCardProps) {
   const { value, unit } = formatDuration(todayMs);
+  const { colors } = useTheme();
 
   const showTrend = yesterdayMs !== undefined && yesterdayMs > 0;
   let trendIcon: 'arrow-down' | 'arrow-up' | 'remove' = 'remove';
-  let trendColor = COLORS.textSecondary;
+  let trendColor = colors.textSecondary;
   let trendText = '';
 
   if (showTrend) {
@@ -32,11 +34,11 @@ export function TodayUsageCard({ todayMs, yesterdayMs }: TodayUsageCardProps) {
     const pct = Math.round((diff / yesterdayMs) * 100);
     if (pct < -5) {
       trendIcon = 'arrow-down';
-      trendColor = COLORS.success;
+      trendColor = colors.success;
       trendText = `${Math.abs(pct)}% 減少`;
     } else if (pct > 5) {
       trendIcon = 'arrow-up';
-      trendColor = COLORS.danger;
+      trendColor = colors.danger;
       trendText = `${pct}% 増加`;
     } else {
       trendText = '前日と同程度';
@@ -45,10 +47,10 @@ export function TodayUsageCard({ todayMs, yesterdayMs }: TodayUsageCardProps) {
 
   return (
     <Card style={styles.container}>
-      <Text style={styles.label}>今日の視聴時間</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>今日の視聴時間</Text>
       <View style={styles.row}>
-        <Text style={styles.value}>{value}</Text>
-        <Text style={styles.unit}>{unit}</Text>
+        <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
+        <Text style={[styles.unit, { color: colors.textSecondary }]}>{unit}</Text>
       </View>
       {showTrend && (
         <View style={styles.trendRow}>
@@ -68,7 +70,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xl,
   },
   label: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.xs,
   },
@@ -77,14 +78,12 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   value: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.display,
     fontWeight: 'bold',
     marginRight: SPACING.xs,
     lineHeight: FONT_SIZE.display * 1.1,
   },
   unit: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xl,
     fontWeight: '600',
   },

@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Card } from '@/components/ui/Card';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { format, parseISO } from 'date-fns';
 
 export default function HistoryScreen() {
   const { checkins, loadCheckins } = useCheckinStore();
+  const { colors } = useTheme();
 
   useEffect(() => {
     loadCheckins();
@@ -18,7 +20,7 @@ export default function HistoryScreen() {
     <SafeAreaWrapper>
       <Stack.Screen options={{ title: '履歴', headerBackTitle: '戻る' }} />
       <View style={styles.header}>
-        <Text style={styles.title}>履歴</Text>
+        <Text style={[styles.title, { color: colors.text }]}>履歴</Text>
       </View>
       <FlatList
         data={checkins}
@@ -26,16 +28,16 @@ export default function HistoryScreen() {
         renderItem={({ item }) => (
           <Card style={styles.card}>
             <View style={styles.row}>
-              <Text style={styles.date}>{format(parseISO(item.date), 'MM/dd')}</Text>
+              <Text style={[styles.date, { color: colors.text }]}>{format(parseISO(item.date), 'MM/dd')}</Text>
               <View style={styles.status}>
                 {item.watchedPorn ? (
-                  <Text style={styles.fail}>⚠️ Reset</Text>
+                  <Text style={[styles.fail, { color: colors.danger }]}>⚠️ Reset</Text>
                 ) : (
-                    <Text style={styles.success}>✅ Success</Text>
+                    <Text style={[styles.success, { color: colors.success }]}>✅ Success</Text>
                 )}
               </View>
             </View>
-            {item.memo ? <Text style={styles.memo}>{item.memo}</Text> : null}
+            {item.memo ? <Text style={[styles.memo, { color: colors.textSecondary }]}>{item.memo}</Text> : null}
           </Card>
         )}
         contentContainerStyle={styles.list}
@@ -51,7 +53,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xl,
     fontWeight: 'bold',
-    color: COLORS.text,
   },
   list: {
     padding: SPACING.lg,
@@ -65,7 +66,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   date: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
     fontWeight: 'bold',
   },
@@ -73,15 +73,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   success: {
-    color: COLORS.success,
     fontWeight: 'bold',
   },
   fail: {
-    color: COLORS.danger,
     fontWeight: 'bold',
   },
   memo: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginTop: SPACING.xs,
   },

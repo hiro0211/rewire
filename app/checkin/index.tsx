@@ -7,13 +7,15 @@ import { LevelSlider } from '@/components/checkin/LevelSlider';
 import { MemoInput } from '@/components/checkin/MemoInput';
 import { useCheckinForm } from '@/hooks/checkin/useCheckinForm';
 import { useCheckinSubmit } from '@/hooks/checkin/useCheckinSubmit';
-import { COLORS, SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export default function CheckinScreen() {
   const { formState, setField } = useCheckinForm();
   const { submit, isLoading, error } = useCheckinSubmit();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const handleSubmit = async () => {
     const result = await submit(formState);
@@ -34,7 +36,7 @@ export default function CheckinScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <BinaryQuestion
           label="❶ ポルノを見ましたか？"
@@ -87,7 +89,6 @@ export default function CheckinScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   content: {
     padding: SPACING.lg,

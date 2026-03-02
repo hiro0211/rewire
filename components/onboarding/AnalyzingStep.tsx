@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
-import { Text } from '@/components/Themed';
+import { View, StyleSheet, Animated, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface AnalyzingStepProps {
   onComplete: () => void;
@@ -28,6 +28,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
   const [progress, setProgress] = useState(0);
   const itemFades = useRef(ANALYSIS_ITEMS.map(() => new Animated.Value(0))).current;
   const checkFades = useRef(ANALYSIS_ITEMS.map(() => new Animated.Value(0))).current;
+  const { colors } = useTheme();
 
   const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress / 100);
 
@@ -102,7 +103,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>分析中...</Text>
+      <Text style={[styles.title, { color: colors.text }]}>分析中...</Text>
 
       {/* Circular Progress Ring */}
       <View testID="circular-progress-ring" style={styles.ringContainer}>
@@ -112,7 +113,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
             cx={RING_SIZE / 2}
             cy={RING_SIZE / 2}
             r={RING_RADIUS}
-            stroke={COLORS.surfaceHighlight}
+            stroke={colors.surfaceHighlight}
             strokeWidth={RING_STROKE}
             fill="none"
           />
@@ -121,7 +122,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
             cx={RING_SIZE / 2}
             cy={RING_SIZE / 2}
             r={RING_RADIUS}
-            stroke={COLORS.cyan}
+            stroke={colors.cyan}
             strokeWidth={RING_STROKE}
             fill="none"
             strokeDasharray={`${RING_CIRCUMFERENCE}`}
@@ -131,7 +132,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
             origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
           />
         </Svg>
-        <Text testID="progress-percentage" style={styles.percentText}>
+        <Text testID="progress-percentage" style={[styles.percentText, { color: colors.cyan }]}>
           {Math.round(progress)}%
         </Text>
       </View>
@@ -152,19 +153,20 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
                   <Ionicons
                     name="checkmark-circle"
                     size={20}
-                    color={COLORS.success}
+                    color={colors.success}
                   />
                 </Animated.View>
               ) : (
-                <View style={styles.pendingDot}>
-                  {isActive && <View style={styles.activeDotInner} />}
+                <View style={[styles.pendingDot, { borderColor: colors.textSecondary }]}>
+                  {isActive && <View style={[styles.activeDotInner, { backgroundColor: colors.cyan }]} />}
                 </View>
               )}
               <Text
                 style={[
                   styles.checkText,
-                  isCompleted && styles.checkTextCompleted,
-                  isActive && styles.checkTextActive,
+                  { color: colors.textSecondary },
+                  isCompleted && { color: colors.success },
+                  isActive && { color: colors.text },
                 ]}
               >
                 {item.text}
@@ -188,7 +190,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.xxl,
   },
   ringContainer: {
@@ -202,7 +203,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     fontSize: FONT_SIZE.xxxl,
     fontWeight: 'bold',
-    color: COLORS.cyan,
   },
   checklist: {
     width: '100%',
@@ -218,7 +218,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: COLORS.textSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -226,16 +225,8 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.cyan,
   },
   checkText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
-  },
-  checkTextCompleted: {
-    color: COLORS.success,
-  },
-  checkTextActive: {
-    color: COLORS.text,
   },
 });

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, RADIUS } from '@/constants/theme';
+import { RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ProgressBarProps {
   progress: number; // 0 to 1
@@ -17,19 +18,22 @@ export function ProgressBar({
   progress,
   style,
   height = 8,
-  color = COLORS.primary,
-  trackColor = COLORS.surfaceHighlight,
+  color,
+  trackColor,
   variant = 'default',
 }: ProgressBarProps) {
+  const { colors, gradients } = useTheme();
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
   const barHeight = variant === 'gradient' ? 6 : height;
+  const resolvedColor = color ?? colors.primary;
+  const resolvedTrackColor = trackColor ?? colors.surfaceHighlight;
 
   return (
-    <View style={[styles.container, { height: barHeight, backgroundColor: trackColor }, style]}>
+    <View style={[styles.container, { height: barHeight, backgroundColor: resolvedTrackColor }, style]}>
       {variant === 'gradient' ? (
         <LinearGradient
           testID="progress-gradient"
-          colors={['#4A90D9', '#00D4FF']}
+          colors={[...gradients.accent]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={[
@@ -43,7 +47,7 @@ export function ProgressBar({
             styles.fill,
             {
               width: `${clampedProgress * 100}%`,
-              backgroundColor: color,
+              backgroundColor: resolvedColor,
             },
           ]}
         />

@@ -6,7 +6,8 @@ import { NextActionList } from '@/components/recovery/NextActionList';
 import { recoveryService } from '@/features/recovery/recoveryService';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,6 +17,7 @@ export default function RecoveryScreen() {
   const { user } = useUserStore();
   const { todayCheckin } = useCheckinStore();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const handleSelectTrigger = async (selected: string) => {
     setTrigger(selected);
@@ -29,23 +31,23 @@ export default function RecoveryScreen() {
     <SafeAreaWrapper>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-          <Ionicons name="close" size={28} color={COLORS.text} />
+          <Ionicons name="close" size={28} color={colors.text} />
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>大丈夫。{'\n'}ここから始めよう。</Text>
-        
-        <View style={styles.divider} />
+        <Text style={[styles.title, { color: colors.text }]}>大丈夫。{'\n'}ここから始めよう。</Text>
+
+        <View style={[styles.divider, { backgroundColor: colors.surfaceHighlight }]} />
 
         <TriggerSelector selected={trigger} onSelect={handleSelectTrigger} />
 
         {trigger && (
           <>
-             <View style={styles.divider} />
+             <View style={[styles.divider, { backgroundColor: colors.surfaceHighlight }]} />
              <NextActionList />
 
-             <View style={styles.messageBox}>
-               <Text style={styles.messageText}>
+             <View style={[styles.messageBox, { backgroundColor: colors.surfaceHighlight }]}>
+               <Text style={[styles.messageText, { color: colors.textSecondary }]}>
                  あなたの連続記録はリセットされましたが、
                  学びの記録は残っています。
                </Text>
@@ -70,24 +72,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.xxl,
     lineHeight: 36,
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.surfaceHighlight,
     marginVertical: SPACING.xl,
   },
   messageBox: {
     marginTop: SPACING.xl,
     padding: SPACING.lg,
-    backgroundColor: COLORS.surfaceHighlight,
     borderRadius: 8,
   },
   messageText: {
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
   },

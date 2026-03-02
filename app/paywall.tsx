@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, Component } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useUserStore } from '@/stores/userStore';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
@@ -41,6 +42,7 @@ export default function PaywallScreen() {
   const router = useRouter();
   const { source } = useLocalSearchParams<{ source?: string }>();
   const { user, updateUser } = useUserStore();
+  const { colors } = useTheme();
   const isFromOnboarding = source === 'onboarding';
 
   const [paywallState, setPaywallState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
@@ -178,8 +180,8 @@ export default function PaywallScreen() {
     if (paywallState === 'loading') {
       return (
         <View style={styles.fallback}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.fallbackText}>読み込み中...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.fallbackText, { color: colors.textSecondary }]}>読み込み中...</Text>
         </View>
       );
     }
@@ -187,13 +189,13 @@ export default function PaywallScreen() {
     if (paywallState === 'unavailable') {
       return (
         <View style={styles.fallback}>
-          <Text style={styles.unavailableTitle}>現在ご利用いただけません</Text>
-          <Text style={styles.fallbackText}>
+          <Text style={[styles.unavailableTitle, { color: colors.text }]}>現在ご利用いただけません</Text>
+          <Text style={[styles.fallbackText, { color: colors.textSecondary }]}>
             サブスクリプションサービスに接続できませんでした。{'\n'}
             しばらくしてからもう一度お試しください。
           </Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-            <Text style={styles.retryButtonText}>再試行</Text>
+          <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={handleRetry}>
+            <Text style={[styles.retryButtonText, { color: colors.text }]}>再試行</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.backButton}
@@ -205,7 +207,7 @@ export default function PaywallScreen() {
               }
             }}
           >
-            <Text style={styles.backButtonText}>
+            <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>
               {isFromOnboarding ? 'あとで試す' : '戻る'}
             </Text>
           </TouchableOpacity>
@@ -258,7 +260,7 @@ export default function PaywallScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {renderPaywall()}
     </View>
   );
@@ -267,7 +269,6 @@ export default function PaywallScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   fallback: {
     flex: 1,
@@ -276,13 +277,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   unavailableTitle: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
     marginBottom: SPACING.md,
   },
   fallbackText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
     marginBottom: SPACING.lg,
     textAlign: 'center',
@@ -291,11 +290,9 @@ const styles = StyleSheet.create({
   retryButton: {
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.xl,
-    backgroundColor: COLORS.primary,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
   },
@@ -305,7 +302,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   backButtonText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
   },
 });

@@ -1,20 +1,21 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text } from '@/components/Themed';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { AchievementSummaryCircle } from '@/components/achievements/AchievementSummaryCircle';
 import { AchievementTimelineItem } from '@/components/achievements/AchievementTimelineItem';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
 
 export default function AchievementsScreen() {
   const { achievements, summary } = useAchievements();
+  const { colors } = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Summary */}
       <View style={styles.summaryRow}>
         <View style={styles.summaryText}>
-          <Text style={styles.summaryCount}>
+          <Text style={[styles.summaryCount, { color: colors.text }]}>
             {summary.unlocked}/{summary.total} Unlocked
           </Text>
         </View>
@@ -40,7 +41,6 @@ export default function AchievementsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
   summaryCount: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: COLORS.text,
   },
   timeline: {
     paddingTop: SPACING.md,

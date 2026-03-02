@@ -6,13 +6,15 @@ import { BreathingCircle } from '@/components/breathing/BreathingCircle';
 import { BreathingText } from '@/components/breathing/BreathingText';
 
 import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 // import { Ionicons } from '@expo/vector-icons';
 
 export default function BreathingScreen() {
   const router = useRouter();
   const { phase, cycleCount, startSession, stopSession } = useBreathingEngine();
+  const { colors } = useTheme();
 
   useEffect(() => {
     analyticsClient.logEvent('breathing_started');
@@ -21,15 +23,15 @@ export default function BreathingScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar hidden />
       <LinearGradient
         colors={['#0f172a', '#1e293b']} // Dark gradient
         style={styles.background}
       />
-      
-      <TouchableOpacity 
-        style={styles.closeButton} 
+
+      <TouchableOpacity
+        style={styles.closeButton}
         onPress={() => router.back()}
         hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       >
@@ -48,7 +50,6 @@ export default function BreathingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   background: {
     position: 'absolute',

@@ -18,6 +18,8 @@
  *   /test          - テストを実行
  *   /build         - ビルドを実行
  *   /task [内容]   - タスクとして記録
+ *   /claude [指示] - Claude Codeに開発タスクを実行させる
+ *   /claude stop   - 実行中のClaude Codeプロセスを停止
  *   /stop          - 定期報告を停止
  *   /start         - 定期報告を開始
  *   /help          - コマンド一覧
@@ -25,8 +27,8 @@
  */
 
 import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
-import { execSync, exec } from 'child_process';
-import { readFileSync, appendFileSync, existsSync } from 'fs';
+import { execSync, exec, spawn } from 'child_process';
+import { readFileSync, appendFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { resolve, basename } from 'path';
 import { homedir } from 'os';
 
@@ -62,6 +64,96 @@ if (projectDirs.length === 0) {
 }
 
 const defaultProjectDir = projectDirs[0];
+
+// ── Claude Code プロセス管理 ──
+let claudeProcess = null;
+let claudeOutput = '';
+const CLAUDE_LOG_DIR = resolve(homedir(), '.config', 'rewire', 'claude-logs');
+
+function ensureLogDir() {
+  if (!existsSync(CLAUDE_LOG_DIR)) mkdirSync(CLAUDE_LOG_DIR, { recursive: true });
+}
+
+async function runClaudeCode(instruction, channel, projectDir = defaultProjectDir) {
+  if (claudeProcess) {
+    await channel.send('⚠️ Claude Codeが既に実行中です。`/claude stop` で停止してから再実行してください。');
+    return;
+  }
+
+  ensureLogDir();
+  claudeOutput = '';
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const logFile = resolve(CLAUDE_LOG_DIR, `claude-${timestamp}.log`);
+
+  const embed = new EmbedBuilder()
+    .setTitle('🤖 Claude Code 実行開始')
+    .setColor(0x5865F2)
+    .setDescription(`**指示:** ${instruction.slice(0, 200)}`)
+    .addFields(
+      { name: 'プロジェクト', value: `\`${basename(projectDir)}\``, inline: true },
+      { name: 'ログ', value: `\`${logFile}\``, inline: false }
+    )
+    .setTimestamp();
+  await channel.send({ embeds: [embed] });
+
+  // Claude Code CLI を --print モード（非対話）で実行
+  // CLAUDE.md はプロジェクトルートに配置済みなので自動的に読み込まれる
+  claudeProcess = spawn('/opt/homebrew/bin/claude', [
+    '--print',
+    '--dangerously-skip-permissions',
+    instruction,
+  ], {
+    cwd: projectDir,
+    env: { ...process.env, FORCE_COLOR: '0' },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  claudeProcess.stdout.on('data', (data) => {
+    claudeOutput += data.toString();
+  });
+
+  claudeProcess.stderr.on('data', (data) => {
+    claudeOutput += data.toString();
+  });
+
+  claudeProcess.on('close', async (code) => {
+    claudeProcess = null;
+
+    // ログ保存
+    try {
+      writeFileSync(logFile, `# Claude Code 実行ログ\n## 指示: ${instruction}\n## 終了コード: ${code}\n## 日時: ${new Date().toISOString()}\n\n${claudeOutput}`);
+    } catch (e) {
+      console.error('ログ保存失敗:', e.message);
+    }
+
+    // 結果をDiscordに送信
+    const success = code === 0;
+    const resultEmbed = new EmbedBuilder()
+      .setTitle(success ? '✅ Claude Code 完了' : '❌ Claude Code エラー')
+      .setColor(success ? 0x57F287 : 0xED4245)
+      .setDescription(`**指示:** ${instruction.slice(0, 200)}`)
+      .setTimestamp();
+
+    // 出力の末尾を送信（最も重要な部分）
+    const outputTail = claudeOutput.slice(-1800) || '(出力なし)';
+    resultEmbed.addFields({ name: '出力（末尾）', value: `\`\`\`\n${outputTail}\n\`\`\``, inline: false });
+
+    try {
+      await channel.send({ embeds: [resultEmbed] });
+    } catch (e) {
+      // Embedが大きすぎる場合はテキストで送信
+      const shortOutput = claudeOutput.slice(-800) || '(出力なし)';
+      await channel.send(`${success ? '✅' : '❌'} Claude Code ${success ? '完了' : 'エラー'}\n\`\`\`\n${shortOutput}\n\`\`\``);
+    }
+
+    claudeOutput = '';
+  });
+
+  claudeProcess.on('error', async (err) => {
+    claudeProcess = null;
+    await channel.send(`❌ Claude Code起動失敗: ${err.message}\n\n💡 \`claude\` コマンドがPATHに存在するか確認してください。`);
+  });
+}
 
 // ── Discord Client ──
 const client = new Client({
@@ -210,6 +302,85 @@ async function handleCommand(message) {
     return channel.send(`\`\`\`\n🔨 ビルド結果:\n${result.slice(0, 1900)}\n\`\`\``);
   }
 
+  // /claude stop - 実行中のClaude Codeを停止
+  if (cmd === '/claude stop') {
+    if (!claudeProcess) {
+      return message.reply('ℹ️ 現在Claude Codeは実行されていません。');
+    }
+    claudeProcess.kill('SIGTERM');
+    return message.reply('🛑 Claude Codeプロセスに停止シグナルを送信しました。');
+  }
+
+  // /claude [指示] - Claude Codeに開発指示を送る
+  if (cmd.startsWith('/claude ')) {
+    const instruction = text.slice(8).trim();
+    if (!instruction) {
+      return message.reply('❌ 指示内容を入力してください。\n例: `/claude PrePaywallBenefits画面にアニメーションを追加`');
+    }
+
+    // プロジェクト指定: /claude @project-name 指示内容
+    let targetDir = defaultProjectDir;
+    let actualInstruction = instruction;
+    const projectMatch = instruction.match(/^@(\S+)\s+(.+)/s);
+    if (projectMatch) {
+      const targetName = projectMatch[1].toLowerCase();
+      const found = projectDirs.find((d) => basename(d).toLowerCase() === targetName);
+      if (found) {
+        targetDir = found;
+        actualInstruction = projectMatch[2];
+      }
+    }
+
+    const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
+    runClaudeCode(actualInstruction, channel, targetDir);
+    return;
+  }
+
+  // /article - 記事生成・確認コマンド
+  if (cmd === '/article' || cmd === '/article today') {
+    // 今日の生成済み記事を表示
+    const today = new Date().toISOString().slice(0, 10);
+    const generatedDir = resolve(homedir(), 'content', 'generated');
+    if (!existsSync(generatedDir)) {
+      return message.reply('📂 content/generated/ がまだ存在しません。');
+    }
+    const todayFiles = readdirSync(generatedDir)
+      .filter((f) => f.startsWith(today) && f.endsWith('.md'));
+    if (todayFiles.length === 0) {
+      return message.reply(`📭 今日（${today}）の記事はまだ生成されていません。\n\`/article generate\` で今すぐ生成できます。`);
+    }
+    const embed = new EmbedBuilder()
+      .setTitle(`📝 今日の記事 (${today})`)
+      .setColor(0xFFA500)
+      .setTimestamp();
+    for (const file of todayFiles.slice(0, 5)) {
+      const content = readFileSync(resolve(generatedDir, file), 'utf-8');
+      const preview = content.slice(0, 300).replace(/\n/g, ' ');
+      const platform = file.includes('-note-') ? '📄 Note' : '🐦 X';
+      embed.addFields({ name: `${platform}: ${file}`, value: `${preview}...`, inline: false });
+    }
+    return message.reply({ embeds: [embed] });
+  }
+
+  if (cmd === '/article generate') {
+    await message.reply('📝 記事生成を開始します... 完了したら通知します。');
+    const channel = await client.channels.fetch(DISCORD_CHANNEL_ID);
+    const result = await runAsync('node scripts/generate-article.mjs 2>&1');
+    return channel.send(`\`\`\`\n${result.slice(0, 1900)}\n\`\`\``);
+  }
+
+  if (cmd === '/article list') {
+    const generatedDir = resolve(homedir(), 'content', 'generated');
+    if (!existsSync(generatedDir)) return message.reply('📂 記事なし');
+    const files = readdirSync(generatedDir)
+      .filter((f) => f.endsWith('.md') && !f.startsWith('.'))
+      .sort()
+      .reverse()
+      .slice(0, 10);
+    if (files.length === 0) return message.reply('📭 生成済み記事はありません。');
+    return message.reply(`\`\`\`\n📚 直近の記事:\n${files.join('\n')}\n\`\`\``);
+  }
+
   if (cmd.startsWith('/task ')) {
     const taskContent = text.slice(6).trim();
     const taskFile = resolve(defaultProjectDir, 'TASKS.md');
@@ -233,6 +404,10 @@ async function handleCommand(message) {
       .setTitle('📖 コマンド一覧')
       .setColor(0x57F287)
       .addFields(
+        { name: '`/claude [指示]`', value: 'Claude Codeで開発実行', inline: true },
+        { name: '`/claude stop`', value: 'Claude Code停止', inline: true },
+        { name: '`/article`', value: '今日の記事確認', inline: true },
+        { name: '`/article generate`', value: '記事を今すぐ生成', inline: true },
         { name: '`/status`', value: '開発状況を確認', inline: true },
         { name: '`/log`', value: '直近のgitログ', inline: true },
         { name: '`/branch`', value: 'ブランチ一覧', inline: true },
@@ -242,7 +417,7 @@ async function handleCommand(message) {
         { name: '`/start`', value: '定期報告開始', inline: true },
         { name: '`/stop`', value: '定期報告停止', inline: true },
       )
-      .setFooter({ text: 'コマンド以外のメッセージはメモとして保存されます' });
+      .setFooter({ text: '💡 /claude @プロジェクト名 指示 でプロジェクト指定可能' });
     return message.reply({ embeds: [embed] });
   }
 

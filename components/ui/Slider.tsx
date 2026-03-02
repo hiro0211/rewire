@@ -1,11 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import CommunitySlider from '@react-native-community/slider';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
-
-// Note: Requires installation of @react-native-community/slider
-// For now, implementing a basic wrapper.
-// User might need to run: npx expo install @react-native-community/slider
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SliderProps {
   value: number;
@@ -24,12 +21,14 @@ export function Slider({
   step = 1,
   label,
 }: SliderProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
       {label && (
         <View style={styles.header}>
-          <Text style={styles.label}>{label}</Text>
-          <Text style={styles.value}>{value}</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+          <Text style={[styles.value, { color: colors.primary }]}>{value}</Text>
         </View>
       )}
       <CommunitySlider
@@ -39,9 +38,9 @@ export function Slider({
         step={step}
         value={value}
         onValueChange={onValueChange}
-        minimumTrackTintColor={COLORS.primary}
-        maximumTrackTintColor={COLORS.surfaceHighlight}
-        thumbTintColor={COLORS.primary}
+        minimumTrackTintColor={colors.primary}
+        maximumTrackTintColor={colors.surfaceHighlight}
+        thumbTintColor={colors.primary}
       />
     </View>
   );
@@ -57,11 +56,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   label: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
   },
   value: {
-    color: COLORS.primary,
     fontSize: FONT_SIZE.md,
     fontWeight: 'bold',
   },

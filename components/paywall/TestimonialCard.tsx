@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { GradientCard } from '@/components/ui/GradientCard';
 
 interface TestimonialCardProps {
@@ -10,13 +11,14 @@ interface TestimonialCardProps {
 }
 
 export function TestimonialCard({ quote, rating, author }: TestimonialCardProps) {
+  const { colors } = useTheme();
   const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
   return (
     <GradientCard style={styles.card}>
       <Text testID="testimonial-stars" style={styles.stars}>{stars}</Text>
-      <Text style={styles.quote}>'{quote}'</Text>
-      <Text style={styles.author}>{author}</Text>
+      <Text style={[styles.quote, { color: colors.text }]}>'{quote}'</Text>
+      <Text style={[styles.author, { color: colors.textSecondary }]}>{author}</Text>
     </GradientCard>
   );
 }
@@ -34,7 +36,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   quote: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
     fontStyle: 'italic',
     textAlign: 'center',
@@ -42,7 +43,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   author: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
   },
 });

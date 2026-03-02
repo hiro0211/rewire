@@ -1,9 +1,12 @@
 import { Tabs } from 'expo-router';
-import { COLORS, SPACING } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function TabLayout() {
+  const { colors, glow, isDark } = useTheme();
+
   return (
     <Tabs
       screenListeners={{
@@ -14,24 +17,24 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#0D0D14',
-          borderTopColor: 'rgba(139, 92, 246, 0.15)',
+          backgroundColor: isDark ? '#0D0D14' : colors.surface,
+          borderTopColor: isDark ? 'rgba(139, 92, 246, 0.15)' : colors.border,
           borderTopWidth: 1,
           height: 60,
           paddingBottom: SPACING.xs,
-          shadowColor: 'rgba(139, 92, 246, 0.3)',
+          shadowColor: isDark ? glow.purple : 'rgba(0, 0, 0, 0.1)',
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.3,
+          shadowOpacity: isDark ? 0.3 : 0.1,
           shadowRadius: 8,
           elevation: 8,
         },
-        tabBarActiveTintColor: COLORS.cyan,
-        tabBarInactiveTintColor: COLORS.textSecondary,
-        headerStyle: { backgroundColor: COLORS.background },
+        tabBarActiveTintColor: colors.cyan,
+        tabBarInactiveTintColor: colors.textSecondary,
+        headerStyle: { backgroundColor: colors.background },
         headerTitleStyle: {
           fontSize: 28,
           fontWeight: 'bold',
-          color: COLORS.text,
+          color: colors.text,
         },
         headerTitleAlign: 'left',
         headerShadowVisible: false,

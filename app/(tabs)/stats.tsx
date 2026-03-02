@@ -1,7 +1,8 @@
 import React, { useEffect, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { COLORS, SPACING } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useUsageStore } from '@/stores/usageStore';
 import { TodayUsageCard } from '@/components/stats/TodayUsageCard';
 import { WeeklyBarChart } from '@/components/stats/WeeklyBarChart';
@@ -12,6 +13,7 @@ import { StreakCard } from '@/components/dashboard/StreakCard';
 export default function StatsScreen() {
   const { todayMs, weeklyData, monthlyMs, hourlyWage, isLoading, loadUsage } =
     useUsageStore();
+  const { colors } = useTheme();
 
   useFocusEffect(
     useCallback(() => {
@@ -29,21 +31,21 @@ export default function StatsScreen() {
 
   if (!hasData && !isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <UsageEmptyState />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
             onRefresh={loadUsage}
-            tintColor={COLORS.primary}
+            tintColor={colors.primary}
           />
         }
       >
@@ -59,7 +61,6 @@ export default function StatsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   content: {
     padding: SPACING.lg,

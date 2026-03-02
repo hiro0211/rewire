@@ -12,7 +12,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Card } from '@/components/ui/Card';
@@ -142,6 +143,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const translateX = useRef(new Animated.Value(0)).current;
   const autoAdvancingRef = useRef(false);
+  const { colors } = useTheme();
 
   // Refs to access latest state from PanResponder closure
   const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, notifyTime });
@@ -264,10 +266,10 @@ export default function OnboardingScreen() {
           <View style={styles.fullWidth}>
             <View style={styles.welcomeContainer}>
               <View style={styles.welcomeContent}>
-                <Text style={styles.title}>
+                <Text style={[styles.title, { color: colors.text }]}>
                   {'ポルノをやめる、\n人生を変える'}
                 </Text>
-                <Text style={styles.description}>
+                <Text style={[styles.description, { color: colors.textSecondary }]}>
                   {'9つの質問に答えるだけ。\nあなたの依存度をチェックし、\n最適なプランを作成します。'}
                 </Text>
                 <Card variant="outlined" style={styles.privacyCard}>
@@ -275,9 +277,9 @@ export default function OnboardingScreen() {
                     <Ionicons
                       name="lock-closed-outline"
                       size={16}
-                      color={COLORS.textSecondary}
+                      color={colors.textSecondary}
                     />
-                    <Text style={styles.privacyText}>
+                    <Text style={[styles.privacyText, { color: colors.textSecondary }]}>
                       すべての回答はこの端末内にのみ保存されます
                     </Text>
                   </View>
@@ -408,23 +410,23 @@ export default function OnboardingScreen() {
       case 'features':
         return (
           <View style={styles.centeredContent}>
-            <Text style={styles.title}>Rewireでできること</Text>
-            <Text style={styles.description}>{''}</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Rewireでできること</Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>{''}</Text>
             <View style={styles.featuresContainer}>
               {FEATURES.map((feature, index) => (
                 <View key={index} style={styles.featureRow}>
-                  <View style={styles.featureIconContainer}>
+                  <View style={[styles.featureIconContainer, { backgroundColor: colors.surfaceHighlight }]}>
                     <Ionicons
                       name={feature.icon}
                       size={28}
-                      color={COLORS.primary}
+                      color={colors.primary}
                     />
                   </View>
                   <View style={styles.featureTextContainer}>
                     <View style={styles.featureTitleRow}>
-                      <Text style={styles.featureTitle}>{feature.title}</Text>
+                      <Text style={[styles.featureTitle, { color: colors.text }]}>{feature.title}</Text>
                     </View>
-                    <Text style={styles.featureDescription}>
+                    <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
                       {feature.description}
                     </Text>
                   </View>
@@ -437,14 +439,14 @@ export default function OnboardingScreen() {
       case 'nickname':
         return (
           <View style={styles.centeredContent}>
-            <Text style={styles.title}>あなたの名前は？</Text>
-            <Text style={styles.description}>
+            <Text style={[styles.title, { color: colors.text }]}>あなたの名前は？</Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
               {'アプリ内で呼びかけるニックネームを教えてください。\n（匿名で構いません）'}
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderBottomColor: colors.primary, color: colors.text }]}
               placeholder="ニックネーム"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={nickname}
               onChangeText={setNickname}
               autoFocus
@@ -455,12 +457,12 @@ export default function OnboardingScreen() {
       case 'consent':
         return (
           <View style={styles.centeredContent}>
-            <Text style={styles.title}>データの取り扱いについて</Text>
-            <Text style={styles.description}>
+            <Text style={[styles.title, { color: colors.text }]}>データの取り扱いについて</Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
               {'Rewireはあなたの変化をサポートするため、\n以下のデータを端末内にのみ保存します。'}
             </Text>
             <View style={styles.consentContainer}>
-              <Text style={styles.dataList}>
+              <Text style={[styles.dataList, { color: colors.text }]}>
                 {'・性的行動に関する記録\n・ストレスレベル・衝動レベル\n・呼吸エクササイズの記録\n・振り返り記録・日記'}
               </Text>
               <TouchableOpacity
@@ -472,17 +474,18 @@ export default function OnboardingScreen() {
                 <View
                   style={[
                     styles.checkbox,
-                    privacyAgreed && styles.checkboxChecked,
+                    { borderColor: colors.textSecondary },
+                    privacyAgreed && { backgroundColor: colors.primary, borderColor: colors.primary },
                   ]}
                 >
                   {privacyAgreed && (
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={16} color={colors.contrastText} />
                   )}
                 </View>
-                <Text style={styles.checkboxLabel}>
+                <Text style={[styles.checkboxLabel, { color: colors.text }]}>
                   <Text
                     testID="link-privacy-policy"
-                    style={styles.linkText}
+                    style={[styles.linkText, { color: colors.cyan }]}
                     onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#privacy')}
                   >
                     プライバシーポリシー
@@ -499,17 +502,18 @@ export default function OnboardingScreen() {
                 <View
                   style={[
                     styles.checkbox,
-                    dataAgreed && styles.checkboxChecked,
+                    { borderColor: colors.textSecondary },
+                    dataAgreed && { backgroundColor: colors.primary, borderColor: colors.primary },
                   ]}
                 >
                   {dataAgreed && (
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={16} color={colors.contrastText} />
                   )}
                 </View>
-                <Text style={styles.checkboxLabel}>
+                <Text style={[styles.checkboxLabel, { color: colors.text }]}>
                   <Text
                     testID="link-terms"
-                    style={styles.linkText}
+                    style={[styles.linkText, { color: colors.cyan }]}
                     onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#terms')}
                   >
                     利用規約
@@ -548,7 +552,7 @@ export default function OnboardingScreen() {
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <View style={styles.backButtonCircle}>
-                <Ionicons name="chevron-back" size={20} color={COLORS.text} />
+                <Ionicons name="chevron-back" size={20} color={colors.text} />
               </View>
             </TouchableOpacity>
           ) : (
@@ -559,7 +563,7 @@ export default function OnboardingScreen() {
               onPress={handleSkipEducation}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={styles.skipText}>スキップ</Text>
+              <Text style={[styles.skipText, { color: colors.textSecondary }]}>スキップ</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.backButtonPlaceholder} />
@@ -636,7 +640,6 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
   },
   content: {
     flex: 1,
@@ -654,13 +657,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
   description: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: SPACING.xl,
@@ -685,7 +686,6 @@ const styles = StyleSheet.create({
   },
   privacyText: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     flex: 1,
   },
   // Form
@@ -693,8 +693,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.primary,
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     textAlign: 'center',
   },
@@ -713,7 +711,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -729,11 +726,9 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600' as const,
-    color: COLORS.text,
   },
   featureDescription: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     lineHeight: 20,
   },
   consentContainer: {
@@ -741,7 +736,6 @@ const styles = StyleSheet.create({
   },
   dataList: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
     lineHeight: 28,
     marginBottom: SPACING.xl,
   },
@@ -755,21 +749,14 @@ const styles = StyleSheet.create({
     height: 24,
     borderWidth: 2,
     borderRadius: 4,
-    borderColor: COLORS.textSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
   },
-  checkboxChecked: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
   checkboxLabel: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
   },
   linkText: {
-    color: COLORS.cyan,
     textDecorationLine: 'underline',
   },
 });

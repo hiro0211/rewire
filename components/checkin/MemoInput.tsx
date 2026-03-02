@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 
 interface MemoInputProps {
   value: string;
@@ -8,19 +9,21 @@ interface MemoInputProps {
 }
 
 export function MemoInput({ value, onChange }: MemoInputProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>一言メモ（任意）</Text>
+      <Text style={[styles.label, { color: colors.text }]}>一言メモ（任意）</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.surfaceHighlight, color: colors.text }]}
         value={value}
         onChangeText={onChange}
         placeholder="今日の気づきや感情..."
-        placeholderTextColor={COLORS.textSecondary}
+        placeholderTextColor={colors.textSecondary}
         multiline
         maxLength={140}
       />
-      <Text style={styles.count}>{value.length} / 140</Text>
+      <Text style={[styles.count, { color: colors.textSecondary }]}>{value.length} / 140</Text>
     </View>
   );
 }
@@ -30,21 +33,17 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   label: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     marginBottom: SPACING.md,
     fontWeight: '600',
   },
   input: {
-    backgroundColor: COLORS.surfaceHighlight,
     borderRadius: RADIUS.md,
     padding: SPACING.md,
-    color: COLORS.text,
     height: 100,
     textAlignVertical: 'top',
   },
   count: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     alignSelf: 'flex-end',
     marginTop: SPACING.xs,

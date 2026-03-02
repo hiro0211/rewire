@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { COLORS, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { FONT_SIZE } from '@/constants/theme';
 import type { BreathPhase } from '@/hooks/breathing/useBreathingEngine';
 
 interface BreathingTextProps {
@@ -10,8 +11,9 @@ interface BreathingTextProps {
 
 export function BreathingText({ phase }: BreathingTextProps) {
   const opacity = useSharedValue(0);
-  const text = phase === 'inhale' ? 'ゆっくり息を吸ってください' : 
-               phase === 'exhale' ? 'ゆっくり息を吐いてください' : 
+  const { colors } = useTheme();
+  const text = phase === 'inhale' ? 'ゆっくり息を吸ってください' :
+               phase === 'exhale' ? 'ゆっくり息を吐いてください' :
                '準備...';
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function BreathingText({ phase }: BreathingTextProps) {
   if (phase === 'idle' || phase === 'complete') return null;
 
   return (
-    <Animated.Text style={[styles.text, animatedStyle]}>
+    <Animated.Text style={[styles.text, { color: colors.text }, animatedStyle]}>
       {text}
     </Animated.Text>
   );
@@ -35,7 +37,6 @@ export function BreathingText({ phase }: BreathingTextProps) {
 
 const styles = StyleSheet.create({
   text: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '500',
     textAlign: 'center',

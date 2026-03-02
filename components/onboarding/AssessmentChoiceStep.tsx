@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Text } from '@/components/Themed';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
 interface AssessmentChoiceStepProps {
@@ -20,13 +20,15 @@ export function AssessmentChoiceStep({
   selectedValue,
   onSelect,
 }: AssessmentChoiceStepProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text testID="question-heading" style={styles.counter}>
+      <Text testID="question-heading" style={[styles.counter, { color: colors.text }]}>
         Question #{questionIndex + 1}
       </Text>
 
-      <Text style={styles.question}>{question.question}</Text>
+      <Text style={[styles.question, { color: colors.text }]}>{question.question}</Text>
 
       <View style={styles.options}>
         {question.options?.map((option, index) => {
@@ -37,25 +39,27 @@ export function AssessmentChoiceStep({
               testID={`option-pill-${index}`}
               style={[
                 styles.option,
-                selected && styles.optionSelected,
+                { backgroundColor: colors.pillBackground, borderColor: colors.pillBorder },
+                selected && { borderColor: colors.selectedPillBorder, backgroundColor: 'rgba(0, 180, 216, 0.1)' },
               ]}
               onPress={() => onSelect(option.value)}
               activeOpacity={0.7}
             >
               <View
-                style={[styles.badge, selected && styles.badgeSelected]}
+                style={[styles.badge, { backgroundColor: colors.selectedPillBorder }, selected && { backgroundColor: colors.success }]}
                 testID={selected ? `badge-checkmark-${index}` : undefined}
               >
                 {selected ? (
-                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  <Ionicons name="checkmark" size={16} color={colors.contrastText} />
                 ) : (
-                  <Text style={styles.badgeText}>{index + 1}</Text>
+                  <Text style={[styles.badgeText, { color: colors.contrastText }]}>{index + 1}</Text>
                 )}
               </View>
               <Text
                 style={[
                   styles.optionText,
-                  selected && styles.optionTextSelected,
+                  { color: colors.text },
+                  selected && { color: colors.selectedPillBorder },
                 ]}
               >
                 {option.label}
@@ -77,14 +81,12 @@ const styles = StyleSheet.create({
   counter: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
   question: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'left',
     marginBottom: 40,
   },
@@ -96,39 +98,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 64,
-    backgroundColor: COLORS.pillBackground,
     borderRadius: 32,
     borderWidth: 1,
-    borderColor: COLORS.pillBorder,
     paddingHorizontal: 16,
     gap: 12,
-  },
-  optionSelected: {
-    borderColor: COLORS.selectedPillBorder,
-    backgroundColor: 'rgba(0, 180, 216, 0.1)',
   },
   badge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.selectedPillBorder,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  badgeSelected: {
-    backgroundColor: COLORS.success,
-  },
   badgeText: {
-    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: 'bold',
   },
   optionText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
     flex: 1,
-  },
-  optionTextSelected: {
-    color: COLORS.selectedPillBorder,
   },
 });

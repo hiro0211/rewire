@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GRADIENTS, GLOW, RADIUS, SPACING } from '@/constants/theme';
+import { RADIUS, SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 type GradientCardVariant = 'default' | 'hero' | 'accent';
 
@@ -12,31 +13,33 @@ interface GradientCardProps {
   testID?: string;
 }
 
-const VARIANT_CONFIG = {
-  default: {
-    colors: GRADIENTS.card,
-    borderColor: GLOW.purple,
-    shadowColor: GLOW.purple,
-  },
-  hero: {
-    colors: GRADIENTS.hero,
-    borderColor: GLOW.cyan,
-    shadowColor: GLOW.cyan,
-  },
-  accent: {
-    colors: GRADIENTS.accent,
-    borderColor: GLOW.purple,
-    shadowColor: GLOW.purple,
-  },
-} as const;
-
 export function GradientCard({
   children,
   style,
   variant = 'default',
   testID,
 }: GradientCardProps) {
-  const config = VARIANT_CONFIG[variant];
+  const { gradients, glow } = useTheme();
+
+  const variantConfig = {
+    default: {
+      colors: gradients.card,
+      borderColor: glow.purple,
+      shadowColor: glow.purple,
+    },
+    hero: {
+      colors: gradients.hero,
+      borderColor: glow.cyan,
+      shadowColor: glow.cyan,
+    },
+    accent: {
+      colors: gradients.accent,
+      borderColor: glow.purple,
+      shadowColor: glow.purple,
+    },
+  } as const;
+
+  const config = variantConfig[variant];
 
   return (
     <View

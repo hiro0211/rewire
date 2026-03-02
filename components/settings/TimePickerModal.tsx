@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface TimePickerModalProps {
   visible: boolean;
@@ -15,6 +16,8 @@ export const TimePickerModal = ({
   onClose,
   onSave,
 }: TimePickerModalProps) => {
+  const { colors } = useTheme();
+
   // Generate time slots every 30 mins
   const timeSlots = [];
   for (let i = 0; i < 24; i++) {
@@ -30,17 +33,18 @@ export const TimePickerModal = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.container}>
-          <Text style={styles.title}>通知時間を選択</Text>
-          
+      <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
+        <View style={[styles.container, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.title, { color: colors.text }]}>通知時間を選択</Text>
+
           <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
             {timeSlots.map((time) => (
               <TouchableOpacity
                 key={time}
                 style={[
                   styles.item,
-                  time === currentTime && styles.selectedItem
+                  { borderBottomColor: colors.surfaceHighlight },
+                  time === currentTime && { backgroundColor: colors.surfaceHighlight, borderRadius: RADIUS.sm },
                 ]}
                 onPress={() => {
                   onSave(time);
@@ -49,7 +53,8 @@ export const TimePickerModal = ({
               >
                 <Text style={[
                   styles.itemText,
-                  time === currentTime && styles.selectedItemText
+                  { color: colors.text },
+                  time === currentTime && { color: colors.primary, fontWeight: 'bold' },
                 ]}>
                   {time}
                 </Text>
@@ -58,7 +63,7 @@ export const TimePickerModal = ({
           </ScrollView>
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeText}>キャンセル</Text>
+            <Text style={[styles.closeText, { color: colors.textSecondary }]}>キャンセル</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -69,7 +74,6 @@ export const TimePickerModal = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: COLORS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.xl,
@@ -77,14 +81,12 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     maxHeight: '60%',
-    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
   },
   title: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
@@ -94,27 +96,16 @@ const styles = StyleSheet.create({
   item: {
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceHighlight,
     alignItems: 'center',
-  },
-  selectedItem: {
-    backgroundColor: COLORS.surfaceHighlight,
-    borderRadius: RADIUS.sm,
   },
   itemText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.text,
-  },
-  selectedItemText: {
-    color: COLORS.primary,
-    fontWeight: 'bold',
   },
   closeButton: {
     padding: SPACING.md,
     alignItems: 'center',
   },
   closeText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
   },
 });

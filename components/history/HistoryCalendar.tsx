@@ -1,16 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, SHADOWS } from '@/constants/theme';
-import { 
-  format, 
-  addMonths, 
-  subMonths, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isSameDay, 
-  getDay 
+import { SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  getDay
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useCheckinStore } from '@/stores/checkinStore';
@@ -19,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 export const HistoryCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const checkins = useCheckinStore((state) => state.checkins);
+  const { colors, shadows } = useTheme();
 
   const daysInMonth = useMemo(() => {
     const start = startOfMonth(currentMonth);
@@ -45,24 +47,24 @@ export const HistoryCalendar = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }, shadows.small]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handlePrevMonth} style={styles.arrowButton}>
-          <Ionicons name="chevron-back" size={24} color={COLORS.text} />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.monthTitle}>
+        <Text style={[styles.monthTitle, { color: colors.text }]}>
           {format(currentMonth, 'yyyy年 M月', { locale: ja })}
         </Text>
         <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
-          <Ionicons name="chevron-forward" size={24} color={COLORS.text} />
+          <Ionicons name="chevron-forward" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {/* Week days */}
       <View style={styles.weekDays}>
         {weekDays.map((day, index) => (
-          <Text key={day} style={[styles.weekDayText, index === 0 && styles.sundayText]}>
+          <Text key={day} style={[styles.weekDayText, { color: colors.textSecondary }, index === 0 && { color: colors.error }]}>
             {day}
           </Text>
         ))}
@@ -76,19 +78,20 @@ export const HistoryCalendar = () => {
         {daysInMonth.map((date) => {
           const status = getDayStatus(date);
           const isToday = isSameDay(date, new Date());
-          
+
           return (
             <View key={date.toString()} style={styles.dayCell}>
               <View style={[
                 styles.dayCircle,
-                isToday && styles.todayCircle,
-                status === 'clean' && styles.cleanDot,
-                status === 'relapse' && styles.relapseDot,
+                isToday && { borderWidth: 1, borderColor: colors.primary },
+                status === 'clean' && { backgroundColor: colors.success },
+                status === 'relapse' && { backgroundColor: colors.error },
               ]}>
                 <Text style={[
                   styles.dayText,
-                  isToday && styles.todayText,
-                  (status === 'clean' || status === 'relapse') && styles.statusText
+                  { color: colors.text },
+                  isToday && { color: colors.primary, fontWeight: 'bold' },
+                  (status === 'clean' || status === 'relapse') && { color: colors.surface, fontWeight: 'bold' },
                 ]}>
                   {format(date, 'd')}
                 </Text>
@@ -97,16 +100,16 @@ export const HistoryCalendar = () => {
           );
         })}
       </View>
-      
+
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.success }]} />
-          <Text style={styles.legendText}>達成</Text>
+          <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
+          <Text style={[styles.legendText, { color: colors.textSecondary }]}>達成</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.error }]} />
-          <Text style={styles.legendText}>リセット</Text>
+          <View style={[styles.legendDot, { backgroundColor: colors.error }]} />
+          <Text style={[styles.legendText, { color: colors.textSecondary }]}>リセット</Text>
         </View>
       </View>
     </View>
@@ -115,10 +118,8 @@ export const HistoryCalendar = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: SPACING.md,
-    ...SHADOWS.small,
   },
   header: {
     flexDirection: 'row',
@@ -129,7 +130,6 @@ const styles = StyleSheet.create({
   monthTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.text,
   },
   arrowButton: {
     padding: SPACING.xs,
@@ -142,10 +142,6 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  sundayText: {
-    color: COLORS.error,
   },
   grid: {
     flexDirection: 'row',
@@ -165,27 +161,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  todayCircle: {
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  cleanDot: {
-    backgroundColor: COLORS.success,
-  },
-  relapseDot: {
-    backgroundColor: COLORS.error,
-  },
   dayText: {
     fontSize: 14,
-    color: COLORS.text,
-  },
-  todayText: {
-    color: COLORS.primary,
-    fontWeight: 'bold',
-  },
-  statusText: {
-    color: COLORS.surface,
-    fontWeight: 'bold',
   },
   legend: {
     flexDirection: 'row',
@@ -205,6 +182,5 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
   },
 });

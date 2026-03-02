@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { COLORS, SPACING } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { HistoryCalendar } from '@/components/history/HistoryCalendar';
 import { HistoryList } from '@/components/history/HistoryList';
@@ -12,13 +13,14 @@ const VIEW_MODES = ['カレンダー', 'リスト'] as const;
 export default function HistoryScreen() {
   const [viewIndex, setViewIndex] = useState(0);
   const loadCheckins = useCheckinStore((state) => state.loadCheckins);
+  const { colors } = useTheme();
 
   useEffect(() => {
     loadCheckins();
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.segmentContainer}>
         <SegmentedControl
           segments={[...VIEW_MODES]}
@@ -39,7 +41,6 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   segmentContainer: {
     paddingHorizontal: SPACING.md,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SettingSectionProps {
   title: string;
@@ -8,9 +9,11 @@ interface SettingSectionProps {
 }
 
 export function SettingSection({ title, children }: SettingSectionProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, { color: colors.textSecondary }]}>{title}</Text>
       <View style={styles.container}>
         {children}
       </View>
@@ -24,7 +27,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
     paddingHorizontal: SPACING.lg,
     textTransform: 'uppercase',

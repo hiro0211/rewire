@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Slider } from '@/components/ui/Slider';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface LevelSliderProps {
   label: string;
@@ -22,11 +23,13 @@ export function LevelSlider({
   maximumValue = 4,
   minimumValue = 0,
 }: LevelSliderProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.label}>{label}</Text>
-        <Text style={styles.value}>{value}</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+        <Text style={[styles.value, { color: colors.primary }]}>{value}</Text>
       </View>
       <Slider
         value={value}
@@ -36,8 +39,8 @@ export function LevelSlider({
         step={1}
       />
       <View style={styles.footer}>
-        <Text style={styles.subLabel}>{minLabel}</Text>
-        <Text style={styles.subLabel}>{maxLabel}</Text>
+        <Text style={[styles.subLabel, { color: colors.textSecondary }]}>{minLabel}</Text>
+        <Text style={[styles.subLabel, { color: colors.textSecondary }]}>{maxLabel}</Text>
       </View>
     </View>
   );
@@ -54,12 +57,10 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   label: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
   },
   value: {
-    color: COLORS.primary,
     fontSize: FONT_SIZE.xl,
     fontWeight: 'bold',
   },
@@ -68,7 +69,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   subLabel: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
   },
 });

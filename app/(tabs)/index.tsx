@@ -6,7 +6,8 @@ import { SOSButton } from '@/components/dashboard/SOSButton';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { useRouter, useFocusEffect } from 'expo-router';
 
@@ -15,6 +16,7 @@ export default function DashboardScreen() {
   const { loadCheckins, todayCheckin } = useCheckinStore();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const { colors } = useTheme();
 
   useFocusEffect(
     useCallback(() => {
@@ -37,27 +39,27 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.cyan}
+            tintColor={colors.cyan}
           />
         }
       >
         <View style={styles.header}>
-          <Text style={styles.greeting}>おかえりなさい</Text>
-          <Text style={styles.username}>{user?.nickname}</Text>
+          <Text style={[styles.greeting, { color: colors.textSecondary }]}>おかえりなさい</Text>
+          <Text style={[styles.username, { color: colors.text }]}>{user?.nickname}</Text>
         </View>
 
         <StatsRow />
 
         {/* Today's Check-in */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>今日の振り返り</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>今日の振り返り</Text>
           {todayCheckin ? (
             <GradientCard>
               <View style={styles.doneInner}>
-                <Text style={styles.doneText}>完了済み</Text>
-                <Text style={styles.doneSubText}>明日も続けましょう。</Text>
+                <Text style={[styles.doneText, { color: colors.success }]}>完了済み</Text>
+                <Text style={[styles.doneSubText, { color: colors.textSecondary }]}>明日も続けましょう。</Text>
                 <TouchableOpacity onPress={() => router.push('/checkin')} style={styles.redoButton}>
-                  <Text style={styles.redoText}>やり直す</Text>
+                  <Text style={[styles.redoText, { color: colors.textSecondary }]}>やり直す</Text>
                 </TouchableOpacity>
               </View>
             </GradientCard>
@@ -94,12 +96,10 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
   },
   username: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
   },
   section: {
     marginBottom: SPACING.xxxl,
@@ -107,7 +107,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: COLORS.text,
     marginBottom: SPACING.md,
   },
   checkinButton: {
@@ -117,13 +116,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   doneText: {
-    color: COLORS.success,
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   doneSubText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
   },
   redoButton: {
@@ -132,7 +129,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
   },
   redoText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     textDecorationLine: 'underline',
   },

@@ -3,7 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useBreathStore } from '@/stores/breathStore';
 import { useUserStore } from '@/stores/userStore';
 import * as Crypto from 'expo-crypto';
@@ -13,6 +14,7 @@ export default function BreathingAskScreen() {
   const router = useRouter();
   const { addSession } = useBreathStore();
   const { user } = useUserStore();
+  const { colors } = useTheme();
 
   const handleResponse = async (resolved: boolean) => {
     analyticsClient.logEvent('breathing_completed', { urge_resolved: resolved });
@@ -37,8 +39,8 @@ export default function BreathingAskScreen() {
   return (
     <SafeAreaWrapper>
       <View style={styles.container}>
-        <Text style={styles.question}>誘惑は落ち着きましたか？</Text>
-        
+        <Text style={[styles.question, { color: colors.text }]}>誘惑は落ち着きましたか？</Text>
+
         <View style={styles.buttonGroup}>
           <Button
             title="はい"
@@ -67,7 +69,6 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: FONT_SIZE.xl,
-    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.xxxl,
     fontWeight: '600',

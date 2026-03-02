@@ -1,15 +1,16 @@
 import { Redirect } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
 import { ActivityIndicator, View } from 'react-native';
-import { COLORS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function Index() {
   const { hasHydrated } = useUserStore();
+  const { colors } = useTheme();
 
   if (!hasHydrated) {
     return (
-      <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator color={COLORS.primary} />
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }

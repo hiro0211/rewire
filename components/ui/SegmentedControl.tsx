@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SegmentedControlProps {
   segments: string[];
@@ -9,16 +10,25 @@ interface SegmentedControlProps {
 }
 
 export function SegmentedControl({ segments, selectedIndex, onChange }: SegmentedControlProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceHighlight }]}>
       {segments.map((segment, index) => (
         <TouchableOpacity
           key={segment}
-          style={[styles.segment, index === selectedIndex && styles.segmentActive]}
+          style={[
+            styles.segment,
+            index === selectedIndex && [styles.segmentActive, { backgroundColor: colors.surface }],
+          ]}
           onPress={() => onChange(index)}
           activeOpacity={0.7}
         >
-          <Text style={[styles.segmentText, index === selectedIndex && styles.segmentTextActive]}>
+          <Text style={[
+            styles.segmentText,
+            { color: colors.textSecondary },
+            index === selectedIndex && { color: colors.text, fontWeight: '600' },
+          ]}>
             {segment}
           </Text>
         </TouchableOpacity>
@@ -30,7 +40,6 @@ export function SegmentedControl({ segments, selectedIndex, onChange }: Segmente
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: COLORS.surfaceHighlight,
     borderRadius: RADIUS.sm,
     padding: 2,
   },
@@ -40,15 +49,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: RADIUS.sm - 1,
   },
-  segmentActive: {
-    backgroundColor: COLORS.surface,
-  },
+  segmentActive: {},
   segmentText: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
-  },
-  segmentTextActive: {
-    color: COLORS.text,
-    fontWeight: '600',
   },
 });

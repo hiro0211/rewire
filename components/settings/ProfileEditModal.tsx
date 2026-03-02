@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 
@@ -22,6 +23,7 @@ export const ProfileEditModal = ({
 }: ProfileEditModalProps) => {
   const [nickname, setNickname] = useState(initialNickname);
   const [goalDays, setGoalDays] = useState(initialGoalDays);
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (visible) {
@@ -46,29 +48,29 @@ export const ProfileEditModal = ({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.overlay}
+        style={[styles.overlay, { backgroundColor: colors.overlay }]}
       >
-        <View style={styles.container}>
-          <Text style={styles.title}>プロフィール編集</Text>
+        <View style={[styles.container, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.title, { color: colors.text }]}>プロフィール編集</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>ニックネーム</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>ニックネーム</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.surfaceHighlight }]}
               value={nickname}
               onChangeText={setNickname}
               placeholder="ニックネームを入力"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>目標日数</Text>
-            <View style={styles.pickerWrapper}>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>目標日数</Text>
+            <View style={[styles.pickerWrapper, { backgroundColor: colors.background, borderColor: colors.surfaceHighlight }]}>
               <Picker
                 selectedValue={goalDays}
                 onValueChange={(value) => setGoalDays(value)}
-                itemStyle={styles.pickerItem}
+                itemStyle={[styles.pickerItem, { color: colors.text }]}
               >
                 {GOAL_OPTIONS.map((days) => (
                   <Picker.Item key={days} label={`${days}日`} value={days} />
@@ -79,7 +81,7 @@ export const ProfileEditModal = ({
 
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelText}>キャンセル</Text>
+              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>キャンセル</Text>
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
               <Button title="保存" onPress={handleSave} />
@@ -94,11 +96,9 @@ export const ProfileEditModal = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: COLORS.overlay,
     justifyContent: 'flex-end',
   },
   container: {
-    backgroundColor: COLORS.surface,
     borderTopLeftRadius: RADIUS.lg,
     borderTopRightRadius: RADIUS.lg,
     padding: SPACING.xl,
@@ -107,7 +107,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.xl,
     textAlign: 'center',
   },
@@ -116,27 +115,20 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     marginBottom: SPACING.xs,
   },
   input: {
-    backgroundColor: COLORS.background,
     borderRadius: RADIUS.md,
     padding: SPACING.md,
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
     borderWidth: 1,
-    borderColor: COLORS.surfaceHighlight,
   },
   pickerWrapper: {
-    backgroundColor: COLORS.background,
     borderRadius: RADIUS.md,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.surfaceHighlight,
   },
   pickerItem: {
-    color: COLORS.text,
     fontSize: 20,
   },
   buttonRow: {
@@ -149,7 +141,6 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
   },
   cancelText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
   },
 });

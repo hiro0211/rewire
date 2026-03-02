@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, TextStyle } from 'react-native';
-import { COLORS, FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface CountdownTimerProps {
   initialSeconds: number;
@@ -9,6 +10,7 @@ interface CountdownTimerProps {
 }
 
 export function CountdownTimer({ initialSeconds, style, onExpire }: CountdownTimerProps) {
+  const { colors } = useTheme();
   const [seconds, setSeconds] = useState(initialSeconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const onExpireRef = useRef(onExpire);
@@ -53,7 +55,7 @@ export function CountdownTimer({ initialSeconds, style, onExpire }: CountdownTim
       testID="countdown-timer"
       style={[
         {
-          color: COLORS.text,
+          color: colors.text,
           fontSize: FONT_SIZE.lg,
           fontWeight: '700',
           fontVariant: ['tabular-nums'],

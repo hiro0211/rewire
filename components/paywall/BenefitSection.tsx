@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { GradientCard } from '@/components/ui/GradientCard';
 import type { BenefitSection as BenefitSectionType } from '@/constants/preBenefits';
 
@@ -9,16 +10,18 @@ interface BenefitSectionProps {
 }
 
 export function BenefitSection({ section }: BenefitSectionProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionEmoji}>{section.emoji}</Text>
-      <Text style={styles.title}>{section.title}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{section.title}</Text>
 
       {section.benefits.map((benefit, index) => (
         <View key={index} style={styles.benefitRow}>
           <Text style={styles.benefitEmoji}>{benefit.emoji}</Text>
-          <Text style={styles.benefitText}>
-            <Text style={styles.benefitBold}>{benefit.bold}</Text>
+          <Text style={[styles.benefitText, { color: colors.text }]}>
+            <Text style={[styles.benefitBold, { color: colors.text }]}>{benefit.bold}</Text>
             {benefit.text}
           </Text>
         </View>
@@ -38,7 +41,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   title: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: '800',
     textAlign: 'center',
@@ -57,12 +59,10 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     flex: 1,
-    color: COLORS.text,
     fontSize: FONT_SIZE.md,
     lineHeight: 24,
   },
   benefitBold: {
     fontWeight: '700',
-    color: COLORS.text,
   },
 });

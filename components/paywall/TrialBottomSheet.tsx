@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
@@ -28,6 +29,7 @@ export function TrialBottomSheet({
   onPurchaseCompleted,
   onRestoreCompleted,
 }: TrialBottomSheetProps) {
+  const { colors } = useTheme();
   const [purchasing, setPurchasing] = useState(false);
 
   const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
@@ -80,24 +82,24 @@ export function TrialBottomSheet({
     >
       <TouchableOpacity
         testID="bottom-sheet-overlay"
-        style={styles.overlay}
+        style={[styles.overlay, { backgroundColor: colors.overlay }]}
         activeOpacity={1}
         onPress={onDismiss}
       >
-        <TouchableOpacity activeOpacity={1} style={styles.sheet}>
+        <TouchableOpacity activeOpacity={1} style={[styles.sheet, { backgroundColor: colors.surface }]}>
           {/* Handle bar */}
-          <View style={styles.handleBar} />
+          <View style={[styles.handleBar, { backgroundColor: colors.textSecondary }]} />
 
           {/* Title */}
-          <Text style={styles.title}>3日間無料でお試し</Text>
+          <Text style={[styles.title, { color: colors.text }]}>3日間無料でお試し</Text>
 
           {/* Price info */}
-          <Text style={styles.priceText}>
+          <Text style={[styles.priceText, { color: colors.textSecondary }]}>
             3日間無料、その後 {formatPrice(annualPrice, currencyCode)}/年
           </Text>
 
           {/* Highlight */}
-          <Text style={styles.highlight}>今すぐ支払いなし</Text>
+          <Text style={[styles.highlight, { color: colors.text }]}>今すぐ支払いなし</Text>
 
           {/* CTA */}
           <Button
@@ -124,7 +126,7 @@ export function TrialBottomSheet({
 
           {/* Restore */}
           <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-            <Text style={styles.restoreText}>購入の復元</Text>
+            <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -135,11 +137,9 @@ export function TrialBottomSheet({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: COLORS.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: COLORS.surface,
     borderTopLeftRadius: RADIUS.xl,
     borderTopRightRadius: RADIUS.xl,
     paddingHorizontal: SPACING.screenPadding,
@@ -152,24 +152,20 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: COLORS.textSecondary,
     marginBottom: SPACING.xl,
   },
   title: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: '800',
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   priceText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   highlight: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
     textAlign: 'center',
@@ -180,7 +176,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   restoreText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.sm,
     textDecorationLine: 'underline',

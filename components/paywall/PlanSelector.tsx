@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 
 interface PlanSelectorProps {
@@ -18,6 +19,7 @@ export function PlanSelector({
   onSelectPlan,
   currencyCode = 'JPY',
 }: PlanSelectorProps) {
+  const { colors, glow } = useTheme();
   const annualPrice = annualPackage?.product?.price ?? 5400;
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
   const annualMonthly = calcMonthlyPrice(annualPrice);
@@ -32,14 +34,16 @@ export function PlanSelector({
         testID="plan-annual"
         style={[
           styles.card,
-          selectedPlan === 'annual' ? styles.cardSelected : styles.cardUnselected,
+          selectedPlan === 'annual'
+            ? { borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 }
+            : { borderColor: colors.border, backgroundColor: colors.surface },
         ]}
         onPress={() => onSelectPlan('annual')}
         activeOpacity={0.7}
       >
-        <Text style={[styles.planLabel, { marginTop: SPACING.xxl }]}>Annual</Text>
-        <Text style={styles.priceMain}>{formatPrice(annualMonthly, currencyCode)}</Text>
-        <Text style={styles.priceSub}>/月</Text>
+        <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Annual</Text>
+        <Text style={[styles.priceMain, { color: colors.text }]}>{formatPrice(annualMonthly, currencyCode)}</Text>
+        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>/月</Text>
       </TouchableOpacity>
 
       {/* Monthly Card */}
@@ -47,14 +51,16 @@ export function PlanSelector({
         testID="plan-monthly"
         style={[
           styles.card,
-          selectedPlan === 'monthly' ? styles.cardSelected : styles.cardUnselected,
+          selectedPlan === 'monthly'
+            ? { borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 }
+            : { borderColor: colors.border, backgroundColor: colors.surface },
         ]}
         onPress={() => onSelectPlan('monthly')}
         activeOpacity={0.7}
       >
-        <Text style={[styles.planLabel, { marginTop: SPACING.xxl }]}>Monthly</Text>
-        <Text style={styles.priceMain}>{monthlyPriceStr}</Text>
-        <Text style={styles.priceSub}>/月</Text>
+        <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Monthly</Text>
+        <Text style={[styles.priceMain, { color: colors.text }]}>{monthlyPriceStr}</Text>
+        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>/月</Text>
       </TouchableOpacity>
     </View>
   );
@@ -72,32 +78,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1.5,
   },
-  cardSelected: {
-    borderColor: GLOW.purple,
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-    shadowColor: GLOW.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  cardUnselected: {
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.surface,
-  },
   planLabel: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     fontWeight: '600',
     marginBottom: SPACING.xs,
   },
   priceMain: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: '800',
   },
   priceSub: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.xs,
   },

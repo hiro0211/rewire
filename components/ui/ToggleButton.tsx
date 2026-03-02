@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolateColor } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { COLORS, RADIUS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { RADIUS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ToggleButtonProps {
   title: string;
@@ -13,6 +14,8 @@ interface ToggleButtonProps {
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export function ToggleButton({ title, active, onPress }: ToggleButtonProps) {
+  const { colors } = useTheme();
+
   const handlePress = () => {
     Haptics.selectionAsync();
     onPress();
@@ -28,12 +31,12 @@ export function ToggleButton({ title, active, onPress }: ToggleButtonProps) {
       backgroundColor: interpolateColor(
         progress.value,
         [0, 1],
-        [COLORS.surfaceHighlight, COLORS.primary]
+        [colors.surfaceHighlight, colors.primary]
       ),
       borderColor: interpolateColor(
         progress.value,
         [0, 1],
-        [COLORS.surfaceHighlight, COLORS.primary] // Keep border same as bg for filled look
+        [colors.surfaceHighlight, colors.primary]
       ),
     };
   });
@@ -43,7 +46,7 @@ export function ToggleButton({ title, active, onPress }: ToggleButtonProps) {
       color: interpolateColor(
         progress.value,
         [0, 1],
-        [COLORS.textSecondary, '#FFFFFF']
+        [colors.textSecondary, colors.contrastText]
       ),
     };
   });

@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StepBadge } from '@/components/content-blocker/StepBadge';
@@ -27,6 +28,7 @@ export default function ContentBlockerSetupScreen() {
   const [step, setStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { colors } = useTheme();
   useContentBlockerStatus(step, () => {
     setStep(4);
   });
@@ -63,17 +65,17 @@ export default function ContentBlockerSetupScreen() {
       <View style={styles.header}>
         {step > 0 ? (
           <TouchableOpacity onPress={handlePrev} style={styles.headerButton}>
-            <Ionicons name="chevron-back" size={20} color={COLORS.primary} />
-            <Text style={styles.headerButtonText}>前へ</Text>
+            <Ionicons name="chevron-back" size={20} color={colors.primary} />
+            <Text style={[styles.headerButtonText, { color: colors.primary }]}>前へ</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
-            <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+            <Ionicons name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
         {step >= 1 && step <= 3 && (
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
-            <Text style={styles.headerSkipText}>あとで設定する</Text>
+            <Text style={[styles.headerSkipText, { color: colors.textSecondary }]}>あとで設定する</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -86,8 +88,9 @@ export default function ContentBlockerSetupScreen() {
               key={i}
               style={[
                 styles.stepDot,
-                i === step && styles.stepDotActive,
-                i < step && styles.stepDotCompleted,
+                { backgroundColor: colors.surfaceHighlight },
+                i === step && { backgroundColor: colors.primary, width: 24 },
+                i < step && { backgroundColor: colors.primary },
               ]}
             />
           ))}
@@ -96,15 +99,15 @@ export default function ContentBlockerSetupScreen() {
         {/* Step 0 - Intro */}
         {step === 0 && (
           <>
-            <View style={styles.iconContainer}>
+            <View style={[styles.iconContainer, { backgroundColor: colors.surfaceHighlight }]}>
               <Ionicons
                 name="shield-checkmark-outline"
                 size={80}
-                color={COLORS.primary}
+                color={colors.primary}
               />
             </View>
-            <Text style={styles.title}>ポルノブロッカー</Text>
-            <Text style={styles.description}>
+            <Text style={[styles.title, { color: colors.text }]}>ポルノブロッカー</Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
               {'Safariでアダルトサイトを自動ブロック。\n3ステップで設定できます。'}
             </Text>
           </>
@@ -114,10 +117,10 @@ export default function ContentBlockerSetupScreen() {
         {step === 1 && (
           <>
             <StepBadge step={1} />
-            <Text style={styles.stepTitle}>
+            <Text style={[styles.stepTitle, { color: colors.text }]}>
               「設定」→「アプリ」→「Safari」
             </Text>
-            <Text style={styles.stepDescription}>
+            <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>
               設定アプリを開いて「アプリ」から「Safari」を選択してください
             </Text>
             <ScreenshotStep
@@ -131,8 +134,8 @@ export default function ContentBlockerSetupScreen() {
         {step === 2 && (
           <>
             <StepBadge step={2} />
-            <Text style={styles.stepTitle}>「機能拡張」をタップ</Text>
-            <Text style={styles.stepDescription}>
+            <Text style={[styles.stepTitle, { color: colors.text }]}>「機能拡張」をタップ</Text>
+            <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>
               Safari設定の中にある「機能拡張」を選択してください
             </Text>
             <ScreenshotStep
@@ -146,8 +149,8 @@ export default function ContentBlockerSetupScreen() {
         {step === 3 && (
           <>
             <StepBadge step={3} />
-            <Text style={styles.stepTitle}>Rewireをオンにする</Text>
-            <Text style={styles.stepDescription}>
+            <Text style={[styles.stepTitle, { color: colors.text }]}>Rewireをオンにする</Text>
+            <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>
               「rewire」を選んで「機能拡張を許可」をオンにしてください
             </Text>
             <ScreenshotStep
@@ -160,15 +163,15 @@ export default function ContentBlockerSetupScreen() {
         {/* Step 4 - Completion */}
         {step === 4 && (
           <>
-            <View style={styles.iconContainer}>
+            <View style={[styles.iconContainer, { backgroundColor: colors.surfaceHighlight }]}>
               <Ionicons
                 name="checkmark-circle"
                 size={80}
-                color={COLORS.success}
+                color={colors.success}
               />
             </View>
-            <Text style={styles.title}>設定完了！</Text>
-            <Text style={styles.description}>
+            <Text style={[styles.title, { color: colors.text }]}>設定完了！</Text>
+            <Text style={[styles.description, { color: colors.textSecondary }]}>
               {'Safariでアダルトサイトが\n自動的にブロックされます'}
             </Text>
           </>
@@ -238,12 +241,10 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   headerButtonText: {
-    color: COLORS.primary,
     fontSize: FONT_SIZE.md,
     fontWeight: '500',
   },
   headerSkipText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
   },
   content: {
@@ -260,21 +261,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.surfaceHighlight,
     marginHorizontal: 4,
-  },
-  stepDotActive: {
-    backgroundColor: COLORS.primary,
-    width: 24,
-  },
-  stepDotCompleted: {
-    backgroundColor: COLORS.primary,
   },
   iconContainer: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xxl,
@@ -282,13 +274,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
   description: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: SPACING.xl,
@@ -296,14 +286,12 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     textAlign: 'center',
     marginTop: SPACING.lg,
     marginBottom: SPACING.sm,
   },
   stepDescription: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: SPACING.lg,

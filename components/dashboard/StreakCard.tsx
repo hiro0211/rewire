@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { useStreak } from '@/hooks/dashboard/useStreak';
 import { useUserStore } from '@/stores/userStore';
 import { StreakEditModal } from './StreakEditModal';
@@ -12,51 +13,52 @@ export function StreakCard() {
   const { streak, goal, progress, streakStartDate } = useStreak();
   const { updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const { colors } = useTheme();
 
   const handleSave = (date: string) => {
     updateUser({ streakStartDate: date });
   };
 
   return (
-    <Card style={styles.container}>
-      <Text style={styles.label}>現在の記録</Text>
+    <Card style={[styles.container, { borderColor: 'rgba(0, 212, 255, 0.15)' }]}>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>現在の記録</Text>
       <View style={styles.row}>
-        <Text style={styles.count}>{streak}</Text>
-        <Text style={styles.unit}>Days</Text>
+        <Text style={[styles.count, { color: colors.text }]}>{streak}</Text>
+        <Text style={[styles.unit, { color: colors.textSecondary }]}>Days</Text>
         <TouchableOpacity
           testID="streak-edit-button"
           onPress={() => setEditModalVisible(true)}
           style={styles.editButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="pencil-outline" size={16} color={COLORS.textSecondary} />
+          <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
       {/* Mini stats row */}
-      <View testID="streak-stats-row" style={styles.statsRow}>
+      <View testID="streak-stats-row" style={[styles.statsRow, { backgroundColor: colors.surfaceHighlight }]}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{streak}</Text>
-          <Text style={styles.statLabel}>連続日数</Text>
+          <Text style={[styles.statValue, { color: colors.text }]}>{streak}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>連続日数</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{goal}</Text>
-          <Text style={styles.statLabel}>目標</Text>
+          <Text style={[styles.statValue, { color: colors.text }]}>{goal}</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>目標</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: COLORS.cyan }]}>
+          <Text style={[styles.statValue, { color: colors.cyan }]}>
             {Math.round(progress * 100)}%
           </Text>
-          <Text style={styles.statLabel}>達成率</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>達成率</Text>
         </View>
       </View>
 
       <View style={styles.progressContainer}>
         <View style={styles.goalRow}>
-          <Text style={styles.goalText}>目標: {goal}日</Text>
-          <Text style={styles.percentText}>{Math.round(progress * 100)}%</Text>
+          <Text style={[styles.goalText, { color: colors.textSecondary }]}>目標: {goal}日</Text>
+          <Text style={[styles.percentText, { color: colors.primary }]}>{Math.round(progress * 100)}%</Text>
         </View>
         <ProgressBar progress={progress} variant="gradient" />
       </View>
@@ -76,10 +78,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
     paddingVertical: SPACING.xl,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.15)',
   },
   label: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.xs,
   },
@@ -89,14 +89,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   count: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.display,
     fontWeight: 'bold',
     marginRight: SPACING.xs,
     lineHeight: FONT_SIZE.display * 1.1,
   },
   unit: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xl,
     fontWeight: '600',
   },
@@ -110,7 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: SPACING.lg,
     paddingVertical: SPACING.md,
-    backgroundColor: COLORS.surfaceHighlight,
     borderRadius: 8,
   },
   statItem: {
@@ -118,19 +115,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
   },
   statLabel: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 24,
-    backgroundColor: COLORS.border,
   },
   progressContainer: {
     width: '100%',
@@ -141,11 +135,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   goalText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
   },
   percentText: {
-    color: COLORS.primary,
     fontWeight: 'bold',
     fontSize: FONT_SIZE.sm,
   },

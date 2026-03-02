@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
+import { View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import type { EducationSlide } from '@/constants/education';
 
 interface EducationSlideStepProps {
@@ -15,19 +15,20 @@ interface EducationSlideStepProps {
 // --- View-based Illustrations ---
 
 function DopamineBarsIllustration() {
+  const { colors } = useTheme();
   const bars = [
-    { label: '食事', height: 40, color: COLORS.success },
-    { label: '運動', height: 35, color: COLORS.success },
-    { label: 'ポルノ', height: 100, color: COLORS.warning },
-    { label: '達成感', height: 45, color: COLORS.success },
-    { label: '会話', height: 30, color: COLORS.success },
+    { label: '食事', height: 40, color: colors.success },
+    { label: '運動', height: 35, color: colors.success },
+    { label: 'ポルノ', height: 100, color: colors.warning },
+    { label: '達成感', height: 45, color: colors.success },
+    { label: '会話', height: 30, color: colors.success },
   ];
 
   return (
     <View style={illStyles.barsContainer}>
       {/* Arrow above the spike */}
       <View style={illStyles.arrowContainer}>
-        <Ionicons name="arrow-up" size={20} color={COLORS.warning} />
+        <Ionicons name="arrow-up" size={20} color={colors.warning} />
       </View>
       <View style={illStyles.barsRow}>
         {bars.map((bar) => (
@@ -41,33 +42,35 @@ function DopamineBarsIllustration() {
                 },
               ]}
             />
-            <Text style={illStyles.barLabel}>{bar.label}</Text>
+            <Text style={[illStyles.barLabel, { color: colors.textSecondary }]}>{bar.label}</Text>
           </View>
         ))}
       </View>
       {/* Baseline */}
-      <View style={illStyles.baseline} />
+      <View style={[illStyles.baseline, { backgroundColor: colors.border }]} />
     </View>
   );
 }
 
 function LockIconIllustration() {
+  const { colors } = useTheme();
   return (
     <View style={illStyles.lockContainer}>
       {/* Decorative dots */}
-      <View style={[illStyles.dot, illStyles.dotTopLeft]} />
-      <View style={[illStyles.dot, illStyles.dotTopRight]} />
-      <View style={[illStyles.dot, illStyles.dotBottomLeft]} />
-      <View style={[illStyles.dot, illStyles.dotBottomRight]} />
+      <View style={[illStyles.dot, illStyles.dotTopLeft, { backgroundColor: colors.warning }]} />
+      <View style={[illStyles.dot, illStyles.dotTopRight, { backgroundColor: colors.warning }]} />
+      <View style={[illStyles.dot, illStyles.dotBottomLeft, { backgroundColor: colors.warning }]} />
+      <View style={[illStyles.dot, illStyles.dotBottomRight, { backgroundColor: colors.warning }]} />
       {/* Center circle with lock icon */}
-      <View style={illStyles.lockCircle}>
-        <Ionicons name="lock-open-outline" size={48} color={COLORS.warning} />
+      <View style={[illStyles.lockCircle, { backgroundColor: colors.surfaceHighlight }]}>
+        <Ionicons name="lock-open-outline" size={48} color={colors.warning} />
       </View>
     </View>
   );
 }
 
 function DimmedIconsIllustration() {
+  const { colors } = useTheme();
   const icons: Array<React.ComponentProps<typeof Ionicons>['name']> = [
     'restaurant-outline',
     'people-outline',
@@ -80,16 +83,16 @@ function DimmedIconsIllustration() {
     <View style={illStyles.dimmedContainer}>
       <View style={illStyles.iconsRow}>
         {icons.map((icon) => (
-          <View key={icon} style={illStyles.dimmedIconCircle}>
-            <Ionicons name={icon} size={24} color={COLORS.textSecondary} />
+          <View key={icon} style={[illStyles.dimmedIconCircle, { backgroundColor: colors.surface }]}>
+            <Ionicons name={icon} size={24} color={colors.textSecondary} />
           </View>
         ))}
       </View>
       {/* Joy meter */}
       <View style={illStyles.joyMeterContainer}>
-        <Text style={illStyles.joyLabel}>Joy</Text>
+        <Text style={[illStyles.joyLabel, { color: colors.textSecondary }]}>Joy</Text>
         <View style={illStyles.joyBarWrapper}>
-          <ProgressBar progress={0.12} height={8} color={COLORS.textSecondary} />
+          <ProgressBar progress={0.12} height={8} color={colors.textSecondary} />
         </View>
       </View>
     </View>
@@ -97,16 +100,17 @@ function DimmedIconsIllustration() {
 }
 
 function RecoveryProgressIllustration() {
+  const { colors } = useTheme();
   const steps: Array<{
     icon: React.ComponentProps<typeof Ionicons>['name'];
     size: number;
     color: string;
   }> = [
-    { icon: 'cloudy-outline', size: 24, color: COLORS.textSecondary },
+    { icon: 'cloudy-outline', size: 24, color: colors.textSecondary },
     { icon: 'cloudy-outline', size: 28, color: '#5A5A6A' },
-    { icon: 'partly-sunny-outline', size: 32, color: COLORS.warning },
+    { icon: 'partly-sunny-outline', size: 32, color: colors.warning },
     { icon: 'partly-sunny-outline', size: 36, color: '#7BC47F' },
-    { icon: 'sunny-outline', size: 40, color: COLORS.success },
+    { icon: 'sunny-outline', size: 40, color: colors.success },
   ];
 
   return (
@@ -123,10 +127,10 @@ function RecoveryProgressIllustration() {
                 borderRadius: (44 + i * 4) / 2,
                 backgroundColor:
                   i < 2
-                    ? COLORS.surface
+                    ? colors.surface
                     : i === 2
-                      ? COLORS.surfaceHighlight
-                      : `${COLORS.success}20`,
+                      ? colors.surfaceHighlight
+                      : `${colors.success}20`,
               },
             ]}
           >
@@ -136,13 +140,14 @@ function RecoveryProgressIllustration() {
       </View>
       {/* Arrow line connecting them */}
       <View style={illStyles.arrowLine}>
-        <Ionicons name="arrow-forward" size={16} color={COLORS.textSecondary} />
+        <Ionicons name="arrow-forward" size={16} color={colors.textSecondary} />
       </View>
     </View>
   );
 }
 
 function ScatteredFocusIllustration() {
+  const { colors } = useTheme();
   const items: Array<{
     icon: React.ComponentProps<typeof Ionicons>['name'];
     offset: { top?: number; left?: number; right?: number; bottom?: number };
@@ -160,24 +165,26 @@ function ScatteredFocusIllustration() {
           key={item.icon}
           style={[
             illStyles.scatteredIcon,
+            { backgroundColor: colors.surface },
             item.offset,
             { transform: [{ rotate: item.rotation }] },
           ]}
         >
-          <Ionicons name={item.icon} size={28} color={COLORS.textSecondary} />
+          <Ionicons name={item.icon} size={28} color={colors.textSecondary} />
         </View>
       ))}
       <View style={illStyles.scatteredOverlay}>
-        <Ionicons name="close-circle-outline" size={32} color={COLORS.danger} />
+        <Ionicons name="close-circle-outline" size={32} color={colors.danger} />
       </View>
       <View style={illStyles.scatteredBarContainer}>
-        <ProgressBar progress={0.12} height={6} color={COLORS.textSecondary} />
+        <ProgressBar progress={0.12} height={6} color={colors.textSecondary} />
       </View>
     </View>
   );
 }
 
 function ShameCycleIllustration() {
+  const { colors } = useTheme();
   const steps: Array<{
     label: string;
     icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -192,90 +199,93 @@ function ShameCycleIllustration() {
     <View style={illStyles.cycleContainer}>
       {/* Top */}
       <View style={[illStyles.cycleNode, illStyles.cycleTop]}>
-        <Ionicons name={steps[0].icon} size={20} color={COLORS.warning} />
-        <Text style={illStyles.cycleLabel}>{steps[0].label}</Text>
+        <Ionicons name={steps[0].icon} size={20} color={colors.warning} />
+        <Text style={[illStyles.cycleLabel, { color: colors.warning }]}>{steps[0].label}</Text>
       </View>
       {/* Right */}
       <View style={[illStyles.cycleNode, illStyles.cycleRight]}>
-        <Ionicons name={steps[1].icon} size={20} color={COLORS.warning} />
-        <Text style={illStyles.cycleLabel}>{steps[1].label}</Text>
+        <Ionicons name={steps[1].icon} size={20} color={colors.warning} />
+        <Text style={[illStyles.cycleLabel, { color: colors.warning }]}>{steps[1].label}</Text>
       </View>
       {/* Bottom */}
       <View style={[illStyles.cycleNode, illStyles.cycleBottom]}>
-        <Ionicons name={steps[2].icon} size={20} color={COLORS.warning} />
-        <Text style={illStyles.cycleLabel}>{steps[2].label}</Text>
+        <Ionicons name={steps[2].icon} size={20} color={colors.warning} />
+        <Text style={[illStyles.cycleLabel, { color: colors.warning }]}>{steps[2].label}</Text>
       </View>
       {/* Left */}
       <View style={[illStyles.cycleNode, illStyles.cycleLeft]}>
-        <Ionicons name={steps[3].icon} size={20} color={COLORS.warning} />
-        <Text style={illStyles.cycleLabel}>{steps[3].label}</Text>
+        <Ionicons name={steps[3].icon} size={20} color={colors.warning} />
+        <Text style={[illStyles.cycleLabel, { color: colors.warning }]}>{steps[3].label}</Text>
       </View>
       {/* Arrows between nodes */}
       <View style={[illStyles.cycleArrow, { top: 20, right: 30 }]}>
-        <Ionicons name="arrow-forward" size={14} color={COLORS.warning} style={{ opacity: 0.5 }} />
+        <Ionicons name="arrow-forward" size={14} color={colors.warning} style={{ opacity: 0.5 }} />
       </View>
       <View style={[illStyles.cycleArrow, { bottom: 30, right: 20 }]}>
-        <Ionicons name="arrow-down" size={14} color={COLORS.warning} style={{ opacity: 0.5 }} />
+        <Ionicons name="arrow-down" size={14} color={colors.warning} style={{ opacity: 0.5 }} />
       </View>
       <View style={[illStyles.cycleArrow, { bottom: 20, left: 30 }]}>
-        <Ionicons name="arrow-back" size={14} color={COLORS.warning} style={{ opacity: 0.5 }} />
+        <Ionicons name="arrow-back" size={14} color={colors.warning} style={{ opacity: 0.5 }} />
       </View>
       <View style={[illStyles.cycleArrow, { top: 30, left: 20 }]}>
-        <Ionicons name="arrow-up" size={14} color={COLORS.warning} style={{ opacity: 0.5 }} />
+        <Ionicons name="arrow-up" size={14} color={colors.warning} style={{ opacity: 0.5 }} />
       </View>
     </View>
   );
 }
 
 function IsolationIllustration() {
+  const { colors } = useTheme();
   return (
     <View style={illStyles.isolationContainer}>
       {/* Central person */}
-      <View style={illStyles.isolationCenter}>
-        <Ionicons name="person-outline" size={36} color={COLORS.textSecondary} />
+      <View style={[illStyles.isolationCenter, { backgroundColor: colors.surface }]}>
+        <Ionicons name="person-outline" size={36} color={colors.textSecondary} />
       </View>
       {/* Distant people */}
       <View style={[illStyles.isolationDistant, { top: 0, left: '50%', marginLeft: -16 }]}>
-        <Ionicons name="people-outline" size={20} color={COLORS.textSecondary} style={{ opacity: 0.25 }} />
+        <Ionicons name="people-outline" size={20} color={colors.textSecondary} style={{ opacity: 0.25 }} />
       </View>
       <View style={[illStyles.isolationDistant, { bottom: 0, left: '50%', marginLeft: -16 }]}>
-        <Ionicons name="people-outline" size={20} color={COLORS.textSecondary} style={{ opacity: 0.25 }} />
+        <Ionicons name="people-outline" size={20} color={colors.textSecondary} style={{ opacity: 0.25 }} />
       </View>
       <View style={[illStyles.isolationDistant, { top: '50%', left: 0, marginTop: -16 }]}>
-        <Ionicons name="people-outline" size={20} color={COLORS.textSecondary} style={{ opacity: 0.25 }} />
+        <Ionicons name="people-outline" size={20} color={colors.textSecondary} style={{ opacity: 0.25 }} />
       </View>
       <View style={[illStyles.isolationDistant, { top: '50%', right: 0, marginTop: -16 }]}>
-        <Ionicons name="people-outline" size={20} color={COLORS.textSecondary} style={{ opacity: 0.25 }} />
+        <Ionicons name="people-outline" size={20} color={colors.textSecondary} style={{ opacity: 0.25 }} />
       </View>
     </View>
   );
 }
 
 function BrainSparkleIllustration() {
+  const { colors } = useTheme();
   return (
     <View style={illStyles.brainContainer}>
       {/* Central icon */}
-      <View style={illStyles.brainCircle}>
-        <Ionicons name="flash-outline" size={48} color={COLORS.success} />
+      <View style={[illStyles.brainCircle, { backgroundColor: `${colors.success}20` }]}>
+        <Ionicons name="flash-outline" size={48} color={colors.success} />
       </View>
       {/* Sparkles */}
       <View style={[illStyles.sparkle, { top: 5, right: 10 }]}>
-        <Ionicons name="sparkles-outline" size={20} color={COLORS.success} style={{ opacity: 0.6 }} />
+        <Ionicons name="sparkles-outline" size={20} color={colors.success} style={{ opacity: 0.6 }} />
       </View>
       <View style={[illStyles.sparkle, { top: 10, left: 5 }]}>
-        <Ionicons name="sparkles-outline" size={16} color={COLORS.success} style={{ opacity: 0.5 }} />
+        <Ionicons name="sparkles-outline" size={16} color={colors.success} style={{ opacity: 0.5 }} />
       </View>
       <View style={[illStyles.sparkle, { bottom: 10, right: 5 }]}>
-        <Ionicons name="sparkles-outline" size={18} color={COLORS.success} style={{ opacity: 0.5 }} />
+        <Ionicons name="sparkles-outline" size={18} color={colors.success} style={{ opacity: 0.5 }} />
       </View>
       <View style={[illStyles.sparkle, { bottom: 5, left: 10 }]}>
-        <Ionicons name="sparkles-outline" size={20} color={COLORS.success} style={{ opacity: 0.6 }} />
+        <Ionicons name="sparkles-outline" size={20} color={colors.success} style={{ opacity: 0.6 }} />
       </View>
     </View>
   );
 }
 
 function VibrantLifeIllustration() {
+  const { colors } = useTheme();
   const icons: Array<React.ComponentProps<typeof Ionicons>['name']> = [
     'restaurant-outline',
     'people-outline',
@@ -288,15 +298,15 @@ function VibrantLifeIllustration() {
     <View style={illStyles.dimmedContainer}>
       <View style={illStyles.iconsRow}>
         {icons.map((icon) => (
-          <View key={icon} style={illStyles.vibrantIconCircle}>
-            <Ionicons name={icon} size={24} color={COLORS.primary} />
+          <View key={icon} style={[illStyles.vibrantIconCircle, { backgroundColor: `${colors.primary}20` }]}>
+            <Ionicons name={icon} size={24} color={colors.primary} />
           </View>
         ))}
       </View>
       <View style={illStyles.joyMeterContainer}>
-        <Text style={illStyles.joyLabelVibrant}>Joy</Text>
+        <Text style={[illStyles.joyLabelVibrant, { color: colors.success }]}>Joy</Text>
         <View style={illStyles.joyBarWrapper}>
-          <ProgressBar progress={0.88} height={8} color={COLORS.success} />
+          <ProgressBar progress={0.88} height={8} color={colors.success} />
         </View>
       </View>
     </View>
@@ -329,6 +339,7 @@ function renderIllustration(type: EducationSlide['illustrationType']) {
 // --- Page Dots ---
 
 function PageDots({ current, total }: { current: number; total: number }) {
+  const { colors } = useTheme();
   return (
     <View testID="page-dots" style={styles.dotsContainer}>
       {Array.from({ length: total }, (_, i) => (
@@ -337,7 +348,7 @@ function PageDots({ current, total }: { current: number; total: number }) {
           testID={i === current ? `page-dot-active-${i}` : `page-dot-${i}`}
           style={[
             styles.dot,
-            i === current && styles.dotActive,
+            i === current && { backgroundColor: colors.contrastText, width: 24, borderRadius: 4 },
           ]}
         />
       ))}
@@ -352,6 +363,8 @@ export function EducationSlideStep({
   slideIndex,
   totalSlides,
 }: EducationSlideStepProps) {
+  const { colors } = useTheme();
+
   return (
     <View testID="education-slide-container" style={styles.container}>
       <PageDots current={slideIndex} total={totalSlides} />
@@ -360,8 +373,8 @@ export function EducationSlideStep({
         {renderIllustration(slide.illustrationType)}
       </View>
 
-      <Text style={styles.title}>{slide.title}</Text>
-      <Text style={styles.body}>{slide.body}</Text>
+      <Text style={[styles.title, { color: colors.contrastText }]}>{slide.title}</Text>
+      <Text style={[styles.body, { color: `${colors.contrastText}CC` }]}>{slide.body}</Text>
     </View>
   );
 }
@@ -386,11 +399,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
-  dotActive: {
-    backgroundColor: '#FFFFFF',
-    width: 24,
-    borderRadius: 4,
-  },
   illustrationContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -400,13 +408,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
   body: {
     fontSize: FONT_SIZE.md,
-    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -425,7 +431,6 @@ const illStyles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     alignSelf: 'center',
-    // Position above the ポルノ bar (3rd bar, centered)
   },
   barsRow: {
     flexDirection: 'row',
@@ -443,12 +448,10 @@ const illStyles = StyleSheet.create({
   },
   barLabel: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
   },
   baseline: {
     width: '80%',
     height: 1,
-    backgroundColor: COLORS.border,
     marginTop: SPACING.xs,
   },
 
@@ -463,7 +466,6 @@ const illStyles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -472,7 +474,6 @@ const illStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.warning,
     opacity: 0.4,
   },
   dotTopLeft: { top: 10, left: 10 },
@@ -494,7 +495,6 @@ const illStyles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -506,7 +506,6 @@ const illStyles = StyleSheet.create({
   },
   joyLabel: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.textSecondary,
   },
   joyBarWrapper: {
     flex: 1,
@@ -541,7 +540,6 @@ const illStyles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -592,7 +590,6 @@ const illStyles = StyleSheet.create({
   },
   cycleLabel: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.warning,
   },
   cycleArrow: {
     position: 'absolute',
@@ -613,7 +610,6 @@ const illStyles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -637,7 +633,6 @@ const illStyles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: `${COLORS.success}20`,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -650,12 +645,10 @@ const illStyles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: `${COLORS.primary}20`,
     justifyContent: 'center',
     alignItems: 'center',
   },
   joyLabelVibrant: {
     fontSize: FONT_SIZE.xs,
-    color: COLORS.success,
   },
 });

@@ -2,7 +2,8 @@ import { Stack } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useUserStore } from '@/stores/userStore';
-import { COLORS } from '@/constants/theme';
+import { useThemeStore } from '@/stores/themeStore';
+import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -26,6 +27,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { loadUser, hasHydrated, user } = useUserStore();
+  const { colors, isDark } = useTheme();
   const trackingRequested = useRef(false);
 
   useScreenTracking();
@@ -37,6 +39,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     loadUser();
+    useThemeStore.getState().loadThemePreference();
   }, []);
 
   useEffect(() => {
@@ -91,14 +94,14 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" backgroundColor={COLORS.background} />
+      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: COLORS.background },
-          headerStyle: { backgroundColor: COLORS.background },
-          headerTintColor: COLORS.primary,
-          headerTitleStyle: { color: COLORS.text, fontSize: 17, fontWeight: '600' },
+          contentStyle: { backgroundColor: colors.background },
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.primary,
+          headerTitleStyle: { color: colors.text, fontSize: 17, fontWeight: '600' },
           headerShadowVisible: false,
           headerBackTitleVisible: false,
           headerBackButtonDisplayMode: 'minimal' as const,

@@ -7,7 +7,7 @@ import Animated, {
   Easing,
   withRepeat,
 } from 'react-native-reanimated';
-import { COLORS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { BREATHING_CONFIG } from '@/constants/breathing';
 import type { BreathPhase } from '@/hooks/breathing/useBreathingEngine';
 
@@ -18,6 +18,7 @@ interface BreathingCircleProps {
 export function BreathingCircle({ phase }: BreathingCircleProps) {
   const scale = useSharedValue(0.4);
   const opacity = useSharedValue(0.6);
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (phase === 'inhale') {
@@ -44,7 +45,7 @@ export function BreathingCircle({ phase }: BreathingCircleProps) {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.circle, animatedStyle]} />
+      <Animated.View style={[styles.circle, { backgroundColor: colors.primary }, animatedStyle]} />
     </View>
   );
 }
@@ -60,7 +61,6 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: COLORS.primary,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.5)',
   },

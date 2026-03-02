@@ -4,15 +4,17 @@ import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { ArticleListItem } from '@/components/articles/ArticleListItem';
 import { ARTICLES } from '@/constants/articles';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function ArticleListScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
     <SafeAreaWrapper>
       <View style={styles.header}>
-        <Text style={styles.title}>インサイト</Text>
+        <Text style={[styles.title, { color: colors.text }]}>インサイト</Text>
       </View>
       <FlatList
         data={ARTICLES}
@@ -35,7 +37,6 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.sm,
   },
   title: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xl,
     fontWeight: 'bold',
   },

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, SPACING, FONT_SIZE, RADIUS, GLOW, GRADIENTS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GradientCard } from '@/components/ui/GradientCard';
@@ -33,6 +34,7 @@ export function PaywallDiscount({
   onPurchaseCompleted,
   onRestoreCompleted,
 }: PaywallDiscountProps) {
+  const { colors, gradients } = useTheme();
   useDiscountExpiryTracker();
   const [purchasing, setPurchasing] = useState(false);
 
@@ -87,11 +89,11 @@ export function PaywallDiscount({
         {/* Close button */}
         <TouchableOpacity
           testID="close-button"
-          style={styles.closeButton}
+          style={[styles.closeButton, { backgroundColor: colors.surfaceHighlight }]}
           onPress={onDismiss}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <Text style={styles.closeText}>✕</Text>
+          <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
         </TouchableOpacity>
 
         {/* Logo */}
@@ -102,8 +104,8 @@ export function PaywallDiscount({
         />
 
         {/* Headline */}
-        <Text style={styles.offerTitle}>SPECIAL OFFER</Text>
-        <Text style={styles.offerSub}>今だけの特別割引</Text>
+        <Text style={[styles.offerTitle, { color: colors.text }]}>SPECIAL OFFER</Text>
+        <Text style={[styles.offerSub, { color: colors.textSecondary }]}>今だけの特別割引</Text>
 
         {/* Big discount card */}
         <LinearGradient
@@ -112,15 +114,15 @@ export function PaywallDiscount({
           end={{ x: 1, y: 1 }}
           style={styles.discountCard}
         >
-          <Text style={styles.discountNumber}>69%</Text>
+          <Text style={[styles.discountNumber, { color: colors.contrastText }]}>69%</Text>
           <Text style={styles.discountOff}>OFF</Text>
         </LinearGradient>
 
         {/* Timer */}
-        <Text style={styles.timerLabel}>この特別価格の期限:</Text>
+        <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>この特別価格の期限:</Text>
         <CountdownTimer
           initialSeconds={initialSeconds}
-          style={styles.timerDisplay}
+          style={{ ...styles.timerDisplay, color: colors.text }}
           onExpire={onDismiss}
         />
 
@@ -128,20 +130,20 @@ export function PaywallDiscount({
         <GradientCard style={styles.priceCard}>
           <View style={styles.priceBadgeWrap}>
             <LinearGradient
-              colors={[...GRADIENTS.accent]}
+              colors={gradients.accent as [string, string, ...string[]]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.priceBadge}
             >
-              <Text style={styles.priceBadgeText}>LOWEST PRICE EVER</Text>
+              <Text style={[styles.priceBadgeText, { color: colors.contrastText }]}>LOWEST PRICE EVER</Text>
             </LinearGradient>
           </View>
           <View style={styles.priceRow}>
             <View>
-              <Text style={styles.priceLabel}>Yearly</Text>
-              <Text style={styles.priceDetail}>12ヶ月 · {formatPrice(annualPrice, currencyCode)}</Text>
+              <Text style={[styles.priceLabel, { color: colors.text }]}>Yearly</Text>
+              <Text style={[styles.priceDetail, { color: colors.textSecondary }]}>12ヶ月 · {formatPrice(annualPrice, currencyCode)}</Text>
             </View>
-            <Text style={styles.priceAmount}>{formatPrice(monthlyEquivalent, currencyCode)}/月</Text>
+            <Text style={[styles.priceAmount, { color: colors.text }]}>{formatPrice(monthlyEquivalent, currencyCode)}/月</Text>
           </View>
         </GradientCard>
 
@@ -157,12 +159,12 @@ export function PaywallDiscount({
         />
 
         {/* Footer */}
-        <Text style={styles.footerNote}>
+        <Text style={[styles.footerNote, { color: colors.textSecondary }]}>
           いつでもキャンセル · 集中力を取り戻す
         </Text>
         <SubscriptionTerms />
         <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-          <Text style={styles.restoreText}>購入の復元</Text>
+          <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaWrapper>
@@ -184,12 +186,10 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
   },
   logo: {
@@ -200,14 +200,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   offerTitle: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxxl,
     fontWeight: '900',
     textAlign: 'center',
     letterSpacing: 2,
   },
   offerSub: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     textAlign: 'center',
     marginTop: SPACING.sm,
@@ -224,7 +222,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   discountNumber: {
-    color: '#FFFFFF',
     fontSize: 64,
     fontWeight: '900',
   },
@@ -235,13 +232,11 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   timerLabel: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginBottom: SPACING.sm,
   },
   timerDisplay: {
     fontSize: FONT_SIZE.xxxl,
-    color: COLORS.text,
     fontWeight: '800',
     marginBottom: SPACING.xl,
   },
@@ -259,7 +254,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
   },
   priceBadgeText: {
-    color: '#FFFFFF',
     fontSize: FONT_SIZE.xs,
     fontWeight: '800',
     letterSpacing: 1,
@@ -270,17 +264,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceLabel: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '700',
   },
   priceDetail: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.sm,
     marginTop: 2,
   },
   priceAmount: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.xxl,
     fontWeight: '800',
   },
@@ -289,13 +280,11 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   footerNote: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   restoreText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.sm,
     textDecorationLine: 'underline',

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -22,6 +23,7 @@ export default function GoalSettingScreen() {
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const resolvedNotifyTime = Array.isArray(notifyTimeParam)
     ? notifyTimeParam[0]
@@ -67,16 +69,16 @@ export default function GoalSettingScreen() {
     <StarryBackground>
       <SafeAreaWrapper style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>目標を設定</Text>
-          <Text style={styles.description}>
+          <Text style={[styles.title, { color: colors.text }]}>目標を設定</Text>
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
             まずは何日間、ポルノなしで過ごすことを目指しますか？
           </Text>
 
-          <View style={styles.pickerContainer}>
+          <View style={[styles.pickerContainer, { backgroundColor: colors.pillBackground }]}>
             <Picker
               selectedValue={selectedGoal}
               onValueChange={(value) => setSelectedGoal(value)}
-              itemStyle={styles.pickerItem}
+              itemStyle={[styles.pickerItem, { color: colors.text }]}
             >
               {GOAL_OPTIONS.map((days) => (
                 <Picker.Item key={days} label={`${days}日`} value={days} />
@@ -105,23 +107,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
-    color: COLORS.text,
     marginBottom: SPACING.md,
   },
   description: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     marginBottom: SPACING.xxl,
   },
   pickerContainer: {
     width: '100%',
-    backgroundColor: COLORS.pillBackground,
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
   },
   pickerItem: {
-    color: COLORS.text,
     fontSize: 22,
   },
   footer: {

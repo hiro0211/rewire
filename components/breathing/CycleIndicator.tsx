@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { COLORS, SPACING } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING } from '@/constants/theme';
 import { BREATHING_CONFIG } from '@/constants/breathing';
 
 interface CycleIndicatorProps {
@@ -8,6 +9,8 @@ interface CycleIndicatorProps {
 }
 
 export function CycleIndicator({ currentCycle }: CycleIndicatorProps) {
+  const { colors } = useTheme();
+
   const dots = Array.from({ length: BREATHING_CONFIG.CYCLES_PER_SESSION });
 
   return (
@@ -17,8 +20,8 @@ export function CycleIndicator({ currentCycle }: CycleIndicatorProps) {
           key={index}
           style={[
             styles.dot,
-            index < currentCycle && styles.dotCompleted,
-            index === currentCycle && styles.dotActive,
+            index < currentCycle && { backgroundColor: colors.primary, borderColor: colors.primary, opacity: 0.5 },
+            index === currentCycle && { backgroundColor: colors.primary, borderColor: colors.primary },
           ]}
         />
       ))}
@@ -39,14 +42,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
     marginHorizontal: 6,
-  },
-  dotActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  dotCompleted: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-    opacity: 0.5,
   },
 });

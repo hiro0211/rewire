@@ -4,11 +4,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, FONT_SIZE, RADIUS, GRADIENTS, GLOW } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export function SOSButton() {
   const router = useRouter();
+  const { colors, gradients, glow } = useTheme();
 
   const handlePress = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -19,20 +21,22 @@ export function SOSButton() {
   return (
     <TouchableOpacity
       testID="panic-button"
-      style={styles.container}
+      style={[styles.container, {
+        shadowColor: glow.danger,
+      }]}
       onPress={handlePress}
       activeOpacity={0.8}
     >
       <LinearGradient
-        colors={[...GRADIENTS.danger]}
+        colors={[...gradients.danger]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.gradient}
       >
         <View style={styles.iconCircle}>
-          <Ionicons name="warning" size={20} color="#FFFFFF" />
+          <Ionicons name="warning" size={20} color={colors.contrastText} />
         </View>
-        <Text style={styles.text}>ポルノを見たくなったら</Text>
+        <Text style={[styles.text, { color: colors.contrastText }]}>ポルノを見たくなったら</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -43,7 +47,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
-    shadowColor: GLOW.danger,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 8,
@@ -66,7 +69,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: FONT_SIZE.md,
   },

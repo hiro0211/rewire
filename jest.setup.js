@@ -3,3 +3,8 @@
 if (typeof window !== 'undefined' && typeof window.dispatchEvent !== 'function') {
   window.dispatchEvent = () => true;
 }
+
+// AsyncStorage mock for tests that transitively import it via themeStore/useTheme
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);

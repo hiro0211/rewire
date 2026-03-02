@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ToggleButton } from '@/components/ui/ToggleButton';
-import { COLORS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface BinaryQuestionProps {
   label: string;
@@ -10,9 +11,11 @@ interface BinaryQuestionProps {
 }
 
 export function BinaryQuestion({ label, value, onChange }: BinaryQuestionProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
       <View style={styles.buttons}>
         <View style={styles.buttonWrapper}>
           <ToggleButton
@@ -38,7 +41,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   label: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     marginBottom: SPACING.md,
     fontWeight: '600',

@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { Text } from '@/components/Themed';
-import { COLORS, FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
 
 interface AchievementSummaryCircleProps {
   percentage: number;
@@ -18,6 +18,7 @@ export function AchievementSummaryCircle({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - percentage / 100);
+  const { colors } = useTheme();
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -27,7 +28,7 @@ export function AchievementSummaryCircle({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={COLORS.border}
+          stroke={colors.border}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -36,7 +37,7 @@ export function AchievementSummaryCircle({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={COLORS.cyan}
+          stroke={colors.cyan}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
@@ -46,7 +47,7 @@ export function AchievementSummaryCircle({
         />
       </Svg>
       <View style={styles.labelContainer}>
-        <Text style={styles.percentage}>{percentage}%</Text>
+        <Text style={[styles.percentage, { color: colors.cyan }]}>{percentage}%</Text>
       </View>
     </View>
   );
@@ -66,6 +67,5 @@ const styles = StyleSheet.create({
   percentage: {
     fontSize: FONT_SIZE.sm,
     fontWeight: '700',
-    color: COLORS.cyan,
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 
 const TRIGGERS = ['ストレス', '退屈', '孤独', '疲れ', 'SNS', '不安', 'その他'];
 
@@ -10,23 +11,27 @@ interface TriggerSelectorProps {
 }
 
 export function TriggerSelector({ selected, onSelect }: TriggerSelectorProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>何が引き金になったと思いますか？</Text>
+      <Text style={[styles.label, { color: colors.text }]}>何が引き金になったと思いますか？</Text>
       <View style={styles.grid}>
         {TRIGGERS.map((trigger) => (
           <TouchableOpacity
             key={trigger}
             style={[
               styles.chip,
-              selected === trigger && styles.chipSelected,
+              { borderColor: colors.surfaceHighlight, backgroundColor: colors.surface },
+              selected === trigger && { backgroundColor: colors.primary, borderColor: colors.primary },
             ]}
             onPress={() => onSelect(trigger)}
           >
             <Text
               style={[
                 styles.chipText,
-                selected === trigger && styles.chipTextSelected,
+                { color: colors.textSecondary },
+                selected === trigger && { color: colors.contrastText, fontWeight: 'bold' },
               ]}
             >
               {trigger}
@@ -43,7 +48,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xxl,
   },
   label: {
-    color: COLORS.text,
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
     marginBottom: SPACING.md,
@@ -59,20 +63,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.full,
     borderWidth: 1,
-    borderColor: COLORS.surfaceHighlight,
     margin: SPACING.xs,
-    backgroundColor: COLORS.surface,
-  },
-  chipSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
   },
   chipText: {
-    color: COLORS.textSecondary,
     fontSize: FONT_SIZE.md,
-  },
-  chipTextSelected: {
-    color: '#FFF',
-    fontWeight: 'bold',
   },
 });
