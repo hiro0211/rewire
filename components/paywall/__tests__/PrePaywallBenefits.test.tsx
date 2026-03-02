@@ -57,11 +57,6 @@ describe('PrePaywallBenefits', () => {
     expect(getByText('本物の人間関係を築く')).toBeTruthy();
   });
 
-  it('証言カードが表示される', () => {
-    const { getAllByTestId } = render(<PrePaywallBenefits {...defaultProps} />);
-    expect(getAllByTestId('testimonial-stars').length).toBeGreaterThanOrEqual(2);
-  });
-
   it('機能紹介が表示される（実在機能のみ）', () => {
     const { getByText, queryByText } = render(<PrePaywallBenefits {...defaultProps} />);
     expect(getByText(/Rewireの仕組み/)).toBeTruthy();

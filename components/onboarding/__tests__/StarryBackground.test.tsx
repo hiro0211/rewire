@@ -7,8 +7,8 @@ jest.mock('expo-linear-gradient', () => {
   const React = require('react');
   const { View } = require('react-native');
   return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+    LinearGradient: ({ children, testID, colors, ...props }: any) => (
+      <View testID={testID} colors={colors} {...props}>{children}</View>
     ),
   };
 });
@@ -47,5 +47,33 @@ describe('StarryBackground', () => {
     expect(() =>
       render(<StarryBackground><Text>test</Text></StarryBackground>)
     ).not.toThrow();
+  });
+
+  it('gradientColors prop でカスタムグラデーションが適用される', () => {
+    const customColors = ['#0A0A0F', '#1a1a3e', '#2d1b4e'];
+    const { getByTestId } = render(
+      <StarryBackground gradientColors={customColors}>
+        <Text>test</Text>
+      </StarryBackground>
+    );
+    const gradient = getByTestId('starry-gradient');
+    expect(gradient.props.colors).toEqual(customColors);
+  });
+
+  it('デフォルトではnavyグラデーションが使われる', () => {
+    const { getByTestId } = render(
+      <StarryBackground><Text>test</Text></StarryBackground>
+    );
+    const gradient = getByTestId('starry-gradient');
+    expect(gradient.props.colors).toEqual(['#0B1026', '#0D1B2A', '#121A30']);
+  });
+
+  it('showStars={false} で星が非表示になる', () => {
+    const { queryByTestId } = render(
+      <StarryBackground showStars={false}>
+        <Text>test</Text>
+      </StarryBackground>
+    );
+    expect(queryByTestId('star-dot-0')).toBeNull();
   });
 });

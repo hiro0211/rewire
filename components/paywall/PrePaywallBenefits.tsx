@@ -7,13 +7,11 @@ import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
 import { BenefitTag } from './BenefitTag';
 import { BenefitSection } from './BenefitSection';
-import { TestimonialCard } from './TestimonialCard';
 import { FeatureShowcase } from './FeatureShowcase';
 import { calcTargetDate } from './preBenefitsUtils';
 import {
   BENEFIT_TAGS,
   BENEFIT_SECTIONS,
-  TESTIMONIALS,
   FEATURE_ITEMS,
 } from '@/constants/preBenefits';
 
@@ -72,13 +70,6 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
             <BenefitSection key={section.id} section={section} />
           ))}
 
-          {/* ── 証言① ── */}
-          <TestimonialCard
-            quote={TESTIMONIALS[0].quote}
-            rating={TESTIMONIALS[0].rating}
-            author={TESTIMONIALS[0].author}
-          />
-
           <GlowDivider />
 
           {/* ── 機能紹介 ── */}
@@ -98,13 +89,6 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
           {BENEFIT_SECTIONS.slice(2).map((section) => (
             <BenefitSection key={section.id} section={section} />
           ))}
-
-          {/* ── 証言② ── */}
-          <TestimonialCard
-            quote={TESTIMONIALS[1].quote}
-            rating={TESTIMONIALS[1].rating}
-            author={TESTIMONIALS[1].author}
-          />
 
           {/* ── 下部余白（固定フッターの分） ── */}
           <View style={{ height: 100 }} />

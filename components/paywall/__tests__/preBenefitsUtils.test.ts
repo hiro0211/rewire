@@ -1,5 +1,5 @@
 import { calcTargetDate } from '../preBenefitsUtils';
-import { BENEFIT_SECTIONS, BENEFIT_TAGS, TESTIMONIALS, FEATURE_ITEMS } from '@/constants/preBenefits';
+import { BENEFIT_SECTIONS, BENEFIT_TAGS, FEATURE_ITEMS } from '@/constants/preBenefits';
 
 describe('preBenefitsUtils', () => {
   describe('calcTargetDate', () => {
@@ -76,21 +76,6 @@ describe('preBenefits constants', () => {
     });
   });
 
-  describe('TESTIMONIALS', () => {
-    it('2つ以上の証言がある', () => {
-      expect(TESTIMONIALS.length).toBeGreaterThanOrEqual(2);
-    });
-
-    it('各証言にquoteとratingがある', () => {
-      TESTIMONIALS.forEach((t) => {
-        expect(t).toHaveProperty('quote');
-        expect(t).toHaveProperty('rating');
-        expect(t.rating).toBeGreaterThanOrEqual(1);
-        expect(t.rating).toBeLessThanOrEqual(5);
-      });
-    });
-  });
-
   describe('FEATURE_ITEMS', () => {
     it('3つ以上の機能がある', () => {
       expect(FEATURE_ITEMS.length).toBeGreaterThanOrEqual(3);
@@ -112,14 +97,6 @@ describe('preBenefits constants', () => {
     it('ストリーク記録が含まれている（実装済み機能）', () => {
       const titles = FEATURE_ITEMS.map((f) => f.title);
       expect(titles).toContain('ストリーク記録');
-    });
-  });
-
-  describe('TESTIMONIALS', () => {
-    it('SNSフリクションへの言及がない', () => {
-      TESTIMONIALS.forEach((t) => {
-        expect(t.quote).not.toContain('SNSフリクション');
-      });
     });
   });
 

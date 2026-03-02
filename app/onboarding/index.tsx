@@ -31,6 +31,7 @@ import { AnalyzingStep } from '@/components/onboarding/AnalyzingStep';
 import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
 import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
 import { LastViewedDateStep } from '@/components/onboarding/LastViewedDateStep';
+import { TransitionSlideStep } from '@/components/onboarding/TransitionSlideStep';
 import { clampDay, getDaysInMonth, isDateInFuture } from '@/lib/date/datePickerUtils';
 import { format } from 'date-fns';
 
@@ -64,6 +65,7 @@ type OnboardingStep =
   | { type: 'education'; slideIndex: number }
   | { type: 'damage'; slideIndex: number }
   | { type: 'recovery'; slideIndex: number }
+  | { type: 'damage_intro' }
   | { type: 'features' }
   | { type: 'nickname' }
   | { type: 'consent' }
@@ -80,6 +82,7 @@ const STEPS: OnboardingStep[] = [
   { type: 'analyzing' },
   { type: 'score_result' },
   ...EDUCATION_SLIDES.map((_, i): OnboardingStep => ({ type: 'education' as const, slideIndex: i })),
+  { type: 'damage_intro' },
   ...DAMAGE_SLIDES.map((_, i): OnboardingStep => ({ type: 'damage' as const, slideIndex: i })),
   ...RECOVERY_SLIDES.map((_, i): OnboardingStep => ({ type: 'recovery' as const, slideIndex: i })),
   { type: 'features' },
@@ -113,6 +116,7 @@ function canGoBack(stepIndex: number): boolean {
     case 'nickname':
     case 'consent':
     case 'notification':
+    case 'damage_intro':
       return false;
     case 'education':
       // First education slide cannot go back (would return to score_result)
@@ -131,14 +135,14 @@ function canGoBack(stepIndex: number): boolean {
 
 /** Check if current step is in the education section (for skip button) */
 function isEducationStep(cs: OnboardingStep): boolean {
-  return cs.type === 'education' || cs.type === 'damage' || cs.type === 'recovery';
+  return cs.type === 'education' || cs.type === 'damage_intro' || cs.type === 'damage' || cs.type === 'recovery';
 }
 
 /** Find the index of the features step (skip target) */
 const FEATURES_STEP_INDEX = STEPS.findIndex((s) => s.type === 'features');
 
 /** Step counter: only count interactive steps (exclude education/analyzing/score_result) */
-const NON_COUNTABLE_TYPES = new Set(['education', 'damage', 'recovery', 'analyzing', 'score_result']);
+const NON_COUNTABLE_TYPES = new Set(['education', 'damage_intro', 'damage', 'recovery', 'analyzing', 'score_result']);
 const STEP_COUNTER_MAP = STEPS.reduce<number[]>((acc, s) => {
   const prev = acc.length > 0 ? acc[acc.length - 1] : 0;
   acc.push(NON_COUNTABLE_TYPES.has(s.type) ? prev : prev + 1);
@@ -411,6 +415,13 @@ export default function OnboardingScreen() {
           </View>
         );
 
+      case 'damage_intro':
+        return (
+          <View style={styles.fullWidth}>
+            <TransitionSlideStep />
+          </View>
+        );
+
       case 'damage':
         return (
           <View style={styles.fullWidth}>
@@ -588,6 +599,10 @@ export default function OnboardingScreen() {
     }
   };
 
+  const backgroundConfig = currentStep.type === 'damage_intro'
+    ? { gradientColors: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] as string[], showStars: false }
+    : {};
+
   const content = (
     <>
       {/* Header: back button + skip + progress bar */}
@@ -650,7 +665,7 @@ export default function OnboardingScreen() {
   );
 
   return (
-    <StarryBackground>
+    <StarryBackground {...backgroundConfig}>
       <SafeAreaWrapper style={styles.container}>
         {content}
       </SafeAreaWrapper>

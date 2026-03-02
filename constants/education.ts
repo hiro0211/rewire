@@ -24,7 +24,7 @@ export const EDUCATION_SLIDES: EducationSlide[] = [
   {
     id: 'daily_impact',
     title: '日常から輝きが\n失われていく',
-    body: 'ドーパミンの基準値が上がった脳は、日常の小さな幸せを感じるセンサーが鈍ります。「何をやっても楽しくない」「集中できない」——これは脳の変化が原因です。',
+    body: 'ドーパミンの基準値が上がった脳は、日常の小さな幸せを感じるセンサーが鈍ります。\n\n「何をやっても楽しくない」\n「より強い刺激を求める」\n\n——これは脳の変化が原因です。',
     illustrationType: 'dimmed_icons',
   },
 ];

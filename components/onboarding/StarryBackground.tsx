@@ -5,11 +5,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const STAR_COUNT = 40;
 
+const DEFAULT_GRADIENT_COLORS = ['#0B1026', '#0D1B2A', '#121A30'];
+
 interface StarryBackgroundProps {
   children: React.ReactNode;
+  gradientColors?: string[];
+  showStars?: boolean;
 }
 
-export function StarryBackground({ children }: StarryBackgroundProps) {
+export function StarryBackground({ children, gradientColors, showStars = true }: StarryBackgroundProps) {
   const stars = useMemo(() => {
     return Array.from({ length: STAR_COUNT }, (_, i) => ({
       id: i,
@@ -24,10 +28,10 @@ export function StarryBackground({ children }: StarryBackgroundProps) {
     <View testID="starry-background" style={styles.container}>
       <LinearGradient
         testID="starry-gradient"
-        colors={['#0B1026', '#0D1B2A', '#121A30']}
+        colors={gradientColors ?? DEFAULT_GRADIENT_COLORS}
         style={StyleSheet.absoluteFill}
       />
-      {stars.map((star) => (
+      {showStars && stars.map((star) => (
         <View
           key={star.id}
           testID={`star-dot-${star.id}`}

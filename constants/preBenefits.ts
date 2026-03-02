@@ -19,12 +19,6 @@ export interface BenefitTagData {
   emoji: string;
 }
 
-export interface Testimonial {
-  quote: string;
-  rating: number;
-  author: string;
-}
-
 export interface FeatureItem {
   emoji: string;
   title: string;
@@ -85,21 +79,6 @@ export const BENEFIT_SECTIONS: BenefitSection[] = [
       { emoji: '🔗', bold: '信頼できる', text: '人間になる' },
       { emoji: '❤️', bold: '大切な人', text: 'と深い関係を築ける' },
     ],
-  },
-];
-
-// ── ユーザー証言 ──
-
-export const TESTIMONIALS: Testimonial[] = [
-  {
-    quote: 'ポルノのせいで集中力がボロボロだったけど、Rewireを始めて2週間で本が読めるようになった。自分でも驚いている。',
-    rating: 5,
-    author: 'Anonymous',
-  },
-  {
-    quote: '何度も挫折してきたけど、毎日のチェックインで自分の行動パターンに気づけた。衝動が来ても呼吸法で乗り越えられるようになった。',
-    rating: 5,
-    author: 'Anonymous',
   },
 ];
 

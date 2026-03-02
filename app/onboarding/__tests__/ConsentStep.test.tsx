@@ -89,7 +89,7 @@ import OnboardingScreen from '../../onboarding/index';
  * Navigate from welcome to consent step.
  * With mocked empty assessment/education, the steps are:
  *   0:welcome → 1:analyzing → 2:score_result →
- *   3:features → 4:nickname → 5:consent → 6:notification
+ *   3:damage_intro → 4:features → 5:nickname → 6:consent → 7:notification → 8:last_viewed_date
  */
 function navigateToConsent(utils: ReturnType<typeof render>) {
   const { getByText, getByPlaceholderText } = utils;
@@ -106,6 +106,12 @@ function navigateToConsent(utils: ReturnType<typeof render>) {
   });
 
   // score_result → "次へ"
+  act(() => {
+    fireEvent.press(getByText('次へ'));
+    jest.advanceTimersByTime(500);
+  });
+
+  // damage_intro → "次へ"
   act(() => {
     fireEvent.press(getByText('次へ'));
     jest.advanceTimersByTime(500);
