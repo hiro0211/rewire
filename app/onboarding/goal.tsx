@@ -15,10 +15,11 @@ import * as Crypto from 'expo-crypto';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export default function GoalSettingScreen() {
-  const { nickname, consentGivenAt, notifyTime: notifyTimeParam } = useLocalSearchParams<{
+  const { nickname, consentGivenAt, notifyTime: notifyTimeParam, lastViewedDate: lastViewedDateParam } = useLocalSearchParams<{
     nickname: string;
     consentGivenAt: string;
     notifyTime: string;
+    lastViewedDate: string;
   }>();
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
@@ -29,13 +30,17 @@ export default function GoalSettingScreen() {
     ? notifyTimeParam[0]
     : notifyTimeParam || '22:00';
 
+  const resolvedLastViewedDate = Array.isArray(lastViewedDateParam)
+    ? lastViewedDateParam[0]
+    : lastViewedDateParam || null;
+
   const handleFinish = async () => {
     try {
       const newUser = {
         id: Crypto.randomUUID(),
         nickname: Array.isArray(nickname) ? nickname[0] : nickname || 'User',
         goalDays: selectedGoal,
-        streakStartDate: format(new Date(), 'yyyy-MM-dd'),
+        streakStartDate: resolvedLastViewedDate || format(new Date(), 'yyyy-MM-dd'),
         isPro: false,
         notifyTime: resolvedNotifyTime,
         notifyEnabled: true,

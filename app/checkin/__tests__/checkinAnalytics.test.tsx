@@ -34,11 +34,11 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: jest.fn() }),
 }));
 
-jest.mock('@react-native-community/slider', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return { __esModule: true, default: (props: any) => <View {...props} /> };
-});
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(),
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'Light', Medium: 'Medium', Heavy: 'Heavy' },
+}));
 
 import CheckinScreen from '../index';
 

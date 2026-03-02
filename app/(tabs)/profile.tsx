@@ -57,8 +57,8 @@ export default function ProfileScreen() {
             <ToolCard
               icon="shield-outline"
               iconColor={colors.danger}
-              title="コンテンツブロッカー"
-              description="Safariの有害サイトをブロック"
+              title="ポルノブロッカー"
+              description="ポルノサイトをブロック"
               onPress={() => router.push('/content-blocker-setup' as any)}
             />
           )}

@@ -30,6 +30,9 @@ import { ScoreResultStep } from '@/components/onboarding/ScoreResultStep';
 import { AnalyzingStep } from '@/components/onboarding/AnalyzingStep';
 import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
 import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
+import { LastViewedDateStep } from '@/components/onboarding/LastViewedDateStep';
+import { clampDay, getDaysInMonth, isDateInFuture } from '@/lib/date/datePickerUtils';
+import { format } from 'date-fns';
 
 const FEATURES = [
   {
@@ -64,7 +67,8 @@ type OnboardingStep =
   | { type: 'features' }
   | { type: 'nickname' }
   | { type: 'consent' }
-  | { type: 'notification' };
+  | { type: 'notification' }
+  | { type: 'last_viewed_date' };
 
 const STEPS: OnboardingStep[] = [
   { type: 'welcome' },
@@ -82,6 +86,7 @@ const STEPS: OnboardingStep[] = [
   { type: 'nickname' },
   { type: 'consent' },
   { type: 'notification' },
+  { type: 'last_viewed_date' },
 ];
 
 const TOTAL_QUESTIONS = ASSESSMENT_QUESTIONS.length;
@@ -132,6 +137,15 @@ function isEducationStep(cs: OnboardingStep): boolean {
 /** Find the index of the features step (skip target) */
 const FEATURES_STEP_INDEX = STEPS.findIndex((s) => s.type === 'features');
 
+/** Step counter: only count interactive steps (exclude education/analyzing/score_result) */
+const NON_COUNTABLE_TYPES = new Set(['education', 'damage', 'recovery', 'analyzing', 'score_result']);
+const STEP_COUNTER_MAP = STEPS.reduce<number[]>((acc, s) => {
+  const prev = acc.length > 0 ? acc[acc.length - 1] : 0;
+  acc.push(NON_COUNTABLE_TYPES.has(s.type) ? prev : prev + 1);
+  return acc;
+}, []);
+const TOTAL_COUNTABLE_STEPS = STEP_COUNTER_MAP[STEP_COUNTER_MAP.length - 1];
+
 export default function OnboardingScreen() {
   const [step, setStep] = useState(0);
   const [nickname, setNickname] = useState('');
@@ -139,6 +153,10 @@ export default function OnboardingScreen() {
   const [dataAgreed, setDataAgreed] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [notifyTime, setNotifyTime] = useState('22:00');
+  const now = new Date();
+  const [lastViewedYear, setLastViewedYear] = useState(now.getFullYear());
+  const [lastViewedMonth, setLastViewedMonth] = useState(now.getMonth() + 1);
+  const [lastViewedDay, setLastViewedDay] = useState(now.getDate());
   const { setUser } = useUserStore();
   const router = useRouter();
   const translateX = useRef(new Animated.Value(0)).current;
@@ -146,8 +164,8 @@ export default function OnboardingScreen() {
   const { colors } = useTheme();
 
   // Refs to access latest state from PanResponder closure
-  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, notifyTime });
-  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, notifyTime };
+  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, notifyTime, lastViewedYear, lastViewedMonth, lastViewedDay });
+  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, notifyTime, lastViewedYear, lastViewedMonth, lastViewedDay };
 
   const animateTransition = (direction: number, callback: () => void) => {
     Animated.timing(translateX, {
@@ -166,7 +184,8 @@ export default function OnboardingScreen() {
   };
 
   const canAdvanceAt = (s: number) => {
-    const { nickname: n, privacyAgreed: p, dataAgreed: d, answers: a } = stateRef.current;
+    const { nickname: n, privacyAgreed: p, dataAgreed: d, answers: a,
+      lastViewedYear: y, lastViewedMonth: m, lastViewedDay: dy } = stateRef.current;
     const cs = STEPS[s];
     switch (cs.type) {
       case 'assessment_choice':
@@ -178,6 +197,8 @@ export default function OnboardingScreen() {
         return !!n.trim();
       case 'consent':
         return p && d;
+      case 'last_viewed_date':
+        return !isDateInFuture(y, m, dy);
       default:
         return true;
     }
@@ -213,12 +234,17 @@ export default function OnboardingScreen() {
       if (!canAdvanceAt(step)) return;
       animateTransition(-1, () => setStep(step + 1));
     } else {
+      const lastViewedDate = format(
+        new Date(lastViewedYear, lastViewedMonth - 1, lastViewedDay),
+        'yyyy-MM-dd'
+      );
       router.push({
         pathname: '/onboarding/goal',
         params: {
           nickname,
           consentGivenAt: new Date().toISOString(),
           notifyTime,
+          lastViewedDate,
         },
       });
     }
@@ -535,6 +561,28 @@ export default function OnboardingScreen() {
           </View>
         );
 
+      case 'last_viewed_date':
+        return (
+          <View style={styles.fullWidth}>
+            <LastViewedDateStep
+              selectedYear={lastViewedYear}
+              selectedMonth={lastViewedMonth}
+              selectedDay={lastViewedDay}
+              onYearChange={(y) => {
+                setLastViewedYear(y);
+                const maxDay = getDaysInMonth(y, lastViewedMonth);
+                setLastViewedDay((d) => clampDay(d, maxDay));
+              }}
+              onMonthChange={(m) => {
+                setLastViewedMonth(m);
+                const maxDay = getDaysInMonth(lastViewedYear, m);
+                setLastViewedDay((d) => clampDay(d, maxDay));
+              }}
+              onDayChange={setLastViewedDay}
+            />
+          </View>
+        );
+
       default:
         return null;
     }
@@ -565,6 +613,10 @@ export default function OnboardingScreen() {
             >
               <Text style={[styles.skipText, { color: colors.textSecondary }]}>スキップ</Text>
             </TouchableOpacity>
+          ) : !NON_COUNTABLE_TYPES.has(currentStep.type) ? (
+            <Text style={[styles.stepCounter, { color: colors.textSecondary }]}>
+              {`${STEP_COUNTER_MAP[step]}/${TOTAL_COUNTABLE_STEPS}`}
+            </Text>
           ) : (
             <View style={styles.backButtonPlaceholder} />
           )}
@@ -640,6 +692,10 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: FONT_SIZE.md,
+  },
+  stepCounter: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: '600',
   },
   content: {
     flex: 1,

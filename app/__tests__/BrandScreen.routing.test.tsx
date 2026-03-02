@@ -27,14 +27,18 @@ jest.mock('@/stores/userStore', () => ({
 import { BrandScreen } from '../brand';
 
 describe('BrandScreen routing', () => {
+  const originalDev = (global as any).__DEV__;
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     mockUser = null;
+    (global as any).__DEV__ = false;
   });
 
   afterEach(() => {
     jest.useRealTimers();
+    (global as any).__DEV__ = originalDev;
   });
 
   it('user=nullの場合/onboardingに遷移する', () => {

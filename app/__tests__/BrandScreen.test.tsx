@@ -37,13 +37,17 @@ import * as Haptics from 'expo-haptics';
 import { BrandScreen, BRAND_CATCHPHRASES } from '../brand';
 
 describe('BrandScreen（ブランド起動画面）', () => {
+  const originalDev = (global as any).__DEV__;
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    (global as any).__DEV__ = false;
   });
 
   afterEach(() => {
     jest.useRealTimers();
+    (global as any).__DEV__ = originalDev;
   });
 
   describe('表示要素', () => {

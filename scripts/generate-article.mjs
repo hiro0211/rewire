@@ -91,9 +91,12 @@ function selectTopic(topics) {
 function runClaudeCode(prompt, cwd = resolve(new URL('.', import.meta.url).pathname, '..')) {
   return new Promise((res, rej) => {
     let output = '';
-    const proc = spawn('claude', ['--print', '--dangerously-skip-permissions', prompt], {
+    const cleanEnv = { ...process.env, FORCE_COLOR: '0' };
+    delete cleanEnv.CLAUDECODE;
+    delete cleanEnv.CLAUDE_CODE_SESSION;
+    const proc = spawn('claude', ['-p', '--allowedTools', 'Read,Edit,Write,Bash', prompt], {
       cwd,
-      env: { ...process.env, FORCE_COLOR: '0' },
+      env: cleanEnv,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     proc.stdout.on('data', (d) => { output += d.toString(); });

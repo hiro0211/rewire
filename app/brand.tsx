@@ -1,5 +1,6 @@
 import { FONT_SIZE } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
+import { format } from 'date-fns';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -22,7 +23,7 @@ const TIMINGS = {
 
 export function BrandScreen() {
   const router = useRouter();
-  const { user } = useUserStore();
+  const { user, setUser, updateUser } = useUserStore();
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const lineOpacities = useRef(BRAND_CATCHPHRASES.map(() => new Animated.Value(0))).current;
@@ -65,15 +66,38 @@ export function BrandScreen() {
     });
 
     // Navigate
-    timeouts.push(setTimeout(() => {
+    timeouts.push(setTimeout(async () => {
       let destination: string;
-      if (!user || !user.nickname) {
-        destination = '/onboarding';
-      } else if (!user.isPro) {
-        destination = '/paywall?source=onboarding';
-      } else {
+
+      if (__DEV__) {
+        if (!user || !user.nickname) {
+          const now = format(new Date(), 'yyyy-MM-dd');
+          await setUser({
+            id: 'dev-user',
+            nickname: 'Dev',
+            goalDays: 30,
+            streakStartDate: now,
+            isPro: true,
+            notifyTime: '21:00',
+            notifyEnabled: false,
+            createdAt: now,
+            consentGivenAt: now,
+            ageVerifiedAt: now,
+          });
+        } else if (!user.isPro) {
+          await updateUser({ isPro: true });
+        }
         destination = '/(tabs)';
+      } else {
+        if (!user || !user.nickname) {
+          destination = '/onboarding';
+        } else if (!user.isPro) {
+          destination = '/paywall?source=onboarding';
+        } else {
+          destination = '/(tabs)';
+        }
       }
+
       router.replace(destination as any);
     }, TIMINGS.navigate));
 

@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '@/components/ui/Button';
 import { BinaryQuestion } from '@/components/checkin/BinaryQuestion';
-import { LevelSlider } from '@/components/checkin/LevelSlider';
+import { LevelSelector } from '@/components/checkin/LevelSelector';
 import { MemoInput } from '@/components/checkin/MemoInput';
 import { useCheckinForm } from '@/hooks/checkin/useCheckinForm';
 import { useCheckinSubmit } from '@/hooks/checkin/useCheckinSubmit';
@@ -44,30 +44,43 @@ export default function CheckinScreen() {
           onChange={(v) => setField('watchedPorn', v)}
         />
 
-        <LevelSlider
+        <LevelSelector
           label="❷ 誘惑レベル"
           value={formState.urgeLevel}
           onChange={(v) => setField('urgeLevel', v)}
-          minLabel="なし"
-          maxLabel="高い"
+          options={[
+            { value: 0, label: 'なし' },
+            { value: 1, label: '低い' },
+            { value: 2, label: '中程度' },
+            { value: 3, label: '高い' },
+            { value: 4, label: '最高' },
+          ]}
         />
 
-        <LevelSlider
+        <LevelSelector
           label="❸ ストレスレベル"
           value={formState.stressLevel}
           onChange={(v) => setField('stressLevel', v)}
-          minLabel="低い"
-          maxLabel="高い"
+          options={[
+            { value: 0, label: 'なし' },
+            { value: 1, label: '低い' },
+            { value: 2, label: '中程度' },
+            { value: 3, label: '高い' },
+            { value: 4, label: '最高' },
+          ]}
         />
 
-        <LevelSlider
+        <LevelSelector
           label="❹ 今日の生活の質"
           value={formState.qualityOfLife}
           onChange={(v) => setField('qualityOfLife', v)}
-          maximumValue={5}
-          minimumValue={1}
-          minLabel="悪い"
-          maxLabel="良い"
+          options={[
+            { value: 1, label: '悪い' },
+            { value: 2, label: 'やや悪い' },
+            { value: 3, label: '普通' },
+            { value: 4, label: 'やや良い' },
+            { value: 5, label: '良い' },
+          ]}
         />
 
         <MemoInput

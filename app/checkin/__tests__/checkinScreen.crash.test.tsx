@@ -38,9 +38,9 @@ jest.mock('@/components/checkin/BinaryQuestion', () => {
   return { BinaryQuestion: (props: any) => <View testID="binary-question" /> };
 });
 
-jest.mock('@/components/checkin/LevelSlider', () => {
+jest.mock('@/components/checkin/LevelSelector', () => {
   const { View } = require('react-native');
-  return { LevelSlider: (props: any) => <View testID={`slider-${props.label}`} /> };
+  return { LevelSelector: (props: any) => <View testID={`selector-${props.label}`} /> };
 });
 
 jest.mock('@/components/checkin/MemoInput', () => {

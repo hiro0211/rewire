@@ -24,13 +24,17 @@ jest.mock('@/stores/userStore', () => ({
 import { BrandScreen } from '../brand';
 
 describe('BrandScreen ルーティング分岐', () => {
+  const originalDev = (global as any).__DEV__;
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    (global as any).__DEV__ = false;
   });
 
   afterEach(() => {
     jest.useRealTimers();
+    (global as any).__DEV__ = originalDev;
   });
 
   it('ユーザーがnull → /onboarding', () => {
