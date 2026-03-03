@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Linking, Platform, AppState, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Linking, Platform, Text } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
 import { SettingSection } from '@/components/settings/SettingSection';
@@ -9,10 +9,9 @@ import { ThemePickerModal } from '@/components/settings/ThemePickerModal';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useTheme } from '@/hooks/useTheme';
-import { notificationClient } from '@/lib/notifications/notificationClient';
 import { useRouter } from 'expo-router';
-import { contentBlockerBridge } from '@/lib/contentBlocker/contentBlockerBridge';
-
+import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
+import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import type { ThemePreference } from '@/types/theme';
 
 const THEME_LABELS: Record<ThemePreference, string> = {
@@ -23,87 +22,27 @@ const THEME_LABELS: Record<ThemePreference, string> = {
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { user, updateUser, reset } = useUserStore();
+  const { user, updateUser } = useUserStore();
   const { colors } = useTheme();
   const themePreference = useThemeStore((s) => s.themePreference);
 
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [isThemePickerVisible, setThemePickerVisible] = useState(false);
-  const [blockerStatus, setBlockerStatus] = useState<'checking' | 'enabled' | 'disabled'>('checking');
 
-  const checkBlockerStatus = async () => {
-    if (Platform.OS === 'ios') {
-      const status = await contentBlockerBridge.getBlockerStatus();
-      setBlockerStatus(status.isEnabled ? 'enabled' : 'disabled');
-    }
-  };
-
-  useEffect(() => {
-    checkBlockerStatus();
-    const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') checkBlockerStatus();
-    });
-    return () => sub.remove();
-  }, []);
-
-  const handleNotificationToggle = async (value: boolean) => {
-    if (value) {
-      const granted = await notificationClient.requestPermissions();
-      if (granted) {
-        updateUser({ notifyEnabled: true });
-        if (user?.notifyTime) {
-          notificationClient.scheduleDailyReminder(user.notifyTime);
-        }
-      } else {
-        Alert.alert('通知許可が必要です', '設定アプリから通知を許可してください。');
-        updateUser({ notifyEnabled: false });
-      }
-    } else {
-      updateUser({ notifyEnabled: false });
-      notificationClient.cancelAllNotifications();
-    }
-  };
-
-  const handleTimeChange = (time: string) => {
-    updateUser({ notifyTime: time });
-    if (user?.notifyEnabled) {
-      notificationClient.scheduleDailyReminder(time);
-    }
-  };
-
-  const handleResetData = () => {
-    Alert.alert(
-      'データをリセット',
-      'すべての記録と設定が消去されます。この操作は取り消せません。よろしいですか？',
-      [
-        { text: 'キャンセル', style: 'cancel' },
-        {
-          text: 'リセットする',
-          style: 'destructive',
-          onPress: async () => {
-            await reset();
-            router.replace('/onboarding');
-          },
-        },
-      ]
-    );
-  };
-
-  const handleManageSubscription = () => {
-    if (Platform.OS === 'ios') {
-      Linking.openURL('https://apps.apple.com/account/subscriptions');
-    } else {
-      Alert.alert('サブスクリプション管理', 'App Storeの設定からサブスクリプションを管理できます。');
-    }
-  };
+  const { blockerStatus } = useBlockerStatus();
+  const {
+    handleNotificationToggle,
+    handleTimeChange,
+    handleResetData,
+    handleManageSubscription,
+  } = useSettingsHandlers();
 
   if (!user) return null;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Profile Section */}
         <SettingSection title="プロフィール">
           <SettingItem
             label="ニックネーム"
@@ -118,7 +57,6 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {/* Porn Blocker Section */}
         {Platform.OS === 'ios' && (
           <SettingSection title="ポルノブロッカー">
             <SettingItem
@@ -144,7 +82,6 @@ export default function SettingsScreen() {
           </SettingSection>
         )}
 
-        {/* Notifications Section */}
         <SettingSection title="通知">
           <SettingItem
             label="デイリーリマインダー"
@@ -163,7 +100,6 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        {/* Appearance Section */}
         <SettingSection title="外観">
           <SettingItem
             label="テーマ"
@@ -174,7 +110,6 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {/* Subscription Section */}
         <SettingSection title="サブスクリプション">
           <SettingItem
             label="サブスクリプション管理"
@@ -184,7 +119,6 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {/* Support Section */}
         <SettingSection title="サポート">
           <SettingItem
             label="お問い合わせ"
@@ -202,7 +136,6 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {/* Danger Zone */}
         <SettingSection title="データ管理">
           <SettingItem
             label="データをリセット"
@@ -216,7 +149,6 @@ export default function SettingsScreen() {
         <Text style={[styles.version, { color: colors.textSecondary }]}>Version 1.0.0 (Build 1)</Text>
       </ScrollView>
 
-      {/* Modals */}
       <ProfileEditModal
         visible={isProfileModalVisible}
         initialNickname={user.nickname}

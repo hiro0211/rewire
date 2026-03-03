@@ -9,7 +9,6 @@ import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
 import { useTheme } from '@/hooks/useTheme';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
-// import { Ionicons } from '@expo/vector-icons';
 
 export default function BreathingScreen() {
   const router = useRouter();

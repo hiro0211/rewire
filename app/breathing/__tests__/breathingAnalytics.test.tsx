@@ -41,12 +41,6 @@ jest.mock('@/components/breathing/BreathingText', () => {
   return { BreathingText: () => <View /> };
 });
 
-jest.mock('@/components/breathing/CycleIndicator', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return { CycleIndicator: () => <View /> };
-});
-
 jest.mock('@/stores/breathStore', () => ({
   useBreathStore: () => ({
     addSession: jest.fn(),

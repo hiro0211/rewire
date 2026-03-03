@@ -6,10 +6,21 @@ import { SOSButton } from '@/components/dashboard/SOSButton';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { useShareWidget } from '@/hooks/dashboard/useShareWidget';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { isExpoGo } from '@/lib/nativeGuard';
+
+let ViewShot: any = View; // fallback to plain View in Expo Go
+if (!isExpoGo) {
+  try {
+    ViewShot = require('react-native-view-shot').default;
+  } catch {
+    // Native module not available
+  }
+}
 
 export default function DashboardScreen() {
   const { user, loadUser } = useUserStore();
@@ -17,6 +28,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
+  const { viewShotRef, share } = useShareWidget();
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +60,9 @@ export default function DashboardScreen() {
           <Text style={[styles.username, { color: colors.text }]}>{user?.nickname}</Text>
         </View>
 
-        <StatsRow />
+        <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1 }}>
+          <StatsRow onShare={share} />
+        </ViewShot>
 
         {/* Today's Check-in */}
         <View style={styles.section}>

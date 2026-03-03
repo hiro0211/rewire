@@ -143,5 +143,13 @@ describe('userStore', () => {
 
       expect(useUserStore.getState().user).toBeNull();
     });
+
+    it('hasHydratedをfalseにリセットする', async () => {
+      useUserStore.setState({ user: TEST_USER, hasHydrated: true });
+
+      await useUserStore.getState().reset();
+
+      expect(useUserStore.getState().hasHydrated).toBe(false);
+    });
   });
 });

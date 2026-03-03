@@ -1,80 +1,65 @@
-import { COLORS, GRADIENTS, GLOW } from '../theme';
+import { SPACING, RADIUS, FONT_SIZE, LAYOUT } from '../theme';
 
 describe('テーマ定数', () => {
-  describe('新規カラー定義', () => {
-    it('COLORS.backgroundDeepNavy が定義されている', () => {
-      expect(COLORS.backgroundDeepNavy).toBeDefined();
+  describe('SPACING', () => {
+    it('xs が 4 である', () => {
+      expect(SPACING.xs).toBe(4);
     });
 
-    it('COLORS.backgroundNavy が定義されている', () => {
-      expect(COLORS.backgroundNavy).toBeDefined();
+    it('screenPadding が 20 である', () => {
+      expect(SPACING.screenPadding).toBe(20);
     });
 
-    it('COLORS.cyan が定義されている', () => {
-      expect(COLORS.cyan).toBeDefined();
-    });
-
-    it('COLORS.pillBorder が定義されている', () => {
-      expect(COLORS.pillBorder).toBeDefined();
-    });
-
-    it('COLORS.pillBackground が定義されている', () => {
-      expect(COLORS.pillBackground).toBeDefined();
-    });
-
-    it('COLORS.selectedPillBorder が定義されている', () => {
-      expect(COLORS.selectedPillBorder).toBeDefined();
+    it('サイズ順が xs < sm < md < lg < xl < xxl < xxxl', () => {
+      expect(SPACING.xs).toBeLessThan(SPACING.sm);
+      expect(SPACING.sm).toBeLessThan(SPACING.md);
+      expect(SPACING.md).toBeLessThan(SPACING.lg);
+      expect(SPACING.lg).toBeLessThan(SPACING.xl);
+      expect(SPACING.xl).toBeLessThan(SPACING.xxl);
+      expect(SPACING.xxl).toBeLessThan(SPACING.xxxl);
     });
   });
 
-  describe('既存カラーが維持されている', () => {
-    it('COLORS.background が定義されている', () => {
-      expect(COLORS.background).toBe('#0A0A0F');
+  describe('RADIUS', () => {
+    it('sm が 6 である', () => {
+      expect(RADIUS.sm).toBe(6);
     });
 
-    it('COLORS.primary が定義されている', () => {
-      expect(COLORS.primary).toBe('#4A90D9');
-    });
-  });
-
-  describe('GRADIENTS 定数', () => {
-    it('card グラデーションが3色の配列', () => {
-      expect(GRADIENTS.card).toHaveLength(3);
-      expect(GRADIENTS.card[0]).toBe('#2D1B69');
+    it('full が 9999 である', () => {
+      expect(RADIUS.full).toBe(9999);
     });
 
-    it('hero グラデーションが2色の配列', () => {
-      expect(GRADIENTS.hero).toHaveLength(2);
-      expect(GRADIENTS.hero[0]).toBe('#1E0A3C');
-    });
-
-    it('button グラデーションが2色の配列', () => {
-      expect(GRADIENTS.button).toHaveLength(2);
-      expect(GRADIENTS.button[0]).toBe('#8B5CF6');
-    });
-
-    it('danger グラデーションが2色の配列', () => {
-      expect(GRADIENTS.danger).toHaveLength(2);
-      expect(GRADIENTS.danger[0]).toBe('#EF4444');
-    });
-
-    it('accent グラデーションが2色の配列', () => {
-      expect(GRADIENTS.accent).toHaveLength(2);
-      expect(GRADIENTS.accent[0]).toBe('#00D4FF');
+    it('サイズ順が sm < md < lg < xl < full', () => {
+      expect(RADIUS.sm).toBeLessThan(RADIUS.md);
+      expect(RADIUS.md).toBeLessThan(RADIUS.lg);
+      expect(RADIUS.lg).toBeLessThan(RADIUS.xl);
+      expect(RADIUS.xl).toBeLessThan(RADIUS.full);
     });
   });
 
-  describe('GLOW 定数', () => {
-    it('purple glow が定義されている', () => {
-      expect(GLOW.purple).toBe('rgba(139, 92, 246, 0.3)');
+  describe('FONT_SIZE', () => {
+    it('md（Body）が 16 である', () => {
+      expect(FONT_SIZE.md).toBe(16);
     });
 
-    it('cyan glow が定義されている', () => {
-      expect(GLOW.cyan).toBe('rgba(0, 212, 255, 0.2)');
+    it('display が 48 である', () => {
+      expect(FONT_SIZE.display).toBe(48);
     });
 
-    it('danger glow が定義されている', () => {
-      expect(GLOW.danger).toBe('rgba(239, 68, 68, 0.3)');
+    it('サイズ順が xs < sm < md < lg < xl < xxl < xxxl < display', () => {
+      expect(FONT_SIZE.xs).toBeLessThan(FONT_SIZE.sm);
+      expect(FONT_SIZE.sm).toBeLessThan(FONT_SIZE.md);
+      expect(FONT_SIZE.md).toBeLessThan(FONT_SIZE.lg);
+      expect(FONT_SIZE.lg).toBeLessThan(FONT_SIZE.xl);
+      expect(FONT_SIZE.xl).toBeLessThan(FONT_SIZE.xxl);
+      expect(FONT_SIZE.xxl).toBeLessThan(FONT_SIZE.xxxl);
+      expect(FONT_SIZE.xxxl).toBeLessThan(FONT_SIZE.display);
+    });
+  });
+
+  describe('LAYOUT', () => {
+    it('buttonHeight が 52 である', () => {
+      expect(LAYOUT.buttonHeight).toBe(52);
     });
   });
 });

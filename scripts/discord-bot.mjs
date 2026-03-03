@@ -114,6 +114,9 @@ async function runClaudeCode(instruction, channel, projectDir = defaultProjectDi
     `計画の出力は不要です。コードを書いて、テストを書いて、実装を完了させてください。\n\n`;
   const fullInstruction = remotePrefix + instruction;
 
+  // Claude Code実行中は定期報告を自動開始
+  startPeriodicReport();
+
   claudeProcess = spawn('claude', ['-p', '--dangerously-skip-permissions', fullInstruction], {
     cwd: projectDir,
     env: cleanEnv,
@@ -157,6 +160,9 @@ async function runClaudeCode(instruction, channel, projectDir = defaultProjectDi
       const shortOutput = claudeOutput.slice(-800) || '(出力なし)';
       await channel.send(`${success ? '✅' : '❌'} Claude Code ${success ? '完了' : 'エラー'}\n\`\`\`\n${shortOutput}\n\`\`\``);
     }
+
+    // Claude Code完了 → 定期報告を自動停止
+    stopPeriodicReport();
 
     claudeOutput = '';
   });
@@ -241,7 +247,7 @@ function buildReportEmbed() {
     .setTitle('📊 開発レポート')
     .setColor(0x5865F2)
     .setTimestamp()
-    .setFooter({ text: '10分間隔で自動報告' })
+    .setFooter({ text: 'Claude Code実行中 — 完了時に自動停止' })
     .setDescription(
       `🤖 Claude: ${proc.claudeRunning ? '✅ 稼働中' : '⏸️ 停止'} | 🖥️ Dev: ${proc.devServerRunning ? '✅ 稼働中' : '⏸️ 停止'}`
     );
@@ -460,7 +466,7 @@ client.once('ready', async () => {
     console.error('起動通知失敗:', e.message);
   }
 
-  startPeriodicReport();
+  // 起動時は定期報告を開始しない（Claude Code実行時に自動開始する）
 });
 
 client.on('messageCreate', async (message) => {

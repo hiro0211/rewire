@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { GradientCard } from '@/components/ui/GradientCard';
@@ -19,7 +21,11 @@ function formatStartDate(dateStr: string | null): string {
   }
 }
 
-export function StatsRow() {
+interface StatsRowProps {
+  onShare: () => void;
+}
+
+export function StatsRow({ onShare }: StatsRowProps) {
   const { relapseCount, stopwatch, goalDays, streakStartDate } = useDashboardStats();
   const { updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -27,6 +33,11 @@ export function StatsRow() {
 
   const handleSave = (date: string) => {
     updateUser({ streakStartDate: date });
+  };
+
+  const handleShare = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onShare();
   };
 
   return (
@@ -77,6 +88,16 @@ export function StatsRow() {
           </View>
         </TouchableOpacity>
       </GradientCard>
+
+      <TouchableOpacity
+        testID="share-button"
+        onPress={handleShare}
+        style={styles.shareButton}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="share-outline" size={16} color={colors.textSecondary} />
+        <Text style={[styles.shareText, { color: colors.textSecondary }]}>シェア</Text>
+      </TouchableOpacity>
 
       <StreakEditModal
         visible={editModalVisible}
@@ -130,5 +151,15 @@ const styles = StyleSheet.create({
   miniValue: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: SPACING.sm,
+  },
+  shareText: {
+    fontSize: FONT_SIZE.xs,
   },
 });

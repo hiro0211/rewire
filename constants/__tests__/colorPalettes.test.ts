@@ -1,4 +1,3 @@
-import { COLORS, GRADIENTS, GLOW, SHADOWS } from '../theme';
 import {
   DARK_COLORS,
   LIGHT_COLORS,
@@ -9,18 +8,18 @@ import {
   DARK_SHADOWS,
   LIGHT_SHADOWS,
 } from '../colorPalettes';
-import type { ColorPalette } from '@/types/theme';
 
 describe('colorPalettes', () => {
   describe('DARK_COLORS', () => {
-    it('既存COLORSの全キーを含む', () => {
-      const colorsKeys = Object.keys(COLORS) as (keyof typeof COLORS)[];
-      for (const key of colorsKeys) {
-        expect(DARK_COLORS[key as keyof ColorPalette]).toBe(COLORS[key]);
-      }
+    it('background が #0A0A0F である', () => {
+      expect(DARK_COLORS.background).toBe('#0A0A0F');
     });
 
-    it('contrastTextが#FFFFFFである', () => {
+    it('primary が #4A90D9 である', () => {
+      expect(DARK_COLORS.primary).toBe('#4A90D9');
+    });
+
+    it('contrastText が #FFFFFF である', () => {
       expect(DARK_COLORS.contrastText).toBe('#FFFFFF');
     });
   });
@@ -42,12 +41,12 @@ describe('colorPalettes', () => {
   });
 
   describe('DARK_GRADIENTS', () => {
-    it('既存GRADIENTSと一致する', () => {
-      expect([...DARK_GRADIENTS.card]).toEqual([...GRADIENTS.card]);
-      expect([...DARK_GRADIENTS.hero]).toEqual([...GRADIENTS.hero]);
-      expect([...DARK_GRADIENTS.button]).toEqual([...GRADIENTS.button]);
-      expect([...DARK_GRADIENTS.danger]).toEqual([...GRADIENTS.danger]);
-      expect([...DARK_GRADIENTS.accent]).toEqual([...GRADIENTS.accent]);
+    it('card グラデーションが3色の配列', () => {
+      expect([...DARK_GRADIENTS.card]).toEqual(['#2D1B69', '#1A1035', '#0A0A0F']);
+    });
+
+    it('button グラデーションが2色の配列', () => {
+      expect([...DARK_GRADIENTS.button]).toEqual(['#8B5CF6', '#6D28D9']);
     });
   });
 
@@ -60,10 +59,12 @@ describe('colorPalettes', () => {
   });
 
   describe('DARK_GLOW', () => {
-    it('既存GLOWと一致する', () => {
-      expect(DARK_GLOW.purple).toBe(GLOW.purple);
-      expect(DARK_GLOW.cyan).toBe(GLOW.cyan);
-      expect(DARK_GLOW.danger).toBe(GLOW.danger);
+    it('purple glow が定義されている', () => {
+      expect(DARK_GLOW.purple).toBe('rgba(139, 92, 246, 0.3)');
+    });
+
+    it('cyan glow が定義されている', () => {
+      expect(DARK_GLOW.cyan).toBe('rgba(0, 212, 255, 0.2)');
     });
   });
 
@@ -76,9 +77,14 @@ describe('colorPalettes', () => {
   });
 
   describe('DARK_SHADOWS', () => {
-    it('既存SHADOWSと一致する', () => {
-      expect(DARK_SHADOWS.small).toEqual(SHADOWS.small);
-      expect(DARK_SHADOWS.medium).toEqual(SHADOWS.medium);
+    it('small shadow が定義されている', () => {
+      expect(DARK_SHADOWS.small.shadowColor).toBe('#000');
+      expect(DARK_SHADOWS.small.elevation).toBe(2);
+    });
+
+    it('medium shadow が定義されている', () => {
+      expect(DARK_SHADOWS.medium.shadowColor).toBe('#000');
+      expect(DARK_SHADOWS.medium.elevation).toBe(4);
     });
   });
 

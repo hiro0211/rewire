@@ -1,180 +1,35 @@
-import React, { useState, useEffect, useCallback, Component } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
-import { useUserStore } from '@/stores/userStore';
-import { isExpoGo } from '@/lib/nativeGuard';
-import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { PaywallDefault } from '@/components/paywall/PaywallDefault';
 import { PaywallDiscount } from '@/components/paywall/PaywallDiscount';
 import { PaywallTrial } from '@/components/paywall/PaywallTrial';
 import { TrialBottomSheet } from '@/components/paywall/TrialBottomSheet';
-import { discountExpiry } from '@/lib/paywall/discountExpiry';
-
-class PaywallErrorBoundary extends Component<
-  { children: React.ReactNode; onError: () => void },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error: Error) {
-    console.error('[PaywallErrorBoundary]', error);
-    this.props.onError();
-  }
-  render() {
-    if (this.state.hasError) return null;
-    return this.props.children;
-  }
-}
-
-let Purchases: any = null;
-if (!isExpoGo) {
-  try {
-    Purchases = require('react-native-purchases').default;
-  } catch {
-    // Native module not available
-  }
-}
+import { PaywallErrorBoundary } from '@/components/paywall/PaywallErrorBoundary';
+import { usePaywallOrchestration } from '@/hooks/paywall/usePaywallOrchestration';
 
 export default function PaywallScreen() {
   const router = useRouter();
   const { source } = useLocalSearchParams<{ source?: string }>();
-  const { user, updateUser } = useUserStore();
   const { colors } = useTheme();
-  const isFromOnboarding = source === 'onboarding';
 
-  const [paywallState, setPaywallState] = useState<'loading' | 'ready' | 'unavailable'>('loading');
-  const [currentOffering, setCurrentOffering] = useState<any>(null);
-  const [offeringType, setOfferingType] = useState<'default' | 'discount' | 'trial'>('default');
-  const [paywallKey, setPaywallKey] = useState(0);
-  const [showTrialSheet, setShowTrialSheet] = useState(false);
-  const [trialOffering, setTrialOffering] = useState<any>(null);
-  const [discountRemainingSeconds, setDiscountRemainingSeconds] = useState<number>(0);
-
-  useEffect(() => {
-    analyticsClient.logEvent('paywall_viewed', { source: source || 'unknown', offering: offeringType });
-  }, [offeringType]);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        if (!Purchases) {
-          if (mounted) setPaywallState('unavailable');
-          return;
-        }
-        // 初期化が完了していなければ待つ
-        if (!subscriptionClient.isReady()) {
-          try {
-            await subscriptionClient.initialize();
-          } catch {
-            // 初期化失敗
-          }
-        }
-        if (!mounted) return;
-        if (!subscriptionClient.isReady()) {
-          setPaywallState('unavailable');
-          return;
-        }
-        const offerings = await Purchases.getOfferings();
-        if (!mounted) return;
-        if (!offerings) {
-          setPaywallState('unavailable');
-          return;
-        }
-
-        let targetOffering;
-        if (offeringType === 'trial') {
-          targetOffering = offerings.all?.['trial'] ?? offerings.all?.['discount plan'] ?? offerings.current;
-        } else if (offeringType === 'discount') {
-          targetOffering = offerings.all?.['discount plan'] ?? offerings.current;
-          // trial offering もプリロード
-          const trialOff = offerings.all?.['trial'] ?? offerings.all?.['discount plan'] ?? offerings.current;
-          setTrialOffering(trialOff);
-        } else {
-          targetOffering = offerings.current;
-        }
-
-        if (targetOffering) {
-          setCurrentOffering(targetOffering);
-          setPaywallState('ready');
-        } else {
-          setPaywallState('unavailable');
-        }
-      } catch {
-        if (mounted) setPaywallState('unavailable');
-      }
-    })();
-    return () => { mounted = false; };
-  }, [offeringType, paywallKey]);
-
-  const handleDismiss = useCallback(async () => {
-    if (isFromOnboarding) {
-      if (offeringType === 'default') {
-        // 1st dismiss → discount or trial（24h経過でdiscountスキップ）
-        const remaining = await discountExpiry.getRemainingSeconds();
-        if (remaining <= 0) {
-          setOfferingType('trial');
-        } else {
-          setDiscountRemainingSeconds(remaining);
-          setOfferingType('discount');
-        }
-        setPaywallState('loading');
-        setPaywallKey((k) => k + 1);
-      } else if (offeringType === 'discount') {
-        // 2nd dismiss → ボトムシートでトライアルオファーを表示
-        setShowTrialSheet(true);
-      } else if (offeringType === 'trial') {
-        // trial dismiss → benefits 画面に戻る
-        router.replace({
-          pathname: '/onboarding/benefits',
-          params: {
-            nickname: user?.nickname || '',
-            goalDays: String(user?.goalDays || 30),
-          },
-        } as any);
-      }
-    } else {
-      router.dismiss();
-    }
-  }, [isFromOnboarding, offeringType, router]);
-
-  const handleTrialSheetDismiss = useCallback(() => {
-    setShowTrialSheet(false);
-    router.replace({
-      pathname: '/onboarding/benefits',
-      params: {
-        nickname: user?.nickname || '',
-        goalDays: String(user?.goalDays || 30),
-      },
-    } as any);
-  }, [router, user]);
-
-  const handlePurchaseCompleted = useCallback(async () => {
-    try {
-      analyticsClient.logEvent('pro_purchase_completed', { offering: offeringType });
-      await updateUser({ isPro: true });
-    } catch (e) {
-      console.error('[Paywall] updateUser failed after purchase:', e);
-    }
-    router.replace('/(tabs)');
-  }, [offeringType, updateUser, router]);
-
-  const handleRestoreCompleted = useCallback(async () => {
-    try {
-      await updateUser({ isPro: true });
-    } catch (e) {
-      console.error('[Paywall] updateUser failed after restore:', e);
-    }
-    router.replace('/(tabs)');
-  }, [updateUser, router]);
-
-  const handleRetry = useCallback(() => {
-    setPaywallState('loading');
-    setPaywallKey((k) => k + 1);
-  }, []);
+  const {
+    paywallState,
+    setPaywallState,
+    currentOffering,
+    offeringType,
+    showTrialSheet,
+    trialOffering,
+    discountRemainingSeconds,
+    isFromOnboarding,
+    handleDismiss,
+    handleTrialSheetDismiss,
+    handlePurchaseCompleted,
+    handleRestoreCompleted,
+    handleRetry,
+  } = usePaywallOrchestration({ source });
 
   const renderPaywall = () => {
     if (paywallState === 'loading') {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
@@ -9,15 +9,8 @@ import { GradientCard } from '@/components/ui/GradientCard';
 import { CountdownTimer } from './CountdownTimer';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
-import { isExpoGo } from '@/lib/nativeGuard';
+import { usePurchase } from '@/hooks/paywall/usePurchase';
 import { useDiscountExpiryTracker } from '@/hooks/paywall/useDiscountExpiryTracker';
-
-let Purchases: any = null;
-if (!isExpoGo) {
-  try {
-    Purchases = require('react-native-purchases').default;
-  } catch {}
-}
 
 interface PaywallDiscountProps {
   offering: any;
@@ -36,49 +29,17 @@ export function PaywallDiscount({
 }: PaywallDiscountProps) {
   const { colors, gradients } = useTheme();
   useDiscountExpiryTracker();
-  const [purchasing, setPurchasing] = useState(false);
 
   const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const annualPrice = annualPackage?.product?.price ?? 2500;
   const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
   const monthlyEquivalent = calcMonthlyPrice(annualPrice);
 
-  const handlePurchase = async () => {
-    if (!Purchases || purchasing) return;
-    if (!annualPackage) {
-      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
-      return;
-    }
-    setPurchasing(true);
-    try {
-      const { customerInfo } = await Purchases.purchasePackage(annualPackage);
-      if (customerInfo.entitlements.active['Rewire Pro']) {
-        onPurchaseCompleted();
-      }
-    } catch (error: any) {
-      if (error.userCancelled || error.code === '1' || error.code === 'PURCHASE_CANCELLED') return;
-      Alert.alert('購入エラー', 'お支払い処理中にエラーが発生しました。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!Purchases) return;
-    setPurchasing(true);
-    try {
-      const customerInfo = await Purchases.restorePurchases();
-      if (customerInfo.entitlements.active['Rewire Pro']) {
-        onRestoreCompleted();
-      } else {
-        Alert.alert('復元結果', '有効なサブスクリプションが見つかりませんでした。');
-      }
-    } catch {
-      Alert.alert('復元エラー', '購入の復元中にエラーが発生しました。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
+  const { purchasing, handlePurchase, handleRestore } = usePurchase({
+    package: annualPackage,
+    onPurchaseCompleted,
+    onRestoreCompleted,
+  });
 
   return (
     <SafeAreaWrapper>

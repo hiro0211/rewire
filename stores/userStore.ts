@@ -73,7 +73,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
   },
 
   reset: async () => {
-    set({ user: null });
+    set({ user: null, hasHydrated: false });
     await asyncStorageClient.clearAll();
     useCheckinStore.getState().reset();
     useBreathStore.getState().reset();

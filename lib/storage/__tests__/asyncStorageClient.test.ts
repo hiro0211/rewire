@@ -101,7 +101,7 @@ describe('asyncStorageClient', () => {
     });
 
     it('保存エラー時はthrowする', async () => {
-      (AsyncStorage.setItem as jest.Mock).mockRejectedValue(new Error('Write failed'));
+      (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('Write failed'));
       await expect(asyncStorageClient.set('user', {})).rejects.toThrow('Write failed');
     });
   });
@@ -113,7 +113,7 @@ describe('asyncStorageClient', () => {
     });
 
     it('削除エラー時はthrowする', async () => {
-      (AsyncStorage.removeItem as jest.Mock).mockRejectedValue(new Error('Remove failed'));
+      (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('Remove failed'));
       await expect(asyncStorageClient.remove('user')).rejects.toThrow('Remove failed');
     });
   });
@@ -124,8 +124,29 @@ describe('asyncStorageClient', () => {
       expect(AsyncStorage.clear).toHaveBeenCalled();
     });
 
+    it('settings キーの値がクリア後も保持される', async () => {
+      const settingsValue = JSON.stringify({ themePreference: 'dark' });
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(settingsValue);
+
+      await asyncStorageClient.clearAll();
+
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('settings');
+      expect(AsyncStorage.clear).toHaveBeenCalled();
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('settings', settingsValue);
+    });
+
+    it('settings キーが存在しない場合は復元しない', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+
+      await asyncStorageClient.clearAll();
+
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('settings');
+      expect(AsyncStorage.clear).toHaveBeenCalled();
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+    });
+
     it('クリアエラー時はthrowする', async () => {
-      (AsyncStorage.clear as jest.Mock).mockRejectedValue(new Error('Clear failed'));
+      (AsyncStorage.clear as jest.Mock).mockRejectedValueOnce(new Error('Clear failed'));
       await expect(asyncStorageClient.clearAll()).rejects.toThrow('Clear failed');
     });
   });

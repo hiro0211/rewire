@@ -1,18 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
-import { isExpoGo } from '@/lib/nativeGuard';
-
-let Purchases: any = null;
-if (!isExpoGo) {
-  try {
-    Purchases = require('react-native-purchases').default;
-  } catch {}
-}
+import { usePurchase } from '@/hooks/paywall/usePurchase';
 
 interface TrialBottomSheetProps {
   visible: boolean;
@@ -30,48 +23,16 @@ export function TrialBottomSheet({
   onRestoreCompleted,
 }: TrialBottomSheetProps) {
   const { colors } = useTheme();
-  const [purchasing, setPurchasing] = useState(false);
 
   const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const annualPrice = annualPackage?.product?.price ?? 2500;
   const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
 
-  const handlePurchase = async () => {
-    if (!Purchases || purchasing) return;
-    if (!annualPackage) {
-      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
-      return;
-    }
-    setPurchasing(true);
-    try {
-      const { customerInfo } = await Purchases.purchasePackage(annualPackage);
-      if (customerInfo.entitlements.active['Rewire Pro']) {
-        onPurchaseCompleted();
-      }
-    } catch (error: any) {
-      if (error.userCancelled || error.code === '1' || error.code === 'PURCHASE_CANCELLED') return;
-      Alert.alert('購入エラー', 'お支払い処理中にエラーが発生しました。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!Purchases) return;
-    setPurchasing(true);
-    try {
-      const customerInfo = await Purchases.restorePurchases();
-      if (customerInfo.entitlements.active['Rewire Pro']) {
-        onRestoreCompleted();
-      } else {
-        Alert.alert('復元結果', '有効なサブスクリプションが見つかりませんでした。');
-      }
-    } catch {
-      Alert.alert('復元エラー', '購入の復元中にエラーが発生しました。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
+  const { purchasing, handlePurchase, handleRestore } = usePurchase({
+    package: annualPackage,
+    onPurchaseCompleted,
+    onRestoreCompleted,
+  });
 
   return (
     <Modal

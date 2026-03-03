@@ -69,7 +69,11 @@ export const asyncStorageClient = {
 
   async clearAll(): Promise<void> {
     try {
+      const settingsBackup = await AsyncStorage.getItem('settings');
       await AsyncStorage.clear();
+      if (settingsBackup != null) {
+        await AsyncStorage.setItem('settings', settingsBackup);
+      }
     } catch (e) {
       console.error('Error clearing storage', e);
       throw e;

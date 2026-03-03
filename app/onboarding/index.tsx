@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -12,14 +12,13 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Card } from '@/components/ui/Card';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StarryBackground } from '@/components/onboarding/StarryBackground';
-import { useUserStore } from '@/stores/userStore';
 import { ASSESSMENT_QUESTIONS, MAX_SCORE } from '@/constants/assessment';
 import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/education';
 import { calculateScore } from '@/lib/assessment/scoreCalculator';
@@ -34,142 +33,52 @@ import { LastViewedDateStep } from '@/components/onboarding/LastViewedDateStep';
 import { TransitionSlideStep } from '@/components/onboarding/TransitionSlideStep';
 import { clampDay, getDaysInMonth, isDateInFuture } from '@/lib/date/datePickerUtils';
 import { format } from 'date-fns';
-
-const FEATURES = [
-  {
-    icon: 'shield-checkmark-outline' as const,
-    title: 'Safariポルノブロッカー',
-    description: 'アダルトサイトへのアクセスを自動ブロック',
-  },
-  {
-    icon: 'analytics-outline' as const,
-    title: '毎日の振り返り',
-    description: '衝動やストレスを記録して自分を客観視',
-  },
-  {
-    icon: 'fitness-outline' as const,
-    title: '呼吸エクササイズ',
-    description: '衝動が来たとき、呼吸で乗り越える',
-  },
-];
-
-// --- Step definitions ---
-
-type OnboardingStep =
-  | { type: 'welcome' }
-  | { type: 'assessment_choice'; questionId: string }
-  | { type: 'assessment_picker'; questionId: string }
-  | { type: 'assessment_yesno'; questionId: string }
-  | { type: 'analyzing' }
-  | { type: 'score_result' }
-  | { type: 'education'; slideIndex: number }
-  | { type: 'damage'; slideIndex: number }
-  | { type: 'recovery'; slideIndex: number }
-  | { type: 'damage_intro' }
-  | { type: 'features' }
-  | { type: 'nickname' }
-  | { type: 'consent' }
-  | { type: 'notification' }
-  | { type: 'last_viewed_date' };
-
-const STEPS: OnboardingStep[] = [
-  { type: 'welcome' },
-  ...ASSESSMENT_QUESTIONS.map((q): OnboardingStep => {
-    if (q.type === 'choice') return { type: 'assessment_choice' as const, questionId: q.id };
-    if (q.type === 'picker') return { type: 'assessment_picker' as const, questionId: q.id };
-    return { type: 'assessment_yesno' as const, questionId: q.id };
-  }),
-  { type: 'analyzing' },
-  { type: 'score_result' },
-  ...EDUCATION_SLIDES.map((_, i): OnboardingStep => ({ type: 'education' as const, slideIndex: i })),
-  { type: 'damage_intro' },
-  ...DAMAGE_SLIDES.map((_, i): OnboardingStep => ({ type: 'damage' as const, slideIndex: i })),
-  ...RECOVERY_SLIDES.map((_, i): OnboardingStep => ({ type: 'recovery' as const, slideIndex: i })),
-  { type: 'features' },
-  { type: 'nickname' },
-  { type: 'consent' },
-  { type: 'notification' },
-  { type: 'last_viewed_date' },
-];
-
-const TOTAL_QUESTIONS = ASSESSMENT_QUESTIONS.length;
-
-// Steps that don't show the default footer button
-const NO_FOOTER_TYPES = new Set([
-  'welcome',
-  'assessment_choice',
-  'assessment_yesno',
-  'analyzing',
-]);
-
-/** Granular back-navigation control */
-function canGoBack(stepIndex: number): boolean {
-  if (stepIndex <= 0) return false;
-  const cs = STEPS[stepIndex];
-  switch (cs.type) {
-    case 'welcome':
-    case 'analyzing':
-    case 'score_result':
-    case 'features':
-    case 'feature_intro_recording':
-    case 'feature_intro_breathing':
-    case 'nickname':
-    case 'consent':
-    case 'notification':
-    case 'damage_intro':
-      return false;
-    case 'education':
-      // First education slide cannot go back (would return to score_result)
-      return cs.slideIndex > 0;
-    case 'education_quiz':
-      return true;
-    case 'damage':
-      // First damage slide cannot go back (would return to quiz)
-      return cs.slideIndex > 0;
-    case 'recovery':
-      return true;
-    default:
-      return true;
-  }
-}
-
-/** Check if current step is in the education section (for skip button) */
-function isEducationStep(cs: OnboardingStep): boolean {
-  return cs.type === 'education' || cs.type === 'damage_intro' || cs.type === 'damage' || cs.type === 'recovery';
-}
-
-/** Find the index of the features step (skip target) */
-const FEATURES_STEP_INDEX = STEPS.findIndex((s) => s.type === 'features');
-
-/** Step counter: only count interactive steps (exclude education/analyzing/score_result) */
-const NON_COUNTABLE_TYPES = new Set(['education', 'damage_intro', 'damage', 'recovery', 'analyzing', 'score_result']);
-const STEP_COUNTER_MAP = STEPS.reduce<number[]>((acc, s) => {
-  const prev = acc.length > 0 ? acc[acc.length - 1] : 0;
-  acc.push(NON_COUNTABLE_TYPES.has(s.type) ? prev : prev + 1);
-  return acc;
-}, []);
-const TOTAL_COUNTABLE_STEPS = STEP_COUNTER_MAP[STEP_COUNTER_MAP.length - 1];
+import { useOnboardingForm } from '@/hooks/onboarding/useOnboardingForm';
+import { useOnboardingNavigation } from '@/hooks/onboarding/useOnboardingNavigation';
+import {
+  FEATURES,
+  STEPS,
+  TOTAL_QUESTIONS,
+  NO_FOOTER_TYPES,
+  NON_COUNTABLE_TYPES,
+  FEATURES_STEP_INDEX,
+  STEP_COUNTER_MAP,
+  TOTAL_COUNTABLE_STEPS,
+  canGoBack,
+  isEducationStep,
+} from '@/constants/onboarding';
 
 export default function OnboardingScreen() {
-  const [step, setStep] = useState(0);
-  const [nickname, setNickname] = useState('');
-  const [privacyAgreed, setPrivacyAgreed] = useState(false);
-  const [dataAgreed, setDataAgreed] = useState(false);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [notifyTime, setNotifyTime] = useState('22:00');
-  const now = new Date();
-  const [lastViewedYear, setLastViewedYear] = useState(now.getFullYear());
-  const [lastViewedMonth, setLastViewedMonth] = useState(now.getMonth() + 1);
-  const [lastViewedDay, setLastViewedDay] = useState(now.getDate());
-  const { setUser } = useUserStore();
+  const form = useOnboardingForm();
+  const nav = useOnboardingNavigation();
   const router = useRouter();
   const translateX = useRef(new Animated.Value(0)).current;
   const autoAdvancingRef = useRef(false);
   const { colors } = useTheme();
 
   // Refs to access latest state from PanResponder closure
-  const stateRef = useRef({ step, nickname, privacyAgreed, dataAgreed, answers, notifyTime, lastViewedYear, lastViewedMonth, lastViewedDay });
-  stateRef.current = { step, nickname, privacyAgreed, dataAgreed, answers, notifyTime, lastViewedYear, lastViewedMonth, lastViewedDay };
+  const stateRef = useRef({
+    step: nav.step,
+    nickname: form.nickname,
+    privacyAgreed: form.privacyAgreed,
+    dataAgreed: form.dataAgreed,
+    answers: form.answers,
+    notifyTime: form.notifyTime,
+    lastViewedYear: form.lastViewedYear,
+    lastViewedMonth: form.lastViewedMonth,
+    lastViewedDay: form.lastViewedDay,
+  });
+  stateRef.current = {
+    step: nav.step,
+    nickname: form.nickname,
+    privacyAgreed: form.privacyAgreed,
+    dataAgreed: form.dataAgreed,
+    answers: form.answers,
+    notifyTime: form.notifyTime,
+    lastViewedYear: form.lastViewedYear,
+    lastViewedMonth: form.lastViewedMonth,
+    lastViewedDay: form.lastViewedDay,
+  };
 
   const animateTransition = (direction: number, callback: () => void) => {
     Animated.timing(translateX, {
@@ -219,14 +128,13 @@ export default function OnboardingScreen() {
       onPanResponderRelease: (_, gs) => {
         if (autoAdvancingRef.current) return;
         const s = stateRef.current.step;
-        const cs = STEPS[s];
         if (gs.dx < -SWIPE_THRESHOLD) {
           if (s < STEPS.length - 1 && canAdvanceAt(s)) {
-            animateTransition(-1, () => setStep(s + 1));
+            animateTransition(-1, () => nav.goToStep(s + 1));
           }
         } else if (gs.dx > SWIPE_THRESHOLD) {
           if (canGoBack(s)) {
-            animateTransition(1, () => setStep(s - 1));
+            animateTransition(1, () => nav.goToStep(s - 1));
           }
         }
       },
@@ -234,20 +142,20 @@ export default function OnboardingScreen() {
   ).current;
 
   const handleNext = () => {
-    if (step < STEPS.length - 1) {
-      if (!canAdvanceAt(step)) return;
-      animateTransition(-1, () => setStep(step + 1));
+    if (nav.step < STEPS.length - 1) {
+      if (!canAdvanceAt(nav.step)) return;
+      animateTransition(-1, () => nav.goToNextStep());
     } else {
       const lastViewedDate = format(
-        new Date(lastViewedYear, lastViewedMonth - 1, lastViewedDay),
+        new Date(form.lastViewedYear, form.lastViewedMonth - 1, form.lastViewedDay),
         'yyyy-MM-dd'
       );
       router.push({
         pathname: '/onboarding/goal',
         params: {
-          nickname,
+          nickname: form.nickname,
           consentGivenAt: new Date().toISOString(),
-          notifyTime,
+          notifyTime: form.notifyTime,
           lastViewedDate,
         },
       });
@@ -255,23 +163,23 @@ export default function OnboardingScreen() {
   };
 
   const handleBack = () => {
-    if (canGoBack(step)) {
-      animateTransition(1, () => setStep(step - 1));
+    if (canGoBack(nav.step)) {
+      animateTransition(1, () => nav.goToPreviousStep());
     }
   };
 
   const handleSkipEducation = () => {
-    animateTransition(-1, () => setStep(FEATURES_STEP_INDEX));
+    animateTransition(-1, () => nav.goToStep(FEATURES_STEP_INDEX));
   };
 
   const handleAssessmentAnswer = (questionId: string, value: string) => {
     if (autoAdvancingRef.current) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    form.setAnswer(questionId, value);
     autoAdvancingRef.current = true;
     setTimeout(() => {
       animateTransition(-1, () => {
-        setStep((prev) => prev + 1);
+        nav.goToStep(nav.step + 1);
         autoAdvancingRef.current = false;
       });
     }, 300);
@@ -279,15 +187,13 @@ export default function OnboardingScreen() {
 
   const handlePickerSelect = (questionId: string, value: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    form.setAnswer(questionId, value);
   };
 
-  const currentStep = STEPS[step];
+  const currentStep = nav.currentStep;
   const showFooter = !NO_FOOTER_TYPES.has(currentStep.type);
-  const isNextDisabled = !canAdvanceAt(step);
+  const isNextDisabled = !canAdvanceAt(nav.step);
   const showSkip = isEducationStep(currentStep);
-
-  // --- Render helpers ---
 
   const renderStep = () => {
     switch (currentStep.type) {
@@ -304,11 +210,7 @@ export default function OnboardingScreen() {
                 </Text>
                 <Card variant="outlined" style={styles.privacyCard}>
                   <View style={styles.privacyRow}>
-                    <Ionicons
-                      name="lock-closed-outline"
-                      size={16}
-                      color={colors.textSecondary}
-                    />
+                    <Ionicons name="lock-closed-outline" size={16} color={colors.textSecondary} />
                     <Text style={[styles.privacyText, { color: colors.textSecondary }]}>
                       すべての回答はこの端末内にのみ保存されます
                     </Text>
@@ -317,16 +219,14 @@ export default function OnboardingScreen() {
               </View>
               <Button
                 title="始める"
-                onPress={() => animateTransition(-1, () => setStep(step + 1))}
+                onPress={() => animateTransition(-1, () => nav.goToNextStep())}
               />
             </View>
           </View>
         );
 
       case 'assessment_choice': {
-        const question = ASSESSMENT_QUESTIONS.find(
-          (q) => q.id === currentStep.questionId,
-        )!;
+        const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
         const questionIndex = ASSESSMENT_QUESTIONS.indexOf(question);
         return (
           <View style={styles.fullWidth}>
@@ -334,19 +234,15 @@ export default function OnboardingScreen() {
               question={question}
               questionIndex={questionIndex}
               totalQuestions={TOTAL_QUESTIONS}
-              selectedValue={answers[currentStep.questionId]}
-              onSelect={(value) =>
-                handleAssessmentAnswer(currentStep.questionId, value)
-              }
+              selectedValue={form.answers[currentStep.questionId]}
+              onSelect={(value) => handleAssessmentAnswer(currentStep.questionId, value)}
             />
           </View>
         );
       }
 
       case 'assessment_picker': {
-        const question = ASSESSMENT_QUESTIONS.find(
-          (q) => q.id === currentStep.questionId,
-        )!;
+        const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
         const questionIndex = ASSESSMENT_QUESTIONS.indexOf(question);
         return (
           <View style={styles.fullWidth}>
@@ -354,19 +250,15 @@ export default function OnboardingScreen() {
               question={question}
               questionIndex={questionIndex}
               totalQuestions={TOTAL_QUESTIONS}
-              selectedValue={answers[currentStep.questionId]}
-              onSelect={(value) =>
-                handlePickerSelect(currentStep.questionId, value)
-              }
+              selectedValue={form.answers[currentStep.questionId]}
+              onSelect={(value) => handlePickerSelect(currentStep.questionId, value)}
             />
           </View>
         );
       }
 
       case 'assessment_yesno': {
-        const question = ASSESSMENT_QUESTIONS.find(
-          (q) => q.id === currentStep.questionId,
-        )!;
+        const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
         const questionIndex = ASSESSMENT_QUESTIONS.indexOf(question);
         return (
           <View style={styles.fullWidth}>
@@ -374,10 +266,8 @@ export default function OnboardingScreen() {
               question={question}
               questionIndex={questionIndex}
               totalQuestions={TOTAL_QUESTIONS}
-              selectedValue={answers[currentStep.questionId]}
-              onSelect={(value) =>
-                handleAssessmentAnswer(currentStep.questionId, value)
-              }
+              selectedValue={form.answers[currentStep.questionId]}
+              onSelect={(value) => handleAssessmentAnswer(currentStep.questionId, value)}
             />
           </View>
         );
@@ -387,9 +277,7 @@ export default function OnboardingScreen() {
         return (
           <View style={styles.fullWidth}>
             <AnalyzingStep
-              onComplete={() =>
-                animateTransition(-1, () => setStep(step + 1))
-              }
+              onComplete={() => animateTransition(-1, () => nav.goToNextStep())}
             />
           </View>
         );
@@ -397,10 +285,7 @@ export default function OnboardingScreen() {
       case 'score_result':
         return (
           <View style={styles.fullWidth}>
-            <ScoreResultStep
-              score={calculateScore(answers)}
-              maxScore={MAX_SCORE}
-            />
+            <ScoreResultStep score={calculateScore(form.answers)} maxScore={MAX_SCORE} />
           </View>
         );
 
@@ -453,11 +338,7 @@ export default function OnboardingScreen() {
               {FEATURES.map((feature, index) => (
                 <View key={index} style={styles.featureRow}>
                   <View style={[styles.featureIconContainer, { backgroundColor: colors.surfaceHighlight }]}>
-                    <Ionicons
-                      name={feature.icon}
-                      size={28}
-                      color={colors.primary}
-                    />
+                    <Ionicons name={feature.icon} size={28} color={colors.primary} />
                   </View>
                   <View style={styles.featureTextContainer}>
                     <View style={styles.featureTitleRow}>
@@ -484,8 +365,8 @@ export default function OnboardingScreen() {
               style={[styles.input, { borderBottomColor: colors.primary, color: colors.text }]}
               placeholder="ニックネーム"
               placeholderTextColor={colors.textSecondary}
-              value={nickname}
-              onChangeText={setNickname}
+              value={form.nickname}
+              onChangeText={form.setNickname}
               autoFocus
             />
           </View>
@@ -505,17 +386,17 @@ export default function OnboardingScreen() {
               <TouchableOpacity
                 testID="checkbox-privacy"
                 style={styles.checkboxRow}
-                onPress={() => setPrivacyAgreed(!privacyAgreed)}
+                onPress={form.togglePrivacyAgreed}
                 activeOpacity={0.7}
               >
                 <View
                   style={[
                     styles.checkbox,
                     { borderColor: colors.textSecondary },
-                    privacyAgreed && { backgroundColor: colors.primary, borderColor: colors.primary },
+                    form.privacyAgreed && { backgroundColor: colors.primary, borderColor: colors.primary },
                   ]}
                 >
-                  {privacyAgreed && (
+                  {form.privacyAgreed && (
                     <Ionicons name="checkmark" size={16} color={colors.contrastText} />
                   )}
                 </View>
@@ -533,17 +414,17 @@ export default function OnboardingScreen() {
               <TouchableOpacity
                 testID="checkbox-terms"
                 style={styles.checkboxRow}
-                onPress={() => setDataAgreed(!dataAgreed)}
+                onPress={form.toggleDataAgreed}
                 activeOpacity={0.7}
               >
                 <View
                   style={[
                     styles.checkbox,
                     { borderColor: colors.textSecondary },
-                    dataAgreed && { backgroundColor: colors.primary, borderColor: colors.primary },
+                    form.dataAgreed && { backgroundColor: colors.primary, borderColor: colors.primary },
                   ]}
                 >
-                  {dataAgreed && (
+                  {form.dataAgreed && (
                     <Ionicons name="checkmark" size={16} color={colors.contrastText} />
                   )}
                 </View>
@@ -566,8 +447,8 @@ export default function OnboardingScreen() {
         return (
           <View style={styles.fullWidth}>
             <NotificationSetupStep
-              selectedTime={notifyTime}
-              onTimeChange={setNotifyTime}
+              selectedTime={form.notifyTime}
+              onTimeChange={form.setNotifyTime}
             />
           </View>
         );
@@ -576,20 +457,20 @@ export default function OnboardingScreen() {
         return (
           <View style={styles.fullWidth}>
             <LastViewedDateStep
-              selectedYear={lastViewedYear}
-              selectedMonth={lastViewedMonth}
-              selectedDay={lastViewedDay}
+              selectedYear={form.lastViewedYear}
+              selectedMonth={form.lastViewedMonth}
+              selectedDay={form.lastViewedDay}
               onYearChange={(y) => {
-                setLastViewedYear(y);
-                const maxDay = getDaysInMonth(y, lastViewedMonth);
-                setLastViewedDay((d) => clampDay(d, maxDay));
+                form.setLastViewedYear(y);
+                const maxDay = getDaysInMonth(y, form.lastViewedMonth);
+                form.setLastViewedDay((d: number) => clampDay(d, maxDay));
               }}
               onMonthChange={(m) => {
-                setLastViewedMonth(m);
-                const maxDay = getDaysInMonth(lastViewedYear, m);
-                setLastViewedDay((d) => clampDay(d, maxDay));
+                form.setLastViewedMonth(m);
+                const maxDay = getDaysInMonth(form.lastViewedYear, m);
+                form.setLastViewedDay((d: number) => clampDay(d, maxDay));
               }}
-              onDayChange={setLastViewedDay}
+              onDayChange={form.setLastViewedDay}
             />
           </View>
         );
@@ -605,10 +486,9 @@ export default function OnboardingScreen() {
 
   const content = (
     <>
-      {/* Header: back button + skip + progress bar */}
       <View style={styles.header}>
         <View style={styles.headerRow}>
-          {canGoBack(step) ? (
+          {canGoBack(nav.step) ? (
             <TouchableOpacity
               style={styles.backButton}
               onPress={handleBack}
@@ -630,20 +510,15 @@ export default function OnboardingScreen() {
             </TouchableOpacity>
           ) : !NON_COUNTABLE_TYPES.has(currentStep.type) ? (
             <Text style={[styles.stepCounter, { color: colors.textSecondary }]}>
-              {`${STEP_COUNTER_MAP[step]}/${TOTAL_COUNTABLE_STEPS}`}
+              {`${STEP_COUNTER_MAP[nav.step]}/${TOTAL_COUNTABLE_STEPS}`}
             </Text>
           ) : (
             <View style={styles.backButtonPlaceholder} />
           )}
         </View>
-        <ProgressBar
-          progress={step / (STEPS.length - 1)}
-          height={4}
-          variant="gradient"
-        />
+        <ProgressBar progress={nav.progress} height={4} variant="gradient" />
       </View>
 
-      {/* Content */}
       <Animated.View
         style={[styles.content, { transform: [{ translateX }] }]}
         {...panResponder.panHandlers}
@@ -651,14 +526,9 @@ export default function OnboardingScreen() {
         {renderStep()}
       </Animated.View>
 
-      {/* Footer */}
       {showFooter && (
         <View style={styles.footer}>
-          <Button
-            title="次へ"
-            onPress={handleNext}
-            disabled={isNextDisabled}
-          />
+          <Button title="次へ" onPress={handleNext} disabled={isNextDisabled} />
         </View>
       )}
     </>
@@ -737,7 +607,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: SPACING.xl,
   },
-  // Welcome (merged with assessment intro)
   welcomeContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -759,7 +628,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     flex: 1,
   },
-  // Form
   input: {
     width: '100%',
     height: 50,

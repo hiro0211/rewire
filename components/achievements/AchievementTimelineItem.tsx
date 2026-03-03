@@ -87,13 +87,13 @@ export function AchievementTimelineItem({
 const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xxl,
   },
   connectorContainer: {
     position: 'absolute',
     left: '50%',
     top: 72,
-    bottom: -SPACING.lg,
+    bottom: -SPACING.xxl,
     width: 1,
     alignItems: 'center',
   },

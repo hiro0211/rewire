@@ -15,6 +15,11 @@ export default function Index() {
     );
   }
 
+  // DEV: skip brand/onboarding/paywall to go straight to dashboard
+  if (__DEV__) {
+    return <Redirect href="/(tabs)" />;
+  }
+
   // Brand screen handles routing to /(tabs) or /onboarding after animation
   return <Redirect href="/brand" />;
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -9,14 +9,7 @@ import { PlanSelector } from './PlanSelector';
 import { FeatureCard } from './FeatureCard';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 import { SubscriptionTerms } from './SubscriptionTerms';
-import { isExpoGo } from '@/lib/nativeGuard';
-
-let Purchases: any = null;
-if (!isExpoGo) {
-  try {
-    Purchases = require('react-native-purchases').default;
-  } catch {}
-}
+import { usePurchase } from '@/hooks/paywall/usePurchase';
 
 interface PaywallDefaultProps {
   offering: any;
@@ -41,11 +34,16 @@ export function PaywallDefault({
 }: PaywallDefaultProps) {
   const { colors } = useTheme();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
-  const [purchasing, setPurchasing] = useState(false);
 
   const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
   const monthlyPackage = offering?.monthly;
   const selectedPackage = selectedPlan === 'annual' ? annualPackage : monthlyPackage;
+
+  const { purchasing, handlePurchase, handleRestore } = usePurchase({
+    package: selectedPackage,
+    onPurchaseCompleted,
+    onRestoreCompleted,
+  });
 
   const annualPrice = annualPackage?.product?.price ?? 5400;
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
@@ -55,43 +53,6 @@ export function PaywallDefault({
     selectedPlan === 'annual'
       ? `Billed as ${formatPrice(annualPrice, annualCurrencyCode)} per year`
       : `Billed as ${formatPrice(monthlyPrice, monthlyCurrencyCode)} per month`;
-
-  const handlePurchase = async () => {
-    if (!Purchases || purchasing) return;
-    if (!selectedPackage) {
-      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
-      return;
-    }
-    setPurchasing(true);
-    try {
-      const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
-      if (customerInfo.entitlements.active['Rewire Pro']) {
-        onPurchaseCompleted();
-      }
-    } catch (error: any) {
-      if (error.userCancelled || error.code === '1' || error.code === 'PURCHASE_CANCELLED') return;
-      Alert.alert('購入エラー', 'お支払い処理中にエラーが発生しました。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
-
-  const handleRestore = async () => {
-    if (!Purchases) return;
-    setPurchasing(true);
-    try {
-      const customerInfo = await Purchases.restorePurchases();
-      if (customerInfo.entitlements.active['Rewire Pro']) {
-        onRestoreCompleted();
-      } else {
-        Alert.alert('復元結果', '有効なサブスクリプションが見つかりませんでした。');
-      }
-    } catch {
-      Alert.alert('復元エラー', '購入の復元中にエラーが発生しました。');
-    } finally {
-      setPurchasing(false);
-    }
-  };
 
   return (
     <SafeAreaWrapper>
