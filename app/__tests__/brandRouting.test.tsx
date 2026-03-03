@@ -72,10 +72,10 @@ describe('BrandScreen ルーティング分岐', () => {
     expect(mockReplace).toHaveBeenCalledWith('/paywall?source=onboarding');
   });
 
-  it('isPro=true → /(tabs)', () => {
+  it('isPro=true → /streak', () => {
     mockUser = { nickname: 'Test', isPro: true };
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(3000); });
-    expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    expect(mockReplace).toHaveBeenCalledWith('/streak');
   });
 });

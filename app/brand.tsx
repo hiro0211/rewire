@@ -71,7 +71,7 @@ export function BrandScreen() {
       } else if (!user.isPro) {
         destination = '/paywall?source=onboarding';
       } else {
-        destination = '/(tabs)';
+        destination = '/streak';
       }
       router.replace(destination as any);
     }, TIMINGS.navigate));
