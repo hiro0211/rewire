@@ -22,25 +22,12 @@ jest.mock('@/stores/userStore', () => ({
 import Index from '../index';
 
 describe('Index routing', () => {
-  const originalDev = (global as any).__DEV__;
-
   beforeEach(() => {
     jest.clearAllMocks();
     mockHasHydrated = true;
   });
 
-  afterEach(() => {
-    (global as any).__DEV__ = originalDev;
-  });
-
-  it('DEVモードで/streakにリダイレクトする', () => {
-    (global as any).__DEV__ = true;
-    const { getByTestId } = render(<Index />);
-    expect(getByTestId('redirect').props.children).toBe('/streak');
-  });
-
-  it('本番モードで/brandにリダイレクトする', () => {
-    (global as any).__DEV__ = false;
+  it('/brandにリダイレクトする', () => {
     const { getByTestId } = render(<Index />);
     expect(getByTestId('redirect').props.children).toBe('/brand');
   });

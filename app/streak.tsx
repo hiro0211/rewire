@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -18,27 +18,13 @@ import { GlowOverlay } from '@/components/streak/GlowOverlay';
 import { ConfettiEffect } from '@/components/streak/ConfettiEffect';
 import { getCountUpDuration } from '@/constants/streakCelebration';
 
-const DEV_PRESETS = [
-  { label: 'Day 3', streak: 3, goalReached: false },
-  { label: 'Week(7)', streak: 7, goalReached: false },
-  { label: 'Month(30)', streak: 30, goalReached: false },
-  { label: '90日(90)', streak: 90, goalReached: false },
-  { label: 'Goal達成', streak: 30, goalReached: true },
-] as const;
-
 export default function StreakScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { gradients, colors } = useTheme();
-  const { streak: realStreak, goal } = useStreak();
+  const { gradients } = useTheme();
+  const { streak, goal } = useStreak();
 
-  const [devOverride, setDevOverride] = useState<{
-    streak: number;
-    goalReached: boolean;
-  } | null>(null);
-
-  const streak = devOverride ? devOverride.streak : realStreak;
-  const goalReached = devOverride ? devOverride.goalReached : streak >= goal;
+  const goalReached = streak >= goal;
   const tier = getStreakTier(streak, goalReached);
   const countUpDuration = getCountUpDuration(streak);
 
@@ -62,39 +48,6 @@ export default function StreakScreen() {
       {tier.showConfetti && <ConfettiEffect key={`${streak}-${goalReached}`} />}
 
       <View style={[styles.content, { paddingTop: insets.top + 60 }]}>
-        {__DEV__ && (
-          <View testID="dev-tier-selector" style={styles.devSelector}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {DEV_PRESETS.map((preset) => {
-                const isActive =
-                  devOverride?.streak === preset.streak &&
-                  devOverride?.goalReached === preset.goalReached;
-                return (
-                  <Pressable
-                    key={preset.label}
-                    onPress={() =>
-                      setDevOverride({
-                        streak: preset.streak,
-                        goalReached: preset.goalReached,
-                      })
-                    }
-                    style={[
-                      styles.devPill,
-                      {
-                        backgroundColor: isActive
-                          ? colors.primary
-                          : 'rgba(255,255,255,0.15)',
-                      },
-                    ]}
-                  >
-                    <Text style={styles.devPillText}>{preset.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-        )}
-
         <View style={styles.numberSection}>
           <StreakNumber streak={streak} />
           <StreakSubText text={tier.subText} delay={countUpDuration} />
@@ -125,20 +78,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: SPACING.screenPadding,
-  },
-  devSelector: {
-    marginBottom: SPACING.md,
-  },
-  devPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  devPillText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
   },
   numberSection: {
     flex: 1,

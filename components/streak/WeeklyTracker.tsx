@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '@/hooks/useTheme';
-import { SPACING, RADIUS, FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE, RADIUS, SPACING } from '@/constants/theme';
 import { getWeeklyProgress, type DayStatus } from '@/hooks/streak/useWeeklyProgress';
+import { useTheme } from '@/hooks/useTheme';
 import type { ColorPalette } from '@/types/theme';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface WeeklyTrackerProps {
   streak: number;

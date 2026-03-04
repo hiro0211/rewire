@@ -64,7 +64,6 @@ export default function DashboardScreen() {
           <StatsRow onShare={share} />
         </ViewShot>
 
-        {/* Today's Check-in */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>今日の振り返り</Text>
           {todayCheckin ? (
@@ -87,11 +86,9 @@ export default function DashboardScreen() {
           )}
         </View>
 
-        {/* Panic Button (inline) */}
         <View style={styles.panicButtonContainer}>
           <SOSButton />
         </View>
-
       </ScrollView>
     </SafeAreaWrapper>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SPACING } from '@/constants/theme';
@@ -22,20 +22,10 @@ export default function StatsScreen() {
   );
 
   const hasData = weeklyData.some((d) => d.totalDuration > 0);
-
-  // Get yesterday's usage from weekly data
   const yesterdayMs =
     weeklyData.length >= 2
       ? weeklyData[weeklyData.length - 2]?.totalDuration
       : undefined;
-
-  if (!hasData && !isLoading) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <UsageEmptyState />
-      </View>
-    );
-  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -49,10 +39,16 @@ export default function StatsScreen() {
           />
         }
       >
-        <TodayUsageCard todayMs={todayMs} yesterdayMs={yesterdayMs} />
-        {weeklyData.length > 0 && <WeeklyBarChart data={weeklyData} />}
-        <TimeWastedCard monthlyMs={monthlyMs} hourlyWage={hourlyWage} />
-        <StreakCard />
+        {!hasData && !isLoading ? (
+          <UsageEmptyState />
+        ) : (
+          <View style={styles.statsContent}>
+            <TodayUsageCard todayMs={todayMs} yesterdayMs={yesterdayMs} />
+            {weeklyData.length > 0 && <WeeklyBarChart data={weeklyData} />}
+            <TimeWastedCard monthlyMs={monthlyMs} hourlyWage={hourlyWage} />
+            <StreakCard />
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -65,5 +61,8 @@ const styles = StyleSheet.create({
   content: {
     padding: SPACING.lg,
     paddingBottom: SPACING.xxxl,
+  },
+  statsContent: {
+    paddingTop: SPACING.md,
   },
 });

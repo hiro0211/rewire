@@ -117,4 +117,5 @@ describe('DashboardScreen', () => {
     const { getByText } = render(<DashboardScreen />);
     expect(getByText('TestUser')).toBeTruthy();
   });
+
 });
