@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, StatusBar, ViewStyle } from 'react-native';
+import { StyleSheet, StatusBar, ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -10,17 +11,20 @@ interface SafeAreaWrapperProps {
 
 export function SafeAreaWrapper({ children, style }: SafeAreaWrapperProps) {
   const insets = useSafeAreaInsets();
-  const { colors, isDark } = useTheme();
+  const { gradients, isDark } = useTheme();
 
   return (
-    <View style={[
-      styles.container,
-      { backgroundColor: colors.background, paddingTop: insets.top, paddingBottom: insets.bottom },
-      style
-    ]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
+    <LinearGradient
+      colors={gradients.background as unknown as [string, string, ...string[]]}
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        style,
+      ]}
+    >
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" />
       {children}
-    </View>
+    </LinearGradient>
   );
 }
 

@@ -50,6 +50,7 @@ export const LIGHT_COLORS: ColorPalette = {
 };
 
 export const DARK_GRADIENTS: GradientPalette = {
+  background: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] as const,
   card: ['#2D1B69', '#1A1035', '#0A0A0F'] as const,
   hero: ['#1E0A3C', '#0D0620'] as const,
   button: ['#8B5CF6', '#6D28D9'] as const,
@@ -58,6 +59,7 @@ export const DARK_GRADIENTS: GradientPalette = {
 };
 
 export const LIGHT_GRADIENTS: GradientPalette = {
+  background: ['#F5F5F7', '#EDE4FF', '#E8E0FF'] as const,
   card: ['#E8E0FF', '#F0ECF8', '#F5F5F7'] as const,
   hero: ['#EDE4FF', '#F5F0FA'] as const,
   button: ['#7C4DFF', '#5B21B6'] as const,

@@ -1,8 +1,10 @@
 import { useRef, useCallback } from 'react';
-import { Share, Platform } from 'react-native';
+import { Share } from 'react-native';
 import { useStreak } from '@/hooks/dashboard/useStreak';
 import { useStopwatch } from '@/hooks/dashboard/useStopwatch';
 import { buildShareText } from '@/lib/share/shareService';
+import { shareImageFile } from '@/lib/share/shareImage';
+import { copyToClipboard } from '@/lib/share/clipboardService';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export function useShareWidget() {
@@ -13,6 +15,8 @@ export function useShareWidget() {
   const share = useCallback(async () => {
     analyticsClient.logEvent('share_tapped');
 
+    const text = buildShareText(stopwatch);
+
     let fileUri: string | undefined;
     try {
       if (typeof viewShotRef.current?.capture === 'function') {
@@ -22,12 +26,17 @@ export function useShareWidget() {
       // キャプチャ失敗時はテキストのみでシェアを続行
     }
 
-    const text = buildShareText(stopwatch);
-    const shareOptions: { message: string; url?: string } = { message: text };
-    if (fileUri && Platform.OS === 'ios') {
-      shareOptions.url = `file://${fileUri}`;
+    if (fileUri) {
+      await copyToClipboard(text);
+      try {
+        await shareImageFile(fileUri);
+      } catch {
+        // ユーザーがシェアをキャンセルした場合など
+      }
+      return;
     }
-    await Share.share(shareOptions);
+
+    await Share.share({ message: text });
   }, [stopwatch]);
 
   return { viewShotRef, share };

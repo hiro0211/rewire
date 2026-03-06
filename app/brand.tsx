@@ -1,23 +1,17 @@
+import { StarryBackground } from '@/components/onboarding/StarryBackground';
+import {
+  BRAND_CATCHPHRASES,
+  BRAND_TIMING_CONFIG,
+  calculateBrandTimings,
+} from '@/constants/brandConfig';
 import { FONT_SIZE } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
-export const BRAND_CATCHPHRASES = [
-  '変わる覚悟はあるか。',
-  '自分を取り戻す旅が、',
-  '今、始まる。', ];
-
-const TIMINGS = {
-  logo: 300,
-  line1: 3000,
-  line2: 3000,
-  line3: 3000,
-  navigate: 2800,
-};
+const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
 
 export function BrandScreen() {
   const router = useRouter();
@@ -35,14 +29,13 @@ export function BrandScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 400,
+        duration: TIMINGS.lineAnimDuration,
         useNativeDriver: true,
       }).start();
     }, TIMINGS.logo));
 
     // Catchphrase lines
-    const lineTimings = [TIMINGS.line1, TIMINGS.line2, TIMINGS.line3];
-    lineTimings.forEach((timing, index) => {
+    TIMINGS.lines.forEach((timing, index) => {
       timeouts.push(setTimeout(() => {
         const style = index < 2
           ? Haptics.ImpactFeedbackStyle.Light
@@ -51,12 +44,12 @@ export function BrandScreen() {
         Animated.parallel([
           Animated.timing(lineOpacities[index], {
             toValue: 1,
-            duration: 400,
+            duration: TIMINGS.lineAnimDuration,
             useNativeDriver: true,
           }),
           Animated.timing(lineTranslates[index], {
             toValue: 0,
-            duration: 400,
+            duration: TIMINGS.lineAnimDuration,
             useNativeDriver: true,
           }),
         ]).start();
@@ -80,9 +73,9 @@ export function BrandScreen() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <LinearGradient
-      colors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}
-      style={styles.container}
+    <StarryBackground
+      twinkle={true}
+      gradientColors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}
     >
       <View style={styles.content}>
         <Animated.Image
@@ -112,16 +105,13 @@ export function BrandScreen() {
           ))}
         </View>
       </View>
-    </LinearGradient>
+    </StarryBackground>
   );
 }
 
 export default BrandScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     flex: 1,
     justifyContent: 'center',

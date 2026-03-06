@@ -16,12 +16,24 @@ jest.mock('expo-linear-gradient', () => {
   return { LinearGradient: (props: any) => <View {...props} /> };
 });
 
+jest.mock('@/components/onboarding/StarryBackground', () => {
+  const { View } = require('react-native');
+  return {
+    StarryBackground: ({ children, ...props }: any) => (
+      <View testID="starry-background" {...props}>{children}</View>
+    ),
+  };
+});
+
 let mockUser: any = null;
 jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({ user: mockUser }),
 }));
 
 import { BrandScreen } from '../brand';
+import { BRAND_CATCHPHRASES, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
+
+const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
 
 describe('BrandScreen ルーティング分岐', () => {
   const originalDev = (global as any).__DEV__;
@@ -40,42 +52,42 @@ describe('BrandScreen ルーティング分岐', () => {
   it('ユーザーがnull → /onboarding', () => {
     mockUser = null;
     render(<BrandScreen />);
-    act(() => { jest.advanceTimersByTime(3000); });
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/onboarding');
   });
 
   it('nicknameが空文字 → /onboarding', () => {
     mockUser = { nickname: '' };
     render(<BrandScreen />);
-    act(() => { jest.advanceTimersByTime(3000); });
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/onboarding');
   });
 
   it('nicknameがnull → /onboarding', () => {
     mockUser = { nickname: null };
     render(<BrandScreen />);
-    act(() => { jest.advanceTimersByTime(3000); });
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/onboarding');
   });
 
   it('isPro=false → /paywall?source=onboarding', () => {
     mockUser = { nickname: 'Test', isPro: false };
     render(<BrandScreen />);
-    act(() => { jest.advanceTimersByTime(3000); });
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/paywall?source=onboarding');
   });
 
   it('isPro=undefined → /paywall?source=onboarding（falsy扱い）', () => {
     mockUser = { nickname: 'Test' };
     render(<BrandScreen />);
-    act(() => { jest.advanceTimersByTime(3000); });
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/paywall?source=onboarding');
   });
 
   it('isPro=true → /streak', () => {
     mockUser = { nickname: 'Test', isPro: true };
     render(<BrandScreen />);
-    act(() => { jest.advanceTimersByTime(3000); });
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/streak');
   });
 });

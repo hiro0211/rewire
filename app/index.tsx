@@ -3,9 +3,8 @@ import { useUserStore } from '@/stores/userStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
-// DEV: skip onboarding, paywall, and brand animation
-// テスト時は process.env.NODE_ENV === 'test' でスキップを無効化
-const DEV_SKIP_ONBOARDING = __DEV__ && process.env.NODE_ENV !== 'test';
+// ブランド画面を常に表示する（dev clientでもスキップしない）
+const DEV_SKIP_ONBOARDING = false;
 
 export default function Index() {
   const { hasHydrated } = useUserStore();

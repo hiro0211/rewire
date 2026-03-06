@@ -26,6 +26,7 @@ export interface ColorPalette {
 }
 
 export interface GradientPalette {
+  background: readonly string[];
   card: readonly string[];
   hero: readonly string[];
   button: readonly string[];

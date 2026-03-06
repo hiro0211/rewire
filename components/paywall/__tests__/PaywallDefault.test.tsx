@@ -120,4 +120,38 @@ describe('PaywallDefault', () => {
       'https://hiro0211.github.io/rewire-support/#privacy'
     );
   });
+
+  describe('monthlyPackage フォールバック', () => {
+    it('offering.monthly が undefined でも availablePackages から MONTHLY を取得する', () => {
+      const offeringWithoutMonthly = {
+        annual: { product: { price: 5400, priceString: '¥5,400', currencyCode: 'JPY' } },
+        availablePackages: [
+          { packageType: 'ANNUAL', product: { price: 5400, priceString: '¥5,400', currencyCode: 'JPY' } },
+          { packageType: 'MONTHLY', product: { price: 680, priceString: '¥680', currencyCode: 'JPY' } },
+        ],
+      };
+
+      const { getByTestId, getByText } = render(
+        <PaywallDefault {...defaultProps} offering={offeringWithoutMonthly} />,
+      );
+
+      fireEvent.press(getByTestId('plan-monthly'));
+      expect(getByText('Billed as ¥680 per month')).toBeTruthy();
+    });
+
+    it('monthlyPackage が完全に存在しない場合 Monthly プランカードが非表示', () => {
+      const annualOnlyOffering = {
+        annual: { product: { price: 5400, priceString: '¥5,400', currencyCode: 'JPY' } },
+        availablePackages: [
+          { packageType: 'ANNUAL', product: { price: 5400, priceString: '¥5,400', currencyCode: 'JPY' } },
+        ],
+      };
+
+      const { queryByTestId } = render(
+        <PaywallDefault {...defaultProps} offering={annualOnlyOffering} />,
+      );
+
+      expect(queryByTestId('plan-monthly')).toBeNull();
+    });
+  });
 });

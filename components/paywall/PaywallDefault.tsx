@@ -36,7 +36,9 @@ export function PaywallDefault({
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
 
   const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
-  const monthlyPackage = offering?.monthly;
+  const monthlyPackage = offering?.monthly
+    ?? offering?.availablePackages?.find((p: any) => p.packageType === 'MONTHLY');
+  const hasMonthly = !!monthlyPackage;
   const selectedPackage = selectedPlan === 'annual' ? annualPackage : monthlyPackage;
 
   const { purchasing, handlePurchase, handleRestore } = usePurchase({
@@ -88,6 +90,7 @@ export function PaywallDefault({
               selectedPlan={selectedPlan}
               onSelectPlan={setSelectedPlan}
               currencyCode={annualCurrencyCode}
+              showMonthly={hasMonthly}
             />
           </View>
 

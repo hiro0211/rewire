@@ -48,7 +48,12 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
         if (!subscriptionClient.isReady()) {
           try {
             await subscriptionClient.initialize();
-          } catch {}
+          } catch (e) {
+            console.warn('[Paywall] init failed, retrying...', e);
+            try {
+              await subscriptionClient.initialize();
+            } catch {}
+          }
         }
         if (!mounted) return;
         if (!subscriptionClient.isReady()) {

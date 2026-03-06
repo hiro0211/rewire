@@ -10,6 +10,7 @@ interface PlanSelectorProps {
   selectedPlan: 'annual' | 'monthly';
   onSelectPlan: (plan: 'annual' | 'monthly') => void;
   currencyCode?: string;
+  showMonthly?: boolean;
 }
 
 export function PlanSelector({
@@ -18,6 +19,7 @@ export function PlanSelector({
   selectedPlan,
   onSelectPlan,
   currencyCode = 'JPY',
+  showMonthly = true,
 }: PlanSelectorProps) {
   const { colors, glow } = useTheme();
   const annualPrice = annualPackage?.product?.price ?? 5400;
@@ -47,21 +49,23 @@ export function PlanSelector({
       </TouchableOpacity>
 
       {/* Monthly Card */}
-      <TouchableOpacity
-        testID="plan-monthly"
-        style={[
-          styles.card,
-          selectedPlan === 'monthly'
-            ? { borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 }
-            : { borderColor: colors.border, backgroundColor: colors.surface },
-        ]}
-        onPress={() => onSelectPlan('monthly')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Monthly</Text>
-        <Text style={[styles.priceMain, { color: colors.text }]}>{monthlyPriceStr}</Text>
-        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>/月</Text>
-      </TouchableOpacity>
+      {showMonthly && (
+        <TouchableOpacity
+          testID="plan-monthly"
+          style={[
+            styles.card,
+            selectedPlan === 'monthly'
+              ? { borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 }
+              : { borderColor: colors.border, backgroundColor: colors.surface },
+          ]}
+          onPress={() => onSelectPlan('monthly')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Monthly</Text>
+          <Text style={[styles.priceMain, { color: colors.text }]}>{monthlyPriceStr}</Text>
+          <Text style={[styles.priceSub, { color: colors.textSecondary }]}>/月</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

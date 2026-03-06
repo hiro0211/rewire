@@ -9,6 +9,7 @@ export default function TabLayout() {
   return (
     <Tabs
       tabBar={(props) => <BlurTabBar {...props} />}
+      sceneContainerStyle={{ backgroundColor: colors.background }}
       screenOptions={{
         headerShown: false,
         headerStyle: { backgroundColor: colors.background },

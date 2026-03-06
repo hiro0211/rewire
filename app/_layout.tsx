@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useTheme } from '@/hooks/useTheme';
@@ -98,13 +99,22 @@ export default function RootLayout() {
     return null;
   }
 
+  const navigationTheme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme : DefaultTheme).colors,
+      background: colors.background,
+    },
+  };
+
   return (
     <SafeAreaProvider>
-      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
+      <ThemeProvider value={navigationTheme}>
+        <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor="transparent" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
           headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.primary,
           headerTitleStyle: { color: colors.text, fontSize: 17, fontWeight: '600' },
@@ -133,7 +143,8 @@ export default function RootLayout() {
         <Stack.Screen name="achievements" options={{ headerShown: true, title: 'Achievements' }} />
         <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
         <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
-      </Stack>
+        </Stack>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

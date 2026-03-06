@@ -25,6 +25,16 @@ jest.mock('expo-linear-gradient', () => {
   };
 });
 
+// Mock StarryBackground
+jest.mock('@/components/onboarding/StarryBackground', () => {
+  const { View } = require('react-native');
+  return {
+    StarryBackground: ({ children, ...props }: any) => (
+      <View testID="starry-background" {...props}>{children}</View>
+    ),
+  };
+});
+
 // Mock userStore
 jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({
@@ -34,7 +44,10 @@ jest.mock('@/stores/userStore', () => ({
 }));
 
 import * as Haptics from 'expo-haptics';
-import { BrandScreen, BRAND_CATCHPHRASES } from '../brand';
+import { BrandScreen } from '../brand';
+import { BRAND_CATCHPHRASES, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
+
+const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
 
 describe('BrandScreen（ブランド起動画面）', () => {
   const originalDev = (global as any).__DEV__;
@@ -76,15 +89,14 @@ describe('BrandScreen（ブランド起動画面）', () => {
   describe('ハプティクスフィードバック', () => {
     it('ロゴ表示時にMedium振動が発生する', () => {
       render(<BrandScreen />);
-      act(() => { jest.advanceTimersByTime(350); });
+      act(() => { jest.advanceTimersByTime(TIMINGS.logo + 50); });
       expect(Haptics.impactAsync).toHaveBeenCalledWith('medium');
     });
 
     it('各キャッチフレーズ表示時に振動が発生する', () => {
       render(<BrandScreen />);
-      // ロゴ (300ms) + 3行のキャッチフレーズ (900, 1500, 2100ms)
-      act(() => { jest.advanceTimersByTime(3100); });
-      // ロゴ1回 + キャッチフレーズ3回 = 合計4回
+      // navigate 直前まで進める → ロゴ1回 + キャッチフレーズ3回 = 合計4回
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate - 1); });
       expect(Haptics.impactAsync).toHaveBeenCalledTimes(4);
     });
   });
@@ -92,13 +104,13 @@ describe('BrandScreen（ブランド起動画面）', () => {
   describe('ルーティング', () => {
     it('アニメーション完了後にルーティングが呼ばれる', () => {
       render(<BrandScreen />);
-      act(() => { jest.advanceTimersByTime(3000); });
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
       expect(mockReplace).toHaveBeenCalled();
     });
 
     it('ユーザーが未登録の場合、/onboardingに遷移する', () => {
       render(<BrandScreen />);
-      act(() => { jest.advanceTimersByTime(3000); });
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
       expect(mockReplace).toHaveBeenCalledWith('/onboarding');
     });
   });

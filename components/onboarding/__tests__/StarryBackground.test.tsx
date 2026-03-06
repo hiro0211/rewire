@@ -76,4 +76,37 @@ describe('StarryBackground', () => {
     );
     expect(queryByTestId('star-dot-0')).toBeNull();
   });
+
+  describe('twinkle prop', () => {
+    it('twinkle={false}（デフォルト）でも星が表示される', () => {
+      const { getByTestId } = render(
+        <StarryBackground><Text>test</Text></StarryBackground>
+      );
+      expect(getByTestId('star-dot-0')).toBeTruthy();
+    });
+
+    it('twinkle={true} でも星が表示される', () => {
+      const { getByTestId } = render(
+        <StarryBackground twinkle={true}><Text>test</Text></StarryBackground>
+      );
+      expect(getByTestId('star-dot-0')).toBeTruthy();
+    });
+
+    it('twinkle={true} のときクラッシュしない', () => {
+      expect(() =>
+        render(
+          <StarryBackground twinkle={true}><Text>test</Text></StarryBackground>
+        )
+      ).not.toThrow();
+    });
+
+    it('twinkle={true} + showStars={false} で星が非表示になる', () => {
+      const { queryByTestId } = render(
+        <StarryBackground twinkle={true} showStars={false}>
+          <Text>test</Text>
+        </StarryBackground>
+      );
+      expect(queryByTestId('star-dot-0')).toBeNull();
+    });
+  });
 });
