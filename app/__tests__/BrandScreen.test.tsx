@@ -74,15 +74,15 @@ describe('BrandScreen（ブランド起動画面）', () => {
       expect(getByTestId('brand-logo-image')).toBeTruthy();
     });
 
-    it('3行のキャッチフレーズテキストが存在する', () => {
-      const { getByText } = render(<BrandScreen />);
-      BRAND_CATCHPHRASES.forEach((phrase) => {
-        expect(getByText(phrase)).toBeTruthy();
+    it('キャッチフレーズの各行がtestIDで存在する', () => {
+      const { getByTestId } = render(<BrandScreen />);
+      BRAND_CATCHPHRASES.forEach((_, index) => {
+        expect(getByTestId(`catchphrase-line-${index}`)).toBeTruthy();
       });
     });
 
-    it('キャッチフレーズが3行ある', () => {
-      expect(BRAND_CATCHPHRASES).toHaveLength(3);
+    it('キャッチフレーズが2行ある', () => {
+      expect(BRAND_CATCHPHRASES).toHaveLength(2);
     });
   });
 
@@ -95,9 +95,9 @@ describe('BrandScreen（ブランド起動画面）', () => {
 
     it('各キャッチフレーズ表示時に振動が発生する', () => {
       render(<BrandScreen />);
-      // navigate 直前まで進める → ロゴ1回 + キャッチフレーズ3回 = 合計4回
+      // navigate 直前まで進める → ロゴ1回 + キャッチフレーズ2回 = 合計3回
       act(() => { jest.advanceTimersByTime(TIMINGS.navigate - 1); });
-      expect(Haptics.impactAsync).toHaveBeenCalledTimes(4);
+      expect(Haptics.impactAsync).toHaveBeenCalledTimes(3);
     });
   });
 

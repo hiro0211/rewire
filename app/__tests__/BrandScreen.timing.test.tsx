@@ -55,8 +55,8 @@ describe('BrandScreen タイミング保証', () => {
     // navigate の1ms前まで進める
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate - 1); });
 
-    // ロゴ(1回) + 全キャッチフレーズ(3回) = 4回
-    expect(Haptics.impactAsync).toHaveBeenCalledTimes(4);
+    // ロゴ(1回) + 全キャッチフレーズ(2回) = 3回
+    expect(Haptics.impactAsync).toHaveBeenCalledTimes(3);
 
     // まだ遷移していない
     expect(mockReplace).not.toHaveBeenCalled();
@@ -84,10 +84,6 @@ describe('BrandScreen タイミング保証', () => {
     // 2行目 (1800ms)
     act(() => { jest.advanceTimersByTime(TIMINGS.lines[1] - TIMINGS.lines[0]); });
     expect(Haptics.impactAsync).toHaveBeenCalledTimes(3);
-
-    // 3行目 (2600ms)
-    act(() => { jest.advanceTimersByTime(TIMINGS.lines[2] - TIMINGS.lines[1]); });
-    expect(Haptics.impactAsync).toHaveBeenCalledTimes(4);
   });
 
   it('navigate が最終行よりも後に発生する（構造的バグ防止）', () => {

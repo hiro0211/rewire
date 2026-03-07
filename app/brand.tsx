@@ -12,14 +12,20 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
 const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+const CHAR_INTERVAL = BRAND_TIMING_CONFIG.charInterval;
 
 export function BrandScreen() {
   const router = useRouter();
   const { user } = useUserStore();
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
-  const lineOpacities = useRef(BRAND_CATCHPHRASES.map(() => new Animated.Value(0))).current;
-  const lineTranslates = useRef(BRAND_CATCHPHRASES.map(() => new Animated.Value(20))).current;
+
+  // 各行の各文字ごとに Animated.Value を生成
+  const charOpacities = useRef(
+    BRAND_CATCHPHRASES.map((phrase) =>
+      [...phrase].map(() => new Animated.Value(0)),
+    ),
+  ).current;
 
   useEffect(() => {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -34,26 +40,26 @@ export function BrandScreen() {
       }).start();
     }, TIMINGS.logo));
 
-    // Catchphrase lines
-    TIMINGS.lines.forEach((timing, index) => {
-      timeouts.push(setTimeout(() => {
-        const style = index < 2
-          ? Haptics.ImpactFeedbackStyle.Light
-          : Haptics.ImpactFeedbackStyle.Medium;
-        Haptics.impactAsync(style);
-        Animated.parallel([
-          Animated.timing(lineOpacities[index], {
+    // タイプライター: 各行の各文字を順番に表示
+    TIMINGS.lines.forEach((lineStart, lineIdx) => {
+      const chars = [...BRAND_CATCHPHRASES[lineIdx]];
+      chars.forEach((_, charIdx) => {
+        const charDelay = lineStart + charIdx * CHAR_INTERVAL;
+        timeouts.push(setTimeout(() => {
+          // 行の最初の文字でハプティクス
+          if (charIdx === 0) {
+            const style = lineIdx < BRAND_CATCHPHRASES.length - 1
+              ? Haptics.ImpactFeedbackStyle.Light
+              : Haptics.ImpactFeedbackStyle.Medium;
+            Haptics.impactAsync(style);
+          }
+          Animated.timing(charOpacities[lineIdx][charIdx], {
             toValue: 1,
-            duration: TIMINGS.lineAnimDuration,
+            duration: 60,
             useNativeDriver: true,
-          }),
-          Animated.timing(lineTranslates[index], {
-            toValue: 0,
-            duration: TIMINGS.lineAnimDuration,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, timing));
+          }).start();
+        }, charDelay));
+      });
     });
 
     // Navigate
@@ -89,19 +95,24 @@ export function BrandScreen() {
         </Animated.Text>
 
         <View style={styles.catchphrases}>
-          {BRAND_CATCHPHRASES.map((phrase, index) => (
-            <Animated.Text
-              key={phrase}
-              style={[
-                styles.catchphrase,
-                {
-                  opacity: lineOpacities[index],
-                  transform: [{ translateY: lineTranslates[index] }],
-                },
-              ]}
+          {BRAND_CATCHPHRASES.map((phrase, lineIdx) => (
+            <View
+              key={lineIdx}
+              style={styles.catchphraseLine}
+              testID={`catchphrase-line-${lineIdx}`}
             >
-              {phrase}
-            </Animated.Text>
+              {[...phrase].map((char, charIdx) => (
+                <Animated.Text
+                  key={charIdx}
+                  style={[
+                    styles.catchphrase,
+                    { opacity: charOpacities[lineIdx][charIdx] },
+                  ]}
+                >
+                  {char}
+                </Animated.Text>
+              ))}
+            </View>
           ))}
         </View>
       </View>
@@ -135,10 +146,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  catchphraseLine: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   catchphrase: {
     fontSize: FONT_SIZE.lg,
     color: 'rgba(232, 232, 237, 0.85)',
-    textAlign: 'center',
     lineHeight: 28,
   },
 });

@@ -52,3 +52,28 @@ describe('SafeAreaWrapper', () => {
     );
   });
 });
+
+describe('SafeAreaWrapper — gradients.background が未定義の場合', () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
+
+  it('colors.background のフォールバックカラーが使われる', () => {
+    jest.doMock('@/hooks/useTheme', () => ({
+      useTheme: () => ({
+        colors: { background: '#FFFFFF' },
+        gradients: { background: undefined },
+        isDark: false,
+      }),
+    }));
+
+    const { SafeAreaWrapper: FreshWrapper } = require('../SafeAreaWrapper');
+    const { getByTestId } = render(
+      <FreshWrapper><Text>フォールバック</Text></FreshWrapper>
+    );
+    const gradient = getByTestId('linear-gradient');
+    expect(gradient.props['data-colors']).toBe(
+      JSON.stringify(['#FFFFFF', '#FFFFFF'])
+    );
+  });
+});

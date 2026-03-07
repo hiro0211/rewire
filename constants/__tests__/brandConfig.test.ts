@@ -6,8 +6,16 @@ import {
 
 describe('brandConfig', () => {
   describe('BRAND_CATCHPHRASES', () => {
-    it('キャッチフレーズが3行ある', () => {
-      expect(BRAND_CATCHPHRASES).toHaveLength(3);
+    it('キャッチフレーズが2行ある', () => {
+      expect(BRAND_CATCHPHRASES).toHaveLength(2);
+    });
+
+    it('1行目が「昨日までの自分は、もういい。」', () => {
+      expect(BRAND_CATCHPHRASES[0]).toBe('昨日までの自分は、もういい。');
+    });
+
+    it('2行目が「今から新しい自分へ生まれ変わる。」', () => {
+      expect(BRAND_CATCHPHRASES[1]).toBe('今から新しい自分へ生まれ変わる。');
     });
 
     it('各行が空でない文字列である', () => {
@@ -18,11 +26,17 @@ describe('brandConfig', () => {
     });
   });
 
+  describe('BRAND_TIMING_CONFIG', () => {
+    it('charInterval が定義されている', () => {
+      expect(BRAND_TIMING_CONFIG.charInterval).toBe(80);
+    });
+  });
+
   describe('calculateBrandTimings', () => {
     it('デフォルト設定で正しいタイミングを返す', () => {
       const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
       expect(result.logo).toBe(300);
-      expect(result.lines).toEqual([1000, 1800, 2600]);
+      expect(result.lines).toEqual([1000, 1800]);
       expect(result.lineAnimDuration).toBe(400);
     });
 
@@ -58,6 +72,7 @@ describe('brandConfig', () => {
         lineInterval: 1000,
         lineAnimDuration: 600,
         postTextPause: 1000,
+        charInterval: 80,
       };
       const result = calculateBrandTimings(customConfig, 2);
       expect(result.logo).toBe(500);

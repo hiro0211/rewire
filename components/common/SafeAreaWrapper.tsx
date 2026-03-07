@@ -11,11 +11,16 @@ interface SafeAreaWrapperProps {
 
 export function SafeAreaWrapper({ children, style }: SafeAreaWrapperProps) {
   const insets = useSafeAreaInsets();
-  const { gradients, isDark } = useTheme();
+  const { colors, gradients, isDark } = useTheme();
+
+  const gradientColors: [string, string, ...string[]] =
+    Array.isArray(gradients?.background) && gradients.background.length >= 2
+      ? (gradients.background as [string, string, ...string[]])
+      : [colors.background, colors.background];
 
   return (
     <LinearGradient
-      colors={gradients.background as unknown as [string, string, ...string[]]}
+      colors={gradientColors}
       style={[
         styles.container,
         { paddingTop: insets.top, paddingBottom: insets.bottom },

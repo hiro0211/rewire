@@ -1,7 +1,6 @@
 export const BRAND_CATCHPHRASES = [
-  '変わる覚悟はあるか。',
-  '自分を取り戻す旅が、',
-  '今、始まる。',
+  '昨日までの自分は、もういい。',
+  '今から新しい自分へ生まれ変わる。',
 ];
 
 export interface BrandTimingConfig {
@@ -10,6 +9,7 @@ export interface BrandTimingConfig {
   lineInterval: number;
   lineAnimDuration: number;
   postTextPause: number;
+  charInterval: number;
 }
 
 export interface BrandTimings {
@@ -25,6 +25,7 @@ export const BRAND_TIMING_CONFIG: BrandTimingConfig = {
   lineInterval: 800,
   lineAnimDuration: 400,
   postTextPause: 800,
+  charInterval: 80,
 };
 
 export function calculateBrandTimings(
