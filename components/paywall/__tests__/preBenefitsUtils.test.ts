@@ -2,6 +2,15 @@ import { calcTargetDate } from '../preBenefitsUtils';
 import { BENEFIT_SECTIONS, BENEFIT_TAGS, FEATURE_ITEMS } from '@/constants/preBenefits';
 
 describe('preBenefitsUtils', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-01-15T12:00:00Z'));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   describe('calcTargetDate', () => {
     it('goalDaysを加算した日付文字列を返す', () => {
       const today = new Date();
@@ -11,25 +20,17 @@ describe('preBenefitsUtils', () => {
     });
 
     it('30日後の正しい日付を返す', () => {
-      const now = new Date();
-      const expected = new Date(now);
-      expected.setDate(expected.getDate() + 30);
-      const expectedStr = `${expected.getFullYear()}年${expected.getMonth() + 1}月${expected.getDate()}日`;
-      expect(calcTargetDate(30)).toBe(expectedStr);
+      // 2026-01-15 + 30日 = 2026-02-14
+      expect(calcTargetDate(30)).toBe('2026年2月14日');
     });
 
     it('90日後の正しい日付を返す', () => {
-      const now = new Date();
-      const expected = new Date(now);
-      expected.setDate(expected.getDate() + 90);
-      const expectedStr = `${expected.getFullYear()}年${expected.getMonth() + 1}月${expected.getDate()}日`;
-      expect(calcTargetDate(90)).toBe(expectedStr);
+      // 2026-01-15 + 90日 = 2026-04-15
+      expect(calcTargetDate(90)).toBe('2026年4月15日');
     });
 
     it('0日の場合は今日の日付を返す', () => {
-      const now = new Date();
-      const expectedStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
-      expect(calcTargetDate(0)).toBe(expectedStr);
+      expect(calcTargetDate(0)).toBe('2026年1月15日');
     });
   });
 });

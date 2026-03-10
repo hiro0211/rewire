@@ -5,17 +5,6 @@ jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('@/hooks/paywall/useDiscountExpiryTracker', () => ({
   useDiscountExpiryTracker: jest.fn(),
 }));
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light' },
-}));
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return { LinearGradient: (props: any) => <View {...props} /> };
-});
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
 jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(),
 }));

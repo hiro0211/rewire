@@ -22,7 +22,6 @@
     "@react-navigation/native": "^7.1.8",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "discord.js": "^14.25.1",
     "expo": "~54.0.33",
     "expo-blur": "~15.0.8",
     "expo-build-properties": "~1.0.10",

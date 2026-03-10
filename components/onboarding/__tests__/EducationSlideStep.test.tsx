@@ -3,14 +3,6 @@ import { render } from '@testing-library/react-native';
 import { EducationSlideStep } from '../EducationSlideStep';
 import type { EducationSlide } from '@/constants/education';
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-  };
-});
-
 const MOCK_SLIDE: EducationSlide = {
   id: 'dopamine_trap',
   title: 'テストタイトル',

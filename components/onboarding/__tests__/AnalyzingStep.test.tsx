@@ -2,13 +2,6 @@ import React from 'react';
 import { render, act } from '@testing-library/react-native';
 import { AnalyzingStep } from '../AnalyzingStep';
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
-  NotificationFeedbackType: { Success: 'success', Error: 'error' },
-}));
-
 jest.mock('react-native-svg', () => {
   const React = require('react');
   const { View } = require('react-native');
@@ -17,16 +10,6 @@ jest.mock('react-native-svg', () => {
     default: ({ children, ...props }: any) => <View {...props}>{children}</View>,
     Svg: ({ children, ...props }: any) => <View {...props}>{children}</View>,
     Circle: (props: any) => <View {...props} />,
-  };
-});
-
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
-    ),
   };
 });
 

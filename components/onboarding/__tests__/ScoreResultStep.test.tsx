@@ -2,16 +2,6 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ScoreResultStep } from '../ScoreResultStep';
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
-    ),
-  };
-});
-
 jest.mock('@/lib/assessment/scoreCalculator', () => ({
   getScoreLevel: (score: number) => {
     if (score <= 7) return { label: '影響 小', color: '#3DD68C', message: '大きな問題はなさそうです。' };

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { userStorage } from '@/lib/storage/userStorage';
 import { asyncStorageClient } from '@/lib/storage/asyncStorageClient';
+import { logger } from '@/lib/logger';
 import { useCheckinStore } from './checkinStore';
 import { useBreathStore } from './breathStore';
 import { syncWidgetData, clearWidgetData } from '@/lib/widget/widgetDataSync';
@@ -65,7 +66,7 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
         });
       }
     } catch (e) {
-      console.error('Failed to load user', e);
+      logger.error('UserStore', 'Failed to load user', e);
       set({ hasHydrated: true });
     } finally {
       set({ isLoading: false });

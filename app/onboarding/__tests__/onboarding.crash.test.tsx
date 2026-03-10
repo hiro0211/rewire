@@ -5,11 +5,6 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
 }));
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
-}));
-
 jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(),
 }));

@@ -7,10 +7,6 @@ jest.mock('expo-router', () => ({
   useFocusEffect: (cb: any) => cb(),
 }));
 
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-
 jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({
     user: { nickname: 'TestUser', goalDays: 30, streakStartDate: '2026-02-17T00:00:00Z' },
@@ -36,37 +32,10 @@ jest.mock('@/hooks/dashboard/useDashboardStats', () => ({
   }),
 }));
 
-jest.mock('@react-native-community/datetimepicker', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    __esModule: true,
-    default: (props: any) => <View testID="date-picker" />,
-  };
-});
-
 jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: {
     logEvent: jest.fn(),
   },
-}));
-
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, ...props }: any) => (
-      <View {...props}>{children}</View>
-    ),
-  };
-});
-
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  selectionAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'Light', Medium: 'Medium', Heavy: 'Heavy' },
-  NotificationFeedbackType: { Warning: 'Warning', Success: 'Success', Error: 'Error' },
 }));
 
 import DashboardScreen from '../index';

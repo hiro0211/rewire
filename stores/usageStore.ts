@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { usageTrackerBridge } from '@/lib/usageTracker/usageTrackerBridge';
+import { logger } from '@/lib/logger';
 import type { DailyUsage } from '@/types/usage';
 
 interface UsageState {
@@ -33,7 +34,7 @@ export const useUsageStore = create<UsageState & UsageActions>((set) => ({
       ]);
       set({ todayMs, weeklyData, monthlyMs });
     } catch (e) {
-      console.error('Failed to load usage data', e);
+      logger.error('UsageStore', 'Failed to load usage data', e);
     } finally {
       set({ isLoading: false });
     }

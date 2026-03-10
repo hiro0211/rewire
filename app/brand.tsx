@@ -9,6 +9,7 @@ import { useUserStore } from '@/stores/userStore';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
+import { ROUTES, routeWithParams } from '@/lib/routing/routes';
 import { Animated, StyleSheet, View } from 'react-native';
 
 const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
@@ -64,15 +65,13 @@ export function BrandScreen() {
 
     // Navigate
     timeouts.push(setTimeout(() => {
-      let destination: string;
       if (!user || !user.nickname) {
-        destination = '/onboarding';
+        router.replace(ROUTES.onboarding);
       } else if (!user.isPro) {
-        destination = '/paywall?source=onboarding';
+        router.replace(routeWithParams('/paywall', { source: 'onboarding' }));
       } else {
-        destination = '/streak';
+        router.replace(ROUTES.streak);
       }
-      router.replace(destination as any);
     }, TIMINGS.navigate));
 
     return () => timeouts.forEach(clearTimeout);

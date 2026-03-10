@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { encryptionService } from '../crypto/encryptionService';
+import { logger } from '../logger';
 
 /**
  * Valid keys for AsyncStorage to prevent using arbitrary strings.
@@ -37,7 +38,7 @@ export const asyncStorageClient = {
 
       return JSON.parse(rawValue);
     } catch (e) {
-      console.error(`Error reading ${key} from storage`, e);
+      logger.error('Storage', `Error reading ${key}`, e);
       return null;
     }
   },
@@ -53,7 +54,7 @@ export const asyncStorageClient = {
         await AsyncStorage.setItem(key, jsonValue);
       }
     } catch (e) {
-      console.error(`Error writing ${key} to storage`, e);
+      logger.error('Storage', `Error writing ${key}`, e);
       throw e;
     }
   },
@@ -62,7 +63,7 @@ export const asyncStorageClient = {
     try {
       await AsyncStorage.removeItem(key);
     } catch (e) {
-      console.error(`Error removing ${key} from storage`, e);
+      logger.error('Storage', `Error removing ${key}`, e);
       throw e;
     }
   },
@@ -75,7 +76,7 @@ export const asyncStorageClient = {
         await AsyncStorage.setItem('settings', settingsBackup);
       }
     } catch (e) {
-      console.error('Error clearing storage', e);
+      logger.error('Storage', 'Error clearing storage', e);
       throw e;
     }
   },

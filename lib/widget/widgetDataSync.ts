@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { createWidgetPayload, type WidgetDataInput } from './widgetPayload';
+import { logger } from '../logger';
 
 function getNativeModule(): {
   syncData: (json: string) => Promise<void>;
@@ -22,7 +23,7 @@ export async function syncWidgetData(input: WidgetDataInput): Promise<void> {
     await mod.syncData(JSON.stringify(payload));
     await mod.reloadTimelines();
   } catch (error) {
-    console.error('[WidgetSync] syncWidgetData failed:', error);
+    logger.error('WidgetSync', 'syncWidgetData failed:', error);
   }
 }
 

@@ -3,16 +3,6 @@ import { render } from '@testing-library/react-native';
 import { StarryBackground } from '../StarryBackground';
 import { Text } from 'react-native';
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, colors, ...props }: any) => (
-      <View testID={testID} colors={colors} {...props}>{children}</View>
-    ),
-  };
-});
-
 describe('StarryBackground', () => {
   it('testID="starry-background" が存在する', () => {
     const { getByTestId } = render(

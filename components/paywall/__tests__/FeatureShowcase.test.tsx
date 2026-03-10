@@ -1,11 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return { LinearGradient: (props: any) => <View {...props} /> };
-});
-
 import { FeatureShowcase } from '../FeatureShowcase';
 
 const mockFeatures = [

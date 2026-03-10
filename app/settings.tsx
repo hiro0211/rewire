@@ -10,6 +10,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
+import { ROUTES } from '@/lib/routing/routes';
 import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import type { ThemePreference } from '@/types/theme';
@@ -76,7 +77,7 @@ export default function SettingsScreen() {
             <SettingItem
               label="設定ガイド"
               icon="book-outline"
-              onPress={() => router.push('/content-blocker-setup' as any)}
+              onPress={() => router.push(ROUTES.contentBlockerSetup)}
               isLast
             />
           </SettingSection>
@@ -127,11 +128,11 @@ export default function SettingsScreen() {
           />
           <SettingItem
             label="利用規約"
-            onPress={() => router.push('/terms' as any)}
+            onPress={() => router.push(ROUTES.terms)}
           />
           <SettingItem
             label="プライバシーポリシー"
-            onPress={() => router.push('/privacy-policy' as any)}
+            onPress={() => router.push(ROUTES.privacyPolicy)}
             isLast
           />
         </SettingSection>

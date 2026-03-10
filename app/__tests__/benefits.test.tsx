@@ -3,18 +3,6 @@ import { render, fireEvent } from '@testing-library/react-native';
 
 // Mock dependencies
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return { LinearGradient: (props: any) => <View {...props} /> };
-});
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light' },
-}));
-
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),

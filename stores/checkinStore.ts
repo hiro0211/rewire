@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { checkinStorage } from '@/lib/storage/checkinStorage';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 import type { DailyCheckin } from '@/types/models';
 import { syncWidgetData } from '@/lib/widget/widgetDataSync';
 import { calculateRelapseCount } from '@/lib/stats/statsCalculator';
@@ -32,7 +33,7 @@ export const useCheckinStore = create<CheckinState & CheckinActions>((set, get) 
       set({ checkins });
       get().refreshTodayCheckin();
     } catch (e) {
-      console.error('Failed to load checkins', e);
+      logger.error('CheckinStore', 'Failed to load checkins', e);
     } finally {
       set({ isLoading: false });
     }

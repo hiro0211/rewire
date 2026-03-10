@@ -2,15 +2,6 @@ import React from 'react';
 import { render, act } from '@testing-library/react-native';
 
 // Mock expo-haptics
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: {
-    Light: 'light',
-    Medium: 'medium',
-    Heavy: 'heavy',
-  },
-}));
-
 // Mock expo-router
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
@@ -18,13 +9,6 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock expo-linear-gradient
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return {
-    LinearGradient: (props: any) => <View {...props} />,
-  };
-});
-
 // Mock StarryBackground
 jest.mock('@/components/onboarding/StarryBackground', () => {
   const { View } = require('react-native');
@@ -90,7 +74,7 @@ describe('BrandScreen（ブランド起動画面）', () => {
     it('ロゴ表示時にMedium振動が発生する', () => {
       render(<BrandScreen />);
       act(() => { jest.advanceTimersByTime(TIMINGS.logo + 50); });
-      expect(Haptics.impactAsync).toHaveBeenCalledWith('medium');
+      expect(Haptics.impactAsync).toHaveBeenCalledWith('Medium');
     });
 
     it('各キャッチフレーズ表示時に振動が発生する', () => {

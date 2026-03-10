@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { CountdownTimer } from './CountdownTimer';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
-import { SubscriptionTerms } from './SubscriptionTerms';
+import { PaywallCloseButton } from './PaywallCloseButton';
+import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
 import { useDiscountExpiryTracker } from '@/hooks/paywall/useDiscountExpiryTracker';
+import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 
 interface PaywallDiscountProps {
   offering: any;
@@ -30,9 +32,7 @@ export function PaywallDiscount({
   const { colors, gradients } = useTheme();
   useDiscountExpiryTracker();
 
-  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
-  const annualPrice = annualPackage?.product?.price ?? 2500;
-  const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
+  const { annualPackage, annualPrice, currencyCode } = extractOfferingPackages(offering);
   const monthlyEquivalent = calcMonthlyPrice(annualPrice);
 
   const { purchasing, handlePurchase, handleRestore } = usePurchase({
@@ -47,15 +47,7 @@ export function PaywallDiscount({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Close button */}
-        <TouchableOpacity
-          testID="close-button"
-          style={[styles.closeButton, { backgroundColor: colors.surfaceHighlight }]}
-          onPress={onDismiss}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
-        </TouchableOpacity>
+        <PaywallCloseButton onPress={onDismiss} />
 
         {/* Logo */}
         <Image
@@ -123,10 +115,7 @@ export function PaywallDiscount({
         <Text style={[styles.footerNote, { color: colors.textSecondary }]}>
           いつでもキャンセル · 集中力を取り戻す
         </Text>
-        <SubscriptionTerms />
-        <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-          <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
-        </TouchableOpacity>
+        <PaywallFooter onRestore={handleRestore} purchasing={purchasing} />
       </ScrollView>
     </SafeAreaWrapper>
   );
@@ -138,20 +127,6 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xl,
     paddingBottom: SPACING.xxxl,
     alignItems: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: SPACING.xl,
-    right: SPACING.screenPadding,
-    zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeText: {
-    fontSize: FONT_SIZE.md,
   },
   logo: {
     width: 64,
@@ -244,10 +219,5 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xs,
     textAlign: 'center',
     marginBottom: SPACING.sm,
-  },
-  restoreText: {
-    fontSize: FONT_SIZE.xs,
-    marginTop: SPACING.sm,
-    textDecorationLine: 'underline',
   },
 });

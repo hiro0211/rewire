@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
-import { SubscriptionTerms } from './SubscriptionTerms';
+import { PaywallCloseButton } from './PaywallCloseButton';
+import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
+import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 
 interface PaywallTrialProps {
   offering: any;
@@ -24,9 +26,7 @@ export function PaywallTrial({
 }: PaywallTrialProps) {
   const { colors, gradients } = useTheme();
 
-  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
-  const annualPrice = annualPackage?.product?.price ?? 2500;
-  const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
+  const { annualPackage, annualPrice, currencyCode } = extractOfferingPackages(offering);
 
   const { purchasing, handlePurchase, handleRestore } = usePurchase({
     package: annualPackage,
@@ -40,15 +40,7 @@ export function PaywallTrial({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Close button */}
-        <TouchableOpacity
-          testID="close-button"
-          style={[styles.closeButton, { backgroundColor: colors.surfaceHighlight }]}
-          onPress={onDismiss}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
-        </TouchableOpacity>
+        <PaywallCloseButton onPress={onDismiss} />
 
         {/* Logo */}
         <Image
@@ -102,13 +94,11 @@ export function PaywallTrial({
           style={styles.ctaButton}
         />
 
-        {/* Legal */}
-        <SubscriptionTerms trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。" />
-
-        {/* Restore */}
-        <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-          <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
-        </TouchableOpacity>
+        <PaywallFooter
+          onRestore={handleRestore}
+          purchasing={purchasing}
+          trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。"
+        />
       </ScrollView>
     </SafeAreaWrapper>
   );
@@ -120,20 +110,6 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xxxl,
     paddingBottom: SPACING.xxxl,
     alignItems: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: SPACING.xl,
-    right: SPACING.screenPadding,
-    zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeText: {
-    fontSize: FONT_SIZE.md,
   },
   logo: {
     width: 64,
@@ -207,10 +183,5 @@ const styles = StyleSheet.create({
   ctaButton: {
     width: '100%',
     marginBottom: SPACING.lg,
-  },
-  restoreText: {
-    fontSize: FONT_SIZE.xs,
-    marginTop: SPACING.sm,
-    textDecorationLine: 'underline',
   },
 });

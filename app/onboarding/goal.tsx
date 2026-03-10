@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, InteractionManager } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
@@ -13,6 +13,7 @@ import { notificationClient } from '@/lib/notifications/notificationClient';
 import { format } from 'date-fns';
 import * as Crypto from 'expo-crypto';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { logger } from '@/lib/logger';
 
 export default function GoalSettingScreen() {
   const { nickname, consentGivenAt, notifyTime: notifyTimeParam, lastViewedDate: lastViewedDateParam } = useLocalSearchParams<{
@@ -57,16 +58,18 @@ export default function GoalSettingScreen() {
       }
 
       analyticsClient.logEvent('onboarding_complete', { goal_days: selectedGoal });
-      router.replace({
-        pathname: '/onboarding/benefits',
-        params: {
-          nickname: newUser.nickname,
-          goalDays: String(selectedGoal),
-          source: 'onboarding',
-        },
+      InteractionManager.runAfterInteractions(() => {
+        router.replace({
+          pathname: '/onboarding/benefits',
+          params: {
+            nickname: newUser.nickname,
+            goalDays: String(selectedGoal),
+            source: 'onboarding',
+          },
+        });
       });
     } catch (error) {
-      console.error('[Goal] handleFinish failed:', error);
+      logger.error('Goal', 'handleFinish failed:', error);
     }
   };
 

@@ -2,10 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ToggleButton } from '../ToggleButton';
 
-const mockSelectionAsync = jest.fn();
-jest.mock('expo-haptics', () => ({
-  selectionAsync: (...args: any[]) => mockSelectionAsync(...args),
-}));
+import * as Haptics from 'expo-haptics';
 
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
@@ -30,7 +27,7 @@ describe('ToggleButton', () => {
       <ToggleButton title="テスト" active={false} onPress={jest.fn()} />
     );
     fireEvent.press(getByText('テスト'));
-    expect(mockSelectionAsync).toHaveBeenCalled();
+    expect(Haptics.selectionAsync).toHaveBeenCalled();
   });
 
   it('タップ時にonPressが呼ばれる', () => {

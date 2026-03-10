@@ -2,23 +2,6 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { StreakEditModal } from '../StreakEditModal';
 
-jest.mock('@react-native-community/datetimepicker', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    __esModule: true,
-    default: (props: any) => (
-      <View
-        testID="date-picker"
-        {...props}
-        onChange={(e: any) =>
-          props.onChange?.(e, props.value || new Date('2026-02-17'))
-        }
-      />
-    ),
-  };
-});
-
 describe('StreakEditModal', () => {
   const defaultProps = {
     visible: true,
@@ -26,6 +9,15 @@ describe('StreakEditModal', () => {
     onClose: jest.fn(),
     onSave: jest.fn(),
   };
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-03-01T12:00:00Z'));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();

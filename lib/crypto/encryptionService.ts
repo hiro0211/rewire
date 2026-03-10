@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Crypto from 'expo-crypto';
+import { logger } from '../logger';
 
 const KEY_ALIAS = 'rewire_enc_key';
 
@@ -9,7 +10,7 @@ const isCryptoAvailable = typeof globalThis.crypto !== 'undefined' &&
 
 async function getOrCreateKey(): Promise<CryptoKey | null> {
   if (!isCryptoAvailable) {
-    console.warn('[encryptionService] crypto.subtle not available, encryption disabled');
+    logger.warn('Encryption', 'crypto.subtle not available, encryption disabled');
     return null;
   }
 

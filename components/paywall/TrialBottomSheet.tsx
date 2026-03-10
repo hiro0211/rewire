@@ -4,8 +4,9 @@ import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
-import { SubscriptionTerms } from './SubscriptionTerms';
+import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
+import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 
 interface TrialBottomSheetProps {
   visible: boolean;
@@ -24,9 +25,7 @@ export function TrialBottomSheet({
 }: TrialBottomSheetProps) {
   const { colors } = useTheme();
 
-  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
-  const annualPrice = annualPackage?.product?.price ?? 2500;
-  const currencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
+  const { annualPackage, annualPrice, currencyCode } = extractOfferingPackages(offering);
 
   const { purchasing, handlePurchase, handleRestore } = usePurchase({
     package: annualPackage,
@@ -82,13 +81,11 @@ export function TrialBottomSheet({
             style={styles.closeButton}
           />
 
-          {/* Legal */}
-          <SubscriptionTerms trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。" />
-
-          {/* Restore */}
-          <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-            <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
-          </TouchableOpacity>
+          <PaywallFooter
+            onRestore={handleRestore}
+            purchasing={purchasing}
+            trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。"
+          />
         </TouchableOpacity>
       </TouchableOpacity>
     </Modal>
@@ -135,11 +132,6 @@ const styles = StyleSheet.create({
   ctaButton: {
     width: '100%',
     marginBottom: SPACING.lg,
-  },
-  restoreText: {
-    fontSize: FONT_SIZE.xs,
-    marginTop: SPACING.sm,
-    textDecorationLine: 'underline',
   },
   closeButton: {
     width: '100%',

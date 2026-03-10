@@ -14,6 +14,15 @@ const makeCheckin = (date: string, watchedPorn = false): DailyCheckin => ({
 });
 
 describe('calculateStreak', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-01-15T12:00:00Z'));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   it('streakStartDateがnullの場合0を返す', () => {
     expect(calculateStreak(null, [])).toBe(0);
   });

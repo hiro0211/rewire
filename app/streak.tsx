@@ -17,6 +17,7 @@ import { ParticleEffect } from '@/components/streak/ParticleEffect';
 import { GlowOverlay } from '@/components/streak/GlowOverlay';
 import { ConfettiEffect } from '@/components/streak/ConfettiEffect';
 import { getCountUpDuration } from '@/constants/streakCelebration';
+import { ROUTES } from '@/lib/routing/routes';
 
 export default function StreakScreen() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function StreakScreen() {
       heavy: Haptics.ImpactFeedbackStyle.Heavy,
     } as const;
     Haptics.impactAsync(hapticMap[tier.hapticStyle]);
-    router.replace('/(tabs)' as any);
+    router.replace(ROUTES.tabs);
   }, [tier.hapticStyle]);
 
   return (

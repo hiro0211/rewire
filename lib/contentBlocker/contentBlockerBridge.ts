@@ -3,6 +3,7 @@ import type {
   ContentBlockerBridge,
   ContentBlockerStatus,
 } from './contentBlockerTypes';
+import { logger } from '../logger';
 
 const STUB_STATUS: ContentBlockerStatus = {
   isEnabled: false,
@@ -35,7 +36,7 @@ export const contentBlockerBridge: ContentBlockerBridge = {
       if (!mod) return false;
       return await mod.enableBlocker();
     } catch (error) {
-      console.error('[ContentBlocker] enableBlocker failed:', error);
+      logger.error('ContentBlocker', 'enableBlocker failed:', error);
       return false;
     }
   },
@@ -47,7 +48,7 @@ export const contentBlockerBridge: ContentBlockerBridge = {
       if (!mod) return false;
       return await mod.disableBlocker();
     } catch (error) {
-      console.error('[ContentBlocker] disableBlocker failed:', error);
+      logger.error('ContentBlocker', 'disableBlocker failed:', error);
       return false;
     }
   },
@@ -57,14 +58,14 @@ export const contentBlockerBridge: ContentBlockerBridge = {
     try {
       const mod = getNativeModule();
       if (!mod) {
-        console.warn('[ContentBlocker] Native module not available');
+        logger.warn('ContentBlocker', 'Native module not available');
         return STUB_STATUS;
       }
       const status = await mod.getBlockerStatus();
-      console.log('[ContentBlocker] Status:', JSON.stringify(status));
+      logger.debug('ContentBlocker', 'Status:', JSON.stringify(status));
       return status;
     } catch (error) {
-      console.error('[ContentBlocker] getBlockerStatus failed:', error);
+      logger.error('ContentBlocker', 'getBlockerStatus failed:', error);
       return { ...STUB_STATUS, error: String(error) };
     }
   },
@@ -76,7 +77,7 @@ export const contentBlockerBridge: ContentBlockerBridge = {
       if (!mod) return false;
       return await mod.reloadBlockerRules();
     } catch (error) {
-      console.error('[ContentBlocker] reloadBlockerRules failed:', error);
+      logger.error('ContentBlocker', 'reloadBlockerRules failed:', error);
       return false;
     }
   },

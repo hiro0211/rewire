@@ -2,17 +2,6 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light' },
-}));
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return { LinearGradient: (props: any) => <View {...props} /> };
-});
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
 jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(),
 }));
@@ -40,8 +29,8 @@ describe('PaywallDefault crash prevention', () => {
 
   it('offering.annual=undefined, offering.monthly=undefined → デフォルト値表示', () => {
     const { getByText } = render(<PaywallDefault {...baseProps} offering={{}} />);
-    // デフォルト値（¥5,400 / ¥680）でフォールバック
-    expect(getByText('Billed as ¥5,400 per year')).toBeTruthy();
+    // デフォルト値（¥2,500）でフォールバック
+    expect(getByText('Billed as ¥2,500 per year')).toBeTruthy();
   });
 
   it('offering.annual=null → デフォルト値でレンダリング', () => {

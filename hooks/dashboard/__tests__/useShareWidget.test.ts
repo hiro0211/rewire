@@ -31,11 +31,6 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   },
 }));
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'Light' },
-}));
-
 const mockShareImageFile = jest.fn();
 jest.mock('@/lib/share/shareImage', () => ({
   shareImageFile: (...args: any[]) => mockShareImageFile(...args),

@@ -2,10 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { SegmentedControl } from '../SegmentedControl';
 
-const mockSelectionAsync = jest.fn();
-jest.mock('expo-haptics', () => ({
-  selectionAsync: (...args: any[]) => mockSelectionAsync(...args),
-}));
+import * as Haptics from 'expo-haptics';
 
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
@@ -78,7 +75,7 @@ describe('SegmentedControl', () => {
       />
     );
     fireEvent.press(getByText('週'));
-    expect(mockSelectionAsync).toHaveBeenCalled();
+    expect(Haptics.selectionAsync).toHaveBeenCalled();
   });
 
   it('3つ以上のセグメントが正しく表示される', () => {

@@ -11,20 +11,6 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
-    ),
-  };
-});
-
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
-}));
-
 const mockSetUser = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({ setUser: mockSetUser }),

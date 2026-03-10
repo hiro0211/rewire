@@ -2,16 +2,6 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { WeeklyTracker } from '../WeeklyTracker';
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
-    ),
-  };
-});
-
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
     colors: {

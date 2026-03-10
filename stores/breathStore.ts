@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { breathSessionStorage } from '@/lib/storage/breathSessionStorage';
+import { logger } from '@/lib/logger';
 import type { BreathSession } from '@/types/models';
 
 interface BreathState {
@@ -22,7 +23,7 @@ export const useBreathStore = create<BreathState & BreathActions>((set, get) => 
       const sessions = await breathSessionStorage.getAll();
       set({ sessions, totalSessions: sessions.length });
     } catch (e) {
-      console.error('Failed to load breath sessions', e);
+      logger.error('BreathStore', 'Failed to load breath sessions', e);
     }
   },
 

@@ -96,7 +96,8 @@ describe('syncWidgetData', () => {
       relapseCount: 0,
     });
     expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('[WidgetSync]'),
+      '[WidgetSync]',
+      'syncWidgetData failed:',
       expect.any(Error)
     );
     spy.mockRestore();

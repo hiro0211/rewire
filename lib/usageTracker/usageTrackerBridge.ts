@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import type { DailyUsage } from '@/types/usage';
 import type { UsageTrackerBridge, BrowsingSessionRaw } from './usageTrackerTypes';
+import { logger } from '../logger';
 
 const EMPTY_WEEKLY: DailyUsage[] = [];
 
@@ -33,7 +34,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return [];
       return await mod.getSessions(startDate, endDate);
     } catch (error) {
-      console.error('[UsageTracker] getSessions failed:', error);
+      logger.error('UsageTracker', 'getSessions failed:', error);
       return [];
     }
   },
@@ -45,7 +46,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return 0;
       return await mod.getTodayUsage();
     } catch (error) {
-      console.error('[UsageTracker] getTodayUsage failed:', error);
+      logger.error('UsageTracker', 'getTodayUsage failed:', error);
       return 0;
     }
   },
@@ -57,7 +58,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return EMPTY_WEEKLY;
       return await mod.getWeeklyUsage();
     } catch (error) {
-      console.error('[UsageTracker] getWeeklyUsage failed:', error);
+      logger.error('UsageTracker', 'getWeeklyUsage failed:', error);
       return EMPTY_WEEKLY;
     }
   },
@@ -69,7 +70,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return 0;
       return await mod.getMonthlyUsage();
     } catch (error) {
-      console.error('[UsageTracker] getMonthlyUsage failed:', error);
+      logger.error('UsageTracker', 'getMonthlyUsage failed:', error);
       return 0;
     }
   },
@@ -81,7 +82,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return;
       await mod.clearAllData();
     } catch (error) {
-      console.error('[UsageTracker] clearAllData failed:', error);
+      logger.error('UsageTracker', 'clearAllData failed:', error);
     }
   },
 
@@ -92,7 +93,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return;
       await mod.setDomainList(domains);
     } catch (error) {
-      console.error('[UsageTracker] setDomainList failed:', error);
+      logger.error('UsageTracker', 'setDomainList failed:', error);
     }
   },
 
@@ -103,7 +104,7 @@ export const usageTrackerBridge: UsageTrackerBridge = {
       if (!mod) return [];
       return await mod.getDomainList();
     } catch (error) {
-      console.error('[UsageTracker] getDomainList failed:', error);
+      logger.error('UsageTracker', 'getDomainList failed:', error);
       return [];
     }
   },

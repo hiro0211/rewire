@@ -1,27 +1,15 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { InteractionManager } from 'react-native';
 
+const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), replace: mockReplace }),
   useLocalSearchParams: () => ({
     nickname: 'TestUser',
     consentGivenAt: '2026-02-25T00:00:00Z',
     notifyTime: '22:00',
   }),
-}));
-
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
-    ),
-  };
-});
-
-jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
 jest.mock('@/stores/userStore', () => ({
@@ -65,5 +53,28 @@ describe('GoalSettingScreen', () => {
   it('"開始する" ボタンが表示される', () => {
     const { getByText } = render(<GoalSettingScreen />);
     expect(getByText('開始する')).toBeTruthy();
+  });
+
+  it('handleFinish で InteractionManager.runAfterInteractions を経由して router.replace が呼ばれる', async () => {
+    const runAfterSpy = jest.spyOn(InteractionManager, 'runAfterInteractions');
+
+    const { getByText } = render(<GoalSettingScreen />);
+    fireEvent.press(getByText('開始する'));
+
+    await waitFor(() => {
+      expect(runAfterSpy).toHaveBeenCalledTimes(1);
+    });
+
+    // runAfterInteractions に渡されたコールバックを実行
+    const callback = runAfterSpy.mock.calls[0][0] as () => void;
+    callback();
+
+    expect(mockReplace).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: '/onboarding/benefits',
+      })
+    );
+
+    runAfterSpy.mockRestore();
   });
 });

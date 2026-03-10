@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ export class PaywallErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error) {
-    console.error('[PaywallErrorBoundary]', error);
+    logger.error('PaywallErrorBoundary', error);
     this.props.onError();
   }
 

@@ -12,14 +12,6 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), replace: jest.fn() }),
 }));
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-  };
-});
-
 jest.mock('@/hooks/breathing/useBreathingEngine', () => ({
   useBreathingEngine: () => ({
     phase: 'inhale',

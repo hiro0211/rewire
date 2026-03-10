@@ -1,11 +1,6 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useOnboardingForm } from '../useOnboardingForm';
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light' },
-}));
-
 describe('useOnboardingForm', () => {
   it('初期状態でニックネームが空文字', () => {
     const { result } = renderHook(() => useOnboardingForm());

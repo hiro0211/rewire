@@ -25,7 +25,6 @@ jest.mock('@/stores/userStore', () => ({
 
 import { useCheckinStore } from '../checkinStore';
 import type { DailyCheckin } from '@/types/models';
-import { format } from 'date-fns';
 
 const makeCheckin = (date: string, watchedPorn = false): DailyCheckin => ({
   id: `id-${date}`,
@@ -39,9 +38,18 @@ const makeCheckin = (date: string, watchedPorn = false): DailyCheckin => ({
   createdAt: `${date}T12:00:00.000Z`,
 });
 
-const TODAY = format(new Date(), 'yyyy-MM-dd');
+const TODAY = '2026-01-15';
 
 describe('checkinStore', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-01-15T12:00:00Z'));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     useCheckinStore.setState({ checkins: [], todayCheckin: null, isLoading: false });

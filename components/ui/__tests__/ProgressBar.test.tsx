@@ -2,16 +2,6 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ProgressBar } from '../ProgressBar';
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ testID, style, ...props }: any) => (
-      <View testID={testID} style={style} {...props} />
-    ),
-  };
-});
-
 describe('ProgressBar', () => {
   it('variant 未指定時、従来通りのバーが描画される', () => {
     const { queryByTestId } = render(<ProgressBar progress={0.5} />);

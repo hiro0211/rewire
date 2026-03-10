@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { isExpoGo } from '@/lib/nativeGuard';
+import { logger } from '@/lib/logger';
 import type {
   SubscriptionClient,
   SubscriptionStatus,
@@ -76,7 +77,7 @@ export const subscriptionClient: SubscriptionClient = {
         await Purchases.configure({ apiKey });
         _isInitialized = true;
       } catch (error) {
-        console.error('[Subscription] initialize failed:', error);
+        logger.error('Subscription', 'initialize failed:', error);
         _isInitialized = false;
       } finally {
         _initPromise = null;
@@ -100,7 +101,7 @@ export const subscriptionClient: SubscriptionClient = {
         period: pkg.packageType,
       }));
     } catch (error) {
-      console.error('[Subscription] getOfferings failed:', error);
+      logger.error('Subscription', 'getOfferings failed:', error);
       return [];
     }
   },
@@ -116,7 +117,7 @@ export const subscriptionClient: SubscriptionClient = {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
       return buildStatusFromCustomerInfo(customerInfo as any);
     } catch (error) {
-      console.error('[Subscription] purchase failed:', error);
+      logger.error('Subscription', 'purchase failed:', error);
       return FREE_STATUS;
     }
   },
@@ -127,7 +128,7 @@ export const subscriptionClient: SubscriptionClient = {
       const customerInfo = await Purchases.restorePurchases();
       return buildStatusFromCustomerInfo(customerInfo as any);
     } catch (error) {
-      console.error('[Subscription] restorePurchases failed:', error);
+      logger.error('Subscription', 'restorePurchases failed:', error);
       return FREE_STATUS;
     }
   },
@@ -138,7 +139,7 @@ export const subscriptionClient: SubscriptionClient = {
       const customerInfo = await Purchases.getCustomerInfo();
       return buildStatusFromCustomerInfo(customerInfo as any);
     } catch (error) {
-      console.error('[Subscription] getSubscriptionStatus failed:', error);
+      logger.error('Subscription', 'getSubscriptionStatus failed:', error);
       return FREE_STATUS;
     }
   },

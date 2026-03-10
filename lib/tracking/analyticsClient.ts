@@ -1,4 +1,5 @@
 import { isExpoGo } from '@/lib/nativeGuard';
+import { logger } from '@/lib/logger';
 
 let analytics: any = null;
 if (!isExpoGo) {
@@ -18,7 +19,7 @@ export const analyticsClient = {
     try {
       await analytics().logEvent(name, params);
     } catch (error) {
-      console.warn('[Analytics] logEvent failed:', error);
+      logger.warn('Analytics', 'logEvent failed:', error);
     }
   },
 
@@ -30,7 +31,7 @@ export const analyticsClient = {
         screen_class: screenName,
       });
     } catch (error) {
-      console.warn('[Analytics] logScreenView failed:', error);
+      logger.warn('Analytics', 'logScreenView failed:', error);
     }
   },
 
@@ -39,7 +40,7 @@ export const analyticsClient = {
     try {
       await analytics().setUserId(id);
     } catch (error) {
-      console.warn('[Analytics] setUserId failed:', error);
+      logger.warn('Analytics', 'setUserId failed:', error);
     }
   },
 
@@ -48,7 +49,7 @@ export const analyticsClient = {
     try {
       await analytics().setUserProperties({ [name]: value });
     } catch (error) {
-      console.warn('[Analytics] setUserProperty failed:', error);
+      logger.warn('Analytics', 'setUserProperty failed:', error);
     }
   },
 };

@@ -16,10 +16,6 @@ jest.mock('@/hooks/useTheme', () => ({
 }));
 
 // Haptics mock
-jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-}));
-
 const DEFAULT_OPTIONS = [
   { value: 0, label: 'なし' },
   { value: 1, label: '低い' },

@@ -1,20 +1,10 @@
 import React from 'react';
 import { render, act } from '@testing-library/react-native';
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
-}));
-
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
-
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return { LinearGradient: (props: any) => <View {...props} /> };
-});
 
 jest.mock('@/components/onboarding/StarryBackground', () => {
   const { View } = require('react-native');

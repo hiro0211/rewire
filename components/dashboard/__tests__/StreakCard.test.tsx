@@ -19,33 +19,6 @@ jest.mock('@/stores/userStore', () => ({
   }),
 }));
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
-    ),
-  };
-});
-
-jest.mock('@react-native-community/datetimepicker', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    __esModule: true,
-    default: (props: any) => (
-      <View
-        testID="date-picker"
-        {...props}
-        onChange={(e: any) =>
-          props.onChange?.(e, props.value || new Date('2026-02-17'))
-        }
-      />
-    ),
-  };
-});
-
 describe('StreakCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();

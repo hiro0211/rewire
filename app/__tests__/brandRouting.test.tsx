@@ -6,16 +6,6 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
-}));
-
-jest.mock('expo-linear-gradient', () => {
-  const { View } = require('react-native');
-  return { LinearGradient: (props: any) => <View {...props} /> };
-});
-
 jest.mock('@/components/onboarding/StarryBackground', () => {
   const { View } = require('react-native');
   return {
@@ -74,14 +64,14 @@ describe('BrandScreen ルーティング分岐', () => {
     mockUser = { nickname: 'Test', isPro: false };
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
-    expect(mockReplace).toHaveBeenCalledWith('/paywall?source=onboarding');
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'onboarding' } });
   });
 
   it('isPro=undefined → /paywall?source=onboarding（falsy扱い）', () => {
     mockUser = { nickname: 'Test' };
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
-    expect(mockReplace).toHaveBeenCalledWith('/paywall?source=onboarding');
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'onboarding' } });
   });
 
   it('isPro=true → /streak', () => {

@@ -2,11 +2,6 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useOnboardingNavigation } from '../useOnboardingNavigation';
 import { STEPS } from '@/constants/onboarding';
 
-jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light' },
-}));
-
 describe('useOnboardingNavigation', () => {
   it('初期ステップが 0', () => {
     const { result } = renderHook(() => useOnboardingNavigation());

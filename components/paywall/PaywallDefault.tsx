@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
 import { PlanSelector } from './PlanSelector';
 import { FeatureCard } from './FeatureCard';
-import { calcMonthlyPrice, formatPrice } from './paywallUtils';
-import { SubscriptionTerms } from './SubscriptionTerms';
+import { formatPrice } from './paywallUtils';
+import { PaywallCloseButton } from './PaywallCloseButton';
+import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
+import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 
 interface PaywallDefaultProps {
   offering: any;
@@ -35,9 +37,8 @@ export function PaywallDefault({
   const { colors } = useTheme();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
 
-  const annualPackage = offering?.annual ?? offering?.availablePackages?.[0];
-  const monthlyPackage = offering?.monthly
-    ?? offering?.availablePackages?.find((p: any) => p.packageType === 'MONTHLY');
+  const { annualPackage, monthlyPackage, annualPrice, monthlyPrice, currencyCode } =
+    extractOfferingPackages(offering);
   const hasMonthly = !!monthlyPackage;
   const selectedPackage = selectedPlan === 'annual' ? annualPackage : monthlyPackage;
 
@@ -47,9 +48,7 @@ export function PaywallDefault({
     onRestoreCompleted,
   });
 
-  const annualPrice = annualPackage?.product?.price ?? 5400;
-  const monthlyPrice = monthlyPackage?.product?.price ?? 680;
-  const annualCurrencyCode = annualPackage?.product?.currencyCode ?? 'JPY';
+  const annualCurrencyCode = currencyCode;
   const monthlyCurrencyCode = monthlyPackage?.product?.currencyCode ?? 'JPY';
   const billingText =
     selectedPlan === 'annual'
@@ -64,15 +63,7 @@ export function PaywallDefault({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Close button */}
-          <TouchableOpacity
-            testID="close-button"
-            style={[styles.closeButton, { backgroundColor: colors.surfaceHighlight }]}
-            onPress={onDismiss}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
-          </TouchableOpacity>
+          <PaywallCloseButton onPress={onDismiss} />
 
           {/* Logo + Tagline */}
           <Image
@@ -125,10 +116,7 @@ export function PaywallDefault({
             style={styles.ctaButton}
           />
           <Text style={[styles.billingNote, { color: colors.textSecondary }]}>{billingText}</Text>
-          <SubscriptionTerms />
-          <TouchableOpacity onPress={handleRestore} disabled={purchasing}>
-            <Text style={[styles.restoreText, { color: colors.textSecondary }]}>購入の復元</Text>
-          </TouchableOpacity>
+          <PaywallFooter onRestore={handleRestore} purchasing={purchasing} />
         </View>
       </View>
     </SafeAreaWrapper>
@@ -146,20 +134,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.screenPadding,
     paddingTop: SPACING.xl,
     paddingBottom: SPACING.xxxl,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeText: {
-    fontSize: FONT_SIZE.md,
   },
   logo: {
     width: 80,
@@ -211,10 +185,5 @@ const styles = StyleSheet.create({
   billingNote: {
     fontSize: FONT_SIZE.xs,
     marginTop: SPACING.sm,
-  },
-  restoreText: {
-    fontSize: FONT_SIZE.xs,
-    marginTop: SPACING.sm,
-    textDecorationLine: 'underline',
   },
 });

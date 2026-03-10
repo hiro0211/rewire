@@ -2,15 +2,6 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { StreakEditModal } from '../StreakEditModal';
 
-jest.mock('@react-native-community/datetimepicker', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    __esModule: true,
-    default: (props: any) => <View testID="date-picker" />,
-  };
-});
-
 describe('StreakEditModal crash prevention', () => {
   const onClose = jest.fn();
   const onSave = jest.fn();

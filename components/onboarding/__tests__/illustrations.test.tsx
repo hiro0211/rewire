@@ -11,14 +11,6 @@ import { BrainSparkleIllustration } from '../illustrations/BrainSparkleIllustrat
 import { VibrantLifeIllustration } from '../illustrations/VibrantLifeIllustration';
 import { renderIllustration } from '../illustrations/renderIllustration';
 
-jest.mock('expo-linear-gradient', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-  return {
-    LinearGradient: ({ children, ...props }: any) => <View {...props}>{children}</View>,
-  };
-});
-
 describe('イラストコンポーネント', () => {
   it('DopamineBarsIllustration がクラッシュしない', () => {
     expect(() => render(<DopamineBarsIllustration />)).not.toThrow();
