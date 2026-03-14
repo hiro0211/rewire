@@ -52,9 +52,9 @@ describe('PaywallDefault', () => {
     expect(getByText('ウィジェット対応')).toBeTruthy();
   });
 
-  it('CTAボタンが表示される', () => {
+  it('CTAボタンに「無料で始める」と表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('今すぐ始める')).toBeTruthy();
+    expect(getByText('無料で始める')).toBeTruthy();
   });
 
   it('閉じるボタンでonDismissが呼ばれる', () => {
@@ -63,15 +63,20 @@ describe('PaywallDefault', () => {
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 
-  it('年額プランの課金表示が表示される', () => {
+  it('いつでもキャンセル可能の案内が表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('Billed as ¥5,400 per year')).toBeTruthy();
+    expect(getByText('いつでもキャンセル可能')).toBeTruthy();
   });
 
-  it('月額プラン選択時に課金表示が変わる', () => {
+  it('年額プランの課金表示に無料体験が含まれる', () => {
+    const { getByText } = render(<PaywallDefault {...defaultProps} />);
+    expect(getByText('はじめての方は3日間無料、その後 ¥5,400 /年')).toBeTruthy();
+  });
+
+  it('月額プラン選択時に課金表示に無料体験が含まれる', () => {
     const { getByTestId, getByText } = render(<PaywallDefault {...defaultProps} />);
     fireEvent.press(getByTestId('plan-monthly'));
-    expect(getByText('Billed as ¥680 per month')).toBeTruthy();
+    expect(getByText('はじめての方は3日間無料、その後 ¥680 /月')).toBeTruthy();
   });
 
   it('購入復元リンクが表示される', () => {
@@ -125,7 +130,7 @@ describe('PaywallDefault', () => {
       );
 
       fireEvent.press(getByTestId('plan-monthly'));
-      expect(getByText('Billed as ¥680 per month')).toBeTruthy();
+      expect(getByText('はじめての方は3日間無料、その後 ¥680 /月')).toBeTruthy();
     });
 
     it('monthlyPackage が完全に存在しない場合 Monthly プランカードが非表示', () => {

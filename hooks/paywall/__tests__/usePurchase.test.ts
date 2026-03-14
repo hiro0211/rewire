@@ -18,6 +18,17 @@ jest.mock('react-native-purchases', () => ({
 
 jest.spyOn(Alert, 'alert');
 
+const mockLoggerError = jest.fn();
+const mockLoggerWarn = jest.fn();
+jest.mock('@/lib/logger', () => ({
+  logger: {
+    error: (...args: any[]) => mockLoggerError(...args),
+    warn: (...args: any[]) => mockLoggerWarn(...args),
+    info: jest.fn(),
+    debug: jest.fn(),
+  },
+}));
+
 const mockPackage = { identifier: '$rc_annual' };
 const onPurchaseCompleted = jest.fn();
 const onRestoreCompleted = jest.fn();
@@ -219,6 +230,39 @@ describe('usePurchase', () => {
       });
 
       expect(Alert.alert).not.toHaveBeenCalled();
+    });
+
+    it('ユーザーキャンセル時に logger.error を呼ばない', async () => {
+      mockPurchasePackage.mockRejectedValue({ userCancelled: true });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(mockLoggerError).not.toHaveBeenCalled();
+    });
+
+    it('PURCHASE_CANCELLED (code=1) 時に logger.error を呼ばない', async () => {
+      mockPurchasePackage.mockRejectedValue({ code: '1', message: 'cancelled' });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(mockLoggerError).not.toHaveBeenCalled();
+    });
+
+    it('実際のエラー時には logger.error が呼ばれる', async () => {
+      mockPurchasePackage.mockRejectedValue({ code: '2', message: 'store problem' });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(mockLoggerError).toHaveBeenCalledWith('Purchase', 'failed:', expect.any(Object));
     });
 
     it('パッケージが null の場合エラーアラートを表示', async () => {

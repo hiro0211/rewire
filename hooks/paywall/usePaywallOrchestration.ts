@@ -18,6 +18,7 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
   const { updateUser } = useUserStore();
   const isFromOnboarding = source === 'onboarding';
 
+  // Guideline 5.6対応: offeringType は常に 'default' のまま（discount/trial は無効化）
   const [offeringType, setOfferingType] = useState<OfferingType>('default');
   const [showTrialSheet, setShowTrialSheet] = useState(false);
   const [discountRemainingSeconds, setDiscountRemainingSeconds] = useState<number>(0);

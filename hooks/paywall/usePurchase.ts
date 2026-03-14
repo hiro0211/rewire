@@ -28,12 +28,18 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
         onPurchaseCompleted();
       }
     } catch (error: any) {
-      logger.error('Purchase', 'failed:', {
-        code: error?.code,
-        readableErrorCode: error?.readableErrorCode ?? error?.userInfo?.readableErrorCode,
-        underlyingErrorMessage: error?.underlyingErrorMessage,
-        message: error?.message,
-      });
+      const isCancelled =
+        error?.userCancelled ||
+        error?.code === '1' ||
+        error?.code === 'PURCHASE_CANCELLED';
+      if (!isCancelled) {
+        logger.error('Purchase', 'failed:', {
+          code: error?.code,
+          readableErrorCode: error?.readableErrorCode ?? error?.userInfo?.readableErrorCode,
+          underlyingErrorMessage: error?.underlyingErrorMessage,
+          message: error?.message,
+        });
+      }
       const errorMsg = getPurchaseErrorMessage(error);
       if (errorMsg) {
         Alert.alert(errorMsg.title, errorMsg.message);

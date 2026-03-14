@@ -60,18 +60,18 @@ describe('BrandScreen ルーティング分岐', () => {
     expect(mockReplace).toHaveBeenCalledWith('/onboarding');
   });
 
-  it('isPro=false → /paywall?source=onboarding', () => {
+  it('isPro=false → /paywall?source=returning', () => {
     mockUser = { nickname: 'Test', isPro: false };
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
-    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'onboarding' } });
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
   });
 
-  it('isPro=undefined → /paywall?source=onboarding（falsy扱い）', () => {
+  it('isPro=undefined → /paywall?source=returning（falsy扱い）', () => {
     mockUser = { nickname: 'Test' };
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
-    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'onboarding' } });
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
   });
 
   it('isPro=true → /streak', () => {

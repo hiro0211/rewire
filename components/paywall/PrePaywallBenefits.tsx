@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -23,10 +24,11 @@ interface PrePaywallBenefitsProps {
 
 export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywallBenefitsProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const targetDate = calcTargetDate(goalDays);
 
   return (
-    <SafeAreaWrapper>
+    <SafeAreaWrapper edges={['top']}>
       <View style={styles.container}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -95,7 +97,7 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
         </ScrollView>
 
         {/* ── 固定フッター ── */}
-        <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: insets.bottom + SPACING.xl }]}>
           <Button
             title="Rewireを始める"
             onPress={onContinue}

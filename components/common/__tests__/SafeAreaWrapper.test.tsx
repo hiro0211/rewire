@@ -53,6 +53,32 @@ describe('SafeAreaWrapper', () => {
   });
 });
 
+describe('SafeAreaWrapper — edges prop', () => {
+  it('edges={["top"]}のとき paddingBottom が 0 になる', () => {
+    const { getByTestId } = render(
+      <SafeAreaWrapper edges={['top']}><Text>テスト</Text></SafeAreaWrapper>
+    );
+    const gradient = getByTestId('linear-gradient');
+    const flatStyle = Array.isArray(gradient.props.style)
+      ? Object.assign({}, ...gradient.props.style)
+      : gradient.props.style;
+    expect(flatStyle.paddingTop).toBe(44);
+    expect(flatStyle.paddingBottom).toBe(0);
+  });
+
+  it('edges未指定のとき top と bottom 両方が適用される', () => {
+    const { getByTestId } = render(
+      <SafeAreaWrapper><Text>テスト</Text></SafeAreaWrapper>
+    );
+    const gradient = getByTestId('linear-gradient');
+    const flatStyle = Array.isArray(gradient.props.style)
+      ? Object.assign({}, ...gradient.props.style)
+      : gradient.props.style;
+    expect(flatStyle.paddingTop).toBe(44);
+    expect(flatStyle.paddingBottom).toBe(34);
+  });
+});
+
 describe('SafeAreaWrapper — gradients.background が未定義の場合', () => {
   beforeEach(() => {
     jest.resetModules();

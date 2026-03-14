@@ -5,6 +5,7 @@ export function useOnboardingForm() {
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [dataAgreed, setDataAgreed] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [notifyTime, setNotifyTime] = useState('22:00');
 
   const now = new Date();
@@ -24,6 +25,14 @@ export function useOnboardingForm() {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   }, []);
 
+  const toggleSymptom = useCallback((symptomId: string) => {
+    setSelectedSymptoms((prev) =>
+      prev.includes(symptomId)
+        ? prev.filter((id) => id !== symptomId)
+        : [...prev, symptomId]
+    );
+  }, []);
+
   return {
     nickname,
     setNickname,
@@ -33,6 +42,8 @@ export function useOnboardingForm() {
     toggleDataAgreed,
     answers,
     setAnswer,
+    selectedSymptoms,
+    toggleSymptom,
     notifyTime,
     setNotifyTime,
     lastViewedYear,

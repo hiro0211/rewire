@@ -55,6 +55,31 @@ describe('useOnboardingForm', () => {
     expect(result.current.answers).toEqual({ q1: 'a2' });
   });
 
+  it('初期状態で selectedSymptoms が空配列', () => {
+    const { result } = renderHook(() => useOnboardingForm());
+    expect(result.current.selectedSymptoms).toEqual([]);
+  });
+
+  it('toggleSymptom で症状を追加できる', () => {
+    const { result } = renderHook(() => useOnboardingForm());
+    act(() => result.current.toggleSymptom('mental_motivation'));
+    expect(result.current.selectedSymptoms).toEqual(['mental_motivation']);
+  });
+
+  it('toggleSymptom で同じ症状を再度タップすると除去される', () => {
+    const { result } = renderHook(() => useOnboardingForm());
+    act(() => result.current.toggleSymptom('mental_motivation'));
+    act(() => result.current.toggleSymptom('mental_motivation'));
+    expect(result.current.selectedSymptoms).toEqual([]);
+  });
+
+  it('toggleSymptom で複数の症状を追加できる', () => {
+    const { result } = renderHook(() => useOnboardingForm());
+    act(() => result.current.toggleSymptom('mental_motivation'));
+    act(() => result.current.toggleSymptom('physical_fatigue'));
+    expect(result.current.selectedSymptoms).toEqual(['mental_motivation', 'physical_fatigue']);
+  });
+
   it('lastViewedDate の年月日を個別に変更できる', () => {
     const { result } = renderHook(() => useOnboardingForm());
     act(() => result.current.setLastViewedYear(2024));

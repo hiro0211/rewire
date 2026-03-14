@@ -68,7 +68,7 @@ export function BrandScreen() {
       if (!user || !user.nickname) {
         router.replace(ROUTES.onboarding);
       } else if (!user.isPro) {
-        router.replace(routeWithParams('/paywall', { source: 'onboarding' }));
+        router.replace(routeWithParams('/paywall', { source: 'returning' }));
       } else {
         router.replace(ROUTES.streak);
       }

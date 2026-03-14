@@ -21,6 +21,7 @@ import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
 import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
 import { LastViewedDateStep } from '@/components/onboarding/LastViewedDateStep';
 import { TransitionSlideStep } from '@/components/onboarding/TransitionSlideStep';
+import { SymptomSelectStep } from '@/components/onboarding/SymptomSelectStep';
 import { WelcomeStep } from '@/components/onboarding/steps/WelcomeStep';
 import { FeaturesStep } from '@/components/onboarding/steps/FeaturesStep';
 import { NicknameStep } from '@/components/onboarding/steps/NicknameStep';
@@ -55,6 +56,7 @@ export default function OnboardingScreen() {
     privacyAgreed: form.privacyAgreed,
     dataAgreed: form.dataAgreed,
     answers: form.answers,
+    selectedSymptoms: form.selectedSymptoms,
     notifyTime: form.notifyTime,
     lastViewedYear: form.lastViewedYear,
     lastViewedMonth: form.lastViewedMonth,
@@ -66,6 +68,7 @@ export default function OnboardingScreen() {
     privacyAgreed: form.privacyAgreed,
     dataAgreed: form.dataAgreed,
     answers: form.answers,
+    selectedSymptoms: form.selectedSymptoms,
     notifyTime: form.notifyTime,
     lastViewedYear: form.lastViewedYear,
     lastViewedMonth: form.lastViewedMonth,
@@ -115,6 +118,7 @@ export default function OnboardingScreen() {
           consentGivenAt: new Date().toISOString(),
           notifyTime: form.notifyTime,
           lastViewedDate,
+          selectedSymptoms: JSON.stringify(form.selectedSymptoms),
         },
       });
     }
@@ -148,6 +152,7 @@ export default function OnboardingScreen() {
   const showFooter = !NO_FOOTER_TYPES.has(currentStep.type);
   const isNextDisabled = !canAdvanceAt(nav.step);
   const showSkip = isEducationStep(currentStep);
+  const footerButtonTitle = currentStep.type === 'score_result' ? '症状を確認してみる' : '次へ';
 
   const renderStep = () => {
     switch (currentStep.type) {
@@ -193,6 +198,13 @@ export default function OnboardingScreen() {
         return <AnalyzingStep onComplete={() => animateTransition(-1, () => nav.goToNextStep())} />;
       case 'score_result':
         return <ScoreResultStep score={calculateScore(form.answers)} maxScore={MAX_SCORE} />;
+      case 'symptom_select':
+        return (
+          <SymptomSelectStep
+            selectedSymptoms={form.selectedSymptoms}
+            onToggleSymptom={form.toggleSymptom}
+          />
+        );
       case 'education':
         return (
           <EducationSlideStep
@@ -307,7 +319,7 @@ export default function OnboardingScreen() {
 
         {showFooter && (
           <View style={styles.footer}>
-            <Button title="次へ" onPress={handleNext} disabled={isNextDisabled} />
+            <Button title={footerButtonTitle} onPress={handleNext} disabled={isNextDisabled} />
           </View>
         )}
       </SafeAreaWrapper>

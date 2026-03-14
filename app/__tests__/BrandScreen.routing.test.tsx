@@ -67,13 +67,13 @@ describe('BrandScreen routing', () => {
     expect(mockReplace).toHaveBeenCalledWith('/onboarding');
   });
 
-  it('nicknameあり+isPro=falseの場合/paywall?source=onboardingに遷移する', () => {
+  it('nicknameあり+isPro=falseの場合/paywall?source=returningに遷移する', () => {
     mockUser = { nickname: 'TestUser', isPro: false };
     render(<BrandScreen />);
 
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
 
-    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'onboarding' } });
+    expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
   });
 
   it('nicknameあり+isPro=trueの場合/streakに遷移する', () => {

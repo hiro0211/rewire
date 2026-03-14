@@ -4,9 +4,10 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { PaywallDefault } from '@/components/paywall/PaywallDefault';
-import { PaywallDiscount } from '@/components/paywall/PaywallDiscount';
-import { PaywallTrial } from '@/components/paywall/PaywallTrial';
-import { TrialBottomSheet } from '@/components/paywall/TrialBottomSheet';
+// --- Discount/Trial paywalls disabled for Guideline 5.6 ---
+// import { PaywallDiscount } from '@/components/paywall/PaywallDiscount';
+// import { PaywallTrial } from '@/components/paywall/PaywallTrial';
+// import { TrialBottomSheet } from '@/components/paywall/TrialBottomSheet';
 import { PaywallErrorBoundary } from '@/components/paywall/PaywallErrorBoundary';
 import { usePaywallOrchestration } from '@/hooks/paywall/usePaywallOrchestration';
 
@@ -70,38 +71,39 @@ export default function PaywallScreen() {
       );
     }
 
-    if (offeringType === 'discount') {
-      return (
-        <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
-          <PaywallDiscount
-            offering={currentOffering}
-            initialSeconds={discountRemainingSeconds}
-            onDismiss={handleDismiss}
-            onPurchaseCompleted={handlePurchaseCompleted}
-            onRestoreCompleted={handleRestoreCompleted}
-          />
-          <TrialBottomSheet
-            visible={showTrialSheet}
-            offering={trialOffering ?? currentOffering}
-            onDismiss={handleTrialSheetDismiss}
-            onPurchaseCompleted={handlePurchaseCompleted}
-            onRestoreCompleted={handleRestoreCompleted}
-          />
-        </PaywallErrorBoundary>
-      );
-    }
-    if (offeringType === 'trial') {
-      return (
-        <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
-          <PaywallTrial
-            offering={currentOffering}
-            onDismiss={handleDismiss}
-            onPurchaseCompleted={handlePurchaseCompleted}
-            onRestoreCompleted={handleRestoreCompleted}
-          />
-        </PaywallErrorBoundary>
-      );
-    }
+    // --- Discount/Trial paywalls disabled for Guideline 5.6 ---
+    // if (offeringType === 'discount') {
+    //   return (
+    //     <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
+    //       <PaywallDiscount
+    //         offering={currentOffering}
+    //         initialSeconds={discountRemainingSeconds}
+    //         onDismiss={handleDismiss}
+    //         onPurchaseCompleted={handlePurchaseCompleted}
+    //         onRestoreCompleted={handleRestoreCompleted}
+    //       />
+    //       <TrialBottomSheet
+    //         visible={showTrialSheet}
+    //         offering={trialOffering ?? currentOffering}
+    //         onDismiss={handleTrialSheetDismiss}
+    //         onPurchaseCompleted={handlePurchaseCompleted}
+    //         onRestoreCompleted={handleRestoreCompleted}
+    //       />
+    //     </PaywallErrorBoundary>
+    //   );
+    // }
+    // if (offeringType === 'trial') {
+    //   return (
+    //     <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
+    //       <PaywallTrial
+    //         offering={currentOffering}
+    //         onDismiss={handleDismiss}
+    //         onPurchaseCompleted={handlePurchaseCompleted}
+    //         onRestoreCompleted={handleRestoreCompleted}
+    //       />
+    //     </PaywallErrorBoundary>
+    //   );
+    // }
     return (
       <PaywallErrorBoundary onError={() => setPaywallState('unavailable')}>
         <PaywallDefault

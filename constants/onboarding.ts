@@ -26,6 +26,7 @@ export type OnboardingStep =
   | { type: 'assessment_yesno'; questionId: string }
   | { type: 'analyzing' }
   | { type: 'score_result' }
+  | { type: 'symptom_select' }
   | { type: 'education'; slideIndex: number }
   | { type: 'damage'; slideIndex: number }
   | { type: 'recovery'; slideIndex: number }
@@ -45,6 +46,7 @@ export const STEPS: OnboardingStep[] = [
   }),
   { type: 'analyzing' },
   { type: 'score_result' },
+  { type: 'symptom_select' },
   ...EDUCATION_SLIDES.map((_, i): OnboardingStep => ({ type: 'education' as const, slideIndex: i })),
   { type: 'damage_intro' },
   ...DAMAGE_SLIDES.map((_, i): OnboardingStep => ({ type: 'damage' as const, slideIndex: i })),
@@ -74,6 +76,7 @@ export const NON_COUNTABLE_TYPES = new Set([
   'recovery',
   'analyzing',
   'score_result',
+  'symptom_select',
 ]);
 
 /** Find the index of the features step (skip target) */

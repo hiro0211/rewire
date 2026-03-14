@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -35,6 +36,7 @@ export function PaywallDefault({
   onRestoreCompleted,
 }: PaywallDefaultProps) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
 
   const { annualPackage, monthlyPackage, annualPrice, monthlyPrice, currencyCode } =
@@ -52,11 +54,11 @@ export function PaywallDefault({
   const monthlyCurrencyCode = monthlyPackage?.product?.currencyCode ?? 'JPY';
   const billingText =
     selectedPlan === 'annual'
-      ? `Billed as ${formatPrice(annualPrice, annualCurrencyCode)} per year`
-      : `Billed as ${formatPrice(monthlyPrice, monthlyCurrencyCode)} per month`;
+      ? `はじめての方は3日間無料、その後 ${formatPrice(annualPrice, annualCurrencyCode)} /年`
+      : `はじめての方は3日間無料、その後 ${formatPrice(monthlyPrice, monthlyCurrencyCode)} /月`;
 
   return (
-    <SafeAreaWrapper>
+    <SafeAreaWrapper edges={['top']}>
       <View style={styles.container}>
         <ScrollView
           style={styles.scroll}
@@ -104,10 +106,9 @@ export function PaywallDefault({
         </ScrollView>
 
         {/* Fixed Footer */}
-        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
-          <Text style={[styles.cancelNote, { color: colors.textSecondary }]}>いつでもキャンセル可能</Text>
+        <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: insets.bottom + SPACING.sm }]}>
           <Button
-            title="今すぐ始める"
+            title="無料で始める"
             onPress={handlePurchase}
             variant="gradient"
             size="lg"
@@ -116,6 +117,7 @@ export function PaywallDefault({
             style={styles.ctaButton}
           />
           <Text style={[styles.billingNote, { color: colors.textSecondary }]}>{billingText}</Text>
+          <Text style={[styles.cancelNote, { color: colors.textSecondary }]}>いつでもキャンセル可能</Text>
           <PaywallFooter onRestore={handleRestore} purchasing={purchasing} />
         </View>
       </View>
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
   },
   cancelNote: {
     fontSize: FONT_SIZE.xs,
-    marginBottom: SPACING.sm,
+    marginTop: SPACING.xs,
   },
   ctaButton: {
     width: '100%',

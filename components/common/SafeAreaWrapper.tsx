@@ -7,9 +7,10 @@ import { useTheme } from '@/hooks/useTheme';
 interface SafeAreaWrapperProps {
   children: React.ReactNode;
   style?: ViewStyle;
+  edges?: ('top' | 'bottom')[];
 }
 
-export function SafeAreaWrapper({ children, style }: SafeAreaWrapperProps) {
+export function SafeAreaWrapper({ children, style, edges }: SafeAreaWrapperProps) {
   const insets = useSafeAreaInsets();
   const { colors, gradients, isDark } = useTheme();
 
@@ -23,7 +24,10 @@ export function SafeAreaWrapper({ children, style }: SafeAreaWrapperProps) {
       colors={gradientColors}
       style={[
         styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        {
+          paddingTop: !edges || edges.includes('top') ? insets.top : 0,
+          paddingBottom: !edges || edges.includes('bottom') ? insets.bottom : 0,
+        },
         style,
       ]}
     >

@@ -30,7 +30,7 @@ describe('PaywallDefault crash prevention', () => {
   it('offering.annual=undefined, offering.monthly=undefined → デフォルト値表示', () => {
     const { getByText } = render(<PaywallDefault {...baseProps} offering={{}} />);
     // デフォルト値（¥2,500）でフォールバック
-    expect(getByText('Billed as ¥2,500 per year')).toBeTruthy();
+    expect(getByText('はじめての方は3日間無料、その後 ¥2,500 /年')).toBeTruthy();
   });
 
   it('offering.annual=null → デフォルト値でレンダリング', () => {
@@ -50,7 +50,7 @@ describe('PaywallDefault crash prevention', () => {
     };
     const { getByText } = render(<PaywallDefault {...baseProps} offering={offering} />);
     // Purchases=null(isExpoGo)なので購入は何もしない
-    expect(() => fireEvent.press(getByText('今すぐ始める'))).not.toThrow();
+    expect(() => fireEvent.press(getByText('無料で始める'))).not.toThrow();
   });
 
   it('Purchases=null → 復元ボタン押下でクラッシュしない', () => {
@@ -71,7 +71,7 @@ describe('PaywallDefault crash prevention', () => {
   it('selectedPackage=undefined → 購入ボタンが何もしない', () => {
     // offering={}なのでannual/monthlyともundefined → selectedPackage=undefined
     const { getByText } = render(<PaywallDefault {...baseProps} offering={{}} />);
-    expect(() => fireEvent.press(getByText('今すぐ始める'))).not.toThrow();
+    expect(() => fireEvent.press(getByText('無料で始める'))).not.toThrow();
   });
 
   it('offering.annual.product=null → デフォルト価格', () => {
