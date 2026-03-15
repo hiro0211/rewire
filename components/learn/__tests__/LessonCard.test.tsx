@@ -11,7 +11,7 @@ describe('LessonCard', () => {
       const { getByText } = render(
         <LessonCard lesson={lesson} status="active" onPress={jest.fn()} />
       );
-      expect(getByText('ポルノが脳にしていること')).toBeTruthy();
+      expect(getByText('ポルノは報酬系の仕組みを変えてしまう')).toBeTruthy();
     });
 
     it('レッスン番号が表示される', () => {
