@@ -12,7 +12,8 @@ export type StorageKey =
   | 'recoveries'
   | 'article_read_history'
   | 'settings'
-  | 'discount_first_shown_at';
+  | 'discount_first_shown_at'
+  | 'learn_progress';
 
 const SENSITIVE_KEYS: StorageKey[] = ['checkins', 'recoveries', 'breath_sessions'];
 

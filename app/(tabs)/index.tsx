@@ -60,9 +60,11 @@ export default function DashboardScreen() {
           <Text style={[styles.username, { color: colors.text }]}>{user?.nickname}</Text>
         </View>
 
-        <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1 }}>
-          <StatsRow onShare={share} />
-        </ViewShot>
+        <StatsRow
+          onShare={share}
+          viewShotRef={viewShotRef}
+          ViewShotComponent={ViewShot}
+        />
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>今日の振り返り</Text>

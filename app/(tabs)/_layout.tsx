@@ -51,6 +51,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="learn"
+        options={{
+          title: '学ぶ',
+          headerShown: false,
+          tabBarLabel: '学ぶ',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name={color === colors.cyan ? 'book' : 'book-outline'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'プロフィール',

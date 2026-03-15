@@ -162,4 +162,38 @@ describe('useShareWidget', () => {
       expect(mockShareImageFile).not.toHaveBeenCalled();
     });
   });
+
+  describe('画像シェア失敗時のフォールバック', () => {
+    it('shareImageFile が失敗した場合にテキストフォールバックされる', async () => {
+      const { result } = renderHook(() => useShareWidget());
+
+      (result.current.viewShotRef as any).current = {
+        capture: jest.fn().mockResolvedValue('/tmp/mock-capture.png'),
+      };
+      mockShareImageFile.mockRejectedValue(new Error('sharing failed'));
+
+      await act(async () => {
+        await result.current.share();
+      });
+
+      expect(Share.share).toHaveBeenCalledWith({
+        message: '#Rewire ポルノ禁10日5時間30分 💪',
+      });
+    });
+
+    it('ユーザーキャンセル（ERR_ABORTED）時はフォールバックしない', async () => {
+      const { result } = renderHook(() => useShareWidget());
+
+      (result.current.viewShotRef as any).current = {
+        capture: jest.fn().mockResolvedValue('/tmp/mock-capture.png'),
+      };
+      mockShareImageFile.mockRejectedValue(new Error('ERR_ABORTED'));
+
+      await act(async () => {
+        await result.current.share();
+      });
+
+      expect(Share.share).not.toHaveBeenCalled();
+    });
+  });
 });

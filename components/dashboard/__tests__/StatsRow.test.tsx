@@ -77,4 +77,28 @@ describe('StatsRow', () => {
     fireEvent.press(getByTestId('share-button'));
     expect(mockOnShare).toHaveBeenCalledTimes(1);
   });
+
+  it('ViewShotComponent を渡すとキャプチャラッパーが表示される', () => {
+    const React = require('react');
+    const { View } = require('react-native');
+    const MockViewShot = React.forwardRef((props: any, ref: any) =>
+      React.createElement(View, { ...props, testID: 'viewshot-wrapper' })
+    );
+    const ref = React.createRef();
+
+    const { getByTestId } = render(
+      <StatsRow
+        onShare={jest.fn()}
+        viewShotRef={ref}
+        ViewShotComponent={MockViewShot}
+      />
+    );
+    expect(getByTestId('viewshot-wrapper')).toBeTruthy();
+  });
+
+  it('ViewShotComponent なしでもクラッシュしない', () => {
+    expect(() =>
+      render(<StatsRow onShare={jest.fn()} />)
+    ).not.toThrow();
+  });
 });

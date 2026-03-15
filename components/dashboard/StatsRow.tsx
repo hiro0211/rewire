@@ -23,9 +23,11 @@ function formatStartDate(dateStr: string | null): string {
 
 interface StatsRowProps {
   onShare: () => void;
+  viewShotRef?: React.RefObject<any>;
+  ViewShotComponent?: React.ComponentType<any>;
 }
 
-export function StatsRow({ onShare }: StatsRowProps) {
+export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowProps) {
   const { relapseCount, stopwatch, goalDays, streakStartDate } = useDashboardStats();
   const { updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -40,54 +42,61 @@ export function StatsRow({ onShare }: StatsRowProps) {
     onShare();
   };
 
+  const Wrapper = ViewShotComponent ?? View;
+  const wrapperProps = ViewShotComponent
+    ? { ref: viewShotRef, options: { format: 'png', quality: 1 } }
+    : {};
+
   return (
     <View testID="stats-row" style={styles.wrapper}>
-      <GradientCard variant="hero" testID="stat-stopwatch">
-        <TouchableOpacity
-          testID="hero-card-touch"
-          onLongPress={() => setEditModalVisible(true)}
-          activeOpacity={0.7}
-          style={styles.heroInner}
-        >
-          <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>現在の記録</Text>
-          <Text
-            style={[styles.heroValue, { color: colors.cyan }]}
-            adjustsFontSizeToFit
-            numberOfLines={1}
+      <Wrapper {...wrapperProps}>
+        <GradientCard variant="hero" testID="stat-stopwatch">
+          <TouchableOpacity
+            testID="hero-card-touch"
+            onLongPress={() => setEditModalVisible(true)}
+            activeOpacity={0.7}
+            style={styles.heroInner}
           >
-            {stopwatch.formatted}
-          </Text>
-          {streakStartDate ? (
-            <Text style={[styles.heroSince, { color: colors.textSecondary }]}>{formatStartDate(streakStartDate)}</Text>
-          ) : null}
+            <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>現在の記録</Text>
+            <Text
+              style={[styles.heroValue, { color: colors.cyan }]}
+              adjustsFontSizeToFit
+              numberOfLines={1}
+            >
+              {stopwatch.formatted}
+            </Text>
+            {streakStartDate ? (
+              <Text style={[styles.heroSince, { color: colors.textSecondary }]}>{formatStartDate(streakStartDate)}</Text>
+            ) : null}
 
-          <GlowDivider />
+            <GlowDivider />
 
-          <View style={styles.inlineStats}>
-            <View testID="stat-relapse" style={styles.inlineStat}>
-              <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>リセット回数</Text>
-              <Text
-                style={[
-                  styles.miniValue,
-                  { color: relapseCount === 0 ? colors.success : colors.danger },
-                ]}
-              >
-                {relapseCount}
-              </Text>
+            <View style={styles.inlineStats}>
+              <View testID="stat-relapse" style={styles.inlineStat}>
+                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>リセット回数</Text>
+                <Text
+                  style={[
+                    styles.miniValue,
+                    { color: relapseCount === 0 ? colors.success : colors.danger },
+                  ]}
+                >
+                  {relapseCount}
+                </Text>
+              </View>
+
+              <View style={[styles.inlineDivider, {
+                backgroundColor: glow.purple,
+                shadowColor: glow.purple,
+              }]} />
+
+              <View testID="stat-goal" style={styles.inlineStat}>
+                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>目標日数</Text>
+                <Text style={[styles.miniValue, { color: colors.text }]}>{goalDays}日</Text>
+              </View>
             </View>
-
-            <View style={[styles.inlineDivider, {
-              backgroundColor: glow.purple,
-              shadowColor: glow.purple,
-            }]} />
-
-            <View testID="stat-goal" style={styles.inlineStat}>
-              <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>目標日数</Text>
-              <Text style={[styles.miniValue, { color: colors.text }]}>{goalDays}日</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </GradientCard>
+          </TouchableOpacity>
+        </GradientCard>
+      </Wrapper>
 
       <TouchableOpacity
         testID="share-button"
