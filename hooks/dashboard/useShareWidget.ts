@@ -27,14 +27,17 @@ export function useShareWidget() {
 
     if (fileUri) {
       try {
-        // 遅延読み込み: ネイティブモジュール未ビルド時のクラッシュを防止
-        const { copyToClipboard } = require('@/lib/share/clipboardService');
-        const { shareImageFile } = require('@/lib/share/shareImage');
-        await copyToClipboard(text);
-        await shareImageFile(fileUri);
-        return; // 画像シェア成功時のみ早期終了
+        const { shareWithImage } = require('@/lib/share/shareImage');
+        await shareWithImage(text, fileUri);
+        // クリップボードにもコピー（利便性のため、失敗しても無視）
+        try {
+          const { copyToClipboard } = require('@/lib/share/clipboardService');
+          await copyToClipboard(text);
+        } catch {
+          // best-effort
+        }
+        return;
       } catch (e: any) {
-        // ユーザーがシェアをキャンセルした場合はフォールバック不要
         if (e?.message?.includes('ERR_ABORTED')) return;
         logger.warn('Share', 'Image share failed, falling back to text', e);
       }

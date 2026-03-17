@@ -96,19 +96,14 @@ describe('OnboardingScreen crash prevention', () => {
     expect(() => render(<OnboardingScreen />)).not.toThrow();
   });
 
-  it('「始める」ボタンで次のステップに進む → クラッシュしない', () => {
+  it('「チェックを始める」ボタンで次のステップに進む → クラッシュしない', () => {
     const { getByText } = render(<OnboardingScreen />);
-    expect(() => fireEvent.press(getByText('始める'))).not.toThrow();
+    expect(() => fireEvent.press(getByText('チェックを始める'))).not.toThrow();
   });
 
-  it('welcomeステップにプログレスバーが表示される', () => {
+  it('welcomeステップにチェックを始めるボタンが表示される', () => {
     const { getByText } = render(<OnboardingScreen />);
-    expect(getByText('始める')).toBeTruthy();
-  });
-
-  it('プライバシーカード表示 → クラッシュしない', () => {
-    const { getByText } = render(<OnboardingScreen />);
-    expect(getByText(/すべての回答はこの端末内にのみ保存されます/)).toBeTruthy();
+    expect(getByText('チェックを始める')).toBeTruthy();
   });
 
   it('複数回レンダリング → クラッシュしない', () => {

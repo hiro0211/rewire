@@ -9,31 +9,15 @@ import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StarryBackground } from '@/components/onboarding/StarryBackground';
-import { ASSESSMENT_QUESTIONS, MAX_SCORE } from '@/constants/assessment';
-import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/education';
-import { calculateScore } from '@/lib/assessment/scoreCalculator';
-import { AssessmentChoiceStep } from '@/components/onboarding/AssessmentChoiceStep';
-import { AssessmentPickerStep } from '@/components/onboarding/AssessmentPickerStep';
-import { AssessmentYesNoStep } from '@/components/onboarding/AssessmentYesNoStep';
-import { ScoreResultStep } from '@/components/onboarding/ScoreResultStep';
-import { AnalyzingStep } from '@/components/onboarding/AnalyzingStep';
-import { EducationSlideStep } from '@/components/onboarding/EducationSlideStep';
-import { NotificationSetupStep } from '@/components/onboarding/NotificationSetupStep';
-import { LastViewedDateStep } from '@/components/onboarding/LastViewedDateStep';
-import { TransitionSlideStep } from '@/components/onboarding/TransitionSlideStep';
-import { SymptomSelectStep } from '@/components/onboarding/SymptomSelectStep';
-import { WelcomeStep } from '@/components/onboarding/steps/WelcomeStep';
-import { FeaturesStep } from '@/components/onboarding/steps/FeaturesStep';
-import { NicknameStep } from '@/components/onboarding/steps/NicknameStep';
-import { ConsentStep } from '@/components/onboarding/steps/ConsentStep';
-import { clampDay, getDaysInMonth, isDateInFuture } from '@/lib/date/datePickerUtils';
+import { OnboardingStepRenderer } from '@/components/onboarding/OnboardingStepRenderer';
+import { canAdvanceStep } from '@/lib/onboarding/canAdvanceStep';
+import type { OnboardingFormState } from '@/lib/onboarding/canAdvanceStep';
 import { format } from 'date-fns';
 import { useOnboardingForm } from '@/hooks/onboarding/useOnboardingForm';
 import { useOnboardingNavigation } from '@/hooks/onboarding/useOnboardingNavigation';
 import { useOnboardingAnimation } from '@/hooks/onboarding/useOnboardingAnimation';
 import {
   STEPS,
-  TOTAL_QUESTIONS,
   NO_FOOTER_TYPES,
   NON_COUNTABLE_TYPES,
   FEATURES_STEP_INDEX,
@@ -50,50 +34,26 @@ export default function OnboardingScreen() {
   const autoAdvancingRef = useRef(false);
   const { colors } = useTheme();
 
-  const stateRef = useRef({
-    step: nav.step,
+  const stateRef = useRef<OnboardingFormState>({
     nickname: form.nickname,
     privacyAgreed: form.privacyAgreed,
     dataAgreed: form.dataAgreed,
     answers: form.answers,
-    selectedSymptoms: form.selectedSymptoms,
-    notifyTime: form.notifyTime,
     lastViewedYear: form.lastViewedYear,
     lastViewedMonth: form.lastViewedMonth,
     lastViewedDay: form.lastViewedDay,
   });
   stateRef.current = {
-    step: nav.step,
     nickname: form.nickname,
     privacyAgreed: form.privacyAgreed,
     dataAgreed: form.dataAgreed,
     answers: form.answers,
-    selectedSymptoms: form.selectedSymptoms,
-    notifyTime: form.notifyTime,
     lastViewedYear: form.lastViewedYear,
     lastViewedMonth: form.lastViewedMonth,
     lastViewedDay: form.lastViewedDay,
   };
 
-  const canAdvanceAt = (s: number) => {
-    const { nickname: n, privacyAgreed: p, dataAgreed: d, answers: a,
-      lastViewedYear: y, lastViewedMonth: m, lastViewedDay: dy } = stateRef.current;
-    const cs = STEPS[s];
-    switch (cs.type) {
-      case 'assessment_choice':
-      case 'assessment_yesno':
-      case 'assessment_picker':
-        return !!a[cs.questionId];
-      case 'nickname':
-        return !!n.trim();
-      case 'consent':
-        return p && d;
-      case 'last_viewed_date':
-        return !isDateInFuture(y, m, dy);
-      default:
-        return true;
-    }
-  };
+  const canAdvanceAt = (s: number) => canAdvanceStep(s, stateRef.current);
 
   const { translateX, animateTransition, panResponder } = useOnboardingAnimation({
     stateRef,
@@ -148,127 +108,15 @@ export default function OnboardingScreen() {
     form.setAnswer(questionId, value);
   };
 
+  const handleAutoAdvance = () => {
+    animateTransition(-1, () => nav.goToNextStep());
+  };
+
   const currentStep = nav.currentStep;
   const showFooter = !NO_FOOTER_TYPES.has(currentStep.type);
   const isNextDisabled = !canAdvanceAt(nav.step);
   const showSkip = isEducationStep(currentStep);
   const footerButtonTitle = currentStep.type === 'score_result' ? '症状を確認してみる' : '次へ';
-
-  const renderStep = () => {
-    switch (currentStep.type) {
-      case 'welcome':
-        return <WelcomeStep onStart={() => animateTransition(-1, () => nav.goToNextStep())} />;
-      case 'assessment_choice': {
-        const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
-        return (
-          <AssessmentChoiceStep
-            question={question}
-            questionIndex={ASSESSMENT_QUESTIONS.indexOf(question)}
-            totalQuestions={TOTAL_QUESTIONS}
-            selectedValue={form.answers[currentStep.questionId]}
-            onSelect={(value) => handleAssessmentAnswer(currentStep.questionId, value)}
-          />
-        );
-      }
-      case 'assessment_picker': {
-        const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
-        return (
-          <AssessmentPickerStep
-            question={question}
-            questionIndex={ASSESSMENT_QUESTIONS.indexOf(question)}
-            totalQuestions={TOTAL_QUESTIONS}
-            selectedValue={form.answers[currentStep.questionId]}
-            onSelect={(value) => handlePickerSelect(currentStep.questionId, value)}
-          />
-        );
-      }
-      case 'assessment_yesno': {
-        const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
-        return (
-          <AssessmentYesNoStep
-            question={question}
-            questionIndex={ASSESSMENT_QUESTIONS.indexOf(question)}
-            totalQuestions={TOTAL_QUESTIONS}
-            selectedValue={form.answers[currentStep.questionId]}
-            onSelect={(value) => handleAssessmentAnswer(currentStep.questionId, value)}
-          />
-        );
-      }
-      case 'analyzing':
-        return <AnalyzingStep onComplete={() => animateTransition(-1, () => nav.goToNextStep())} />;
-      case 'score_result':
-        return <ScoreResultStep score={calculateScore(form.answers)} maxScore={MAX_SCORE} />;
-      case 'symptom_select':
-        return (
-          <SymptomSelectStep
-            selectedSymptoms={form.selectedSymptoms}
-            onToggleSymptom={form.toggleSymptom}
-          />
-        );
-      case 'education':
-        return (
-          <EducationSlideStep
-            slide={EDUCATION_SLIDES[currentStep.slideIndex]}
-            slideIndex={currentStep.slideIndex}
-            totalSlides={EDUCATION_SLIDES.length}
-          />
-        );
-      case 'damage_intro':
-        return <TransitionSlideStep />;
-      case 'damage':
-        return (
-          <EducationSlideStep
-            slide={DAMAGE_SLIDES[currentStep.slideIndex]}
-            slideIndex={currentStep.slideIndex}
-            totalSlides={DAMAGE_SLIDES.length}
-          />
-        );
-      case 'recovery':
-        return (
-          <EducationSlideStep
-            slide={RECOVERY_SLIDES[currentStep.slideIndex]}
-            slideIndex={currentStep.slideIndex}
-            totalSlides={RECOVERY_SLIDES.length}
-          />
-        );
-      case 'features':
-        return <FeaturesStep />;
-      case 'nickname':
-        return <NicknameStep nickname={form.nickname} onChangeNickname={form.setNickname} />;
-      case 'consent':
-        return (
-          <ConsentStep
-            privacyAgreed={form.privacyAgreed}
-            dataAgreed={form.dataAgreed}
-            onTogglePrivacy={form.togglePrivacyAgreed}
-            onToggleData={form.toggleDataAgreed}
-          />
-        );
-      case 'notification':
-        return <NotificationSetupStep selectedTime={form.notifyTime} onTimeChange={form.setNotifyTime} />;
-      case 'last_viewed_date':
-        return (
-          <LastViewedDateStep
-            selectedYear={form.lastViewedYear}
-            selectedMonth={form.lastViewedMonth}
-            selectedDay={form.lastViewedDay}
-            onYearChange={(y) => {
-              form.setLastViewedYear(y);
-              const maxDay = getDaysInMonth(y, form.lastViewedMonth);
-              form.setLastViewedDay((d: number) => clampDay(d, maxDay));
-            }}
-            onMonthChange={(m) => {
-              form.setLastViewedMonth(m);
-              const maxDay = getDaysInMonth(form.lastViewedYear, m);
-              form.setLastViewedDay((d: number) => clampDay(d, maxDay));
-            }}
-            onDayChange={form.setLastViewedDay}
-          />
-        );
-      default:
-        return null;
-    }
-  };
 
   const backgroundConfig = currentStep.type === 'damage_intro'
     ? { gradientColors: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] as string[], showStars: false }
@@ -314,7 +162,15 @@ export default function OnboardingScreen() {
           style={[styles.content, { transform: [{ translateX }] }]}
           {...panResponder.panHandlers}
         >
-          <View style={styles.fullWidth}>{renderStep()}</View>
+          <View style={styles.fullWidth}>
+            <OnboardingStepRenderer
+              currentStep={currentStep}
+              form={form}
+              onAssessmentAnswer={handleAssessmentAnswer}
+              onPickerSelect={handlePickerSelect}
+              onAutoAdvance={handleAutoAdvance}
+            />
+          </View>
         </Animated.View>
 
         {showFooter && (

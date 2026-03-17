@@ -75,9 +75,9 @@ import OnboardingScreen from '../../onboarding/index';
 function navigateToConsent(utils: ReturnType<typeof render>) {
   const { getByText, getByPlaceholderText } = utils;
 
-  // Welcome → "始める"
+  // Welcome → "チェックを始める"
   act(() => {
-    fireEvent.press(getByText('始める'));
+    fireEvent.press(getByText('チェックを始める'));
     jest.advanceTimersByTime(500);
   });
 

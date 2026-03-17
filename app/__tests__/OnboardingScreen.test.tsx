@@ -43,9 +43,9 @@ describe('OnboardingScreen', () => {
     jest.useRealTimers();
   });
 
-  it('Welcome ステップで "始める" ボタンが存在する', () => {
+  it('Welcome ステップで "チェックを始める" ボタンが存在する', () => {
     const { getByText } = render(<OnboardingScreen />);
-    expect(getByText('始める')).toBeTruthy();
+    expect(getByText('チェックを始める')).toBeTruthy();
   });
 
   it('Welcome ステップで testID="starry-background" が存在する', () => {
@@ -53,10 +53,10 @@ describe('OnboardingScreen', () => {
     expect(getByTestId('starry-background')).toBeTruthy();
   });
 
-  it('"始める" を押すと次のステップに遷移する', () => {
+  it('"チェックを始める" を押すと次のステップに遷移する', () => {
     const { getByText } = render(<OnboardingScreen />);
     act(() => {
-      fireEvent.press(getByText('始める'));
+      fireEvent.press(getByText('チェックを始める'));
       jest.advanceTimersByTime(500);
     });
     expect(getByText('Question #1')).toBeTruthy();
@@ -65,7 +65,7 @@ describe('OnboardingScreen', () => {
   it('assessment ステップで "Question #" フォーマットが使われる', () => {
     const { getByText } = render(<OnboardingScreen />);
     act(() => {
-      fireEvent.press(getByText('始める'));
+      fireEvent.press(getByText('チェックを始める'));
       jest.advanceTimersByTime(500);
     });
     expect(getByText(/Question #/)).toBeTruthy();

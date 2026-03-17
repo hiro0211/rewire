@@ -1,43 +1,42 @@
-import { shareImageFile } from '../shareImage';
+import { Share } from 'react-native';
+import { shareWithImage } from '../shareImage';
 
-const mockIsAvailableAsync = jest.fn();
-const mockShareAsync = jest.fn();
-jest.mock('expo-sharing', () => ({
-  isAvailableAsync: (...args: any[]) => mockIsAvailableAsync(...args),
-  shareAsync: (...args: any[]) => mockShareAsync(...args),
-}));
-
-describe('shareImageFile', () => {
+describe('shareWithImage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockIsAvailableAsync.mockResolvedValue(true);
-    mockShareAsync.mockResolvedValue(undefined);
+    jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as any);
   });
 
-  it('file:// プレフィックスなしのパスに file:// を付与して shareAsync を呼ぶ', async () => {
-    await shareImageFile('/tmp/test.png');
+  it('Share.share に message と url を渡して呼ばれる', async () => {
+    await shareWithImage('#Rewire test', '/tmp/test.png');
 
-    expect(mockShareAsync).toHaveBeenCalledWith('file:///tmp/test.png', {
-      mimeType: 'image/png',
-      UTI: 'public.png',
+    expect(Share.share).toHaveBeenCalledWith({
+      message: '#Rewire test',
+      url: 'file:///tmp/test.png',
+    });
+  });
+
+  it('file:// プレフィックスなしのパスに file:// を付与する', async () => {
+    await shareWithImage('text', '/tmp/test.png');
+
+    expect(Share.share).toHaveBeenCalledWith({
+      message: 'text',
+      url: 'file:///tmp/test.png',
     });
   });
 
   it('既に file:// プレフィックスがある URI を二重プレフィックスしない', async () => {
-    await shareImageFile('file:///tmp/test.png');
+    await shareWithImage('text', 'file:///tmp/test.png');
 
-    expect(mockShareAsync).toHaveBeenCalledWith('file:///tmp/test.png', {
-      mimeType: 'image/png',
-      UTI: 'public.png',
+    expect(Share.share).toHaveBeenCalledWith({
+      message: 'text',
+      url: 'file:///tmp/test.png',
     });
   });
 
-  it('共有が利用不可の場合にエラーをスローする', async () => {
-    mockIsAvailableAsync.mockResolvedValue(false);
+  it('Share.share のエラーが呼び出し元に伝播する', async () => {
+    jest.spyOn(Share, 'share').mockRejectedValue(new Error('share failed'));
 
-    await expect(shareImageFile('/tmp/test.png')).rejects.toThrow(
-      'Sharing is not available on this device',
-    );
-    expect(mockShareAsync).not.toHaveBeenCalled();
+    await expect(shareWithImage('text', '/tmp/test.png')).rejects.toThrow('share failed');
   });
 });

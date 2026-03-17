@@ -31,9 +31,9 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   },
 }));
 
-const mockShareImageFile = jest.fn();
+const mockShareWithImage = jest.fn();
 jest.mock('@/lib/share/shareImage', () => ({
-  shareImageFile: (...args: any[]) => mockShareImageFile(...args),
+  shareWithImage: (...args: any[]) => mockShareWithImage(...args),
 }));
 
 const mockCopyToClipboard = jest.fn();
@@ -45,7 +45,7 @@ describe('useShareWidget', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as any);
-    mockShareImageFile.mockResolvedValue(undefined);
+    mockShareWithImage.mockResolvedValue(undefined);
     mockCopyToClipboard.mockResolvedValue(true);
   });
 
@@ -75,7 +75,7 @@ describe('useShareWidget', () => {
   });
 
   describe('キャプチャ成功時', () => {
-    it('shareImageFile が画像URIで呼ばれる', async () => {
+    it('shareWithImage がテキストと画像URIで呼ばれる', async () => {
       const { result } = renderHook(() => useShareWidget());
 
       (result.current.viewShotRef as any).current = {
@@ -86,7 +86,10 @@ describe('useShareWidget', () => {
         await result.current.share();
       });
 
-      expect(mockShareImageFile).toHaveBeenCalledWith('/tmp/mock-capture.png');
+      expect(mockShareWithImage).toHaveBeenCalledWith(
+        '#Rewire ポルノ禁10日5時間30分 💪',
+        '/tmp/mock-capture.png',
+      );
     });
 
     it('テキストがクリップボードにコピーされる', async () => {
@@ -103,7 +106,7 @@ describe('useShareWidget', () => {
       expect(mockCopyToClipboard).toHaveBeenCalledWith('#Rewire ポルノ禁10日5時間30分 💪');
     });
 
-    it('Share.share が呼ばれない', async () => {
+    it('Share.share が直接呼ばれない', async () => {
       const { result } = renderHook(() => useShareWidget());
 
       (result.current.viewShotRef as any).current = {
@@ -114,6 +117,22 @@ describe('useShareWidget', () => {
         await result.current.share();
       });
 
+      expect(Share.share).not.toHaveBeenCalled();
+    });
+
+    it('クリップボードコピーが失敗してもシェアは成功する', async () => {
+      const { result } = renderHook(() => useShareWidget());
+
+      (result.current.viewShotRef as any).current = {
+        capture: jest.fn().mockResolvedValue('/tmp/mock-capture.png'),
+      };
+      mockCopyToClipboard.mockRejectedValue(new Error('clipboard failed'));
+
+      await act(async () => {
+        await result.current.share();
+      });
+
+      expect(mockShareWithImage).toHaveBeenCalled();
       expect(Share.share).not.toHaveBeenCalled();
     });
   });
@@ -133,7 +152,7 @@ describe('useShareWidget', () => {
       expect(Share.share).toHaveBeenCalledWith({
         message: '#Rewire ポルノ禁10日5時間30分 💪',
       });
-      expect(mockShareImageFile).not.toHaveBeenCalled();
+      expect(mockShareWithImage).not.toHaveBeenCalled();
     });
 
     it('capture メソッドがない場合にテキストのみでシェアされる', async () => {
@@ -146,7 +165,7 @@ describe('useShareWidget', () => {
       });
 
       expect(Share.share).toHaveBeenCalledWith({ message: expect.any(String) });
-      expect(mockShareImageFile).not.toHaveBeenCalled();
+      expect(mockShareWithImage).not.toHaveBeenCalled();
     });
 
     it('viewShotRef が null の場合にテキストのみでシェアされる', async () => {
@@ -159,18 +178,18 @@ describe('useShareWidget', () => {
       });
 
       expect(Share.share).toHaveBeenCalledWith({ message: expect.any(String) });
-      expect(mockShareImageFile).not.toHaveBeenCalled();
+      expect(mockShareWithImage).not.toHaveBeenCalled();
     });
   });
 
   describe('画像シェア失敗時のフォールバック', () => {
-    it('shareImageFile が失敗した場合にテキストフォールバックされる', async () => {
+    it('shareWithImage が失敗した場合にテキストフォールバックされる', async () => {
       const { result } = renderHook(() => useShareWidget());
 
       (result.current.viewShotRef as any).current = {
         capture: jest.fn().mockResolvedValue('/tmp/mock-capture.png'),
       };
-      mockShareImageFile.mockRejectedValue(new Error('sharing failed'));
+      mockShareWithImage.mockRejectedValue(new Error('sharing failed'));
 
       await act(async () => {
         await result.current.share();
@@ -187,7 +206,7 @@ describe('useShareWidget', () => {
       (result.current.viewShotRef as any).current = {
         capture: jest.fn().mockResolvedValue('/tmp/mock-capture.png'),
       };
-      mockShareImageFile.mockRejectedValue(new Error('ERR_ABORTED'));
+      mockShareWithImage.mockRejectedValue(new Error('ERR_ABORTED'));
 
       await act(async () => {
         await result.current.share();

@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 
 interface WelcomeStepProps {
   onStart: () => void;
 }
+
+const STAR_COUNT = 5;
+const STAR_COLOR = '#FFD700';
 
 export function WelcomeStep({ onStart }: WelcomeStepProps) {
   const { colors } = useTheme();
@@ -16,22 +18,31 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
+        <Image
+          testID="rewire-logo"
+          source={require('@/assets/images/icon.png')}
+          style={styles.logo}
+        />
+        <Text style={[styles.appName, { color: colors.text }]}>
+          Rewire
+        </Text>
+
         <Text style={[styles.title, { color: colors.text }]}>
-          {'ポルノをやめる、\n人生を変える'}
+          ようこそ！
         </Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>
-          {'9つの質問に答えるだけ。\nあなたの依存度をチェックし、\n最適なプランを作成します。'}
+          {'まずはポルノの依存度を\nチェックしてみましょう！'}
         </Text>
-        <Card variant="outlined" style={styles.privacyCard}>
-          <View style={styles.privacyRow}>
-            <Ionicons name="lock-closed-outline" size={16} color={colors.textSecondary} />
-            <Text style={[styles.privacyText, { color: colors.textSecondary }]}>
-              すべての回答はこの端末内にのみ保存されます
-            </Text>
-          </View>
-        </Card>
+
+        <View testID="star-rating" style={styles.starRow}>
+          <Text style={styles.laurelLeft}>🌿</Text>
+          {Array.from({ length: STAR_COUNT }).map((_, i) => (
+            <Ionicons key={i} name="star" size={20} color={STAR_COLOR} />
+          ))}
+          <Text style={styles.laurelRight}>🌿</Text>
+        </View>
       </View>
-      <Button title="始める" onPress={onStart} />
+      <Button title="チェックを始める" onPress={onStart} />
     </View>
   );
 }
@@ -46,6 +57,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xxxl,
   },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: RADIUS.xl,
+    marginBottom: SPACING.md,
+  },
+  appName: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: 'bold',
+    marginBottom: SPACING.xxxl,
+  },
   title: {
     fontSize: FONT_SIZE.xxl,
     fontWeight: 'bold',
@@ -58,16 +80,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: SPACING.xl,
   },
-  privacyCard: {
-    width: '100%',
-  },
-  privacyRow: {
+  starRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.xs,
   },
-  privacyText: {
-    fontSize: FONT_SIZE.sm,
-    flex: 1,
+  laurelLeft: {
+    fontSize: 20,
+    transform: [{ scaleX: -1 }],
+  },
+  laurelRight: {
+    fontSize: 20,
   },
 });

@@ -1,114 +1,32 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Animated, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useAnalyzingProgress, ANALYSIS_ITEMS } from '@/hooks/onboarding/useAnalyzingProgress';
 
 interface AnalyzingStepProps {
   onComplete: () => void;
 }
 
-const ANALYSIS_ITEMS = [
-  { text: '回答データを集計', duration: 2000 },
-  { text: '習慣パターンを分析', duration: 2000 },
-  { text: '影響度を算出', duration: 1500 },
-  { text: '結果を生成中', duration: 1500 },
-];
-
-const TOTAL_DURATION = ANALYSIS_ITEMS.reduce((sum, item) => sum + item.duration, 0);
 const RING_SIZE = 160;
 const RING_STROKE = 8;
 const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
-  const [completedCount, setCompletedCount] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const itemFades = useRef(ANALYSIS_ITEMS.map(() => new Animated.Value(0))).current;
-  const checkFades = useRef(ANALYSIS_ITEMS.map(() => new Animated.Value(0))).current;
+  const { progress, completedCount, itemFades, checkFades } = useAnalyzingProgress(onComplete);
   const { colors } = useTheme();
 
   const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress / 100);
-
-  useEffect(() => {
-    // Progress counter (0 → 100)
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const next = prev + (100 / (TOTAL_DURATION / 70));
-        if (next >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return next;
-      });
-    }, 70);
-
-    // Show first item immediately
-    Animated.timing(itemFades[0], {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    // Schedule sequential item completions
-    const timeouts: ReturnType<typeof setTimeout>[] = [];
-    let elapsed = 0;
-
-    ANALYSIS_ITEMS.forEach((item, index) => {
-      if (index > 0) {
-        const showTimeout = setTimeout(() => {
-          Animated.timing(itemFades[index], {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }).start();
-        }, elapsed);
-        timeouts.push(showTimeout);
-      }
-
-      elapsed += item.duration;
-
-      const completeTimeout = setTimeout(() => {
-        setCompletedCount(index + 1);
-
-        Animated.timing(checkFades[index], {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-
-        if (index < 2) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        } else if (index === 2) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        } else {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-      }, elapsed);
-      timeouts.push(completeTimeout);
-    });
-
-    const advanceTimeout = setTimeout(() => {
-      onComplete();
-    }, TOTAL_DURATION + 500);
-    timeouts.push(advanceTimeout);
-
-    return () => {
-      clearInterval(interval);
-      timeouts.forEach(clearTimeout);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.text }]}>分析中...</Text>
 
-      {/* Circular Progress Ring */}
       <View testID="circular-progress-ring" style={styles.ringContainer}>
         <Svg width={RING_SIZE} height={RING_SIZE}>
-          {/* Background ring */}
           <Circle
             cx={RING_SIZE / 2}
             cy={RING_SIZE / 2}
@@ -117,7 +35,6 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
             strokeWidth={RING_STROKE}
             fill="none"
           />
-          {/* Progress ring */}
           <Circle
             cx={RING_SIZE / 2}
             cy={RING_SIZE / 2}
@@ -137,7 +54,6 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
         </Text>
       </View>
 
-      {/* Checklist */}
       <View style={styles.checklist}>
         {ANALYSIS_ITEMS.map((item, index) => {
           const isCompleted = index < completedCount;
@@ -150,11 +66,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
             >
               {isCompleted ? (
                 <Animated.View style={{ opacity: checkFades[index] }}>
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={20}
-                    color={colors.success}
-                  />
+                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
                 </Animated.View>
               ) : (
                 <View style={[styles.pendingDot, { borderColor: colors.textSecondary }]}>

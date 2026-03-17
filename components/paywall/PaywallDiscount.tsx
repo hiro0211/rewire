@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { CountdownTimer } from './CountdownTimer';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
+import { DiscountBadge } from './DiscountBadge';
 import { PaywallCloseButton } from './PaywallCloseButton';
 import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
@@ -61,15 +62,9 @@ export function PaywallDiscount({
         <Text style={[styles.offerSub, { color: colors.textSecondary }]}>今だけの特別割引</Text>
 
         {/* Big discount card */}
-        <LinearGradient
-          colors={['#6D28D9', '#1E40AF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.discountCard}
-        >
-          <Text style={[styles.discountNumber, { color: colors.contrastText }]}>69%</Text>
-          <Text style={styles.discountOff}>OFF</Text>
-        </LinearGradient>
+        <View style={styles.discountWrap}>
+          <DiscountBadge percentage={69} />
+        </View>
 
         {/* Timer */}
         <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>この特別価格の期限:</Text>
@@ -147,25 +142,8 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
     marginBottom: SPACING.xl,
   },
-  discountCard: {
-    width: 200,
-    height: 200,
-    borderRadius: RADIUS.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+  discountWrap: {
     marginBottom: SPACING.xl,
-  },
-  discountNumber: {
-    fontSize: 64,
-    fontWeight: '900',
-  },
-  discountOff: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
-    letterSpacing: 4,
   },
   timerLabel: {
     fontSize: FONT_SIZE.sm,

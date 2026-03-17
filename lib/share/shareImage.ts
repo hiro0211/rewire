@@ -1,15 +1,13 @@
-import * as Sharing from 'expo-sharing';
+import { Share } from 'react-native';
 
-export async function shareImageFile(fileUri: string): Promise<void> {
-  const available = await Sharing.isAvailableAsync();
-  if (!available) {
-    throw new Error('Sharing is not available on this device');
-  }
-
+export async function shareWithImage(
+  text: string,
+  fileUri: string,
+): Promise<void> {
   const uri = fileUri.startsWith('file://') ? fileUri : `file://${fileUri}`;
 
-  await Sharing.shareAsync(uri, {
-    mimeType: 'image/png',
-    UTI: 'public.png',
+  await Share.share({
+    message: text,
+    url: uri,
   });
 }

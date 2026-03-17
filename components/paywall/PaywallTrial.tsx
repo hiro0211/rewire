@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
+import { DiscountBadge } from './DiscountBadge';
 import { PaywallCloseButton } from './PaywallCloseButton';
 import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
@@ -54,15 +55,9 @@ export function PaywallTrial({
         <Text style={[styles.offerSub, { color: colors.textSecondary }]}>あなたへの特別オファー</Text>
 
         {/* Big discount card */}
-        <LinearGradient
-          colors={['#6D28D9', '#1E40AF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.discountCard}
-        >
-          <Text style={[styles.discountNumber, { color: colors.contrastText }]}>69%</Text>
-          <Text style={styles.discountOff}>OFF</Text>
-        </LinearGradient>
+        <View style={styles.discountWrap}>
+          <DiscountBadge percentage={69} />
+        </View>
 
         {/* FREE TRIAL Ribbon */}
         <View style={styles.ribbonContainer}>
@@ -129,25 +124,8 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
     marginBottom: SPACING.xl,
   },
-  discountCard: {
-    width: 200,
-    height: 200,
-    borderRadius: RADIUS.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+  discountWrap: {
     marginBottom: SPACING.lg,
-  },
-  discountNumber: {
-    fontSize: 64,
-    fontWeight: '900',
-  },
-  discountOff: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
-    letterSpacing: 4,
   },
   ribbonContainer: {
     marginBottom: SPACING.xl,
