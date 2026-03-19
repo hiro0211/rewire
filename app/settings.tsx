@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
+import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import type { ThemePreference } from '@/types/theme';
 
 const THEME_LABELS: Record<ThemePreference, string> = {
@@ -32,6 +33,7 @@ export default function SettingsScreen() {
   const [isThemePickerVisible, setThemePickerVisible] = useState(false);
 
   const { blockerStatus } = useBlockerStatus();
+  const { isSurveyCompleted } = useSurveyCompleted();
   const {
     handleNotificationToggle,
     handleTimeChange,
@@ -119,6 +121,17 @@ export default function SettingsScreen() {
             isLast
           />
         </SettingSection>
+
+        {!isSurveyCompleted && (
+          <SettingSection title="アンケート">
+            <SettingItem
+              label="アンケートに協力する"
+              icon="chatbubble-ellipses-outline"
+              onPress={() => router.push(ROUTES.survey)}
+              isLast
+            />
+          </SettingSection>
+        )}
 
         <SettingSection title="サポート">
           <SettingItem

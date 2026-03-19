@@ -28,7 +28,7 @@ const STEP_HIGHLIGHTS = {
 const SCREENSHOT_STEPS = [
   { step: 1, title: '「設定」→「アプリ」→「Safari」', description: '設定アプリを開いて「アプリ」から「Safari」を選択してください' },
   { step: 2, title: '「機能拡張」をタップ', description: 'Safari設定の中にある「機能拡張」を選択してください' },
-  { step: 3, title: 'Rewireをオンにする', description: '「rewire」を選んで「機能拡張を許可」をオンにしてください' },
+  { step: 3, title: 'Rewireをオンにする', description: '「Rewire」を選んで「機能拡張を許可」をオンにしてください' },
 ] as const;
 
 export default function ContentBlockerSetupScreen() {

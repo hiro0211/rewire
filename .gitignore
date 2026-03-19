@@ -58,3 +58,6 @@ google-services.json
 # generated native folders
 /ios
 /android
+
+# Promotion project (separate repo)
+Rewire-promotion/

@@ -56,6 +56,45 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: ({ name }: any) => <Text>{name}</Text> };
 });
 
+jest.mock('@/hooks/survey/useSurveyEligibility', () => ({
+  useSurveyEligibility: () => ({ shouldShowSurvey: false }),
+}));
+
+jest.mock('@/hooks/survey/useSurveyPromptActions', () => ({
+  useSurveyPromptActions: () => ({
+    handleAccept: jest.fn(),
+    handleDismiss: jest.fn(),
+  }),
+}));
+
+jest.mock('@/components/survey/SurveyPromptModal', () => {
+  const { View } = require('react-native');
+  return { SurveyPromptModal: () => <View /> };
+});
+
+jest.mock('@/hooks/review/useReviewEligibility', () => ({
+  useReviewEligibility: () => ({ shouldShowReview: false }),
+}));
+
+jest.mock('@/hooks/review/useReviewPromptActions', () => ({
+  useReviewPromptActions: () => ({
+    selectedRating: 0,
+    showFeedback: false,
+    handleRate: jest.fn(),
+    handleFeedbackTap: jest.fn(),
+    handleDismiss: jest.fn(),
+  }),
+}));
+
+jest.mock('@/components/review/ReviewPromptModal', () => {
+  const { View } = require('react-native');
+  return { ReviewPromptModal: () => <View /> };
+});
+
+jest.mock('@/lib/tracking/analyticsClient', () => ({
+  analyticsClient: { logEvent: jest.fn() },
+}));
+
 import DashboardScreen from '../../app/(tabs)/index';
 
 describe('DashboardScreen', () => {

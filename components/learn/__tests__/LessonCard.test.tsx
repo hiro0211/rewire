@@ -50,7 +50,7 @@ describe('LessonCard', () => {
       const { getByText } = render(
         <LessonCard lesson={LESSONS[1]} status="locked" onPress={jest.fn()} />
       );
-      expect(getByText('脱感作')).toBeTruthy();
+      expect(getByText('脱感作 ― 同じ刺激では満足できなくなる脳')).toBeTruthy();
     });
 
     it('ロックアイコンが表示される', () => {

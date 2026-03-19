@@ -60,6 +60,7 @@ export default function RootLayout() {
           <Stack.Screen name="achievements" options={{ headerShown: true, title: 'Achievements' }} />
           <Stack.Screen name="terms" options={{ headerShown: true, title: '利用規約' }} />
           <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: 'プライバシーポリシー' }} />
+          <Stack.Screen name="survey" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>

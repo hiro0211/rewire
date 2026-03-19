@@ -38,4 +38,5 @@ export const ROUTES = {
   recovery: route('/recovery'),
   history: route('/history'),
   achievements: route('/achievements'),
+  survey: route('/survey'),
 } as const;

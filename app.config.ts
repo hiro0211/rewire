@@ -51,7 +51,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         ios: {
           deploymentTarget: '15.1',
           useFrameworks: 'static',
-          forceStaticLinking: ['RNFBApp', 'RNFBAnalytics'],
+          forceStaticLinking: ['RNFBApp', 'RNFBAnalytics', 'RNFBFirestore'],
         },
       },
     ],

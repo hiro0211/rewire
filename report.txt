@@ -1,0 +1,43 @@
+
+[rewire] main
+  unstaged:  app.config.ts                                             |  6 +++---
+ app.json                                                  |  6 +++---
+ app/__tests__/BrandScreen.test.tsx                        |  4 ++--
+ app/__tests__/benefits.test.tsx                           |  2 +-
+ app/brand.tsx                                             |  2 +-
+ app/content-blocker-setup.tsx                             |  2 +-
+ app/index.tsx                                             |  2 +-
+ app/onboarding/__tests__/ConsentStep.test.tsx             |  4 ++--
+ app/privacy-policy.tsx                                    |  2 +-
+ app/terms.tsx                                             |  6 +++---
+ components/onboarding/__tests__/WelcomeStep.test.tsx      |  8 ++++----
+ components/onboarding/steps/ConsentStep.tsx               |  6 +++---
+ components/onboarding/steps/FeaturesStep.tsx              |  2 +-
+ components/onboarding/steps/WelcomeStep.tsx               |  4 ++--
+ components/paywall/FeatureShowcase.tsx                    |  2 +-
+ components/paywall/PaywallDefault.tsx                     |  2 +-
+ components/paywall/PaywallTrial.tsx                       |  2 +-
+ components/paywall/PrePaywallBenefits.tsx                 |  4 ++--
+ components/paywall/SubscriptionTerms.tsx                  |  4 ++--
+ components/paywall/__tests__/FeatureShowcase.test.tsx     |  2 +-
+ components/paywall/__tests__/PaywallDefault.test.tsx      |  4 ++--
+ components/paywall/__tests__/PaywallDiscount.test.tsx     |  4 ++--
+ components/paywall/__tests__/PaywallTrial.test.tsx        |  6 +++---
+ components/paywall/__tests__/PrePaywallBenefits.test.tsx  |  8 ++++----
+ components/paywall/__tests__/SubscriptionTerms.test.tsx   |  4 ++--
+ components/profile/ProfileHeader.tsx                      |  2 +-
+ components/profile/__tests__/ProfileHeader.crash.test.tsx |  2 +-
+ constants/preBenefits.ts                                  |  2 +-
+ constants/share.ts                                        |  2 +-
+ hooks/dashboard/__tests__/useShareWidget.test.ts          |  8 ++++----
+ hooks/paywall/__tests__/usePurchase.test.ts               |  4 ++--
+ hooks/paywall/usePurchase.ts                              |  2 +-
+ hooks/useAppInitialization.ts                             |  2 +-
+ lib/contentBlocker/__tests__/contentBlockerBridge.test.ts |  6 +++---
+ lib/share/__tests__/clipboardService.test.ts              |  4 ++--
+ lib/share/__tests__/shareImage.test.ts                    |  4 ++--
+ lib/share/__tests__/shareService.test.ts                  | 12 ++++++------
+ lib/subscription/__tests__/subscriptionClient.test.ts     |  8 ++++----
+ lib/subscription/subscriptionClient.ts                    |  2 +-
+ package.json                                              |  2 +-
+ 40 files changed, 80 insertions(+), 80 deletions(-)

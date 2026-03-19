@@ -13,7 +13,10 @@ export type StorageKey =
   | 'article_read_history'
   | 'settings'
   | 'discount_first_shown_at'
-  | 'learn_progress';
+  | 'learn_progress'
+  | 'survey_completed'
+  | 'survey_prompt_state'
+  | 'review_prompt_state';
 
 const SENSITIVE_KEYS: StorageKey[] = ['checkins', 'recoveries', 'breath_sessions'];
 

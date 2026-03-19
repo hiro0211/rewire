@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StatsRow } from '@/components/dashboard/StatsRow';
@@ -12,6 +12,13 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { isExpoGo } from '@/lib/nativeGuard';
+import { useSurveyEligibility } from '@/hooks/survey/useSurveyEligibility';
+import { useSurveyPromptActions } from '@/hooks/survey/useSurveyPromptActions';
+import { SurveyPromptModal } from '@/components/survey/SurveyPromptModal';
+import { useReviewEligibility } from '@/hooks/review/useReviewEligibility';
+import { useReviewPromptActions } from '@/hooks/review/useReviewPromptActions';
+import { ReviewPromptModal } from '@/components/review/ReviewPromptModal';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 let ViewShot: any = View; // fallback to plain View in Expo Go
 if (!isExpoGo) {
@@ -29,6 +36,30 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
   const { viewShotRef, share } = useShareWidget();
+  const { shouldShowSurvey } = useSurveyEligibility();
+  const [surveyModalVisible, setSurveyModalVisible] = useState(false);
+  const { handleAccept, handleDismiss } = useSurveyPromptActions(
+    () => setSurveyModalVisible(false)
+  );
+
+  const { shouldShowReview } = useReviewEligibility();
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const {
+    selectedRating,
+    showFeedback,
+    handleRate,
+    handleFeedbackTap,
+    handleDismiss: handleReviewDismiss,
+  } = useReviewPromptActions(() => setReviewModalVisible(false));
+
+  useEffect(() => {
+    if (shouldShowSurvey) {
+      setSurveyModalVisible(true);
+    } else if (shouldShowReview) {
+      setReviewModalVisible(true);
+      analyticsClient.logEvent('review_prompt_shown');
+    }
+  }, [shouldShowSurvey, shouldShowReview]);
 
   useFocusEffect(
     useCallback(() => {
@@ -92,6 +123,21 @@ export default function DashboardScreen() {
           <SOSButton />
         </View>
       </ScrollView>
+
+      <SurveyPromptModal
+        visible={surveyModalVisible}
+        onAccept={handleAccept}
+        onDismiss={handleDismiss}
+      />
+
+      <ReviewPromptModal
+        visible={reviewModalVisible}
+        selectedRating={selectedRating}
+        showFeedback={showFeedback}
+        onRate={handleRate}
+        onFeedbackTap={handleFeedbackTap}
+        onDismiss={handleReviewDismiss}
+      />
     </SafeAreaWrapper>
   );
 }
