@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
@@ -26,6 +27,7 @@ export function PaywallTrial({
   onRestoreCompleted,
 }: PaywallTrialProps) {
   const { colors, gradients } = useTheme();
+  const { t } = useLocale();
 
   const { annualPackage, annualPrice, currencyCode } = extractOfferingPackages(offering);
 
@@ -52,7 +54,7 @@ export function PaywallTrial({
 
         {/* Headline */}
         <Text style={[styles.offerTitle, { color: colors.text }]}>SPECIAL OFFER</Text>
-        <Text style={[styles.offerSub, { color: colors.textSecondary }]}>あなたへの特別オファー</Text>
+        <Text style={[styles.offerSub, { color: colors.textSecondary }]}>{t('paywall.personalOffer')}</Text>
 
         {/* Big discount card */}
         <View style={styles.discountWrap}>
@@ -72,15 +74,15 @@ export function PaywallTrial({
         </View>
 
         {/* Trial info */}
-        <Text style={[styles.trialTitle, { color: colors.text }]}>Rewireを3日間無料でお試し</Text>
+        <Text style={[styles.trialTitle, { color: colors.text }]}>{t('paywall.tryFree')}</Text>
         <Text style={[styles.trialSub, { color: colors.textSecondary }]}>
-          3日間無料、その後 {formatPrice(annualPrice, currencyCode)}/年
+          {t('paywall.trialBilling', { price: formatPrice(annualPrice, currencyCode) })}
         </Text>
-        <Text style={[styles.trialHighlight, { color: colors.text }]}>今すぐ支払いなし</Text>
+        <Text style={[styles.trialHighlight, { color: colors.text }]}>{t('paywall.noPaymentNow')}</Text>
 
         {/* CTA */}
         <Button
-          title="無料トライアルを始める"
+          title={t('paywall.startFreeTrial')}
           onPress={handlePurchase}
           variant="gradient"
           size="lg"
@@ -92,7 +94,7 @@ export function PaywallTrial({
         <PaywallFooter
           onRestore={handleRestore}
           purchasing={purchasing}
-          trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。"
+          trialText={t('paywall.trialAutoRenew')}
         />
       </ScrollView>
     </SafeAreaWrapper>

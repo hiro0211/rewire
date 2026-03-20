@@ -6,11 +6,13 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export function SOSButton() {
   const router = useRouter();
   const { colors, gradients, glow } = useTheme();
+  const { t } = useLocale();
 
   const handlePress = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -36,7 +38,7 @@ export function SOSButton() {
         <View style={styles.iconCircle}>
           <Ionicons name="warning" size={20} color={colors.contrastText} />
         </View>
-        <Text style={[styles.text, { color: colors.contrastText }]}>ポルノを見たくなったら</Text>
+        <Text style={[styles.text, { color: colors.contrastText }]}>{t('sos.feelingUrge')}</Text>
       </LinearGradient>
     </TouchableOpacity>
   );

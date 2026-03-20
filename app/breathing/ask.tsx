@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useBreathStore } from '@/stores/breathStore';
 import { useUserStore } from '@/stores/userStore';
@@ -15,6 +16,7 @@ export default function BreathingAskScreen() {
   const { addSession } = useBreathStore();
   const { user } = useUserStore();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleResponse = async (resolved: boolean) => {
     analyticsClient.logEvent('breathing_completed', { urge_resolved: resolved });
@@ -39,17 +41,17 @@ export default function BreathingAskScreen() {
   return (
     <SafeAreaWrapper>
       <View style={styles.container}>
-        <Text style={[styles.question, { color: colors.text }]}>誘惑は落ち着きましたか？</Text>
+        <Text style={[styles.question, { color: colors.text }]}>{t('breathing.askCalmedDown')}</Text>
 
         <View style={styles.buttonGroup}>
           <Button
-            title="はい"
+            title={t('common.yes')}
             onPress={() => handleResponse(true)}
             style={styles.button}
           />
           <View style={{ height: SPACING.md }} />
           <Button
-            title="いいえ（もう一度）"
+            title={t('breathing.noTryAgain')}
             onPress={() => handleResponse(false)}
             variant="secondary"
             style={styles.button}

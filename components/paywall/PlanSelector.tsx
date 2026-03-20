@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
 
 interface PlanSelectorProps {
@@ -22,6 +23,7 @@ export function PlanSelector({
   showMonthly = true,
 }: PlanSelectorProps) {
   const { colors, glow } = useTheme();
+  const { t } = useLocale();
   const annualPrice = annualPackage?.product?.price ?? 5400;
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
   const annualMonthly = calcMonthlyPrice(annualPrice);
@@ -45,7 +47,7 @@ export function PlanSelector({
       >
         <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Annual</Text>
         <Text style={[styles.priceMain, { color: colors.text }]}>{formatPrice(annualMonthly, currencyCode)}</Text>
-        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>/月</Text>
+        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perMonth')}</Text>
       </TouchableOpacity>
 
       {/* Monthly Card */}
@@ -63,7 +65,7 @@ export function PlanSelector({
         >
           <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Monthly</Text>
           <Text style={[styles.priceMain, { color: colors.text }]}>{monthlyPriceStr}</Text>
-          <Text style={[styles.priceSub, { color: colors.textSecondary }]}>/月</Text>
+          <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perMonth')}</Text>
         </TouchableOpacity>
       )}
     </View>

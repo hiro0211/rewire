@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { SurveyQuestion } from '@/types/survey';
 
 interface SurveyChoiceStepProps {
@@ -17,11 +18,12 @@ export function SurveyChoiceStep({
   onSelect,
 }: SurveyChoiceStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
       <Text style={[styles.question, { color: colors.text }]}>
-        {question.question}
+        {t(question.questionKey)}
       </Text>
 
       <View style={styles.options}>
@@ -72,7 +74,7 @@ export function SurveyChoiceStep({
                   selected && { color: colors.selectedPillBorder },
                 ]}
               >
-                {option.label}
+                {t(option.labelKey)}
               </Text>
             </TouchableOpacity>
           );

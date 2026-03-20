@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 
 interface MemoInputProps {
@@ -10,15 +11,16 @@ interface MemoInputProps {
 
 export function MemoInput({ value, onChange }: MemoInputProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>一言メモ（任意）</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t('checkinForm.memo.label')}</Text>
       <TextInput
         style={[styles.input, { backgroundColor: colors.surfaceHighlight, color: colors.text }]}
         value={value}
         onChangeText={onChange}
-        placeholder="今日の気づきや感情..."
+        placeholder={t('checkinForm.memo.placeholder')}
         placeholderTextColor={colors.textSecondary}
         multiline
         maxLength={140}

@@ -1,80 +1,80 @@
 export interface AssessmentOption {
-  label: string;
+  labelKey: string;
   value: string;
   score: number;
 }
 
 export interface AssessmentQuestion {
   id: string;
-  question: string;
+  questionKey: string;
   type: 'choice' | 'yesno' | 'picker';
   options?: AssessmentOption[];
   yesScore?: number;
-  pickerRange?: { min: number; max: number; suffix: string };
+  pickerRange?: { min: number; max: number; suffixKey: string };
 }
 
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 'startAge',
-    question: 'ポルノを定期的に見始めたのは\n何歳ですか？',
+    questionKey: 'assessment.q.startAge.question',
     type: 'choice',
     options: [
-      { label: '12歳以下', value: 'under12', score: 3 },
-      { label: '13〜15歳', value: '13-15', score: 2 },
-      { label: '16〜18歳', value: '16-18', score: 1 },
-      { label: '19歳以上', value: '19+', score: 0 },
+      { labelKey: 'assessment.q.startAge.under12', value: 'under12', score: 3 },
+      { labelKey: 'assessment.q.startAge.age13to15', value: '13-15', score: 2 },
+      { labelKey: 'assessment.q.startAge.age16to18', value: '16-18', score: 1 },
+      { labelKey: 'assessment.q.startAge.age19plus', value: '19+', score: 0 },
     ],
   },
   {
     id: 'currentAge',
-    question: '現在の年齢は？',
+    questionKey: 'assessment.q.currentAge.question',
     type: 'picker',
-    pickerRange: { min: 11, max: 60, suffix: '歳' },
+    pickerRange: { min: 11, max: 60, suffixKey: 'assessment.q.currentAge.suffix' },
   },
   {
     id: 'frequency',
-    question: 'どれくらいの頻度で\nポルノを観ますか？',
+    questionKey: 'assessment.q.frequency.question',
     type: 'choice',
     options: [
-      { label: '1日1回以上', value: 'multiple_daily', score: 4 },
-      { label: '1日1回', value: 'daily', score: 3 },
-      { label: '週に数回', value: 'weekly', score: 2 },
-      { label: 'ほとんど見ない', value: 'rarely', score: 0 },
+      { labelKey: 'assessment.q.frequency.multipleDaily', value: 'multiple_daily', score: 4 },
+      { labelKey: 'assessment.q.frequency.daily', value: 'daily', score: 3 },
+      { labelKey: 'assessment.q.frequency.weekly', value: 'weekly', score: 2 },
+      { labelKey: 'assessment.q.frequency.rarely', value: 'rarely', score: 0 },
     ],
   },
   {
     id: 'escalation',
-    question: '観ていくうちに、より過激な\nポルノを見るようになりましたか？',
+    questionKey: 'assessment.q.escalation.question',
     type: 'yesno',
     yesScore: 4,
   },
   {
     id: 'increasing',
-    question: 'ポルノを観る頻度や時間は、\n年々増えていますか？',
+    questionKey: 'assessment.q.increasing.question',
     type: 'yesno',
     yesScore: 3,
   },
   {
     id: 'stressCoping',
-    question: 'ストレスを解消するために\nポルノを観ますか？',
+    questionKey: 'assessment.q.stressCoping.question',
     type: 'yesno',
     yesScore: 3,
   },
   {
     id: 'boredomCoping',
-    question: '退屈を紛らわせるために\nポルノを観ますか？',
+    questionKey: 'assessment.q.boredomCoping.question',
     type: 'yesno',
     yesScore: 2,
   },
   {
     id: 'failedControl',
-    question: 'やめよう、減らそうとして\nうまくいかなかったことは\nありますか？',
+    questionKey: 'assessment.q.failedControl.question',
     type: 'yesno',
     yesScore: 5,
   },
   {
     id: 'dailyImpact',
-    question: 'ポルノが日常生活や\n人間関係に影響していると\n感じますか？',
+    questionKey: 'assessment.q.dailyImpact.question',
     type: 'yesno',
     yesScore: 5,
   },
@@ -82,16 +82,16 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
 
 export interface ScoreThreshold {
   max: number;
-  label: string;
+  labelKey: string;
   color: string;
-  message: string;
+  messageKey: string;
 }
 
 export const SCORE_THRESHOLDS: ScoreThreshold[] = [
-  { max: 7, label: '影響 小', color: '#3DD68C', message: '大きな問題はなさそうです。\n今のうちに対策しておくことで、\n確実にコントロールを維持できます。' },
-  { max: 14, label: '影響 中', color: '#F0A030', message: '習慣が日常に影響し始めています。\n今が変えるベストタイミングです。' },
-  { max: 21, label: '影響 大', color: '#EF8C30', message: '習慣があなたの時間と集中力を\n奪っています。\n構造的に変えていきましょう。' },
-  { max: 29, label: '影響 深刻', color: '#EF4444', message: '正しいアプローチで、確実に変えられます。\n今日から始めましょう。' },
+  { max: 7, labelKey: 'assessment.score.low.label', color: '#3DD68C', messageKey: 'assessment.score.low.message' },
+  { max: 14, labelKey: 'assessment.score.moderate.label', color: '#F0A030', messageKey: 'assessment.score.moderate.message' },
+  { max: 21, labelKey: 'assessment.score.high.label', color: '#EF8C30', messageKey: 'assessment.score.high.message' },
+  { max: 29, labelKey: 'assessment.score.severe.label', color: '#EF4444', messageKey: 'assessment.score.severe.message' },
 ];
 
 export const MAX_SCORE = 29;

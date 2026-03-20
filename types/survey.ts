@@ -1,11 +1,11 @@
 export interface SurveyOption {
-  label: string;
+  labelKey: string;
   value: string;
 }
 
 export interface SurveyQuestion {
   id: string;
-  question: string;
+  questionKey: string;
   type: 'choice' | 'text_input';
   options?: SurveyOption[];
   required: boolean;

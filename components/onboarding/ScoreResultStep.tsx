@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { getScoreLevel } from '@/lib/assessment/scoreCalculator';
 
 interface ScoreResultStepProps {
@@ -17,13 +18,14 @@ export function ScoreResultStep({ score, maxScore }: ScoreResultStepProps) {
   const averageRatio = AVERAGE_SCORE_RATIO;
   const MAX_BAR_HEIGHT = 160;
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>分析完了</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('scoreResult.analysisComplete')}</Text>
 
       <Text style={[styles.levelLabel, { color: scoreLevel.color }]}>
-        {scoreLevel.label}
+        {t(scoreLevel.labelKey)}
       </Text>
 
       <Text style={[styles.score, { color: scoreLevel.color }]}>
@@ -43,7 +45,7 @@ export function ScoreResultStep({ score, maxScore }: ScoreResultStepProps) {
               },
             ]}
           />
-          <Text style={[styles.barLabel, { color: colors.textSecondary }]}>あなた</Text>
+          <Text style={[styles.barLabel, { color: colors.textSecondary }]}>{t('scoreResult.you')}</Text>
         </View>
         <View style={styles.barColumn}>
           <View
@@ -56,11 +58,11 @@ export function ScoreResultStep({ score, maxScore }: ScoreResultStepProps) {
               },
             ]}
           />
-          <Text style={[styles.barLabel, { color: colors.textSecondary }]}>平均</Text>
+          <Text style={[styles.barLabel, { color: colors.textSecondary }]}>{t('scoreResult.average')}</Text>
         </View>
       </View>
 
-      <Text style={[styles.message, { color: colors.textSecondary }]}>{scoreLevel.message}</Text>
+      <Text style={[styles.message, { color: colors.textSecondary }]}>{t(scoreLevel.messageKey)}</Text>
     </View>
   );
 }

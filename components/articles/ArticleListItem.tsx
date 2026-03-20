@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { Article } from '@/constants/articles';
 
 interface ArticleListItemProps {
@@ -12,15 +13,16 @@ interface ArticleListItemProps {
 
 export function ArticleListItem({ article, onPress }: ArticleListItemProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Card style={styles.container}>
         <View style={styles.header}>
-          <Text style={[styles.category, { color: colors.primary }]}>{article.category}</Text>
+          <Text style={[styles.category, { color: colors.primary }]}>{t(article.categoryKey)}</Text>
         </View>
-        <Text style={[styles.title, { color: colors.text }]}>{article.title}</Text>
-        <Text style={[styles.meta, { color: colors.textSecondary }]}>読了時間: {article.readTime}分</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t(article.titleKey)}</Text>
+        <Text style={[styles.meta, { color: colors.textSecondary }]}>{t('articles.readTime', { minutes: article.readTime })}</Text>
       </Card>
     </TouchableOpacity>
   );

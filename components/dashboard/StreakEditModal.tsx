@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, parseISO, startOfDay } from 'date-fns';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 
 interface StreakEditModalProps {
@@ -20,6 +21,7 @@ export const StreakEditModal = ({
   onSave,
 }: StreakEditModalProps) => {
   const { colors } = useTheme();
+  const { t, locale } = useLocale();
   const [selectedDate, setSelectedDate] = useState(() => {
     try {
       const parsed = parseISO(initialDate);
@@ -61,9 +63,9 @@ export const StreakEditModal = ({
         style={[styles.overlay, { backgroundColor: colors.overlay }]}
       >
         <View style={[styles.container, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.title, { color: colors.text }]}>開始日を編集</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('settings.streakEdit.title')}</Text>
           <Text style={[styles.description, { color: colors.textSecondary }]}>
-            アプリ導入前から継続している場合、開始日を変更できます
+            {t('settings.streakEdit.description')}
           </Text>
 
           <View style={[styles.pickerWrapper, {
@@ -78,16 +80,16 @@ export const StreakEditModal = ({
               onChange={(_, date) => {
                 if (date) setSelectedDate(date);
               }}
-              locale="ja"
+              locale={locale}
             />
           </View>
 
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>キャンセル</Text>
+              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
-              <Button title="保存" onPress={handleSave} />
+              <Button title={t('common.save')} onPress={handleSave} />
             </View>
           </View>
         </View>

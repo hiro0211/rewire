@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { LessonContent } from '@/components/learn/LessonContent';
 import { useLearnStore } from '@/stores/learnStore';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { LESSONS } from '@/constants/lessons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +17,7 @@ export default function LessonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
   const { completeLesson, isCompleted } = useLearnStore();
 
   const lesson = LESSONS.find((l) => l.id === id);
@@ -24,7 +26,7 @@ export default function LessonDetailScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Text style={[styles.errorText, { color: colors.text }]}>
-          レッスンが見つかりません
+          {t('learn.notFound')}
         </Text>
       </SafeAreaView>
     );
@@ -58,28 +60,28 @@ export default function LessonDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.title, { color: colors.text }]}>
-          {lesson.title}
+          {t(lesson.titleKey)}
         </Text>
 
         <View style={styles.meta}>
           <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
           <Text style={[styles.metaText, { color: colors.textSecondary }]}>
-            {lesson.readMinutes}分で読めます
+            {t('learn.readMinutes', { minutes: lesson.readMinutes })}
           </Text>
         </View>
 
-        <LessonContent content={lesson.content} />
+        <LessonContent content={t(lesson.contentKey)} />
 
         <View style={styles.buttonContainer}>
           {completed ? (
             <Button
-              title="もう一度読む"
+              title={t('learn.readAgain')}
               onPress={() => router.back()}
               variant="secondary"
             />
           ) : (
             <Button
-              title="レッスン完了"
+              title={t('learn.lessonComplete')}
               onPress={handleComplete}
               variant="gradient"
             />

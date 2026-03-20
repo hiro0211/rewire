@@ -2,18 +2,20 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { illStyles } from './illustrationStyles';
 
 export function ShameCycleIllustration() {
   const { colors } = useTheme();
+  const { t } = useLocale();
   const steps: Array<{
     label: string;
     icon: React.ComponentProps<typeof Ionicons>['name'];
   }> = [
-    { label: '視聴', icon: 'eye-outline' },
-    { label: '後悔', icon: 'sad-outline' },
-    { label: 'ストレス', icon: 'alert-circle-outline' },
-    { label: '渇望', icon: 'flame-outline' },
+    { label: t('illustrations.shameCycle.watching'), icon: 'eye-outline' },
+    { label: t('illustrations.shameCycle.regret'), icon: 'sad-outline' },
+    { label: t('illustrations.shameCycle.stress'), icon: 'alert-circle-outline' },
+    { label: t('illustrations.shameCycle.craving'), icon: 'flame-outline' },
   ];
 
   return (

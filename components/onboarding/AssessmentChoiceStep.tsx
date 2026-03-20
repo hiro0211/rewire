@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
 interface AssessmentChoiceStepProps {
@@ -21,6 +22,7 @@ export function AssessmentChoiceStep({
   onSelect,
 }: AssessmentChoiceStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -28,7 +30,7 @@ export function AssessmentChoiceStep({
         Question #{questionIndex + 1}
       </Text>
 
-      <Text style={[styles.question, { color: colors.text }]}>{question.question}</Text>
+      <Text style={[styles.question, { color: colors.text }]}>{t(question.questionKey)}</Text>
 
       <View style={styles.options}>
         {question.options?.map((option, index) => {
@@ -62,7 +64,7 @@ export function AssessmentChoiceStep({
                   selected && { color: colors.selectedPillBorder },
                 ]}
               >
-                {option.label}
+                {t(option.labelKey)}
               </Text>
             </TouchableOpacity>
           );

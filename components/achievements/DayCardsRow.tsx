@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { DayCard } from './DayCard';
 import { SPACING } from '@/constants/theme';
 import { BADGES } from '@/constants/badges';
+import { useLocale } from '@/hooks/useLocale';
 
 interface DayCardsRowProps {
   streak: number;
@@ -14,6 +15,7 @@ const GAP = SPACING.sm;
 const MILESTONE_DAYS = BADGES.map((b) => b.requiredDays);
 
 export function DayCardsRow({ streak }: DayCardsRowProps) {
+  const { t } = useLocale();
   const scrollRef = useRef<ScrollView>(null);
 
   // Find the index of the current (or nearest next) milestone for auto-scroll
@@ -45,7 +47,7 @@ export function DayCardsRow({ streak }: DayCardsRowProps) {
           <DayCard
             key={badge.id}
             day={badge.requiredDays}
-            label={badge.nameJa}
+            label={t(badge.nameKey)}
             isReached={isReached}
             isCurrent={isCurrent}
           />

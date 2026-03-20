@@ -3,6 +3,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
 interface AssessmentPickerStepProps {
@@ -24,6 +25,7 @@ export function AssessmentPickerStep({
   const defaultValue = String(Math.min(25, range.max));
   const [localValue, setLocalValue] = useState(selectedValue || defaultValue);
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleValueChange = (value: string) => {
     setLocalValue(value);
@@ -36,7 +38,7 @@ export function AssessmentPickerStep({
         Question #{questionIndex + 1}
       </Text>
 
-      <Text style={[styles.question, { color: colors.text }]}>{question.question}</Text>
+      <Text style={[styles.question, { color: colors.text }]}>{t(question.questionKey)}</Text>
 
       <View style={[styles.pickerContainer, { backgroundColor: colors.pillBackground }]}>
         <Picker
@@ -50,7 +52,7 @@ export function AssessmentPickerStep({
           ).map((age) => (
             <Picker.Item
               key={age}
-              label={`${age}${range.suffix}`}
+              label={`${age}${t(range.suffixKey)}`}
               value={String(age)}
             />
           ))}

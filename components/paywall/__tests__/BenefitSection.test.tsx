@@ -3,13 +3,21 @@ import { render } from '@testing-library/react-native';
 
 import { BenefitSection } from '../BenefitSection';
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 const mockSection = {
   id: 'test',
-  title: 'テストセクション',
+  titleKey: 'mock.section.title',
   emoji: '🧠',
   benefits: [
-    { emoji: '🔄', bold: 'ドーパミン', text: 'をリセット' },
-    { emoji: '🎯', bold: '集中力', text: 'を回復' },
+    { emoji: '🔄', boldKey: 'mock.benefit.dopamine', textKey: 'mock.benefit.reset' },
+    { emoji: '🎯', boldKey: 'mock.benefit.focus', textKey: 'mock.benefit.recover' },
   ],
 };
 
@@ -20,17 +28,17 @@ describe('BenefitSection', () => {
 
   it('セクションタイトルが表示される', () => {
     const { getByText } = render(<BenefitSection section={mockSection} />);
-    expect(getByText('テストセクション')).toBeTruthy();
+    expect(getByText('mock.section.title')).toBeTruthy();
   });
 
   it('ベネフィットのboldテキストが表示される', () => {
     const { getByText } = render(<BenefitSection section={mockSection} />);
-    expect(getByText(/ドーパミン/)).toBeTruthy();
-    expect(getByText(/集中力/)).toBeTruthy();
+    expect(getByText(/mock\.benefit\.dopamine/)).toBeTruthy();
+    expect(getByText(/mock\.benefit\.focus/)).toBeTruthy();
   });
 
   it('ベネフィットの通常テキストが表示される', () => {
     const { getByText } = render(<BenefitSection section={mockSection} />);
-    expect(getByText(/をリセット/)).toBeTruthy();
+    expect(getByText(/mock\.benefit\.reset/)).toBeTruthy();
   });
 });

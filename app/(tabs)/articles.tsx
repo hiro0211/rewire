@@ -6,15 +6,17 @@ import { ArticleListItem } from '@/components/articles/ArticleListItem';
 import { ARTICLES } from '@/constants/articles';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 export default function ArticleListScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <SafeAreaWrapper>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>インサイト</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('nav.insights')}</Text>
       </View>
       <FlatList
         data={ARTICLES}

@@ -7,6 +7,7 @@ import { recoveryService } from '@/features/recovery/recoveryService';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ export default function RecoveryScreen() {
   const { todayCheckin } = useCheckinStore();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleSelectTrigger = async (selected: string) => {
     setTrigger(selected);
@@ -35,7 +37,7 @@ export default function RecoveryScreen() {
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>大丈夫。{'\n'}ここから始めよう。</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('recovery.title')}</Text>
 
         <View style={[styles.divider, { backgroundColor: colors.surfaceHighlight }]} />
 
@@ -48,8 +50,7 @@ export default function RecoveryScreen() {
 
              <View style={[styles.messageBox, { backgroundColor: colors.surfaceHighlight }]}>
                <Text style={[styles.messageText, { color: colors.textSecondary }]}>
-                 あなたの連続記録はリセットされましたが、
-                 学びの記録は残っています。
+                 {t('recovery.streakResetMessage')}
                </Text>
              </View>
           </>

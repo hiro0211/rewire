@@ -2,23 +2,23 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { Card } from '@/components/ui/Card';
 
 export function NextActionList() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const ACTIONS = [
-    { title: '深呼吸をして落ち着く', route: '/breathing' as const, icon: '🌬️' },
-    // TODO: 科学記事機能は未実装のため一時的に非表示
-    // { title: '記事を読んで学ぶ', route: '/(tabs)/articles' as const, icon: '📖' },
-    { title: 'ホームに戻る', route: '/(tabs)' as const, icon: '🏠' },
+    { title: t('recovery.actions.breathe'), route: '/breathing' as const, icon: '🌬️' },
+    { title: t('recovery.actions.goHome'), route: '/(tabs)' as const, icon: '🏠' },
   ];
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>次にどうする？</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t('recovery.nextAction')}</Text>
       {ACTIONS.map((action, index) => (
         <TouchableOpacity
           key={index}

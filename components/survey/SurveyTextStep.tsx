@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TextInput, StyleSheet, Text } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { SurveyQuestion } from '@/types/survey';
 
 interface SurveyTextStepProps {
@@ -16,16 +17,17 @@ export function SurveyTextStep({
   onChangeText,
 }: SurveyTextStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
       <Text style={[styles.question, { color: colors.text }]}>
-        {question.question}
+        {t(question.questionKey)}
       </Text>
 
       {!question.required && (
         <Text style={[styles.optional, { color: colors.textSecondary }]}>
-          任意
+          {t('surveyForm.optional')}
         </Text>
       )}
 
@@ -41,7 +43,7 @@ export function SurveyTextStep({
         ]}
         value={value}
         onChangeText={onChangeText}
-        placeholder="ここに入力してください"
+        placeholder={t('surveyForm.inputPlaceholder')}
         placeholderTextColor={colors.textSecondary}
         multiline
         textAlignVertical="top"

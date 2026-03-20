@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface ConsentStepProps {
   privacyAgreed: boolean;
@@ -19,16 +20,17 @@ export function ConsentStep({
   onToggleData,
 }: ConsentStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>データの取り扱いについて</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('onboarding.consent.title')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        {'Rewireはあなたの変化をサポートするため、\n以下のデータを端末内にのみ保存します。'}
+        {t('onboarding.consent.dataDescription')}
       </Text>
       <View style={styles.consentContainer}>
         <Text style={[styles.dataList, { color: colors.text }]}>
-          {'・性的行動に関する記録\n・ストレスレベル・衝動レベル\n・呼吸エクササイズの記録\n・振り返り記録・日記'}
+          {t('onboarding.consent.dataList')}
         </Text>
         <TouchableOpacity
           testID="checkbox-privacy"
@@ -53,9 +55,9 @@ export function ConsentStep({
               style={[styles.linkText, { color: colors.cyan }]}
               onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#privacy')}
             >
-              プライバシーポリシー
+              {t('onboarding.consent.privacyPolicy')}
             </Text>
-            {' に同意します'}
+            {t('onboarding.consent.privacyAgree')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -81,9 +83,9 @@ export function ConsentStep({
               style={[styles.linkText, { color: colors.cyan }]}
               onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#terms')}
             >
-              利用規約
+              {t('onboarding.consent.termsOfService')}
             </Text>
-            {' に同意し、データの保存を許可します'}
+            {t('onboarding.consent.dataAgree')}
           </Text>
         </TouchableOpacity>
       </View>

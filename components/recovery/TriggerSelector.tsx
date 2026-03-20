@@ -1,9 +1,18 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 
-const TRIGGERS = ['ストレス', '退屈', '孤独', '疲れ', 'SNS', '不安', 'その他'];
+const TRIGGER_KEYS = [
+  'recovery.triggers.stress',
+  'recovery.triggers.boredom',
+  'recovery.triggers.loneliness',
+  'recovery.triggers.fatigue',
+  'recovery.triggers.sns',
+  'recovery.triggers.anxiety',
+  'recovery.triggers.other',
+] as const;
 
 interface TriggerSelectorProps {
   selected: string | null;
@@ -12,12 +21,15 @@ interface TriggerSelectorProps {
 
 export function TriggerSelector({ selected, onSelect }: TriggerSelectorProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
+
+  const triggers = TRIGGER_KEYS.map((key) => t(key));
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: colors.text }]}>何が引き金になったと思いますか？</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t('recovery.triggerQuestion')}</Text>
       <View style={styles.grid}>
-        {TRIGGERS.map((trigger) => (
+        {triggers.map((trigger) => (
           <TouchableOpacity
             key={trigger}
             style={[

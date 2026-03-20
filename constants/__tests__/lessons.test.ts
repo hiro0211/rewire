@@ -9,9 +9,9 @@ describe('LESSONS', () => {
     LESSONS.forEach((lesson) => {
       expect(lesson.id).toBeDefined();
       expect(lesson.number).toBeDefined();
-      expect(lesson.title).toBeDefined();
+      expect(lesson.titleKey).toBeDefined();
       expect(lesson.readMinutes).toBeDefined();
-      expect(lesson.content).toBeDefined();
+      expect(lesson.contentKey).toBeDefined();
     });
   });
 
@@ -26,23 +26,15 @@ describe('LESSONS', () => {
     });
   });
 
-  it('タイトルがMDファイルの原題と一致する', () => {
-    const expectedTitles = [
-      'ポルノは報酬系の仕組みを変えてしまう',
-      '脱感作 ― 同じ刺激では満足できなくなる脳',
-      '前頭前皮質の弱体化 ― 「やめたいのにやめられない」の正体',
-      '感作 ― ポルノへの「引き金」が刻まれる',
-      '性機能への影響 ― ポルノが現実の性生活を壊していく',
-      'メンタルヘルスへの影響 ― 不安・抑うつ・孤独感のループ',
-      '脳の可塑性 ― 変化は元に戻せる',
-    ];
-    const titles = LESSONS.map((l) => l.title);
-    expect(titles).toEqual(expectedTitles);
+  it('titleKeyがlessons.lessonN.title形式である', () => {
+    LESSONS.forEach((lesson) => {
+      expect(lesson.titleKey).toBe(`lessons.lesson${lesson.number}.title`);
+    });
   });
 
-  it('各レッスンの本文が空でない', () => {
+  it('contentKeyがlessons.lessonN.content形式である', () => {
     LESSONS.forEach((lesson) => {
-      expect(lesson.content.length).toBeGreaterThan(0);
+      expect(lesson.contentKey).toBe(`lessons.lesson${lesson.number}.content`);
     });
   });
 

@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { useFonts } from 'expo-font';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { useLocaleStore } from '@/stores/localeStore';
 import { trackingClient } from '@/lib/tracking/trackingClient';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
@@ -21,6 +22,7 @@ export function useAppInitialization() {
   useEffect(() => {
     loadUser();
     useThemeStore.getState().loadThemePreference();
+    useLocaleStore.getState().loadLocalePreference();
   }, []);
 
   useEffect(() => {

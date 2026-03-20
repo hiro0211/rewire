@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { useAnalyzingProgress, ANALYSIS_ITEMS } from '@/hooks/onboarding/useAnalyzingProgress';
 
 interface AnalyzingStepProps {
@@ -18,12 +19,13 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
   const { progress, completedCount, itemFades, checkFades } = useAnalyzingProgress(onComplete);
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress / 100);
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>分析中...</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('common.loading')}</Text>
 
       <View testID="circular-progress-ring" style={styles.ringContainer}>
         <Svg width={RING_SIZE} height={RING_SIZE}>
@@ -61,7 +63,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
 
           return (
             <Animated.View
-              key={item.text}
+              key={item.textKey}
               style={[styles.checkItem, { opacity: itemFades[index] }]}
             >
               {isCompleted ? (
@@ -81,7 +83,7 @@ export function AnalyzingStep({ onComplete }: AnalyzingStepProps) {
                   isActive && { color: colors.text },
                 ]}
               >
-                {item.text}
+                {t(item.textKey)}
                 {isActive && !isCompleted ? '...' : ''}
               </Text>
             </Animated.View>

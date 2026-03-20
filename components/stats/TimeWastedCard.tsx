@@ -4,18 +4,11 @@ import { Card } from '@/components/ui/Card';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface TimeWastedCardProps {
   monthlyMs: number;
   hourlyWage: number;
-}
-
-function formatHoursMinutes(ms: number): string {
-  const totalMin = Math.floor(ms / 60000);
-  const hours = Math.floor(totalMin / 60);
-  const minutes = totalMin % 60;
-  if (hours === 0) return `${minutes}分`;
-  return `${hours}時間${minutes}分`;
 }
 
 export function TimeWastedCard({ monthlyMs, hourlyWage }: TimeWastedCardProps) {
@@ -23,6 +16,15 @@ export function TimeWastedCard({ monthlyMs, hourlyWage }: TimeWastedCardProps) {
   const monthlyYen = Math.round(monthlyHours * hourlyWage);
   const yearlyYen = monthlyYen * 12;
   const { colors } = useTheme();
+  const { t } = useLocale();
+
+  const formatHoursMinutes = (ms: number): string => {
+    const totalMin = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMin / 60);
+    const minutes = totalMin % 60;
+    if (hours === 0) return t('stats.minuteFormat', { min: minutes });
+    return t('stats.hoursMinutesFormat', { hours, min: minutes });
+  };
 
   // Fun comparisons
   const books = Math.floor(monthlyYen / 1500);
@@ -32,11 +34,11 @@ export function TimeWastedCard({ monthlyMs, hourlyWage }: TimeWastedCardProps) {
     <Card style={styles.container}>
       <View style={styles.headerRow}>
         <Ionicons name="cash-outline" size={20} color={colors.warning} />
-        <Text style={[styles.title, { color: colors.text }]}>金額に換算すると</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('stats.moneyEquivalent')}</Text>
       </View>
 
       <View style={styles.mainAmount}>
-        <Text style={[styles.amountPrefix, { color: colors.textSecondary }]}>今月</Text>
+        <Text style={[styles.amountPrefix, { color: colors.textSecondary }]}>{t('stats.thisMonth')}</Text>
         <Text style={[styles.time, { color: colors.text }]}>{formatHoursMinutes(monthlyMs)}</Text>
         <Text style={[styles.arrow, { color: colors.textSecondary }]}> = </Text>
         <Text style={[styles.yen, { color: colors.warning }]}>¥{monthlyYen.toLocaleString()}</Text>
@@ -45,7 +47,7 @@ export function TimeWastedCard({ monthlyMs, hourlyWage }: TimeWastedCardProps) {
       <View style={[styles.divider, { backgroundColor: colors.surfaceHighlight }]} />
 
       <View style={styles.detailRow}>
-        <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>年間換算</Text>
+        <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>{t('stats.annualized')}</Text>
         <Text style={[styles.detailValue, { color: colors.text }]}>¥{yearlyYen.toLocaleString()}</Text>
       </View>
 
@@ -53,12 +55,12 @@ export function TimeWastedCard({ monthlyMs, hourlyWage }: TimeWastedCardProps) {
         <View style={styles.comparisons}>
           {books > 0 && (
             <Text style={[styles.comparison, { color: colors.textSecondary }]}>
-              本 {books}冊分
+              {t('stats.booksEquivalent', { count: books })}
             </Text>
           )}
           {movies > 0 && (
             <Text style={[styles.comparison, { color: colors.textSecondary }]}>
-              映画 {movies}本分
+              {t('stats.moviesEquivalent', { count: movies })}
             </Text>
           )}
         </View>

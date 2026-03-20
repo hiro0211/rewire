@@ -1,6 +1,6 @@
-export const BRAND_CATCHPHRASES = [
-  '昨日までの自分は、もういい。',
-  '今から新しい自分へ生まれ変わる。',
+export const BRAND_CATCHPHRASE_KEYS = [
+  'brand.catchphrase1',
+  'brand.catchphrase2',
 ];
 
 export interface BrandTimingConfig {

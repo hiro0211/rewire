@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ToggleButton } from '@/components/ui/ToggleButton';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface BinaryQuestionProps {
@@ -12,6 +13,7 @@ interface BinaryQuestionProps {
 
 export function BinaryQuestion({ label, value, onChange }: BinaryQuestionProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -19,14 +21,14 @@ export function BinaryQuestion({ label, value, onChange }: BinaryQuestionProps) 
       <View style={styles.buttons}>
         <View style={styles.buttonWrapper}>
           <ToggleButton
-            title="はい"
+            title={t('common.yes')}
             active={value === true}
             onPress={() => onChange(true)}
           />
         </View>
         <View style={styles.buttonWrapper}>
           <ToggleButton
-            title="いいえ"
+            title={t('common.no')}
             active={value === false}
             onPress={() => onChange(false)}
           />

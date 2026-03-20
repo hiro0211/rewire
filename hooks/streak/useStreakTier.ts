@@ -1,7 +1,7 @@
 import {
   STREAK_TIERS,
   TIER_CONFIGS,
-  getSubText,
+  getSubTextKey,
   type StreakTierName,
   type StreakTierConfig,
 } from '@/constants/streakCelebration';
@@ -10,7 +10,7 @@ import {
 export const getStreakTier = (streak: number, goalReached: boolean): StreakTierConfig => {
   if (goalReached) {
     const config = TIER_CONFIGS.milestone;
-    return { ...config, subText: getSubText('milestone', streak, true) };
+    return { ...config, subText: getSubTextKey('milestone', streak, true) };
   }
 
   let tierName: StreakTierName = 'basic';
@@ -22,5 +22,5 @@ export const getStreakTier = (streak: number, goalReached: boolean): StreakTierC
   }
 
   const config = TIER_CONFIGS[tierName];
-  return { ...config, subText: getSubText(tierName, streak, false) };
+  return { ...config, subText: getSubTextKey(tierName, streak, false) };
 };

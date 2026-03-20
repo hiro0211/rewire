@@ -22,12 +22,12 @@ jest.mock('@/stores/userStore', () => ({
 import * as Haptics from 'expo-haptics';
 import { BrandScreen } from '../brand';
 import {
-  BRAND_CATCHPHRASES,
+  BRAND_CATCHPHRASE_KEYS,
   BRAND_TIMING_CONFIG,
   calculateBrandTimings,
 } from '@/constants/brandConfig';
 
-const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 
 describe('BrandScreen タイミング保証', () => {
   beforeEach(() => {

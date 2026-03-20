@@ -3,6 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, LAYOUT } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface SurveyCompletionStepProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ interface SurveyCompletionStepProps {
 
 export function SurveyCompletionStep({ onClose }: SurveyCompletionStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -18,11 +20,11 @@ export function SurveyCompletionStep({ onClose }: SurveyCompletionStepProps) {
       </View>
 
       <Text style={[styles.title, { color: colors.text }]}>
-        ご協力ありがとうございました
+        {t('surveyCompletion.title')}
       </Text>
 
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        いただいた回答はサービス改善に活用させていただきます
+        {t('surveyCompletion.body')}
       </Text>
 
       <TouchableOpacity
@@ -32,7 +34,7 @@ export function SurveyCompletionStep({ onClose }: SurveyCompletionStepProps) {
         activeOpacity={0.7}
       >
         <Text style={[styles.buttonText, { color: colors.contrastText }]}>
-          閉じる
+          {t('common.close')}
         </Text>
       </TouchableOpacity>
     </View>

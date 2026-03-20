@@ -13,14 +13,16 @@ import {
   isSameDay,
   getDay
 } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import { ja, enUS } from 'date-fns/locale';
 import { useCheckinStore } from '@/stores/checkinStore';
+import { useLocale } from '@/hooks/useLocale';
 import { Ionicons } from '@expo/vector-icons';
 
 export const HistoryCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const checkins = useCheckinStore((state) => state.checkins);
   const { colors, shadows } = useTheme();
+  const { t, isJapanese } = useLocale();
 
   const daysInMonth = useMemo(() => {
     const start = startOfMonth(currentMonth);
@@ -28,7 +30,11 @@ export const HistoryCalendar = () => {
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+  const weekDays = [
+    t('calendar.weekDays.sun'), t('calendar.weekDays.mon'), t('calendar.weekDays.tue'),
+    t('calendar.weekDays.wed'), t('calendar.weekDays.thu'), t('calendar.weekDays.fri'),
+    t('calendar.weekDays.sat'),
+  ];
 
   // Calculate empty days at start of month for alignment
   const startDay = getDay(startOfMonth(currentMonth));
@@ -54,7 +60,7 @@ export const HistoryCalendar = () => {
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.monthTitle, { color: colors.text }]}>
-          {format(currentMonth, 'yyyy年 M月', { locale: ja })}
+          {format(currentMonth, isJapanese ? 'yyyy年 M月' : 'MMM yyyy', { locale: isJapanese ? ja : enUS })}
         </Text>
         <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
           <Ionicons name="chevron-forward" size={24} color={colors.text} />
@@ -105,11 +111,11 @@ export const HistoryCalendar = () => {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
-          <Text style={[styles.legendText, { color: colors.textSecondary }]}>達成</Text>
+          <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('calendar.clean')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.error }]} />
-          <Text style={[styles.legendText, { color: colors.textSecondary }]}>リセット</Text>
+          <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('calendar.relapse')}</Text>
         </View>
       </View>
     </View>

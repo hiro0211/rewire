@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { renderIllustration } from './illustrations/renderIllustration';
 import type { EducationSlide } from '@/constants/education';
 
@@ -35,6 +36,7 @@ export function EducationSlideStep({
   totalSlides,
 }: EducationSlideStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View testID="education-slide-container" style={styles.container}>
@@ -44,8 +46,8 @@ export function EducationSlideStep({
         {renderIllustration(slide.illustrationType)}
       </View>
 
-      <Text style={[styles.title, { color: colors.contrastText }]}>{slide.title}</Text>
-      <Text style={[styles.body, { color: `${colors.contrastText}CC` }]}>{slide.body}</Text>
+      <Text style={[styles.title, { color: colors.contrastText }]}>{t(slide.titleKey)}</Text>
+      <Text style={[styles.body, { color: `${colors.contrastText}CC` }]}>{t(slide.bodyKey)}</Text>
     </View>
   );
 }

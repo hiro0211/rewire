@@ -5,11 +5,13 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { ARTICLES } from '@/constants/articles';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 export default function ArticleDetailScreen() {
   const { id } = useLocalSearchParams();
   const article = ARTICLES.find((a) => a.id === id);
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   if (!article) return null;
 
@@ -18,14 +20,14 @@ export default function ArticleDetailScreen() {
         <Stack.Screen options={{
             headerShown: true,
             headerTitle: '',
-            headerBackTitle: '戻る',
+            headerBackTitle: t('common.back'),
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.text,
         }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.category, { color: colors.primary }]}>{article.category}</Text>
-        <Text style={[styles.title, { color: colors.text }]}>{article.title}</Text>
-        <Text style={[styles.body, { color: colors.text }]}>{article.content}</Text>
+        <Text style={[styles.category, { color: colors.primary }]}>{t(article.categoryKey)}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t(article.titleKey)}</Text>
+        <Text style={[styles.body, { color: colors.text }]}>{t(article.contentKey)}</Text>
       </ScrollView>
     </SafeAreaWrapper>
   );

@@ -10,6 +10,7 @@ import { ScreenshotStep } from '@/components/content-blocker/ScreenshotStep';
 import { SetupIntro } from '@/components/content-blocker/SetupIntro';
 import { SetupCompletion } from '@/components/content-blocker/SetupCompletion';
 import { useContentBlockerSetup } from '@/hooks/contentBlocker/useContentBlockerSetup';
+import { useLocale } from '@/hooks/useLocale';
 
 const TOTAL_STEPS = 5;
 
@@ -25,16 +26,17 @@ const STEP_HIGHLIGHTS = {
   3: { top: 27, left: 5, width: 90, height: 7 },
 } as const;
 
-const SCREENSHOT_STEPS = [
-  { step: 1, title: '「設定」→「アプリ」→「Safari」', description: '設定アプリを開いて「アプリ」から「Safari」を選択してください' },
-  { step: 2, title: '「機能拡張」をタップ', description: 'Safari設定の中にある「機能拡張」を選択してください' },
-  { step: 3, title: 'Rewireをオンにする', description: '「Rewire」を選んで「機能拡張を許可」をオンにしてください' },
+const SCREENSHOT_STEP_KEYS = [
+  { step: 1, titleKey: 'contentBlocker.step1Title', descKey: 'contentBlocker.step1Desc' },
+  { step: 2, titleKey: 'contentBlocker.step2Title', descKey: 'contentBlocker.step2Desc' },
+  { step: 3, titleKey: 'contentBlocker.step3Title', descKey: 'contentBlocker.step3Desc' },
 ] as const;
 
 export default function ContentBlockerSetupScreen() {
   const { step, isLoading, handleNext, handlePrev, handleBack, handleOpenSettings } =
     useContentBlockerSetup();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <SafeAreaWrapper style={styles.container}>
@@ -42,7 +44,7 @@ export default function ContentBlockerSetupScreen() {
         {step > 0 ? (
           <TouchableOpacity onPress={handlePrev} style={styles.headerButton}>
             <Ionicons name="chevron-back" size={20} color={colors.primary} />
-            <Text style={[styles.headerButtonText, { color: colors.primary }]}>前へ</Text>
+            <Text style={[styles.headerButtonText, { color: colors.primary }]}>{t('contentBlocker.prev')}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
@@ -51,7 +53,7 @@ export default function ContentBlockerSetupScreen() {
         )}
         {step >= 1 && step <= 3 && (
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
-            <Text style={[styles.headerSkipText, { color: colors.textSecondary }]}>あとで設定する</Text>
+            <Text style={[styles.headerSkipText, { color: colors.textSecondary }]}>{t('contentBlocker.skipSetup')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -74,12 +76,12 @@ export default function ContentBlockerSetupScreen() {
         {step === 0 && <SetupIntro />}
 
         {step >= 1 && step <= 3 && (() => {
-          const config = SCREENSHOT_STEPS[step - 1];
+          const config = SCREENSHOT_STEP_KEYS[step - 1];
           return (
             <>
               <StepBadge step={config.step} />
-              <Text style={[styles.stepTitle, { color: colors.text }]}>{config.title}</Text>
-              <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>{config.description}</Text>
+              <Text style={[styles.stepTitle, { color: colors.text }]}>{t(config.titleKey)}</Text>
+              <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>{t(config.descKey)}</Text>
               <ScreenshotStep
                 image={STEP_IMAGES[config.step]}
                 highlight={STEP_HIGHLIGHTS[config.step]}
@@ -92,15 +94,15 @@ export default function ContentBlockerSetupScreen() {
       </View>
 
       <View style={styles.footer}>
-        {step === 0 && <Button title="セットアップを開始" onPress={handleNext} />}
+        {step === 0 && <Button title={t('contentBlocker.startSetup')} onPress={handleNext} />}
         {(step === 1 || step === 3) && (
           <>
-            <Button title={step === 1 ? '設定アプリを開く' : '設定を開く'} onPress={handleOpenSettings} />
-            <Button title="次へ" variant="secondary" onPress={handleNext} style={styles.secondaryButton} />
+            <Button title={step === 1 ? t('contentBlocker.openSettings') : t('contentBlocker.openSettingsShort')} onPress={handleOpenSettings} />
+            <Button title={t('common.next')} variant="secondary" onPress={handleNext} style={styles.secondaryButton} />
           </>
         )}
-        {step === 2 && <Button title="次へ" onPress={handleNext} />}
-        {step === 4 && <Button title="完了" onPress={handleNext} loading={isLoading} />}
+        {step === 2 && <Button title={t('common.next')} onPress={handleNext} />}
+        {step === 4 && <Button title={t('common.done')} onPress={handleNext} loading={isLoading} />}
       </View>
     </SafeAreaWrapper>
   );

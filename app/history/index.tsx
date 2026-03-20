@@ -5,12 +5,14 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Card } from '@/components/ui/Card';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { format, parseISO } from 'date-fns';
 
 export default function HistoryScreen() {
   const { checkins, loadCheckins } = useCheckinStore();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   useEffect(() => {
     loadCheckins();
@@ -18,9 +20,9 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaWrapper>
-      <Stack.Screen options={{ title: '履歴', headerBackTitle: '戻る' }} />
+      <Stack.Screen options={{ title: t('nav.history'), headerBackTitle: t('common.back') }} />
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>履歴</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('nav.history')}</Text>
       </View>
       <FlatList
         data={checkins}

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SYMPTOM_CATEGORIES } from '@/constants/symptoms';
 
 interface SymptomSelectStepProps {
@@ -15,11 +16,12 @@ export function SymptomSelectStep({
   onToggleSymptom,
 }: SymptomSelectStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
       <Text testID="symptom-title" style={[styles.title, { color: colors.text }]}>
-        症状
+        {t('symptomSelect.title')}
       </Text>
 
       <View
@@ -31,12 +33,12 @@ export function SymptomSelectStep({
       >
         <Ionicons name="information-circle" size={20} color={colors.warning} />
         <Text style={[styles.infoText, { color: colors.warning }]}>
-          過度なポルノ視聴は、心身にさまざまな影響を及ぼすことがわかっています
+          {t('symptomSelect.infoBubble')}
         </Text>
       </View>
 
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        当てはまる症状を選んでください
+        {t('symptomSelect.subtitle')}
       </Text>
 
       <ScrollView
@@ -50,7 +52,7 @@ export function SymptomSelectStep({
               testID={`category-title-${category.id}`}
               style={[styles.categoryTitle, { color: colors.textSecondary }]}
             >
-              {category.title}
+              {t(category.titleKey)}
             </Text>
             <View style={styles.itemsContainer}>
               {category.items.map((item) => {
@@ -95,7 +97,7 @@ export function SymptomSelectStep({
                         selected && { color: colors.selectedPillBorder },
                       ]}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Text>
                   </TouchableOpacity>
                 );

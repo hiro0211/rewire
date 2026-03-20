@@ -29,9 +29,9 @@ jest.mock('@/stores/userStore', () => ({
 
 import * as Haptics from 'expo-haptics';
 import { BrandScreen } from '../brand';
-import { BRAND_CATCHPHRASES, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
+import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
 
-const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 
 describe('BrandScreen（ブランド起動画面）', () => {
   const originalDev = (global as any).__DEV__;
@@ -60,13 +60,13 @@ describe('BrandScreen（ブランド起動画面）', () => {
 
     it('キャッチフレーズの各行がtestIDで存在する', () => {
       const { getByTestId } = render(<BrandScreen />);
-      BRAND_CATCHPHRASES.forEach((_, index) => {
+      BRAND_CATCHPHRASE_KEYS.forEach((_, index) => {
         expect(getByTestId(`catchphrase-line-${index}`)).toBeTruthy();
       });
     });
 
     it('キャッチフレーズが2行ある', () => {
-      expect(BRAND_CATCHPHRASES).toHaveLength(2);
+      expect(BRAND_CATCHPHRASE_KEYS).toHaveLength(2);
     });
   });
 

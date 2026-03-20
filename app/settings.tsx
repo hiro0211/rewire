@@ -6,31 +6,32 @@ import { SettingSection } from '@/components/settings/SettingSection';
 import { ProfileEditModal } from '@/components/settings/ProfileEditModal';
 import { TimePickerModal } from '@/components/settings/TimePickerModal';
 import { ThemePickerModal } from '@/components/settings/ThemePickerModal';
+import { LocalePickerModal } from '@/components/settings/LocalePickerModal';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { useLocaleStore } from '@/stores/localeStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
+import { useLocale } from '@/hooks/useLocale';
 import type { ThemePreference } from '@/types/theme';
-
-const THEME_LABELS: Record<ThemePreference, string> = {
-  system: 'システム設定',
-  light: 'ライトモード',
-  dark: 'ダークモード',
-};
+import type { LocalePreference } from '@/types/i18n';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, updateUser } = useUserStore();
   const { colors } = useTheme();
+  const { t } = useLocale();
   const themePreference = useThemeStore((s) => s.themePreference);
+  const localePreference = useLocaleStore((s) => s.localePreference);
 
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
   const [isThemePickerVisible, setThemePickerVisible] = useState(false);
+  const [isLocalePickerVisible, setLocalePickerVisible] = useState(false);
 
   const { blockerStatus } = useBlockerStatus();
   const { isSurveyCompleted } = useSurveyCompleted();
@@ -46,38 +47,38 @@ export default function SettingsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <SettingSection title="プロフィール">
+        <SettingSection title={t('settings.sections.profile')}>
           <SettingItem
-            label="ニックネーム"
+            label={t('settings.labels.nickname')}
             value={user.nickname}
             onPress={() => closeProfileModal(true)}
           />
           <SettingItem
-            label="目標日数"
-            value={`${user.goalDays}日`}
+            label={t('settings.labels.goalDays')}
+            value={t('settings.labels.daysFormat', { days: user.goalDays })}
             onPress={() => closeProfileModal(true)}
             isLast
           />
         </SettingSection>
 
         {Platform.OS === 'ios' && (
-          <SettingSection title="ポルノブロッカー">
+          <SettingSection title={t('settings.sections.blocker')}>
             <SettingItem
-              label="ブロック状態"
+              label={t('settings.labels.blockerStatus')}
               value={
-                blockerStatus === 'checking' ? '確認中...' :
-                blockerStatus === 'enabled' ? '有効' : '無効'
+                blockerStatus === 'checking' ? t('settings.labels.checking') :
+                blockerStatus === 'enabled' ? t('settings.labels.enabled') : t('settings.labels.disabled')
               }
               icon={blockerStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
               onPress={blockerStatus !== 'enabled' ? () => Linking.openURL('App-Prefs:SAFARI') : undefined}
             />
             <SettingItem
-              label="Safari設定を開く"
+              label={t('settings.labels.openSafari')}
               icon="open-outline"
               onPress={() => Linking.openURL('App-Prefs:SAFARI')}
             />
             <SettingItem
-              label="設定ガイド"
+              label={t('settings.labels.setupGuide')}
               icon="book-outline"
               onPress={() => router.push(ROUTES.contentBlockerSetup)}
               isLast
@@ -85,9 +86,9 @@ export default function SettingsScreen() {
           </SettingSection>
         )}
 
-        <SettingSection title="通知">
+        <SettingSection title={t('settings.sections.notifications')}>
           <SettingItem
-            label="デイリーリマインダー"
+            label={t('settings.labels.dailyReminder')}
             type="toggle"
             toggleValue={user.notifyEnabled}
             onToggle={handleNotificationToggle}
@@ -95,7 +96,7 @@ export default function SettingsScreen() {
           />
           {user.notifyEnabled && (
             <SettingItem
-              label="通知時間"
+              label={t('settings.labels.notifyTime')}
               value={user.notifyTime}
               onPress={() => setTimePickerVisible(true)}
               isLast
@@ -103,19 +104,25 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        <SettingSection title="外観">
+        <SettingSection title={t('settings.sections.appearance')}>
           <SettingItem
-            label="テーマ"
-            value={THEME_LABELS[themePreference]}
+            label={t('settings.labels.theme')}
+            value={t(`settings.theme.${themePreference}`)}
             icon="color-palette-outline"
             onPress={() => setThemePickerVisible(true)}
+          />
+          <SettingItem
+            label={t('settings.labels.language')}
+            value={t(`localePicker.${localePreference}`)}
+            icon="language-outline"
+            onPress={() => setLocalePickerVisible(true)}
             isLast
           />
         </SettingSection>
 
-        <SettingSection title="サブスクリプション">
+        <SettingSection title={t('settings.sections.subscription')}>
           <SettingItem
-            label="サブスクリプション管理"
+            label={t('settings.labels.manageSubscription')}
             icon="star"
             onPress={handleManageSubscription}
             isLast
@@ -123,9 +130,9 @@ export default function SettingsScreen() {
         </SettingSection>
 
         {!isSurveyCompleted && (
-          <SettingSection title="アンケート">
+          <SettingSection title={t('settings.sections.survey')}>
             <SettingItem
-              label="アンケートに協力する"
+              label={t('settings.labels.survey')}
               icon="chatbubble-ellipses-outline"
               onPress={() => router.push(ROUTES.survey)}
               isLast
@@ -133,26 +140,26 @@ export default function SettingsScreen() {
           </SettingSection>
         )}
 
-        <SettingSection title="サポート">
+        <SettingSection title={t('settings.sections.support')}>
           <SettingItem
-            label="お問い合わせ"
+            label={t('settings.labels.contact')}
             icon="mail-outline"
             onPress={() => Linking.openURL('mailto:arimurahiroaki40@gmail.com')}
           />
           <SettingItem
-            label="利用規約"
+            label={t('settings.labels.terms')}
             onPress={() => router.push(ROUTES.terms)}
           />
           <SettingItem
-            label="プライバシーポリシー"
+            label={t('settings.labels.privacyPolicy')}
             onPress={() => router.push(ROUTES.privacyPolicy)}
             isLast
           />
         </SettingSection>
 
-        <SettingSection title="データ管理">
+        <SettingSection title={t('settings.sections.data')}>
           <SettingItem
-            label="データをリセット"
+            label={t('settings.labels.resetData')}
             destructive
             onPress={handleResetData}
             icon="trash-outline"
@@ -186,6 +193,16 @@ export default function SettingsScreen() {
           setThemePickerVisible(false);
         }}
         onClose={() => setThemePickerVisible(false)}
+      />
+
+      <LocalePickerModal
+        visible={isLocalePickerVisible}
+        currentPreference={localePreference}
+        onSelect={(pref) => {
+          useLocaleStore.getState().setLocalePreference(pref);
+          setLocalePickerVisible(false);
+        }}
+        onClose={() => setLocalePickerVisible(false)}
       />
     </View>
   );

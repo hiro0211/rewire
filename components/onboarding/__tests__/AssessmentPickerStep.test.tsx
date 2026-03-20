@@ -21,11 +21,19 @@ jest.mock('@react-native-picker/picker', () => {
   return { Picker };
 });
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 const MOCK_QUESTION: AssessmentQuestion = {
   id: 'currentAge',
-  question: '現在の年齢は？',
+  questionKey: 'mock.currentAge.question',
   type: 'picker',
-  pickerRange: { min: 11, max: 60, suffix: '歳' },
+  pickerRange: { min: 11, max: 60, suffixKey: 'mock.suffix.years' },
 };
 
 describe('AssessmentPickerStep', () => {
@@ -49,7 +57,7 @@ describe('AssessmentPickerStep', () => {
 
   it('質問テキストが表示される', () => {
     const { getByText } = render(<AssessmentPickerStep {...defaultProps} />);
-    expect(getByText('現在の年齢は？')).toBeTruthy();
+    expect(getByText('mock.currentAge.question')).toBeTruthy();
   });
 
   it('ピッカーが表示される', () => {

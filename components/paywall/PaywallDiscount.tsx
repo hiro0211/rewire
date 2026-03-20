@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GradientCard } from '@/components/ui/GradientCard';
@@ -31,6 +32,7 @@ export function PaywallDiscount({
   onRestoreCompleted,
 }: PaywallDiscountProps) {
   const { colors, gradients } = useTheme();
+  const { t } = useLocale();
   useDiscountExpiryTracker();
 
   const { annualPackage, annualPrice, currencyCode } = extractOfferingPackages(offering);
@@ -59,7 +61,7 @@ export function PaywallDiscount({
 
         {/* Headline */}
         <Text style={[styles.offerTitle, { color: colors.text }]}>SPECIAL OFFER</Text>
-        <Text style={[styles.offerSub, { color: colors.textSecondary }]}>今だけの特別割引</Text>
+        <Text style={[styles.offerSub, { color: colors.textSecondary }]}>{t('paywall.specialOffer')}</Text>
 
         {/* Big discount card */}
         <View style={styles.discountWrap}>
@@ -67,7 +69,7 @@ export function PaywallDiscount({
         </View>
 
         {/* Timer */}
-        <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>この特別価格の期限:</Text>
+        <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>{t('paywall.timerLabel')}</Text>
         <CountdownTimer
           initialSeconds={initialSeconds}
           style={{ ...styles.timerDisplay, color: colors.text }}
@@ -89,15 +91,15 @@ export function PaywallDiscount({
           <View style={styles.priceRow}>
             <View>
               <Text style={[styles.priceLabel, { color: colors.text }]}>Yearly</Text>
-              <Text style={[styles.priceDetail, { color: colors.textSecondary }]}>12ヶ月 · {formatPrice(annualPrice, currencyCode)}</Text>
+              <Text style={[styles.priceDetail, { color: colors.textSecondary }]}>{t('paywall.months12', { price: formatPrice(annualPrice, currencyCode) })}</Text>
             </View>
-            <Text style={[styles.priceAmount, { color: colors.text }]}>{formatPrice(monthlyEquivalent, currencyCode)}/月</Text>
+            <Text style={[styles.priceAmount, { color: colors.text }]}>{t('paywall.pricePerMonth', { price: formatPrice(monthlyEquivalent, currencyCode) })}</Text>
           </View>
         </GradientCard>
 
         {/* CTA */}
         <Button
-          title="今すぐオファーを受け取る"
+          title={t('paywall.claimOffer')}
           onPress={handlePurchase}
           variant="gradient"
           size="lg"
@@ -108,7 +110,7 @@ export function PaywallDiscount({
 
         {/* Footer */}
         <Text style={[styles.footerNote, { color: colors.textSecondary }]}>
-          いつでもキャンセル · 集中力を取り戻す
+          {t('paywall.cancelAndReclaim')}
         </Text>
         <PaywallFooter onRestore={handleRestore} purchasing={purchasing} />
       </ScrollView>

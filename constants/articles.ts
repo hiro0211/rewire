@@ -1,54 +1,38 @@
 export interface Article {
   id: string;
-  title: string;
-  category: string;
+  titleKey: string;
+  categoryKey: string;
   readTime: number; // minutes
-  content: string; // Markdown or simple text
+  contentKey: string;
 }
 
 export const ARTICLES: Article[] = [
   {
     id: '1',
-    title: 'ドーパミンと報酬系：なぜやめられないのか？',
-    category: '脳科学',
+    titleKey: 'articles.article1.title',
+    categoryKey: 'articles.article1.category',
     readTime: 3,
-
-    content: `
-ポルノ依存の背後には「ドーパミン」という脳内物質が深く関わっています。
-... (本文プレビュー)
-    `,
+    contentKey: 'articles.article1.title',
   },
   {
     id: '2',
-    title: '「ハビットループ」を理解する',
-    category: '習慣形成',
+    titleKey: 'articles.article2.title',
+    categoryKey: 'articles.article2.category',
     readTime: 5,
-
-    content: `
-習慣は「きっかけ」「行動」「報酬」の3つの要素で構成されています。
-... (本文プレビュー)
-    `,
+    contentKey: 'articles.article2.title',
   },
   {
     id: '3',
-    title: '前頭前皮質の回復と自制心',
-    category: '脳科学',
+    titleKey: 'articles.article3.title',
+    categoryKey: 'articles.article3.category',
     readTime: 4,
-
-    content: `
-ポルノ視聴を続けると、理性を司る前頭前皮質の機能が低下することが研究で示唆されています。
-... (本文プレビュー)
-    `,
+    contentKey: 'articles.article3.title',
   },
   {
     id: '4',
-    title: '衝動を乗り越える「サーフィン」テクニック',
-    category: '実践テクニック',
+    titleKey: 'articles.article4.title',
+    categoryKey: 'articles.article4.category',
     readTime: 3,
-
-    content: `
-衝動は波のようなものです。抗うのではなく、波に乗るようにやり過ごすテクニックを紹介します。
-... (本文プレビュー)
-    `,
+    contentKey: 'articles.article4.title',
   },
 ];

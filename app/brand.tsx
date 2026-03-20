@@ -1,29 +1,33 @@
 import { StarryBackground } from '@/components/onboarding/StarryBackground';
 import {
-  BRAND_CATCHPHRASES,
+  BRAND_CATCHPHRASE_KEYS,
   BRAND_TIMING_CONFIG,
   calculateBrandTimings,
 } from '@/constants/brandConfig';
 import { FONT_SIZE } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
+import { useLocale } from '@/hooks/useLocale';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { ROUTES, routeWithParams } from '@/lib/routing/routes';
 import { Animated, StyleSheet, View } from 'react-native';
 
-const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 const CHAR_INTERVAL = BRAND_TIMING_CONFIG.charInterval;
 
 export function BrandScreen() {
   const router = useRouter();
   const { user } = useUserStore();
+  const { t } = useLocale();
+
+  const catchphrases = BRAND_CATCHPHRASE_KEYS.map((key) => t(key));
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
 
   // 各行の各文字ごとに Animated.Value を生成
   const charOpacities = useRef(
-    BRAND_CATCHPHRASES.map((phrase) =>
+    catchphrases.map((phrase) =>
       [...phrase].map(() => new Animated.Value(0)),
     ),
   ).current;
@@ -43,13 +47,13 @@ export function BrandScreen() {
 
     // タイプライター: 各行の各文字を順番に表示
     TIMINGS.lines.forEach((lineStart, lineIdx) => {
-      const chars = [...BRAND_CATCHPHRASES[lineIdx]];
+      const chars = [...catchphrases[lineIdx]];
       chars.forEach((_, charIdx) => {
         const charDelay = lineStart + charIdx * CHAR_INTERVAL;
         timeouts.push(setTimeout(() => {
           // 行の最初の文字でハプティクス
           if (charIdx === 0) {
-            const style = lineIdx < BRAND_CATCHPHRASES.length - 1
+            const style = lineIdx < catchphrases.length - 1
               ? Haptics.ImpactFeedbackStyle.Light
               : Haptics.ImpactFeedbackStyle.Medium;
             Haptics.impactAsync(style);
@@ -94,7 +98,7 @@ export function BrandScreen() {
         </Animated.Text>
 
         <View style={styles.catchphrases}>
-          {BRAND_CATCHPHRASES.map((phrase, lineIdx) => (
+          {catchphrases.map((phrase, lineIdx) => (
             <View
               key={lineIdx}
               style={styles.catchphraseLine}

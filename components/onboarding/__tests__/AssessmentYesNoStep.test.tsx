@@ -3,9 +3,17 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AssessmentYesNoStep } from '../AssessmentYesNoStep';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 const MOCK_QUESTION: AssessmentQuestion = {
   id: 'escalation',
-  question: '観ていくうちに、より過激な\nポルノを見るようになりましたか？',
+  questionKey: 'mock.escalation.question',
   type: 'yesno',
   yesScore: 4,
 };
@@ -52,13 +60,13 @@ describe('AssessmentYesNoStep（QUITTR風リデザイン）', () => {
   describe('縦並びレイアウト', () => {
     it('「はい」と「いいえ」のテキストが表示される', () => {
       const { getByText } = render(<AssessmentYesNoStep {...defaultProps} />);
-      expect(getByText('はい')).toBeTruthy();
-      expect(getByText('いいえ')).toBeTruthy();
+      expect(getByText('common.yes')).toBeTruthy();
+      expect(getByText('common.no')).toBeTruthy();
     });
 
     it('質問テキストが表示される', () => {
       const { getByText } = render(<AssessmentYesNoStep {...defaultProps} />);
-      expect(getByText(/より過激な/)).toBeTruthy();
+      expect(getByText('mock.escalation.question')).toBeTruthy();
     });
 
     it('質問番号に "Question #" フォーマットが使われる', () => {
@@ -86,7 +94,7 @@ describe('AssessmentYesNoStep（QUITTR風リデザイン）', () => {
       const { getByText } = render(
         <AssessmentYesNoStep {...defaultProps} onSelect={onSelect} />
       );
-      fireEvent.press(getByText('はい'));
+      fireEvent.press(getByText('common.yes'));
       expect(onSelect).toHaveBeenCalledWith('yes');
     });
 
@@ -95,7 +103,7 @@ describe('AssessmentYesNoStep（QUITTR風リデザイン）', () => {
       const { getByText } = render(
         <AssessmentYesNoStep {...defaultProps} onSelect={onSelect} />
       );
-      fireEvent.press(getByText('いいえ'));
+      fireEvent.press(getByText('common.no'));
       expect(onSelect).toHaveBeenCalledWith('no');
     });
   });

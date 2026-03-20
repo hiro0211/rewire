@@ -4,18 +4,18 @@ import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/ed
 export const FEATURES = [
   {
     icon: 'shield-checkmark-outline' as const,
-    title: 'Safariポルノブロッカー',
-    description: 'アダルトサイトへのアクセスを自動ブロック',
+    titleKey: 'onboarding.features.safariBlocker',
+    descriptionKey: 'onboarding.features.safariBlockerDesc',
   },
   {
     icon: 'analytics-outline' as const,
-    title: '毎日の振り返り',
-    description: '衝動やストレスを記録して自分を客観視',
+    titleKey: 'onboarding.features.dailyReview',
+    descriptionKey: 'onboarding.features.dailyReviewDesc',
   },
   {
     icon: 'fitness-outline' as const,
-    title: '呼吸エクササイズ',
-    description: '衝動が来たとき、呼吸で乗り越える',
+    titleKey: 'onboarding.features.breathingExercise',
+    descriptionKey: 'onboarding.features.breathingExerciseDesc',
   },
 ];
 
@@ -120,3 +120,11 @@ export function canGoBack(stepIndex: number): boolean {
 export function isEducationStep(cs: OnboardingStep): boolean {
   return cs.type === 'education' || cs.type === 'damage_intro' || cs.type === 'damage' || cs.type === 'recovery';
 }
+
+/** Check if current step is an assessment question (for skip button) */
+export function isAssessmentStep(cs: OnboardingStep): boolean {
+  return cs.type === 'assessment_choice' || cs.type === 'assessment_picker' || cs.type === 'assessment_yesno';
+}
+
+/** Find the index of the first education slide (assessment skip target) */
+export const EDUCATION_START_INDEX = STEPS.findIndex((s) => s.type === 'education');

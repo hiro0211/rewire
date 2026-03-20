@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { GradientCard } from '@/components/ui/GradientCard';
 import type { FeatureItem } from '@/constants/preBenefits';
 
@@ -11,18 +12,19 @@ interface FeatureShowcaseProps {
 
 export function FeatureShowcase({ features }: FeatureShowcaseProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Rewireの仕組み:</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('paywall.howItWorks')}</Text>
 
       {features.map((feature, index) => (
         <GradientCard key={index} style={styles.featureCard}>
           <View style={styles.featureRow}>
             <Text style={styles.emoji}>{feature.emoji}</Text>
             <View style={styles.textContainer}>
-              <Text style={[styles.featureTitle, { color: colors.text }]}>{feature.title}</Text>
-              <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>{feature.description}</Text>
+              <Text style={[styles.featureTitle, { color: colors.text }]}>{t(feature.titleKey)}</Text>
+              <Text style={[styles.featureDesc, { color: colors.textSecondary }]}>{t(feature.descriptionKey)}</Text>
             </View>
           </View>
         </GradientCard>

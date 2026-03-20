@@ -44,20 +44,20 @@ describe('preBenefits constants', () => {
     it('各セクションが必須フィールドを持つ', () => {
       BENEFIT_SECTIONS.forEach((section) => {
         expect(section).toHaveProperty('id');
-        expect(section).toHaveProperty('title');
+        expect(section).toHaveProperty('titleKey');
         expect(section).toHaveProperty('benefits');
         expect(section).toHaveProperty('emoji');
-        expect(section.title).toBeTruthy();
+        expect(section.titleKey).toBeTruthy();
         expect(section.benefits.length).toBeGreaterThanOrEqual(2);
       });
     });
 
-    it('各ベネフィットにはemoji, bold, textがある', () => {
+    it('各ベネフィットにはemoji, boldKey, textKeyがある', () => {
       BENEFIT_SECTIONS.forEach((section) => {
         section.benefits.forEach((benefit) => {
           expect(benefit).toHaveProperty('emoji');
-          expect(benefit).toHaveProperty('bold');
-          expect(benefit).toHaveProperty('text');
+          expect(benefit).toHaveProperty('boldKey');
+          expect(benefit).toHaveProperty('textKey');
         });
       });
     });
@@ -68,11 +68,11 @@ describe('preBenefits constants', () => {
       expect(BENEFIT_TAGS.length).toBeGreaterThanOrEqual(6);
     });
 
-    it('各タグにlabelとcolorがある', () => {
+    it('各タグにlabelKeyとcolorがある', () => {
       BENEFIT_TAGS.forEach((tag) => {
-        expect(tag).toHaveProperty('label');
+        expect(tag).toHaveProperty('labelKey');
         expect(tag).toHaveProperty('color');
-        expect(tag.label).toBeTruthy();
+        expect(tag.labelKey).toBeTruthy();
       });
     });
   });
@@ -82,34 +82,27 @@ describe('preBenefits constants', () => {
       expect(FEATURE_ITEMS.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('各機能にemoji, title, descriptionがある', () => {
+    it('各機能にemoji, titleKey, descriptionKeyがある', () => {
       FEATURE_ITEMS.forEach((f) => {
         expect(f).toHaveProperty('emoji');
-        expect(f).toHaveProperty('title');
-        expect(f).toHaveProperty('description');
+        expect(f).toHaveProperty('titleKey');
+        expect(f).toHaveProperty('descriptionKey');
       });
     });
 
-    it('SNSフリクション介入が含まれていない（未実装機能）', () => {
-      const titles = FEATURE_ITEMS.map((f) => f.title);
-      expect(titles).not.toContain('SNSフリクション介入');
-    });
-
-    it('ストリーク記録が含まれている（実装済み機能）', () => {
-      const titles = FEATURE_ITEMS.map((f) => f.title);
-      expect(titles).toContain('ストリーク記録');
+    it('ストリーク記録のキーが含まれている（実装済み機能）', () => {
+      const titleKeys = FEATURE_ITEMS.map((f) => f.titleKey);
+      expect(titleKeys).toContain('preBenefits.features.streakTracking.title');
     });
   });
 
-  describe('BENEFIT_SECTIONS - 自然な日本語', () => {
-    it('セクション4の表現が自然な日本語になっている', () => {
+  describe('BENEFIT_SECTIONS - キー構造', () => {
+    it('セクション4のキーが正しく設定されている', () => {
       const section4 = BENEFIT_SECTIONS.find((s) => s.id === 'real_relationships');
       expect(section4).toBeDefined();
-      const boldTexts = section4!.benefits.map((b) => b.bold);
-      expect(boldTexts).toContain('自分の感情');
-      expect(boldTexts).toContain('大切な人');
-      expect(boldTexts).not.toContain('感情的知性');
-      expect(boldTexts).not.toContain('本物の親密さ');
+      const boldKeys = section4!.benefits.map((b) => b.boldKey);
+      expect(boldKeys).toContain('preBenefits.sections.realRelationships.faceEmotions.bold');
+      expect(boldKeys).toContain('preBenefits.sections.realRelationships.becomeTrustworthy.bold');
     });
   });
 });

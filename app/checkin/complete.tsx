@@ -4,11 +4,13 @@ import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 
 export default function CheckinCompleteScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleGoHome = () => {
     router.replace('/(tabs)');
@@ -18,13 +20,12 @@ export default function CheckinCompleteScreen() {
     <SafeAreaWrapper>
       <View style={styles.container}>
         <Text style={styles.emoji}>👍</Text>
-        <Text style={[styles.title, { color: colors.text }]}>記録完了</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('checkinComplete.title')}</Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>
-          今日も一日お疲れ様でした。{'\n'}
-          着実に前に進んでいます。
+          {t('checkinComplete.message')}
         </Text>
         <Button
-          title="ホームに戻る"
+          title={t('checkinComplete.goHome')}
           onPress={handleGoHome}
           style={styles.button}
         />

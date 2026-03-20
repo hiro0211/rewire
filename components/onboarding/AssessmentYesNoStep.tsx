@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
 interface AssessmentYesNoStepProps {
@@ -13,9 +14,9 @@ interface AssessmentYesNoStepProps {
   onSelect: (value: string) => void;
 }
 
-const YES_NO_OPTIONS = [
-  { label: 'はい', value: 'yes' },
-  { label: 'いいえ', value: 'no' },
+const YES_NO_OPTION_KEYS = [
+  { labelKey: 'common.yes', value: 'yes' },
+  { labelKey: 'common.no', value: 'no' },
 ];
 
 export function AssessmentYesNoStep({
@@ -26,6 +27,7 @@ export function AssessmentYesNoStep({
   onSelect,
 }: AssessmentYesNoStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -33,10 +35,10 @@ export function AssessmentYesNoStep({
         Question #{questionIndex + 1}
       </Text>
 
-      <Text style={[styles.question, { color: colors.text }]}>{question.question}</Text>
+      <Text style={[styles.question, { color: colors.text }]}>{t(question.questionKey)}</Text>
 
       <View style={styles.options}>
-        {YES_NO_OPTIONS.map((option, index) => {
+        {YES_NO_OPTION_KEYS.map((option, index) => {
           const selected = selectedValue === option.value;
           return (
             <TouchableOpacity
@@ -67,7 +69,7 @@ export function AssessmentYesNoStep({
                   selected && { color: colors.selectedPillBorder },
                 ]}
               >
-                {option.label}
+                {t(option.labelKey)}
               </Text>
             </TouchableOpacity>
           );

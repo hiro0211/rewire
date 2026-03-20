@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
@@ -24,6 +25,7 @@ interface PrePaywallBenefitsProps {
 
 export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywallBenefitsProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
   const insets = useSafeAreaInsets();
   const targetDate = calcTargetDate(goalDays);
 
@@ -43,9 +45,9 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
               resizeMode="contain"
             />
             <Text style={[styles.headerTitle, { color: colors.text }]}>
-              {nickname}さん、{'\n'}あなた専用のプランを{'\n'}作成しました。
+              {t('paywall.personalizedHeader', { nickname })}
             </Text>
-            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>目標達成日:</Text>
+            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>{t('paywall.targetDate')}</Text>
             <View style={[styles.dateBadge, { backgroundColor: colors.surfaceHighlight }]}>
               <Text style={[styles.dateText, { color: colors.text }]}>{targetDate}</Text>
             </View>
@@ -53,15 +55,15 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
 
           {/* ── ベネフィットタグ群 ── */}
           <Text style={[styles.sectionHeadline, { color: colors.text }]}>
-            Rewireで{'\n'}自分を変える。
+            {t('paywall.sectionHeadline')}
           </Text>
           <Text style={[styles.sectionSubheadline, { color: colors.textSecondary }]}>
-            ポルノを見て後悔するの{'\n'}今日でやめませんか？
+            {t('paywall.sectionSubheadline')}
           </Text>
 
           <View style={styles.tagsContainer}>
             {BENEFIT_TAGS.map((tag) => (
-              <BenefitTag key={tag.label} label={tag.label} color={tag.color} emoji={tag.emoji} />
+              <BenefitTag key={tag.labelKey} label={t(tag.labelKey)} color={tag.color} emoji={tag.emoji} />
             ))}
           </View>
 
@@ -79,7 +81,7 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
 
           {/* ── 目標日付の再表示 ── */}
           <View style={styles.goalReminder}>
-            <Text style={[styles.goalReminderSub, { color: colors.textSecondary }]}>目標達成日:</Text>
+            <Text style={[styles.goalReminderSub, { color: colors.textSecondary }]}>{t('paywall.targetDate')}</Text>
             <View style={[styles.dateBadge, { backgroundColor: colors.surfaceHighlight }]}>
               <Text style={[styles.dateText, { color: colors.text }]}>{targetDate}</Text>
             </View>
@@ -99,14 +101,14 @@ export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywal
         {/* ── 固定フッター ── */}
         <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: insets.bottom + SPACING.xl }]}>
           <Button
-            title="Rewireを始める"
+            title={t('paywall.startRewire')}
             onPress={onContinue}
             variant="gradient"
             size="lg"
             style={styles.ctaButton}
           />
           <Text style={[styles.footerNote, { color: colors.textSecondary }]}>
-            いつでもキャンセル可能
+            {t('paywall.cancelAnytime')}
           </Text>
         </View>
       </View>

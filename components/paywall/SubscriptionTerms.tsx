@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface SubscriptionTermsProps {
   trialText?: string;
@@ -10,21 +11,21 @@ interface SubscriptionTermsProps {
 
 export function SubscriptionTerms({ trialText }: SubscriptionTermsProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
       <Text style={[styles.legalText, { color: colors.textSecondary }]}>
         {trialText ? `${trialText}\n` : ''}
-        サブスクリプションは期間終了の24時間前までにキャンセルしない限り自動更新されます。{'\n'}
-        お支払いはApple IDに請求されます。
+        {t('paywall.autoRenew')}
       </Text>
       <View style={styles.legalLinks}>
         <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#terms')}>
-          <Text style={[styles.legalLinkText, { color: colors.textSecondary }]}>利用規約</Text>
+          <Text style={[styles.legalLinkText, { color: colors.textSecondary }]}>{t('paywall.termsLink')}</Text>
         </TouchableOpacity>
         <Text style={[styles.legalSeparator, { color: colors.textSecondary }]}>|</Text>
         <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://hiro0211.github.io/rewire-support/#privacy')}>
-          <Text style={[styles.legalLinkText, { color: colors.textSecondary }]}>プライバシーポリシー</Text>
+          <Text style={[styles.legalLinkText, { color: colors.textSecondary }]}>{t('paywall.privacyLink')}</Text>
         </TouchableOpacity>
       </View>
     </View>

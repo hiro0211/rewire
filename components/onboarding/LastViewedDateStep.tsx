@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import {
   getDaysInMonth,
   calculateDaysSince,
@@ -27,6 +28,7 @@ export const LastViewedDateStep = ({
   onDayChange,
 }: LastViewedDateStepProps) => {
   const { colors } = useTheme();
+  const { t } = useLocale();
   const years = getYearRange(2020);
   const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
   const daysSince = calculateDaysSince(selectedYear, selectedMonth, selectedDay);
@@ -34,7 +36,7 @@ export const LastViewedDateStep = ({
   return (
     <View style={styles.container}>
       <Text style={[styles.title, { color: colors.text }]}>
-        {'最後にポルノを見たのは\nいつですか？'}
+        {t('lastViewed.title')}
       </Text>
 
       <View style={[styles.pickerRow, { backgroundColor: colors.pillBackground }]}>
@@ -59,7 +61,7 @@ export const LastViewedDateStep = ({
             itemStyle={[styles.pickerItem, { color: colors.text }]}
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <Picker.Item key={m} label={`${m}月`} value={m} />
+              <Picker.Item key={m} label={`${m}${t('lastViewed.monthSuffix')}`} value={m} />
             ))}
           </Picker>
         </View>
@@ -72,14 +74,14 @@ export const LastViewedDateStep = ({
             itemStyle={[styles.pickerItem, { color: colors.text }]}
           >
             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => (
-              <Picker.Item key={d} label={`${d}日`} value={d} />
+              <Picker.Item key={d} label={`${d}${t('lastViewed.daySuffix')}`} value={d} />
             ))}
           </Picker>
         </View>
       </View>
 
       <Text style={[styles.daysText, { color: colors.textSecondary }]}>
-        {`ポルノなしの継続日数は\n${daysSince}日から始まります。`}
+        {t('lastViewed.startMessage', { days: daysSince })}
       </Text>
     </View>
   );

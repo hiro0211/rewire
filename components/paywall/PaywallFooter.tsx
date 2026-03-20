@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { FONT_SIZE, SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SubscriptionTerms } from './SubscriptionTerms';
 
 interface PaywallFooterProps {
@@ -12,13 +13,14 @@ interface PaywallFooterProps {
 
 export function PaywallFooter({ onRestore, purchasing, trialText }: PaywallFooterProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <>
       <SubscriptionTerms trialText={trialText} />
       <TouchableOpacity onPress={onRestore} disabled={purchasing}>
         <Text style={[styles.restoreText, { color: colors.textSecondary }]}>
-          購入の復元
+          {t('paywall.restorePurchase')}
         </Text>
       </TouchableOpacity>
     </>

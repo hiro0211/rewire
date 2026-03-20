@@ -3,9 +3,9 @@ import { Linking } from 'react-native';
 import { reviewPromptStorage } from '@/lib/storage/reviewPromptStorage';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { isExpoGo } from '@/lib/nativeGuard';
+import { t } from '@/locales/i18n';
 
 const FEEDBACK_EMAIL = 'arimurahiroaki40@gmail.com';
-const FEEDBACK_SUBJECT = 'Rewire フィードバック';
 
 export function useReviewPromptActions(onHide: () => void) {
   const [selectedRating, setSelectedRating] = useState(0);
@@ -38,7 +38,7 @@ export function useReviewPromptActions(onHide: () => void) {
 
   const handleFeedbackTap = useCallback(async () => {
     await analyticsClient.logEvent('review_prompt_feedback_tapped');
-    const subject = encodeURIComponent(FEEDBACK_SUBJECT);
+    const subject = encodeURIComponent(t('review.feedbackSubject'));
     await Linking.openURL(`mailto:${FEEDBACK_EMAIL}?subject=${subject}`);
     onHide();
   }, [onHide]);

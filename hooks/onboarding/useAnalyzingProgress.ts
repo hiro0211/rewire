@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { t } from '@/locales/i18n';
 
 const ANALYSIS_ITEMS = [
-  { text: '回答データを集計', duration: 2000 },
-  { text: '習慣パターンを分析', duration: 2000 },
-  { text: '影響度を算出', duration: 1500 },
-  { text: '結果を生成中', duration: 1500 },
+  { textKey: 'analyzing.collectingData', duration: 2000 },
+  { textKey: 'analyzing.analyzingPatterns', duration: 2000 },
+  { textKey: 'analyzing.calculatingImpact', duration: 1500 },
+  { textKey: 'analyzing.generatingResult', duration: 1500 },
 ];
 
 const TOTAL_DURATION = ANALYSIS_ITEMS.reduce((sum, item) => sum + item.duration, 0);

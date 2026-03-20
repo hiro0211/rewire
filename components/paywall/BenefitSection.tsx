@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { GradientCard } from '@/components/ui/GradientCard';
 import type { BenefitSection as BenefitSectionType } from '@/constants/preBenefits';
 
@@ -11,18 +12,19 @@ interface BenefitSectionProps {
 
 export function BenefitSection({ section }: BenefitSectionProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
       <Text style={styles.sectionEmoji}>{section.emoji}</Text>
-      <Text style={[styles.title, { color: colors.text }]}>{section.title}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t(section.titleKey)}</Text>
 
       {section.benefits.map((benefit, index) => (
         <View key={index} style={styles.benefitRow}>
           <Text style={styles.benefitEmoji}>{benefit.emoji}</Text>
           <Text style={[styles.benefitText, { color: colors.text }]}>
-            <Text style={[styles.benefitBold, { color: colors.text }]}>{benefit.bold}</Text>
-            {benefit.text}
+            <Text style={[styles.benefitBold, { color: colors.text }]}>{t(benefit.boldKey)}</Text>
+            {t(benefit.textKey)}
           </Text>
         </View>
       ))}

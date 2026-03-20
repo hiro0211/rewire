@@ -3,18 +3,20 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 export function SetupIntro() {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <>
       <View style={[styles.iconContainer, { backgroundColor: colors.surfaceHighlight }]}>
         <Ionicons name="shield-checkmark-outline" size={80} color={colors.primary} />
       </View>
-      <Text style={[styles.title, { color: colors.text }]}>ポルノブロッカー</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('contentBlocker.title')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        {'Safariでアダルトサイトを自動ブロック。\n3ステップで設定できます。'}
+        {t('contentBlocker.intro')}
       </Text>
     </>
   );

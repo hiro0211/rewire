@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface TimePickerModalProps {
   visible: boolean;
@@ -17,6 +18,7 @@ export const TimePickerModal = ({
   onSave,
 }: TimePickerModalProps) => {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   // Generate time slots every 30 mins
   const timeSlots = [];
@@ -35,7 +37,7 @@ export const TimePickerModal = ({
     >
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
         <View style={[styles.container, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.title, { color: colors.text }]}>通知時間を選択</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('timePicker.title')}</Text>
 
           <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
             {timeSlots.map((time) => (
@@ -63,7 +65,7 @@ export const TimePickerModal = ({
           </ScrollView>
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={[styles.closeText, { color: colors.textSecondary }]}>キャンセル</Text>
+            <Text style={[styles.closeText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
           </TouchableOpacity>
         </View>
       </View>

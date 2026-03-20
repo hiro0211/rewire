@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { useStreak } from '@/hooks/dashboard/useStreak';
 import { useUserStore } from '@/stores/userStore';
 import { StreakEditModal } from './StreakEditModal';
@@ -14,6 +15,7 @@ export function StreakCard() {
   const { updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleSave = (date: string) => {
     updateUser({ streakStartDate: date });
@@ -21,7 +23,7 @@ export function StreakCard() {
 
   return (
     <Card style={[styles.container, { borderColor: 'rgba(0, 212, 255, 0.15)' }]}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>現在の記録</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{t('streak.currentStreak')}</Text>
       <View style={styles.row}>
         <Text style={[styles.count, { color: colors.text }]}>{streak}</Text>
         <Text style={[styles.unit, { color: colors.textSecondary }]}>Days</Text>
@@ -39,25 +41,25 @@ export function StreakCard() {
       <View testID="streak-stats-row" style={[styles.statsRow, { backgroundColor: colors.surfaceHighlight }]}>
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: colors.text }]}>{streak}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>連続日数</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('streak.consecutiveDays')}</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: colors.text }]}>{goal}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>目標</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('streak.goal')}</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: colors.cyan }]}>
             {Math.round(progress * 100)}%
           </Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>達成率</Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('streak.progress')}</Text>
         </View>
       </View>
 
       <View style={styles.progressContainer}>
         <View style={styles.goalRow}>
-          <Text style={[styles.goalText, { color: colors.textSecondary }]}>目標: {goal}日</Text>
+          <Text style={[styles.goalText, { color: colors.textSecondary }]}>{t('streak.goalLabel', { days: goal })}</Text>
           <Text style={[styles.percentText, { color: colors.primary }]}>{Math.round(progress * 100)}%</Text>
         </View>
         <ProgressBar progress={progress} variant="gradient" />

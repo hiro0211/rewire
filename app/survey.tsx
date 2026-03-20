@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -21,6 +22,7 @@ export default function SurveyScreen() {
   const { submit, isSubmitting, isComplete } = useSurveySubmit();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -60,7 +62,7 @@ export default function SurveyScreen() {
   const isChoiceStep = currentQuestion.type === 'choice';
   const hasAnswer = !!form.answers[currentQuestion.id]?.trim();
   const isNextDisabled = currentQuestion.required && !hasAnswer;
-  const buttonTitle = nav.isLastStep ? '送信する' : '次へ';
+  const buttonTitle = nav.isLastStep ? t('surveyForm.submit') : t('common.next');
 
   return (
     <SafeAreaWrapper style={[styles.container, { backgroundColor: colors.background }]}>

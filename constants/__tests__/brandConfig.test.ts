@@ -1,27 +1,20 @@
 import {
-  BRAND_CATCHPHRASES,
+  BRAND_CATCHPHRASE_KEYS,
   BRAND_TIMING_CONFIG,
   calculateBrandTimings,
 } from '../brandConfig';
 
 describe('brandConfig', () => {
-  describe('BRAND_CATCHPHRASES', () => {
-    it('キャッチフレーズが2行ある', () => {
-      expect(BRAND_CATCHPHRASES).toHaveLength(2);
+  describe('BRAND_CATCHPHRASE_KEYS', () => {
+    it('キャッチフレーズキーが2つある', () => {
+      expect(BRAND_CATCHPHRASE_KEYS).toHaveLength(2);
     });
 
-    it('1行目が「昨日までの自分は、もういい。」', () => {
-      expect(BRAND_CATCHPHRASES[0]).toBe('昨日までの自分は、もういい。');
-    });
-
-    it('2行目が「今から新しい自分へ生まれ変わる。」', () => {
-      expect(BRAND_CATCHPHRASES[1]).toBe('今から新しい自分へ生まれ変わる。');
-    });
-
-    it('各行が空でない文字列である', () => {
-      BRAND_CATCHPHRASES.forEach((phrase) => {
-        expect(typeof phrase).toBe('string');
-        expect(phrase.length).toBeGreaterThan(0);
+    it('各キーが翻訳キー形式の文字列である', () => {
+      BRAND_CATCHPHRASE_KEYS.forEach((key: string) => {
+        expect(typeof key).toBe('string');
+        expect(key.length).toBeGreaterThan(0);
+        expect(key).toMatch(/^brand\./);
       });
     });
   });
@@ -34,20 +27,20 @@ describe('brandConfig', () => {
 
   describe('calculateBrandTimings', () => {
     it('デフォルト設定で正しいタイミングを返す', () => {
-      const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+      const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
       expect(result.logo).toBe(300);
       expect(result.lines).toEqual([1000, 1800]);
       expect(result.lineAnimDuration).toBe(400);
     });
 
     it('navigate が最終行の表示開始 + アニメーション時間 + pause の後になる', () => {
-      const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+      const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
       const lastLineStart = result.lines[result.lines.length - 1];
       expect(result.navigate).toBe(lastLineStart + BRAND_TIMING_CONFIG.lineAnimDuration + BRAND_TIMING_CONFIG.postTextPause);
     });
 
     it('navigate は常に全ての行の表示開始より後になる', () => {
-      const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASES.length);
+      const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
       result.lines.forEach((lineTime) => {
         expect(result.navigate).toBeGreaterThan(lineTime);
       });

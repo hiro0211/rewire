@@ -3,9 +3,11 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 export const TransitionSlideStep = () => {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -29,11 +31,11 @@ export const TransitionSlideStep = () => {
       </View>
 
       <Text style={[styles.mainText, { color: colors.text }]}>
-        {'ではポルノに毒されると、\n何が起きるのか？'}
+        {t('transition.mainText')}
       </Text>
 
       <Text style={[styles.hookText, { color: colors.textSecondary }]}>
-        具体的にみてみましょう。
+        {t('transition.hookText')}
       </Text>
     </View>
   );

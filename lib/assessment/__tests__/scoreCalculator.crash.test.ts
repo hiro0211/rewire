@@ -53,27 +53,27 @@ describe('scoreCalculator crash prevention', () => {
   describe('getScoreLevel', () => {
     it('スコア0 → 最低レベル', () => {
       const level = getScoreLevel(0);
-      expect(level.label).toBe('影響 小');
+      expect(level.labelKey).toBe('assessment.score.low.label');
     });
 
     it('スコア29 → 最高レベル', () => {
       const level = getScoreLevel(29);
-      expect(level.label).toBe('影響 深刻');
+      expect(level.labelKey).toBe('assessment.score.severe.label');
     });
 
     it('スコア7 → 境界値テスト', () => {
-      expect(getScoreLevel(7).label).toBe('影響 小');
-      expect(getScoreLevel(8).label).toBe('影響 中');
+      expect(getScoreLevel(7).labelKey).toBe('assessment.score.low.label');
+      expect(getScoreLevel(8).labelKey).toBe('assessment.score.moderate.label');
     });
 
     it('スコア14 → 境界値テスト', () => {
-      expect(getScoreLevel(14).label).toBe('影響 中');
-      expect(getScoreLevel(15).label).toBe('影響 大');
+      expect(getScoreLevel(14).labelKey).toBe('assessment.score.moderate.label');
+      expect(getScoreLevel(15).labelKey).toBe('assessment.score.high.label');
     });
 
     it('スコア21 → 境界値テスト', () => {
-      expect(getScoreLevel(21).label).toBe('影響 大');
-      expect(getScoreLevel(22).label).toBe('影響 深刻');
+      expect(getScoreLevel(21).labelKey).toBe('assessment.score.high.label');
+      expect(getScoreLevel(22).labelKey).toBe('assessment.score.severe.label');
     });
 
     it('負のスコア → クラッシュしない', () => {
@@ -82,7 +82,7 @@ describe('scoreCalculator crash prevention', () => {
 
     it('巨大スコア → 最高レベルを返す', () => {
       const level = getScoreLevel(9999);
-      expect(level.label).toBe('影響 深刻');
+      expect(level.labelKey).toBe('assessment.score.severe.label');
     });
   });
 });

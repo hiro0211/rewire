@@ -1,9 +1,9 @@
-export interface PurchaseErrorMessage {
-  title: string;
-  message: string;
+export interface PurchaseErrorKeys {
+  titleKey: string;
+  messageKey: string;
 }
 
-export function getPurchaseErrorMessage(error: any): PurchaseErrorMessage | null {
+export function getPurchaseErrorKeys(error: any): PurchaseErrorKeys | null {
   const code = error?.code ?? error?.errorCode;
 
   if (error?.userCancelled || code === '1' || code === 'PURCHASE_CANCELLED') {
@@ -13,64 +13,34 @@ export function getPurchaseErrorMessage(error: any): PurchaseErrorMessage | null
   switch (code) {
     case '2':
     case 'STORE_PROBLEM':
-      return {
-        title: '購入エラー',
-        message: 'App Storeとの接続に問題が発生しました。しばらくしてから再度お試しください。',
-      };
+      return { titleKey: 'errors.purchase.storeProblem.title', messageKey: 'errors.purchase.storeProblem.message' };
     case '3':
     case 'PURCHASE_NOT_ALLOWED':
-      return {
-        title: '購入エラー',
-        message: 'このデバイスでは購入が許可されていません。「設定」>「スクリーンタイム」の制限を確認してください。',
-      };
+      return { titleKey: 'errors.purchase.notAllowed.title', messageKey: 'errors.purchase.notAllowed.message' };
     case '5':
     case 'PRODUCT_NOT_AVAILABLE':
-      return {
-        title: '購入エラー',
-        message: '現在このプランはご利用いただけません。しばらくしてから再度お試しください。',
-      };
+      return { titleKey: 'errors.purchase.notAvailable.title', messageKey: 'errors.purchase.notAvailable.message' };
     case '10':
     case 'NETWORK_ERROR':
     case '35':
     case 'OFFLINE_CONNECTION_ERROR':
-      return {
-        title: '購入エラー',
-        message: 'ネットワーク接続を確認して、もう一度お試しください。',
-      };
+      return { titleKey: 'errors.purchase.networkError.title', messageKey: 'errors.purchase.networkError.message' };
     case '15':
     case 'OPERATION_ALREADY_IN_PROGRESS':
-      return {
-        title: '購入エラー',
-        message: '購入処理が進行中です。しばらくお待ちください。',
-      };
+      return { titleKey: 'errors.purchase.inProgress.title', messageKey: 'errors.purchase.inProgress.message' };
     case '18':
     case 'INELIGIBLE_ERROR':
-      return {
-        title: '購入エラー',
-        message: '現在このオファーはご利用いただけません。条件をご確認ください。',
-      };
+      return { titleKey: 'errors.purchase.ineligible.title', messageKey: 'errors.purchase.ineligible.message' };
     case '20':
     case 'PAYMENT_PENDING':
-      return {
-        title: '購入保留中',
-        message: 'お支払いの承認待ちです。承認後にプレミアム機能が有効になります。',
-      };
+      return { titleKey: 'errors.purchase.paymentPending.title', messageKey: 'errors.purchase.paymentPending.message' };
     case '23':
     case 'CONFIGURATION_ERROR':
-      return {
-        title: '購入エラー',
-        message: 'ストアの設定に問題があります。しばらくしてから再度お試しください。',
-      };
+      return { titleKey: 'errors.purchase.configError.title', messageKey: 'errors.purchase.configError.message' };
     case '32':
     case 'PRODUCT_REQUEST_TIMED_OUT':
-      return {
-        title: '購入エラー',
-        message: 'リクエストがタイムアウトしました。ネットワーク接続を確認して、もう一度お試しください。',
-      };
+      return { titleKey: 'errors.purchase.timeout.title', messageKey: 'errors.purchase.timeout.message' };
     default:
-      return {
-        title: '購入エラー',
-        message: 'お支払い処理中にエラーが発生しました。しばらくしてから再度お試しください。',
-      };
+      return { titleKey: 'errors.purchase.defaultError.title', messageKey: 'errors.purchase.defaultError.message' };
   }
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Alert } from 'react-native';
-import { getPurchaseErrorMessage } from '@/constants/purchaseErrors';
+import { getPurchaseErrorKeys } from '@/constants/purchaseErrors';
+import { t } from '@/locales/i18n';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 import { logger } from '@/lib/logger';
 
@@ -18,7 +19,7 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
   const handlePurchase = useCallback(async () => {
     if (!Purchases || purchasing) return;
     if (!pkg) {
-      Alert.alert('エラー', 'プランの取得に失敗しました。再度お試しください。');
+      Alert.alert(t('checkinForm.error'), t('purchaseAlerts.packageFailed'));
       return;
     }
     setPurchasing(true);
@@ -40,9 +41,9 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
           message: error?.message,
         });
       }
-      const errorMsg = getPurchaseErrorMessage(error);
-      if (errorMsg) {
-        Alert.alert(errorMsg.title, errorMsg.message);
+      const errorKeys = getPurchaseErrorKeys(error);
+      if (errorKeys) {
+        Alert.alert(t(errorKeys.titleKey), t(errorKeys.messageKey));
       }
     } finally {
       setPurchasing(false);
@@ -57,7 +58,7 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
       if (customerInfo.entitlements.active[ENTITLEMENT_KEY]) {
         onRestoreCompleted();
       } else {
-        Alert.alert('復元結果', '有効なサブスクリプションが見つかりませんでした。');
+        Alert.alert(t('purchaseAlerts.restoreResult'), t('purchaseAlerts.restoreNoSub'));
       }
     } catch (error: any) {
       logger.error('Restore', 'failed:', {
@@ -68,9 +69,9 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
       });
       const code = error?.code ?? error?.errorCode;
       if (code === '10' || code === 'NETWORK_ERROR') {
-        Alert.alert('復元エラー', 'ネットワーク接続を確認して、もう一度お試しください。');
+        Alert.alert(t('purchaseAlerts.restoreError'), t('purchaseAlerts.restoreNetwork'));
       } else {
-        Alert.alert('復元エラー', '購入の復元中にエラーが発生しました。しばらくしてから再度お試しください。');
+        Alert.alert(t('purchaseAlerts.restoreError'), t('purchaseAlerts.restoreDefault'));
       }
     } finally {
       setPurchasing(false);

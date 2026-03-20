@@ -4,6 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface NotificationSetupStepProps {
   selectedTime: string;
@@ -22,6 +23,7 @@ export const NotificationSetupStep = ({
   onTimeChange,
 }: NotificationSetupStepProps) => {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -29,13 +31,13 @@ export const NotificationSetupStep = ({
         <Ionicons name="notifications-outline" size={48} color={colors.primary} />
       </View>
 
-      <Text style={[styles.title, { color: colors.text }]}>{'毎日の振り返りが\n成長の鍵です'}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('onboarding.notification.title')}</Text>
 
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        {'記録を続けることで、あなたの変化が\n数字として見えてきます。'}
+        {t('onboarding.notification.description')}
       </Text>
 
-      <Text style={[styles.pickerLabel, { color: colors.text }]}>何時に振り返りますか？</Text>
+      <Text style={[styles.pickerLabel, { color: colors.text }]}>{t('onboarding.notification.pickerLabel')}</Text>
 
       <View style={[styles.pickerContainer, { backgroundColor: colors.pillBackground }]}>
         <Picker

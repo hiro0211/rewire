@@ -34,9 +34,9 @@ describe('AnalyzingStep', () => {
     expect(getByText('0%')).toBeTruthy();
   });
 
-  it('"分析中" テキストが表示される', () => {
+  it('"読み込み中" テキストが表示される', () => {
     const { getByText } = render(<AnalyzingStep onComplete={jest.fn()} />);
-    expect(getByText(/分析中/)).toBeTruthy();
+    expect(getByText(/読み込み中/)).toBeTruthy();
   });
 
   it('分析ステップの説明テキストが表示される', () => {

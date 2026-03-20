@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, KeyboardAvo
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 
@@ -24,6 +25,7 @@ export const ProfileEditModal = ({
   const [nickname, setNickname] = useState(initialNickname);
   const [goalDays, setGoalDays] = useState(initialGoalDays);
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   useEffect(() => {
     if (visible) {
@@ -51,21 +53,21 @@ export const ProfileEditModal = ({
         style={[styles.overlay, { backgroundColor: colors.overlay }]}
       >
         <View style={[styles.container, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.title, { color: colors.text }]}>プロフィール編集</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('settings.profileEdit.title')}</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>ニックネーム</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('settings.labels.nickname')}</Text>
             <TextInput
               style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.surfaceHighlight }]}
               value={nickname}
               onChangeText={setNickname}
-              placeholder="ニックネームを入力"
+              placeholder={t('settings.profileEdit.nicknamePlaceholder')}
               placeholderTextColor={colors.textSecondary}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>目標日数</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('settings.labels.goalDays')}</Text>
             <View style={[styles.pickerWrapper, { backgroundColor: colors.background, borderColor: colors.surfaceHighlight }]}>
               <Picker
                 selectedValue={goalDays}
@@ -73,7 +75,7 @@ export const ProfileEditModal = ({
                 itemStyle={[styles.pickerItem, { color: colors.text }]}
               >
                 {GOAL_OPTIONS.map((days) => (
-                  <Picker.Item key={days} label={`${days}日`} value={days} />
+                  <Picker.Item key={days} label={t('settings.labels.daysFormat', { days })} value={days} />
                 ))}
               </Picker>
             </View>
@@ -81,10 +83,10 @@ export const ProfileEditModal = ({
 
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>キャンセル</Text>
+              <Text style={[styles.cancelText, { color: colors.textSecondary }]}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
-              <Button title="保存" onPress={handleSave} />
+              <Button title={t('common.save')} onPress={handleSave} />
             </View>
           </View>
         </View>

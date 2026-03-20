@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
 
@@ -11,20 +12,19 @@ export default function BreathingSuccessScreen() {
   const router = useRouter();
   const { user } = useUserStore();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <SafeAreaWrapper>
       <View style={styles.container}>
         <Text style={styles.emoji}>🎊</Text>
-        <Text style={[styles.title, { color: colors.text }]}>素晴らしい、{user?.nickname}！</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('breathingSuccess.title', { nickname: user?.nickname || '' })}</Text>
         <Text style={[styles.message, { color: colors.textSecondary }]}>
-          欲求の波に抵抗するたびに、{'\n'}
-          あなたの脳は少しずつ変化し、{'\n'}
-          自制心と集中力が積み上がっています。
+          {t('breathingSuccess.message')}
         </Text>
 
         <Button
-          title="続ける"
+          title={t('breathingSuccess.continue')}
           onPress={() => router.replace('/(tabs)')}
           style={styles.button}
         />

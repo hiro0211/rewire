@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { PaywallDefault } from '@/components/paywall/PaywallDefault';
 // --- Discount/Trial paywalls disabled for Guideline 5.6 ---
 // import { PaywallDiscount } from '@/components/paywall/PaywallDiscount';
@@ -15,6 +16,7 @@ export default function PaywallScreen() {
   const router = useRouter();
   const { source } = useLocalSearchParams<{ source?: string }>();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const {
     paywallState,
@@ -37,7 +39,7 @@ export default function PaywallScreen() {
       return (
         <View style={styles.fallback}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.fallbackText, { color: colors.textSecondary }]}>読み込み中...</Text>
+          <Text style={[styles.fallbackText, { color: colors.textSecondary }]}>{t('common.loading')}</Text>
         </View>
       );
     }
@@ -45,13 +47,12 @@ export default function PaywallScreen() {
     if (paywallState === 'unavailable') {
       return (
         <View style={styles.fallback}>
-          <Text style={[styles.unavailableTitle, { color: colors.text }]}>現在ご利用いただけません</Text>
+          <Text style={[styles.unavailableTitle, { color: colors.text }]}>{t('paywall.unavailableTitle')}</Text>
           <Text style={[styles.fallbackText, { color: colors.textSecondary }]}>
-            サブスクリプションサービスに接続できませんでした。{'\n'}
-            しばらくしてからもう一度お試しください。
+            {t('paywall.unavailableMessage')}
           </Text>
           <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={handleRetry}>
-            <Text style={[styles.retryButtonText, { color: colors.text }]}>再試行</Text>
+            <Text style={[styles.retryButtonText, { color: colors.text }]}>{t('common.retry')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.backButton}
@@ -64,7 +65,7 @@ export default function PaywallScreen() {
             }}
           >
             <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>
-              {isFromOnboarding ? 'あとで試す' : '戻る'}
+              {isFromOnboarding ? t('paywall.tryLater') : t('common.back')}
             </Text>
           </TouchableOpacity>
         </View>

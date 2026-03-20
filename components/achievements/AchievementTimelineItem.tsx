@@ -3,6 +3,7 @@ import { View, StyleSheet, Text } from 'react-native';
 import { BadgeOrb } from './BadgeOrb';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { BADGE_TIER_COLORS, type BadgeDefinition } from '@/constants/badges';
 
 interface AchievementTimelineItemProps {
@@ -21,6 +22,7 @@ export function AchievementTimelineItem({
   const tierColor = BADGE_TIER_COLORS[badge.tier];
   const isLeft = position === 'left';
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.wrapper}>
@@ -49,7 +51,7 @@ export function AchievementTimelineItem({
               !isUnlocked && styles.locked,
             ]}
           >
-            {badge.nameJa}
+            {t(badge.nameKey)}
           </Text>
           <View
             style={[
@@ -76,7 +78,7 @@ export function AchievementTimelineItem({
             ]}
             numberOfLines={2}
           >
-            {badge.descriptionJa}
+            {t(badge.descriptionKey)}
           </Text>
         </View>
       </View>

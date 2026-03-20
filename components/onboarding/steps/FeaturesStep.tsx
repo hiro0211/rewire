@@ -3,14 +3,16 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { FEATURES } from '@/constants/onboarding';
 
 export function FeaturesStep() {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>Rewireでできること</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('onboarding.features.sectionTitle')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>{''}</Text>
       <View style={styles.featuresContainer}>
         {FEATURES.map((feature, index) => (
@@ -20,10 +22,10 @@ export function FeaturesStep() {
             </View>
             <View style={styles.featureTextContainer}>
               <View style={styles.featureTitleRow}>
-                <Text style={[styles.featureTitle, { color: colors.text }]}>{feature.title}</Text>
+                <Text style={[styles.featureTitle, { color: colors.text }]}>{t(feature.titleKey)}</Text>
               </View>
               <Text style={[styles.featureDescription, { color: colors.textSecondary }]}>
-                {feature.description}
+                {t(feature.descriptionKey)}
               </Text>
             </View>
           </View>

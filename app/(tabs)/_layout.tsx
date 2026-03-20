@@ -1,10 +1,12 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { BlurTabBar } from '@/components/ui/BlurTabBar';
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <Tabs
@@ -25,9 +27,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'ホーム',
+          title: t('nav.home'),
           headerShown: false,
-          tabBarLabel: 'ホーム',
+          tabBarLabel: t('nav.home'),
           tabBarIcon: ({ color, size }) => <Ionicons name={color === colors.cyan ? 'home' : 'home-outline'} size={size} color={color} />,
         }}
       />
@@ -44,18 +46,18 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: '記録履歴',
+          title: t('nav.recordHistory'),
           headerShown: true,
-          tabBarLabel: '履歴',
+          tabBarLabel: t('nav.history'),
           tabBarIcon: ({ color, size }) => <Ionicons name={color === colors.cyan ? 'calendar' : 'calendar-outline'} size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="learn"
         options={{
-          title: '学ぶ',
+          title: t('nav.learn'),
           headerShown: false,
-          tabBarLabel: '学ぶ',
+          tabBarLabel: t('nav.learn'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={color === colors.cyan ? 'book' : 'book-outline'} size={size} color={color} />
           ),
@@ -64,9 +66,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'プロフィール',
+          title: t('nav.profile'),
           headerShown: false,
-          tabBarLabel: 'プロフィール',
+          tabBarLabel: t('nav.profile'),
           tabBarIcon: ({ color, size }) => <Ionicons name={color === colors.cyan ? 'person' : 'person-outline'} size={size} color={color} />,
         }}
       />

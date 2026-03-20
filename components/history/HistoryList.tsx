@@ -2,15 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import { ja, enUS } from 'date-fns/locale';
 import { Ionicons } from '@expo/vector-icons';
 import type { DailyCheckin } from '@/types/models';
 
 export const HistoryList = () => {
   const checkins = useCheckinStore((state) => state.checkins);
   const { colors, shadows } = useTheme();
+  const { t, isJapanese } = useLocale();
+  const dateLocale = isJapanese ? ja : enUS;
+  const dateFormat = isJapanese ? 'yyyy年MM月dd日 (EEE)' : 'MMM d, yyyy (EEE)';
 
   const sortedCheckins = [...checkins].sort((a, b) =>
     new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -26,18 +30,18 @@ export const HistoryList = () => {
         <View style={styles.contentContainer}>
           <View style={styles.headerRow}>
             <Text style={[styles.dateText, { color: colors.text }]}>
-              {format(new Date(item.date), 'yyyy年MM月dd日 (EEE)', { locale: ja })}
+              {format(new Date(item.date), dateFormat, { locale: dateLocale })}
             </Text>
             <View style={[styles.badge, isRelapse ? { backgroundColor: colors.error + '20' } : { backgroundColor: colors.success + '20' }]}>
                 <Text style={[styles.badgeText, isRelapse ? { color: colors.error } : { color: colors.success }]}>
-                    {isRelapse ? 'リセット' : '達成'}
+                    {isRelapse ? t('history.relapse') : t('history.achievement')}
                 </Text>
             </View>
           </View>
 
           {item.watchedPorn && (
              <View style={styles.tagsRow}>
-                <Text style={[styles.tag, { color: colors.textSecondary, backgroundColor: colors.background, borderColor: colors.border }]}>ポルノ視聴</Text>
+                <Text style={[styles.tag, { color: colors.textSecondary, backgroundColor: colors.background, borderColor: colors.border }]}>{t('history.pornViewing')}</Text>
              </View>
           )}
 
@@ -60,7 +64,7 @@ export const HistoryList = () => {
   if (checkins.length === 0) {
       return (
           <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>まだ記録がありません</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('history.empty')}</Text>
           </View>
       );
   }

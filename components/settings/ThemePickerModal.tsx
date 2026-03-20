@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import type { ThemePreference } from '@/types/theme';
 
 interface ThemePickerModalProps {
@@ -12,21 +13,22 @@ interface ThemePickerModalProps {
   onClose: () => void;
 }
 
-const OPTIONS: { value: ThemePreference; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { value: 'system', label: 'システム設定に合わせる', icon: 'phone-portrait-outline' },
-  { value: 'light', label: 'ライトモード', icon: 'sunny-outline' },
-  { value: 'dark', label: 'ダークモード', icon: 'moon-outline' },
+const OPTION_CONFIGS: { value: ThemePreference; labelKey: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: 'system', labelKey: 'settings.theme.system', icon: 'phone-portrait-outline' },
+  { value: 'light', labelKey: 'settings.theme.light', icon: 'sunny-outline' },
+  { value: 'dark', labelKey: 'settings.theme.dark', icon: 'moon-outline' },
 ];
 
 export function ThemePickerModal({ visible, currentPreference, onSelect, onClose }: ThemePickerModalProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={[styles.overlay, { backgroundColor: colors.overlay }]} onPress={onClose}>
         <Pressable style={[styles.content, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.title, { color: colors.text }]}>外観</Text>
-          {OPTIONS.map((option) => (
+          <Text style={[styles.title, { color: colors.text }]}>{t('themePicker.title')}</Text>
+          {OPTION_CONFIGS.map((option) => (
             <TouchableOpacity
               key={option.value}
               style={[styles.option, { borderBottomColor: colors.border }]}
@@ -34,7 +36,7 @@ export function ThemePickerModal({ visible, currentPreference, onSelect, onClose
             >
               <View style={styles.optionLeft}>
                 <Ionicons name={option.icon} size={22} color={colors.textSecondary} />
-                <Text style={[styles.optionLabel, { color: colors.text }]}>{option.label}</Text>
+                <Text style={[styles.optionLabel, { color: colors.text }]}>{t(option.labelKey)}</Text>
               </View>
               {currentPreference === option.value && (
                 <Ionicons name="checkmark" size={22} color={colors.primary} />

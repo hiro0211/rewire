@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING, RADIUS, FONT_SIZE } from '@/constants/theme';
 import type { Lesson } from '@/constants/lessons';
 
@@ -15,6 +16,7 @@ interface LessonCardProps {
 
 export function LessonCard({ lesson, status, onPress }: LessonCardProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const borderColor =
     status === 'active'
@@ -49,21 +51,21 @@ export function LessonCard({ lesson, status, onPress }: LessonCardProps) {
             <Ionicons testID="lock-icon" name="lock-closed" size={16} color={colors.textSecondary} />
           ) : (
             <Text style={[styles.readTime, { color: colors.textSecondary }]}>
-              {lesson.readMinutes}分
+              {lesson.readMinutes}{t('learn.minuteUnit')}
             </Text>
           )}
         </View>
       </View>
 
       <Text style={[styles.title, { color: colors.text }]}>
-        {lesson.title}
+        {t(lesson.titleKey)}
       </Text>
 
       <View style={styles.footer}>
         {status === 'active' && (
           <View style={styles.actionRow}>
             <Text style={[styles.actionText, { color: colors.cyan }]}>
-              読み始める
+              {t('learn.startReading')}
             </Text>
             <Ionicons name="chevron-forward" size={16} color={colors.cyan} />
           </View>
@@ -72,7 +74,7 @@ export function LessonCard({ lesson, status, onPress }: LessonCardProps) {
           <View style={styles.actionRow}>
             <Ionicons name="checkmark-circle" size={16} color={colors.success} />
             <Text style={[styles.completedText, { color: colors.success }]}>
-              完了
+              {t('learn.completed')}
             </Text>
           </View>
         )}

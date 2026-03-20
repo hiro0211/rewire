@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
 import { BadgeOrb } from '@/components/achievements/BadgeOrb';
@@ -13,11 +14,12 @@ export function ProfileHeader() {
   const { user } = useUserStore();
   const { unlocked } = useAchievements();
   const { colors } = useTheme();
+  const { t, isJapanese } = useLocale();
 
   const latestBadge = unlocked.length > 0 ? unlocked[unlocked.length - 1] : null;
 
   const joinDate = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString('ja-JP', {
+    ? new Date(user.createdAt).toLocaleDateString(isJapanese ? 'ja-JP' : 'en-US', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -45,9 +47,9 @@ export function ProfileHeader() {
             <Ionicons name="person-circle-outline" size={96} color={colors.textSecondary} />
           )}
         </View>
-        <Text style={[styles.nickname, { color: colors.text }]}>{user?.nickname || 'ユーザー'}</Text>
+        <Text style={[styles.nickname, { color: colors.text }]}>{user?.nickname || t('profile.defaultName')}</Text>
         {joinDate ? (
-          <Text style={[styles.joinDate, { color: colors.textSecondary }]}>Rewire参加: {joinDate}</Text>
+          <Text style={[styles.joinDate, { color: colors.textSecondary }]}>{t('profile.joinDate', { date: joinDate })}</Text>
         ) : null}
       </View>
     </View>

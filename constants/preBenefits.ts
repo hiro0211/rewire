@@ -2,39 +2,39 @@
 
 export interface BenefitItem {
   emoji: string;
-  bold: string;
-  text: string;
+  boldKey: string;
+  textKey: string;
 }
 
 export interface BenefitSection {
   id: string;
-  title: string;
+  titleKey: string;
   emoji: string;
   benefits: BenefitItem[];
 }
 
 export interface BenefitTagData {
-  label: string;
+  labelKey: string;
   color: string;
   emoji: string;
 }
 
 export interface FeatureItem {
   emoji: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
 }
 
 // ── ベネフィットタグ ──
 
 export const BENEFIT_TAGS: BenefitTagData[] = [
-  { label: '集中力回復', color: '#3DD68C', emoji: '🎯' },
-  { label: 'ED予防', color: '#F0A030', emoji: '🛡️' },
-  { label: '自己効力感', color: '#8B5CF6', emoji: '💪' },
-  { label: '脳のリセット', color: '#00D4FF', emoji: '🧠' },
-  { label: '時間の確保', color: '#EF4444', emoji: '⏰' },
-  { label: '自己成長', color: '#C8A84E', emoji: '📈' },
-  { label: '人間関係改善', color: '#4A90D9', emoji: '🤝' },
+  { labelKey: 'preBenefits.tags.focusRecovery', color: '#3DD68C', emoji: '🎯' },
+  { labelKey: 'preBenefits.tags.edPrevention', color: '#F0A030', emoji: '🛡️' },
+  { labelKey: 'preBenefits.tags.selfEfficacy', color: '#8B5CF6', emoji: '💪' },
+  { labelKey: 'preBenefits.tags.brainReset', color: '#00D4FF', emoji: '🧠' },
+  { labelKey: 'preBenefits.tags.timeRecovery', color: '#EF4444', emoji: '⏰' },
+  { labelKey: 'preBenefits.tags.selfGrowth', color: '#C8A84E', emoji: '📈' },
+  { labelKey: 'preBenefits.tags.relationships', color: '#4A90D9', emoji: '🤝' },
 ];
 
 // ── ベネフィットセクション ──
@@ -42,42 +42,42 @@ export const BENEFIT_TAGS: BenefitTagData[] = [
 export const BENEFIT_SECTIONS: BenefitSection[] = [
   {
     id: 'rewire_brain',
-    title: '脳をリセットする',
+    titleKey: 'preBenefits.sections.rewireBrain.title',
     emoji: '🧠',
     benefits: [
-      { emoji: '🔄', bold: 'ドーパミンの基準値', text: 'をリセット' },
-      { emoji: '🎯', bold: '集中力と意欲', text: 'を取り戻す' },
-      { emoji: '✨', bold: '日常の小さな幸せ', text: 'を感じる力を回復' },
+      { emoji: '🔄', boldKey: 'preBenefits.sections.rewireBrain.dopamineReset.bold', textKey: 'preBenefits.sections.rewireBrain.dopamineReset.text' },
+      { emoji: '🎯', boldKey: 'preBenefits.sections.rewireBrain.focusMotivation.bold', textKey: 'preBenefits.sections.rewireBrain.focusMotivation.text' },
+      { emoji: '✨', boldKey: 'preBenefits.sections.rewireBrain.dailyJoy.bold', textKey: 'preBenefits.sections.rewireBrain.dailyJoy.text' },
     ],
   },
   {
     id: 'self_control',
-    title: '自分をコントロールする',
+    titleKey: 'preBenefits.sections.selfControl.title',
     emoji: '🔥',
     benefits: [
-      { emoji: '💪', bold: '衝動に勝てる', text: '自分になる' },
-      { emoji: '🤝', bold: '自分との約束', text: 'を守れる人間になる' },
-      { emoji: '📈', bold: '自己効力感', text: 'を取り戻す' },
+      { emoji: '💪', boldKey: 'preBenefits.sections.selfControl.beatUrges.bold', textKey: 'preBenefits.sections.selfControl.beatUrges.text' },
+      { emoji: '🤝', boldKey: 'preBenefits.sections.selfControl.keepPromises.bold', textKey: 'preBenefits.sections.selfControl.keepPromises.text' },
+      { emoji: '📈', boldKey: 'preBenefits.sections.selfControl.selfEfficacy.bold', textKey: 'preBenefits.sections.selfControl.selfEfficacy.text' },
     ],
   },
   {
     id: 'move_forward',
-    title: '人生を変える',
+    titleKey: 'preBenefits.sections.moveForward.title',
     emoji: '🚀',
     benefits: [
-      { emoji: '🌙', bold: '夜の2〜3時間', text: 'を副業・学習に再投資' },
-      { emoji: '📚', bold: 'ビジネス書を1冊通して読める', text: '集中力' },
-      { emoji: '🏆', bold: '「続けられた」という実感', text: 'が力になる' },
+      { emoji: '🌙', boldKey: 'preBenefits.sections.moveForward.reinvestTime.bold', textKey: 'preBenefits.sections.moveForward.reinvestTime.text' },
+      { emoji: '📚', boldKey: 'preBenefits.sections.moveForward.readBooks.bold', textKey: 'preBenefits.sections.moveForward.readBooks.text' },
+      { emoji: '🏆', boldKey: 'preBenefits.sections.moveForward.achievement.bold', textKey: 'preBenefits.sections.moveForward.achievement.text' },
     ],
   },
   {
     id: 'real_relationships',
-    title: '本物の人間関係を築く',
+    titleKey: 'preBenefits.sections.realRelationships.title',
     emoji: '❤️',
     benefits: [
-      { emoji: '💡', bold: '自分の感情', text: 'と向き合える' },
-      { emoji: '🔗', bold: '信頼できる', text: '人間になる' },
-      { emoji: '❤️', bold: '大切な人', text: 'と深い関係を築ける' },
+      { emoji: '💡', boldKey: 'preBenefits.sections.realRelationships.faceEmotions.bold', textKey: 'preBenefits.sections.realRelationships.faceEmotions.text' },
+      { emoji: '🔗', boldKey: 'preBenefits.sections.realRelationships.becomeTrustworthy.bold', textKey: 'preBenefits.sections.realRelationships.becomeTrustworthy.text' },
+      { emoji: '❤️', boldKey: 'preBenefits.sections.realRelationships.deepRelationship.bold', textKey: 'preBenefits.sections.realRelationships.deepRelationship.text' },
     ],
   },
 ];
@@ -85,29 +85,9 @@ export const BENEFIT_SECTIONS: BenefitSection[] = [
 // ── 機能紹介 ──
 
 export const FEATURE_ITEMS: FeatureItem[] = [
-  {
-    emoji: '🔥',
-    title: 'ストリーク記録',
-    description: '継続日数を可視化してモチベーションを維持',
-  },
-  {
-    emoji: '🔒',
-    title: 'コンテンツブロッカー',
-    description: 'Safariのアダルトコンテンツを自動ブロック',
-  },
-  {
-    emoji: '🌬️',
-    title: 'SOS呼吸法',
-    description: '衝動が来たら深呼吸でピークをやり過ごす',
-  },
-  {
-    emoji: '📊',
-    title: 'デイリーチェックイン',
-    description: '毎日の振り返りで行動パターンを自覚する',
-  },
-  {
-    emoji: '⏱️',
-    title: 'ウィジェット対応',
-    description: 'アプリを開かずホーム画面で経過時間をチェック',
-  },
+  { emoji: '🔥', titleKey: 'preBenefits.features.streakTracking.title', descriptionKey: 'preBenefits.features.streakTracking.description' },
+  { emoji: '🔒', titleKey: 'preBenefits.features.contentBlocker.title', descriptionKey: 'preBenefits.features.contentBlocker.description' },
+  { emoji: '🌬️', titleKey: 'preBenefits.features.sosBreathing.title', descriptionKey: 'preBenefits.features.sosBreathing.description' },
+  { emoji: '📊', titleKey: 'preBenefits.features.dailyCheckin.title', descriptionKey: 'preBenefits.features.dailyCheckin.description' },
+  { emoji: '⏱️', titleKey: 'preBenefits.features.widget.title', descriptionKey: 'preBenefits.features.widget.description' },
 ];

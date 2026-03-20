@@ -9,6 +9,7 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { useShareWidget } from '@/hooks/dashboard/useShareWidget';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { isExpoGo } from '@/lib/nativeGuard';
@@ -35,6 +36,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
+  const { t } = useLocale();
   const { viewShotRef, share } = useShareWidget();
   const { shouldShowSurvey } = useSurveyEligibility();
   const [surveyModalVisible, setSurveyModalVisible] = useState(false);
@@ -87,7 +89,7 @@ export default function DashboardScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>おかえりなさい</Text>
+          <Text style={[styles.greeting, { color: colors.textSecondary }]}>{t('dashboard.greeting')}</Text>
           <Text style={[styles.username, { color: colors.text }]}>{user?.nickname}</Text>
         </View>
 
@@ -98,20 +100,20 @@ export default function DashboardScreen() {
         />
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>今日の振り返り</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.todayReview')}</Text>
           {todayCheckin ? (
             <GradientCard>
               <View style={styles.doneInner}>
-                <Text style={[styles.doneText, { color: colors.success }]}>完了済み</Text>
-                <Text style={[styles.doneSubText, { color: colors.textSecondary }]}>明日も続けましょう。</Text>
+                <Text style={[styles.doneText, { color: colors.success }]}>{t('dashboard.completed')}</Text>
+                <Text style={[styles.doneSubText, { color: colors.textSecondary }]}>{t('dashboard.continueMessage')}</Text>
                 <TouchableOpacity onPress={() => router.push('/checkin')} style={styles.redoButton}>
-                  <Text style={[styles.redoText, { color: colors.textSecondary }]}>やり直す</Text>
+                  <Text style={[styles.redoText, { color: colors.textSecondary }]}>{t('dashboard.redo')}</Text>
                 </TouchableOpacity>
               </View>
             </GradientCard>
           ) : (
             <Button
-              title="今日の結果を入力"
+              title={t('dashboard.enterResult')}
               onPress={() => router.push('/checkin')}
               variant="gradient"
               style={styles.checkinButton}

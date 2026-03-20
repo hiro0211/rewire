@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 
 interface ReviewPromptModalProps {
@@ -23,6 +24,7 @@ export function ReviewPromptModal({
   onDismiss,
 }: ReviewPromptModalProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
@@ -30,20 +32,20 @@ export function ReviewPromptModal({
         <Pressable style={[styles.content, { backgroundColor: colors.surface }]}>
           {showFeedback ? (
             <>
-              <Text style={[styles.title, { color: colors.text }]}>ご意見をお聞かせください</Text>
+              <Text style={[styles.title, { color: colors.text }]}>{t('review.feedbackTitle')}</Text>
               <Text style={[styles.body, { color: colors.textSecondary }]}>
-                より良いアプリにするため、{'\n'}フィードバックをお寄せください
+                {t('review.feedbackBody')}
               </Text>
               <View style={styles.buttons}>
-                <Button title="フィードバックを送る" onPress={onFeedbackTap} variant="gradient" style={styles.fullWidth} />
-                <Button title="閉じる" onPress={onDismiss} variant="ghost" style={styles.fullWidth} />
+                <Button title={t('review.sendFeedback')} onPress={onFeedbackTap} variant="gradient" style={styles.fullWidth} />
+                <Button title={t('common.close')} onPress={onDismiss} variant="ghost" style={styles.fullWidth} />
               </View>
             </>
           ) : (
             <>
-              <Text style={[styles.title, { color: colors.text }]}>Rewireを気に入っていますか？</Text>
+              <Text style={[styles.title, { color: colors.text }]}>{t('review.enjoyTitle')}</Text>
               <Text style={[styles.body, { color: colors.textSecondary }]}>
-                あなたの評価は今後の改善に{'\n'}役立ちます
+                {t('review.enjoyBody')}
               </Text>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -51,7 +53,7 @@ export function ReviewPromptModal({
                     key={star}
                     onPress={() => onRate(star)}
                     accessibilityRole="button"
-                    accessibilityLabel={`${star}つ星`}
+                    accessibilityLabel={t('review.starLabel', { count: star })}
                     style={styles.starButton}
                   >
                     <Ionicons
@@ -62,7 +64,7 @@ export function ReviewPromptModal({
                   </Pressable>
                 ))}
               </View>
-              <Button title="あとで" onPress={onDismiss} variant="ghost" style={styles.fullWidth} />
+              <Button title={t('common.later')} onPress={onDismiss} variant="ghost" style={styles.fullWidth} />
             </>
           )}
         </Pressable>

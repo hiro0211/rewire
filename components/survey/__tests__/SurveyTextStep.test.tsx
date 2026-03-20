@@ -3,9 +3,17 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { SurveyTextStep } from '../SurveyTextStep';
 import type { SurveyQuestion } from '@/types/survey';
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 const MOCK_QUESTION: SurveyQuestion = {
   id: 'free_text',
-  question: 'アプリへのご意見・ご要望があればお聞かせください',
+  questionKey: 'mock.freeText.question',
   type: 'text_input',
   required: false,
 };
@@ -23,7 +31,7 @@ describe('SurveyTextStep', () => {
 
   it('質問テキストが表示される', () => {
     const { getByText } = render(<SurveyTextStep {...defaultProps} />);
-    expect(getByText('アプリへのご意見・ご要望があればお聞かせください')).toBeTruthy();
+    expect(getByText('mock.freeText.question')).toBeTruthy();
   });
 
   it('テキスト入力フィールドが存在する', () => {
@@ -42,6 +50,6 @@ describe('SurveyTextStep', () => {
 
   it('任意であることが表示される', () => {
     const { getByText } = render(<SurveyTextStep {...defaultProps} />);
-    expect(getByText('任意')).toBeTruthy();
+    expect(getByText('surveyForm.optional')).toBeTruthy();
   });
 });

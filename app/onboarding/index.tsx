@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -21,10 +22,12 @@ import {
   NO_FOOTER_TYPES,
   NON_COUNTABLE_TYPES,
   FEATURES_STEP_INDEX,
+  EDUCATION_START_INDEX,
   STEP_COUNTER_MAP,
   TOTAL_COUNTABLE_STEPS,
   canGoBack,
   isEducationStep,
+  isAssessmentStep,
 } from '@/constants/onboarding';
 
 export default function OnboardingScreen() {
@@ -33,6 +36,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const autoAdvancingRef = useRef(false);
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const stateRef = useRef<OnboardingFormState>({
     nickname: form.nickname,
@@ -115,8 +119,9 @@ export default function OnboardingScreen() {
   const currentStep = nav.currentStep;
   const showFooter = !NO_FOOTER_TYPES.has(currentStep.type);
   const isNextDisabled = !canAdvanceAt(nav.step);
-  const showSkip = isEducationStep(currentStep);
-  const footerButtonTitle = currentStep.type === 'score_result' ? '症状を確認してみる' : '次へ';
+  const showSkip = isEducationStep(currentStep) || isAssessmentStep(currentStep);
+  const skipTarget = isAssessmentStep(currentStep) ? EDUCATION_START_INDEX : FEATURES_STEP_INDEX;
+  const footerButtonTitle = currentStep.type === 'score_result' ? t('checkin.checkSymptoms') : t('common.next');
 
   const backgroundConfig = currentStep.type === 'damage_intro'
     ? { gradientColors: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] as string[], showStars: false }
@@ -142,10 +147,10 @@ export default function OnboardingScreen() {
             )}
             {showSkip ? (
               <TouchableOpacity
-                onPress={() => animateTransition(-1, () => nav.goToStep(FEATURES_STEP_INDEX))}
+                onPress={() => animateTransition(-1, () => nav.goToStep(skipTarget))}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text style={[styles.skipText, { color: colors.textSecondary }]}>スキップ</Text>
+                <Text style={[styles.skipText, { color: colors.textSecondary }]}>{t('common.skip')}</Text>
               </TouchableOpacity>
             ) : !NON_COUNTABLE_TYPES.has(currentStep.type) ? (
               <Text style={[styles.stepCounter, { color: colors.textSecondary }]}>

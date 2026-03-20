@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -26,6 +27,7 @@ export default function GoalSettingScreen() {
   const { setUser } = useUserStore();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const resolvedNotifyTime = Array.isArray(notifyTimeParam)
     ? notifyTimeParam[0]
@@ -77,9 +79,9 @@ export default function GoalSettingScreen() {
     <StarryBackground>
       <SafeAreaWrapper style={styles.container}>
         <View style={styles.content}>
-          <Text style={[styles.title, { color: colors.text }]}>目標を設定</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('goal.title')}</Text>
           <Text style={[styles.description, { color: colors.textSecondary }]}>
-            まずは何日間、ポルノなしで過ごすことを目指しますか？
+            {t('goal.description')}
           </Text>
 
           <View style={[styles.pickerContainer, { backgroundColor: colors.pillBackground }]}>
@@ -89,14 +91,14 @@ export default function GoalSettingScreen() {
               itemStyle={[styles.pickerItem, { color: colors.text }]}
             >
               {GOAL_OPTIONS.map((days) => (
-                <Picker.Item key={days} label={`${days}日`} value={days} />
+                <Picker.Item key={days} label={t('goal.daysFormat', { days })} value={days} />
               ))}
             </Picker>
           </View>
         </View>
 
         <View style={styles.footer}>
-          <Button title="開始する" onPress={handleFinish} />
+          <Button title={t('goal.start')} onPress={handleFinish} />
         </View>
       </SafeAreaWrapper>
     </StarryBackground>

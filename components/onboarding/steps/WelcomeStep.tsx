@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 
 interface WelcomeStepProps {
@@ -14,6 +15,7 @@ const STAR_COLOR = '#FFD700';
 
 export function WelcomeStep({ onStart }: WelcomeStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -28,10 +30,10 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
         </Text>
 
         <Text style={[styles.title, { color: colors.text }]}>
-          ようこそ！
+          {t('onboarding.welcome.title')}
         </Text>
         <Text style={[styles.description, { color: colors.textSecondary }]}>
-          {'まずはポルノの依存度を\nチェックしてみましょう！'}
+          {t('onboarding.welcome.description')}
         </Text>
 
         <View testID="star-rating" style={styles.starRow}>
@@ -42,7 +44,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
           <Text style={styles.laurelRight}>🌿</Text>
         </View>
       </View>
-      <Button title="チェックを始める" onPress={onStart} />
+      <Button title={t('onboarding.welcome.startButton')} onPress={onStart} />
     </View>
   );
 }

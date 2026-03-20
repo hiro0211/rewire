@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
@@ -117,5 +117,14 @@ describe('OnboardingScreen crash prevention', () => {
     unmount();
     // advance timers after unmount - shouldn't crash
     expect(() => jest.advanceTimersByTime(1000)).not.toThrow();
+  });
+
+  it('assessmentステップでスキップボタンが表示される', () => {
+    const { getByText } = render(<OnboardingScreen />);
+    act(() => {
+      fireEvent.press(getByText('チェックを始める'));
+      jest.runAllTimers();
+    });
+    expect(getByText('スキップ')).toBeTruthy();
   });
 });

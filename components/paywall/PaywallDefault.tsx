@@ -11,6 +11,7 @@ import { FeatureCard } from './FeatureCard';
 import { formatPrice } from './paywallUtils';
 import { PaywallCloseButton } from './PaywallCloseButton';
 import { PaywallFooter } from './PaywallFooter';
+import { useLocale } from '@/hooks/useLocale';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
 import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 
@@ -21,12 +22,12 @@ interface PaywallDefaultProps {
   onRestoreCompleted: () => void;
 }
 
-const FEATURES = [
-  { emoji: '🎯', title: 'ストリーク記録', description: '毎日の進歩を可視化' },
-  { emoji: '🔥', title: 'SOS呼吸法', description: '衝動を冷静にコントロール' },
-  { emoji: '📊', title: 'デイリーチェックイン', description: '自分の変化を追跡' },
-  { emoji: '🏆', title: '実績バッジ', description: '達成感でモチベーション維持' },
-  { emoji: '⏱️', title: 'ウィジェット対応', description: 'アプリを開かずホーム画面で経過時間をチェック' },
+const FEATURE_KEYS = [
+  { emoji: '🎯', titleKey: 'paywall.features.streakTracking.title', descriptionKey: 'paywall.features.streakTracking.description' },
+  { emoji: '🔥', titleKey: 'paywall.features.sosBreathing.title', descriptionKey: 'paywall.features.sosBreathing.description' },
+  { emoji: '📊', titleKey: 'paywall.features.dailyCheckin.title', descriptionKey: 'paywall.features.dailyCheckin.description' },
+  { emoji: '🏆', titleKey: 'paywall.features.badges.title', descriptionKey: 'paywall.features.badges.description' },
+  { emoji: '⏱️', titleKey: 'paywall.features.widget.title', descriptionKey: 'paywall.features.widget.description' },
 ];
 
 export function PaywallDefault({
@@ -36,6 +37,7 @@ export function PaywallDefault({
   onRestoreCompleted,
 }: PaywallDefaultProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
   const insets = useSafeAreaInsets();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
 
@@ -54,8 +56,8 @@ export function PaywallDefault({
   const monthlyCurrencyCode = monthlyPackage?.product?.currencyCode ?? 'JPY';
   const billingText =
     selectedPlan === 'annual'
-      ? `はじめての方は3日間無料、その後 ${formatPrice(annualPrice, annualCurrencyCode)} /年`
-      : `はじめての方は3日間無料、その後 ${formatPrice(monthlyPrice, monthlyCurrencyCode)} /月`;
+      ? t('paywall.billingAnnual', { price: formatPrice(annualPrice, annualCurrencyCode) })
+      : t('paywall.billingMonthly', { price: formatPrice(monthlyPrice, monthlyCurrencyCode) });
 
   return (
     <SafeAreaWrapper edges={['top']}>
@@ -73,7 +75,7 @@ export function PaywallDefault({
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={[styles.tagline, { color: colors.cyan }]}>自分を、取り戻そう。</Text>
+          <Text style={[styles.tagline, { color: colors.cyan }]}>{t('paywall.tagline')}</Text>
 
           {/* Plan Selector */}
           <View style={styles.planSelectorWrap}>
@@ -91,16 +93,16 @@ export function PaywallDefault({
 
           {/* Headline */}
           <Text style={[styles.headline, { color: colors.text }]}>
-            意志力の問題じゃない。{'\n'}ポルノを自動ブロック。
+            {t('paywall.headline')}
           </Text>
           <Text style={[styles.subHeadline, { color: colors.textSecondary }]}>
-            Rewireが科学的に設計されたプログラムであなたの回復をサポートします
+            {t('paywall.subHeadline')}
           </Text>
 
           {/* Feature Cards */}
           <View style={styles.featuresWrap}>
-            {FEATURES.map((f) => (
-              <FeatureCard key={f.title} emoji={f.emoji} title={f.title} description={f.description} />
+            {FEATURE_KEYS.map((f) => (
+              <FeatureCard key={f.titleKey} emoji={f.emoji} title={t(f.titleKey)} description={t(f.descriptionKey)} />
             ))}
           </View>
         </ScrollView>
@@ -108,7 +110,7 @@ export function PaywallDefault({
         {/* Fixed Footer */}
         <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: insets.bottom + SPACING.sm }]}>
           <Button
-            title="無料で始める"
+            title={t('paywall.startFree')}
             onPress={handlePurchase}
             variant="gradient"
             size="lg"
@@ -117,7 +119,7 @@ export function PaywallDefault({
             style={styles.ctaButton}
           />
           <Text style={[styles.billingNote, { color: colors.textSecondary }]}>{billingText}</Text>
-          <Text style={[styles.cancelNote, { color: colors.textSecondary }]}>いつでもキャンセル可能</Text>
+          <Text style={[styles.cancelNote, { color: colors.textSecondary }]}>{t('paywall.cancelAnytime')}</Text>
           <PaywallFooter onRestore={handleRestore} purchasing={purchasing} />
         </View>
       </View>

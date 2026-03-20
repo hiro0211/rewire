@@ -3,9 +3,11 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 export function UsageEmptyState() {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
@@ -16,9 +18,9 @@ export function UsageEmptyState() {
           color={colors.textSecondary}
         />
       </View>
-      <Text style={[styles.title, { color: colors.text }]}>データがありません</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('stats.noData')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        {'チェックインを続けると\nここに統計が表示されます'}
+        {t('stats.noDataDescription')}
       </Text>
     </View>
   );

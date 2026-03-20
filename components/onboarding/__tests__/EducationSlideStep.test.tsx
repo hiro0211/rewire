@@ -3,10 +3,18 @@ import { render } from '@testing-library/react-native';
 import { EducationSlideStep } from '../EducationSlideStep';
 import type { EducationSlide } from '@/constants/education';
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 const MOCK_SLIDE: EducationSlide = {
   id: 'dopamine_trap',
-  title: 'テストタイトル',
-  body: 'テスト本文テキスト',
+  titleKey: 'mock.slide.title',
+  bodyKey: 'mock.slide.body',
   illustrationType: 'dopamine_bars',
 };
 
@@ -24,12 +32,12 @@ describe('EducationSlideStep', () => {
 
   it('タイトルテキストが表示される', () => {
     const { getByText } = render(<EducationSlideStep {...defaultProps} />);
-    expect(getByText('テストタイトル')).toBeTruthy();
+    expect(getByText('mock.slide.title')).toBeTruthy();
   });
 
   it('本文テキストが表示される', () => {
     const { getByText } = render(<EducationSlideStep {...defaultProps} />);
-    expect(getByText('テスト本文テキスト')).toBeTruthy();
+    expect(getByText('mock.slide.body')).toBeTruthy();
   });
 
   it('testID="page-dots" が存在する', () => {

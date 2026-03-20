@@ -95,6 +95,10 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: { logEvent: jest.fn() },
 }));
 
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageCode: 'ja' }],
+}));
+
 import DashboardScreen from '../../app/(tabs)/index';
 
 describe('DashboardScreen', () => {

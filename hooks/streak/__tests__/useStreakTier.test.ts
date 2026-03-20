@@ -55,35 +55,35 @@ describe('getStreakTier', () => {
     });
   });
 
-  describe('サブテキスト', () => {
-    it('basic tier は "N日達成！" を返す', () => {
+  describe('サブテキスト（翻訳キーを返す）', () => {
+    it('basic tier は streak.daysAchieved キーを返す', () => {
       const result = getStreakTier(3, false);
-      expect(result.subText).toBe('3日達成！');
+      expect(result.subText).toBe('streak.daysAchieved');
     });
 
-    it('streak=0 は "0日達成！" を返す', () => {
+    it('streak=0 は streak.daysAchieved キーを返す', () => {
       const result = getStreakTier(0, false);
-      expect(result.subText).toBe('0日達成！');
+      expect(result.subText).toBe('streak.daysAchieved');
     });
 
-    it('weekly tier は "N日達成！" を返す', () => {
+    it('weekly tier は streak.daysAchieved キーを返す', () => {
       const result = getStreakTier(7, false);
-      expect(result.subText).toBe('7日達成！');
+      expect(result.subText).toBe('streak.daysAchieved');
     });
 
-    it('monthly tier は "N日達成！" を返す', () => {
+    it('monthly tier は streak.daysAchieved キーを返す', () => {
       const result = getStreakTier(30, false);
-      expect(result.subText).toBe('30日達成！');
+      expect(result.subText).toBe('streak.daysAchieved');
     });
 
-    it('milestone tier は "N日達成！" を返す', () => {
+    it('milestone tier は streak.daysAchieved キーを返す', () => {
       const result = getStreakTier(90, false);
-      expect(result.subText).toBe('90日達成！');
+      expect(result.subText).toBe('streak.daysAchieved');
     });
 
-    it('goalReached=true のとき "目標達成！" を返す', () => {
+    it('goalReached=true のとき streak.goalReached キーを返す', () => {
       const result = getStreakTier(5, true);
-      expect(result.subText).toBe('目標達成！');
+      expect(result.subText).toBe('streak.goalReached');
     });
   });
 

@@ -3,14 +3,22 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AssessmentChoiceStep } from '../AssessmentChoiceStep';
 import type { AssessmentQuestion } from '@/constants/assessment';
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 const MOCK_QUESTION: AssessmentQuestion = {
   id: 'frequency',
-  question: 'どれくらいの頻度で\nポルノを観ますか？',
+  questionKey: 'mock.frequency.question',
   type: 'choice',
   options: [
-    { label: '1日1回以上', value: 'multiple_daily', score: 4 },
-    { label: '1日1回', value: 'daily', score: 3 },
-    { label: '週に数回', value: 'weekly', score: 2 },
+    { labelKey: 'mock.frequency.multipleTimes', value: 'multiple_daily', score: 4 },
+    { labelKey: 'mock.frequency.daily', value: 'daily', score: 3 },
+    { labelKey: 'mock.frequency.weekly', value: 'weekly', score: 2 },
   ],
 };
 
@@ -64,14 +72,14 @@ describe('AssessmentChoiceStep（QUITTR風リデザイン）', () => {
 
     it('質問テキストが表示される', () => {
       const { getByText } = render(<AssessmentChoiceStep {...defaultProps} />);
-      expect(getByText(/どれくらいの頻度/)).toBeTruthy();
+      expect(getByText('mock.frequency.question')).toBeTruthy();
     });
 
     it('全選択肢のラベルが表示される', () => {
       const { getByText } = render(<AssessmentChoiceStep {...defaultProps} />);
-      expect(getByText('1日1回以上')).toBeTruthy();
-      expect(getByText('1日1回')).toBeTruthy();
-      expect(getByText('週に数回')).toBeTruthy();
+      expect(getByText('mock.frequency.multipleTimes')).toBeTruthy();
+      expect(getByText('mock.frequency.daily')).toBeTruthy();
+      expect(getByText('mock.frequency.weekly')).toBeTruthy();
     });
   });
 
@@ -90,7 +98,7 @@ describe('AssessmentChoiceStep（QUITTR風リデザイン）', () => {
       const { getByText } = render(
         <AssessmentChoiceStep {...defaultProps} onSelect={onSelect} />
       );
-      fireEvent.press(getByText('週に数回'));
+      fireEvent.press(getByText('mock.frequency.weekly'));
       expect(onSelect).toHaveBeenCalledWith('weekly');
     });
   });

@@ -62,8 +62,8 @@ export const getCountUpDuration = (streak: number): number =>
     COUNT_UP_ANIMATION.maxDuration,
   );
 
-/** Get sub text for a streak tier and day count */
-export const getSubText = (tier: StreakTierName, streak: number, goalReached: boolean): string => {
-  if (goalReached) return '目標達成！';
-  return `${streak}日達成！`;
+/** Get sub text key and params for a streak tier and day count */
+export const getSubTextKey = (_tier: StreakTierName, _streak: number, goalReached: boolean): string => {
+  if (goalReached) return 'streak.goalReached';
+  return 'streak.daysAchieved';
 };

@@ -4,25 +4,27 @@ import { Card } from '@/components/ui/Card';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface TodayUsageCardProps {
   todayMs: number;
   yesterdayMs?: number;
 }
 
-function formatDuration(ms: number): { value: string; unit: string } {
+function formatDuration(ms: number, t: (key: string, params?: Record<string, any>) => string): { value: string; unit: string } {
   const totalMinutes = Math.floor(ms / 60000);
-  if (totalMinutes < 1) return { value: '0', unit: '分' };
-  if (totalMinutes < 60) return { value: String(totalMinutes), unit: '分' };
+  if (totalMinutes < 1) return { value: '0', unit: t('usage.minutes') };
+  if (totalMinutes < 60) return { value: String(totalMinutes), unit: t('usage.minutes') };
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (minutes === 0) return { value: String(hours), unit: '時間' };
-  return { value: `${hours}時間${minutes}`, unit: '分' };
+  if (minutes === 0) return { value: String(hours), unit: t('usage.hours') };
+  return { value: t('usage.hoursMinutes', { hours, minutes }), unit: t('usage.minutes') };
 }
 
 export function TodayUsageCard({ todayMs, yesterdayMs }: TodayUsageCardProps) {
-  const { value, unit } = formatDuration(todayMs);
   const { colors } = useTheme();
+  const { t } = useLocale();
+  const { value, unit } = formatDuration(todayMs, t);
 
   const showTrend = yesterdayMs !== undefined && yesterdayMs > 0;
   let trendIcon: 'arrow-down' | 'arrow-up' | 'remove' = 'remove';
@@ -35,19 +37,19 @@ export function TodayUsageCard({ todayMs, yesterdayMs }: TodayUsageCardProps) {
     if (pct < -5) {
       trendIcon = 'arrow-down';
       trendColor = colors.success;
-      trendText = `${Math.abs(pct)}% 減少`;
+      trendText = `${Math.abs(pct)}% ${t('usage.decreased')}`;
     } else if (pct > 5) {
       trendIcon = 'arrow-up';
       trendColor = colors.danger;
-      trendText = `${pct}% 増加`;
+      trendText = `${pct}% ${t('usage.increased')}`;
     } else {
-      trendText = '前日と同程度';
+      trendText = t('usage.similarPrevDay');
     }
   }
 
   return (
     <Card style={styles.container}>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>今日の視聴時間</Text>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{t('usage.todayViewTime')}</Text>
       <View style={styles.row}>
         <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
         <Text style={[styles.unit, { color: colors.textSecondary }]}>{unit}</Text>

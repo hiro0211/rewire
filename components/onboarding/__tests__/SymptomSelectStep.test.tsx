@@ -3,6 +3,14 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { SymptomSelectStep } from '../SymptomSelectStep';
 import { SYMPTOM_CATEGORIES } from '@/constants/symptoms';
 
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
+
 describe('SymptomSelectStep', () => {
   const defaultProps = {
     selectedSymptoms: [] as string[],
@@ -25,7 +33,7 @@ describe('SymptomSelectStep', () => {
 
   it('「当てはまる症状を選んでください」が表示される', () => {
     const { getByText } = render(<SymptomSelectStep {...defaultProps} />);
-    expect(getByText('当てはまる症状を選んでください')).toBeTruthy();
+    expect(getByText('symptomSelect.subtitle')).toBeTruthy();
   });
 
   it('全3カテゴリのタイトルが表示される', () => {
@@ -39,7 +47,7 @@ describe('SymptomSelectStep', () => {
     const { getByText } = render(<SymptomSelectStep {...defaultProps} />);
     SYMPTOM_CATEGORIES.forEach((cat) => {
       cat.items.forEach((item) => {
-        expect(getByText(item.label)).toBeTruthy();
+        expect(getByText(item.labelKey)).toBeTruthy();
       });
     });
   });
@@ -49,7 +57,7 @@ describe('SymptomSelectStep', () => {
     const { getByText } = render(
       <SymptomSelectStep {...defaultProps} onToggleSymptom={onToggle} />
     );
-    fireEvent.press(getByText('やる気が出ない'));
+    fireEvent.press(getByText('symptoms.mental.motivation'));
     expect(onToggle).toHaveBeenCalledWith('mental_motivation');
   });
 

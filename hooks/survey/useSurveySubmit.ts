@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { surveyService } from '@/features/survey/surveyService';
+import { t } from '@/locales/i18n';
 
 export function useSurveySubmit() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,7 +14,7 @@ export function useSurveySubmit() {
       await surveyService.submitSurvey(answers);
       setIsComplete(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '送信に失敗しました');
+      setError(e instanceof Error ? e.message : t('surveyForm.submitFailed'));
     } finally {
       setIsSubmitting(false);
     }

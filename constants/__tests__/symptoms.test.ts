@@ -5,10 +5,10 @@ describe('symptoms constants', () => {
     expect(SYMPTOM_CATEGORIES).toHaveLength(3);
   });
 
-  it('各カテゴリにid, title, itemsが存在する', () => {
+  it('各カテゴリにid, titleKey, itemsが存在する', () => {
     SYMPTOM_CATEGORIES.forEach((cat) => {
       expect(cat.id).toBeTruthy();
-      expect(cat.title).toBeTruthy();
+      expect(cat.titleKey).toBeTruthy();
       expect(cat.items.length).toBeGreaterThan(0);
     });
   });
@@ -27,11 +27,11 @@ describe('symptoms constants', () => {
     expect(categoryIds).toEqual(['mental', 'physical', 'emotional']);
   });
 
-  it('各症状アイテムにidとlabelが存在する', () => {
+  it('各症状アイテムにidとlabelKeyが存在する', () => {
     SYMPTOM_CATEGORIES.forEach((cat) => {
       cat.items.forEach((item) => {
         expect(item.id).toBeTruthy();
-        expect(item.label).toBeTruthy();
+        expect(item.labelKey).toBeTruthy();
       });
     });
   });

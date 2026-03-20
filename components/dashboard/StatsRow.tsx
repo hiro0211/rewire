@@ -4,18 +4,21 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { GlowDivider } from '@/components/ui/GlowDivider';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 import { useUserStore } from '@/stores/userStore';
 import { StreakEditModal } from './StreakEditModal';
 import { format, parseISO } from 'date-fns';
+import { ja as jaLocale, enUS } from 'date-fns/locale';
 
-function formatStartDate(dateStr: string | null): string {
+function formatStartDate(dateStr: string | null, t: (key: string, opts?: Record<string, unknown>) => string, isJapanese: boolean): string {
   if (!dateStr) return '';
   try {
     const date = parseISO(dateStr);
-    return format(date, 'yyyy/MM/dd') + ' から';
+    const formatted = format(date, isJapanese ? 'yyyy/MM/dd' : 'MM/dd/yyyy', { locale: isJapanese ? jaLocale : enUS });
+    return t('streak.since', { date: formatted });
   } catch {
     return '';
   }
@@ -32,6 +35,7 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
   const { updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const { colors, glow } = useTheme();
+  const { t, isJapanese } = useLocale();
 
   const handleSave = (date: string) => {
     updateUser({ streakStartDate: date });
@@ -57,7 +61,7 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
             activeOpacity={0.7}
             style={styles.heroInner}
           >
-            <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>現在の記録</Text>
+            <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>{t('streak.currentStreak')}</Text>
             <Text
               style={[styles.heroValue, { color: colors.cyan }]}
               adjustsFontSizeToFit
@@ -66,14 +70,14 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
               {stopwatch.formatted}
             </Text>
             {streakStartDate ? (
-              <Text style={[styles.heroSince, { color: colors.textSecondary }]}>{formatStartDate(streakStartDate)}</Text>
+              <Text style={[styles.heroSince, { color: colors.textSecondary }]}>{formatStartDate(streakStartDate, t, isJapanese)}</Text>
             ) : null}
 
             <GlowDivider />
 
             <View style={styles.inlineStats}>
               <View testID="stat-relapse" style={styles.inlineStat}>
-                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>リセット回数</Text>
+                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>{t('streak.relapseCount')}</Text>
                 <Text
                   style={[
                     styles.miniValue,
@@ -90,8 +94,8 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
               }]} />
 
               <View testID="stat-goal" style={styles.inlineStat}>
-                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>目標日数</Text>
-                <Text style={[styles.miniValue, { color: colors.text }]}>{goalDays}日</Text>
+                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>{t('settings.labels.goalDays')}</Text>
+                <Text style={[styles.miniValue, { color: colors.text }]}>{t('settings.labels.daysFormat', { days: goalDays })}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -105,7 +109,7 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
         activeOpacity={0.7}
       >
         <Ionicons name="share-outline" size={16} color={colors.textSecondary} />
-        <Text style={[styles.shareText, { color: colors.textSecondary }]}>シェア</Text>
+        <Text style={[styles.shareText, { color: colors.textSecondary }]}>{t('dashboard.share')}</Text>
       </TouchableOpacity>
 
       <StreakEditModal

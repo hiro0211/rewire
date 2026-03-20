@@ -5,6 +5,7 @@ import { ToolCard } from '@/components/profile/ToolCard';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { FONT_SIZE, SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,6 +17,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { achievements, summary, streak } = useAchievements();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
@@ -57,8 +59,8 @@ export default function ProfileScreen() {
             <ToolCard
               icon="shield-outline"
               iconColor={colors.danger}
-              title="ポルノブロッカー"
-              description="ポルノサイトをブロック"
+              title={t('contentBlocker.title')}
+              description={t('contentBlocker.blockSites')}
               onPress={() => router.push('/content-blocker-setup' as any)}
             />
           )}

@@ -7,6 +7,7 @@ import { LessonProgressBar } from '@/components/learn/LessonProgressBar';
 import { LessonTimeline } from '@/components/learn/LessonTimeline';
 import { useLearnStore } from '@/stores/learnStore';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { LESSONS, type Lesson } from '@/constants/lessons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +15,7 @@ import * as Haptics from 'expo-haptics';
 export default function LearnScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
   const { completedLessons, loadProgress, resetProgress, isUnlocked } = useLearnStore();
 
   useFocusEffect(
@@ -30,12 +32,12 @@ export default function LearnScreen() {
   const handleReset = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
-      'すべてやり直す',
-      '進捗がリセットされます。よろしいですか？',
+      t('learn.resetAll'),
+      t('learn.resetConfirmMessage'),
       [
-        { text: 'キャンセル', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'リセット',
+          text: t('learn.reset'),
           style: 'destructive',
           onPress: () => resetProgress(),
         },
@@ -49,7 +51,7 @@ export default function LearnScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: colors.text }]}>学ぶ</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('learn.title')}</Text>
 
         <View style={styles.progressSection}>
           <LessonProgressBar
@@ -71,7 +73,7 @@ export default function LearnScreen() {
           >
             <Ionicons name="refresh" size={16} color={colors.textSecondary} />
             <Text style={[styles.resetText, { color: colors.textSecondary }]}>
-              すべてやり直す
+              {t('learn.resetAll')}
             </Text>
           </TouchableOpacity>
         )}

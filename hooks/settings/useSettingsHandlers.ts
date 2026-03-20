@@ -3,6 +3,7 @@ import { Alert, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
 import { notificationClient } from '@/lib/notifications/notificationClient';
+import { t } from '@/locales/i18n';
 
 export function useSettingsHandlers() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export function useSettingsHandlers() {
           notificationClient.scheduleDailyReminder(user.notifyTime);
         }
       } else {
-        Alert.alert('通知許可が必要です', '設定アプリから通知を許可してください。');
+        Alert.alert(t('settings.alerts.notificationRequired'), t('settings.alerts.notificationRequiredMessage'));
         updateUser({ notifyEnabled: false });
       }
     } else {
@@ -35,12 +36,12 @@ export function useSettingsHandlers() {
 
   const handleResetData = useCallback(() => {
     Alert.alert(
-      'データをリセット',
-      'すべての記録と設定が消去されます。この操作は取り消せません。よろしいですか？',
+      t('settings.alerts.resetData'),
+      t('settings.alerts.resetDataMessage'),
       [
-        { text: 'キャンセル', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'リセットする',
+          text: t('settings.alerts.resetConfirm'),
           style: 'destructive',
           onPress: async () => {
             await reset();
@@ -55,7 +56,7 @@ export function useSettingsHandlers() {
     if (Platform.OS === 'ios') {
       Linking.openURL('https://apps.apple.com/account/subscriptions');
     } else {
-      Alert.alert('サブスクリプション管理', 'App Storeの設定からサブスクリプションを管理できます。');
+      Alert.alert(t('settings.alerts.subscriptionManage'), t('settings.alerts.subscriptionManageMessage'));
     }
   }, []);
 

@@ -8,6 +8,7 @@ import { MemoInput } from '@/components/checkin/MemoInput';
 import { useCheckinForm } from '@/hooks/checkin/useCheckinForm';
 import { useCheckinSubmit } from '@/hooks/checkin/useCheckinSubmit';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SPACING } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
@@ -16,6 +17,7 @@ export default function CheckinScreen() {
   const { submit, isLoading, error } = useCheckinSubmit();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const handleSubmit = async () => {
     const result = await submit(formState);
@@ -31,7 +33,7 @@ export default function CheckinScreen() {
         router.replace('/checkin/complete');
       }
     } else {
-      Alert.alert('エラー', result.error || '記録に失敗しました');
+      Alert.alert(t('checkinForm.error'), result.error || t('checkinForm.submitFailed'));
     }
   };
 
@@ -39,47 +41,47 @@ export default function CheckinScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <BinaryQuestion
-          label="❶ ポルノを見ましたか？"
+          label={t('checkinForm.watchedPorn')}
           value={formState.watchedPorn}
           onChange={(v) => setField('watchedPorn', v)}
         />
 
         <LevelSelector
-          label="❷ 誘惑レベル"
+          label={t('checkinForm.urgeLevel')}
           value={formState.urgeLevel}
           onChange={(v) => setField('urgeLevel', v)}
           options={[
-            { value: 0, label: 'なし' },
-            { value: 1, label: '低い' },
-            { value: 2, label: '中程度' },
-            { value: 3, label: '高い' },
-            { value: 4, label: '最高' },
+            { value: 0, label: t('checkinForm.urgeLevels.none') },
+            { value: 1, label: t('checkinForm.urgeLevels.low') },
+            { value: 2, label: t('checkinForm.urgeLevels.moderate') },
+            { value: 3, label: t('checkinForm.urgeLevels.high') },
+            { value: 4, label: t('checkinForm.urgeLevels.max') },
           ]}
         />
 
         <LevelSelector
-          label="❸ ストレスレベル"
+          label={t('checkinForm.stressLevel')}
           value={formState.stressLevel}
           onChange={(v) => setField('stressLevel', v)}
           options={[
-            { value: 0, label: 'なし' },
-            { value: 1, label: '低い' },
-            { value: 2, label: '中程度' },
-            { value: 3, label: '高い' },
-            { value: 4, label: '最高' },
+            { value: 0, label: t('checkinForm.urgeLevels.none') },
+            { value: 1, label: t('checkinForm.urgeLevels.low') },
+            { value: 2, label: t('checkinForm.urgeLevels.moderate') },
+            { value: 3, label: t('checkinForm.urgeLevels.high') },
+            { value: 4, label: t('checkinForm.urgeLevels.max') },
           ]}
         />
 
         <LevelSelector
-          label="❹ 今日の生活の質"
+          label={t('checkinForm.qualityOfLife')}
           value={formState.qualityOfLife}
           onChange={(v) => setField('qualityOfLife', v)}
           options={[
-            { value: 1, label: '悪い' },
-            { value: 2, label: 'やや悪い' },
-            { value: 3, label: '普通' },
-            { value: 4, label: 'やや良い' },
-            { value: 5, label: '良い' },
+            { value: 1, label: t('checkinForm.qualityLevels.bad') },
+            { value: 2, label: t('checkinForm.qualityLevels.slightlyBad') },
+            { value: 3, label: t('checkinForm.qualityLevels.normal') },
+            { value: 4, label: t('checkinForm.qualityLevels.slightlyGood') },
+            { value: 5, label: t('checkinForm.qualityLevels.good') },
           ]}
         />
 
@@ -89,7 +91,7 @@ export default function CheckinScreen() {
         />
 
         <Button
-          title="記録する"
+          title={t('checkinForm.submit')}
           onPress={handleSubmit}
           loading={isLoading}
           disabled={formState.watchedPorn === null}
