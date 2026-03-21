@@ -26,17 +26,23 @@ export function calculateStopwatchTime(
   return { days, hours, minutes };
 }
 
-export function formatStopwatchTime(time: StopwatchTime): string {
+export function formatStopwatchTime(time: StopwatchTime, isJapanese: boolean = true): string {
   if (time.days === 0 && time.hours === 0 && time.minutes === 0) {
-    return '0分';
+    return isJapanese ? '0分' : '0m';
   }
 
   const parts: string[] = [];
-  if (time.days > 0) parts.push(`${time.days}日`);
-  if (time.hours > 0) parts.push(`${time.hours}時間`);
-  parts.push(`${time.minutes}分`);
+  if (isJapanese) {
+    if (time.days > 0) parts.push(`${time.days}日`);
+    if (time.hours > 0) parts.push(`${time.hours}時間`);
+    parts.push(`${time.minutes}分`);
+    return parts.join('');
+  }
 
-  return parts.join('');
+  if (time.days > 0) parts.push(`${time.days}d`);
+  if (time.hours > 0) parts.push(`${time.hours}h`);
+  parts.push(`${time.minutes}m`);
+  return parts.join(' ');
 }
 
 export function calculateRelapseCount(checkins: DailyCheckin[]): number {
@@ -55,12 +61,13 @@ export function computeDashboardStats(
   startDate: string | null,
   goalDays: number,
   checkins: DailyCheckin[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  isJapanese: boolean = true
 ): DashboardStats {
   const stopwatch = calculateStopwatchTime(startDate, now);
   return {
     stopwatch,
-    formatted: formatStopwatchTime(stopwatch),
+    formatted: formatStopwatchTime(stopwatch, isJapanese),
     relapseCount: calculateRelapseCount(checkins),
     goalDays,
     streakStartDate: startDate,

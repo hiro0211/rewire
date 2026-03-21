@@ -7,6 +7,7 @@ import { formatPrice } from './paywallUtils';
 import { PaywallFooter } from './PaywallFooter';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
 import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
+import { useLocale } from '@/hooks/useLocale';
 
 interface TrialBottomSheetProps {
   visible: boolean;
@@ -24,6 +25,7 @@ export function TrialBottomSheet({
   onRestoreCompleted,
 }: TrialBottomSheetProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   const { annualPackage, annualPrice, currencyCode } = extractOfferingPackages(offering);
 
@@ -51,19 +53,19 @@ export function TrialBottomSheet({
           <View style={[styles.handleBar, { backgroundColor: colors.textSecondary }]} />
 
           {/* Title */}
-          <Text style={[styles.title, { color: colors.text }]}>3日間無料でお試し</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('paywall.tryFree')}</Text>
 
           {/* Price info */}
           <Text style={[styles.priceText, { color: colors.textSecondary }]}>
-            3日間無料、その後 {formatPrice(annualPrice, currencyCode)}/年
+            {t('paywall.trialBilling', { price: formatPrice(annualPrice, currencyCode) })}
           </Text>
 
           {/* Highlight */}
-          <Text style={[styles.highlight, { color: colors.text }]}>今すぐ支払いなし</Text>
+          <Text style={[styles.highlight, { color: colors.text }]}>{t('paywall.noPaymentNow')}</Text>
 
           {/* CTA */}
           <Button
-            title="無料トライアルを始める"
+            title={t('paywall.startFreeTrial')}
             onPress={handlePurchase}
             variant="gradient"
             size="lg"
@@ -74,7 +76,7 @@ export function TrialBottomSheet({
 
           {/* Close */}
           <Button
-            title="閉じる"
+            title={t('common.close')}
             onPress={onDismiss}
             variant="secondary"
             size="lg"
@@ -84,7 +86,7 @@ export function TrialBottomSheet({
           <PaywallFooter
             onRestore={handleRestore}
             purchasing={purchasing}
-            trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。"
+            trialText={t('paywall.trialAutoRenew')}
           />
         </TouchableOpacity>
       </TouchableOpacity>

@@ -25,9 +25,9 @@ interface PrePaywallBenefitsProps {
 
 export function PrePaywallBenefits({ nickname, goalDays, onContinue }: PrePaywallBenefitsProps) {
   const { colors } = useTheme();
-  const { t } = useLocale();
+  const { t, isJapanese } = useLocale();
   const insets = useSafeAreaInsets();
-  const targetDate = calcTargetDate(goalDays);
+  const targetDate = calcTargetDate(goalDays, isJapanese);
 
   return (
     <SafeAreaWrapper edges={['top']}>

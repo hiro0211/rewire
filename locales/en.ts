@@ -251,6 +251,7 @@ export const en: Translations = {
       productivity: 'Improve focus and productivity',
       relationship: 'Improve my relationship with my partner',
       selfEsteem: 'Break free from self-loathing',
+      other: 'Other',
     },
     perceivedChange: {
       question: 'What changes have you noticed since using the app?',
@@ -258,10 +259,12 @@ export const en: Translations = {
       slight: 'Slight changes',
       unsure: 'Not sure yet',
       none: 'No changes',
+      other: 'Other',
     },
     freeText: {
       question: 'Any feedback or suggestions for the app?',
     },
+    validationError: 'Unanswered required questions: {{ids}}',
   },
   preBenefits: {
     tags: {
@@ -349,6 +352,7 @@ export const en: Translations = {
     submitFailed: 'Failed to submit. Please try again.',
     optional: 'Optional',
     inputPlaceholder: 'Enter your response here',
+    otherPlaceholder: 'Please specify',
   },
   surveyPrompt: {
     title: 'Quick Survey',
@@ -503,6 +507,7 @@ export const en: Translations = {
     submit: 'Log Entry',
     error: 'Error',
     submitFailed: 'Failed to save. Please try again.',
+    validationError: 'Please select whether you watched porn',
     memo: {
       label: 'Quick Note (optional)',
       placeholder: "Today's thoughts or feelings...",
@@ -719,5 +724,9 @@ export const en: Translations = {
   brand: {
     catchphrase1: "Yesterday's you is behind you.",
     catchphrase2: 'A new you starts now.',
+  },
+  notification: {
+    reminderTitle: 'How was your day?',
+    reminderBody: "Let's reflect on today. Keeping a record is the key to your growth.",
   },
 } as const;

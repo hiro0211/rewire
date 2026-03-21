@@ -68,4 +68,57 @@ describe('SurveyChoiceStep', () => {
     expect(getByTestId('option-pill-1')).toBeTruthy();
     expect(getByTestId('option-pill-2')).toBeTruthy();
   });
+
+  describe('その他（自由入力）', () => {
+    const MOCK_QUESTION_WITH_OTHER: SurveyQuestion = {
+      id: 'motivation',
+      questionKey: 'mock.motivation.question',
+      type: 'choice',
+      options: [
+        { labelKey: 'mock.motivation.selfControl', value: 'self_control' },
+        { labelKey: 'mock.motivation.other', value: 'other' },
+      ],
+      required: true,
+      otherTextId: 'motivation_other_text',
+    };
+
+    it('otherが未選択のときテキスト入力欄が表示されない', () => {
+      const { queryByTestId } = render(
+        <SurveyChoiceStep
+          question={MOCK_QUESTION_WITH_OTHER}
+          selectedValue="self_control"
+          onSelect={jest.fn()}
+        />
+      );
+      expect(queryByTestId('other-text-input')).toBeNull();
+    });
+
+    it('otherが選択されたときテキスト入力欄が表示される', () => {
+      const { getByTestId } = render(
+        <SurveyChoiceStep
+          question={MOCK_QUESTION_WITH_OTHER}
+          selectedValue="other"
+          onSelect={jest.fn()}
+          otherTextValue=""
+          onOtherTextChange={jest.fn()}
+        />
+      );
+      expect(getByTestId('other-text-input')).toBeTruthy();
+    });
+
+    it('テキスト入力するとonOtherTextChangeが呼ばれる', () => {
+      const onOtherTextChange = jest.fn();
+      const { getByTestId } = render(
+        <SurveyChoiceStep
+          question={MOCK_QUESTION_WITH_OTHER}
+          selectedValue="other"
+          onSelect={jest.fn()}
+          otherTextValue=""
+          onOtherTextChange={onOtherTextChange}
+        />
+      );
+      fireEvent.changeText(getByTestId('other-text-input'), 'カスタム理由');
+      expect(onOtherTextChange).toHaveBeenCalledWith('カスタム理由');
+    });
+  });
 });

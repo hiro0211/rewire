@@ -11,26 +11,41 @@ describe('preBenefitsUtils', () => {
     jest.useRealTimers();
   });
 
-  describe('calcTargetDate', () => {
+  describe('calcTargetDate - 日本語', () => {
     it('goalDaysを加算した日付文字列を返す', () => {
-      const today = new Date();
-      const result = calcTargetDate(30);
-      // 「YYYY年M月D日」形式であること
+      const result = calcTargetDate(30, true);
       expect(result).toMatch(/^\d{4}年\d{1,2}月\d{1,2}日$/);
     });
 
     it('30日後の正しい日付を返す', () => {
-      // 2026-01-15 + 30日 = 2026-02-14
-      expect(calcTargetDate(30)).toBe('2026年2月14日');
+      expect(calcTargetDate(30, true)).toBe('2026年2月14日');
     });
 
     it('90日後の正しい日付を返す', () => {
-      // 2026-01-15 + 90日 = 2026-04-15
-      expect(calcTargetDate(90)).toBe('2026年4月15日');
+      expect(calcTargetDate(90, true)).toBe('2026年4月15日');
     });
 
     it('0日の場合は今日の日付を返す', () => {
-      expect(calcTargetDate(0)).toBe('2026年1月15日');
+      expect(calcTargetDate(0, true)).toBe('2026年1月15日');
+    });
+  });
+
+  describe('calcTargetDate - 英語', () => {
+    it('英語形式の日付文字列を返す', () => {
+      const result = calcTargetDate(30, false);
+      expect(result).toMatch(/^[A-Z][a-z]+ \d{1,2}, \d{4}$/);
+    });
+
+    it('30日後の正しい日付を返す', () => {
+      expect(calcTargetDate(30, false)).toBe('Feb 14, 2026');
+    });
+
+    it('90日後の正しい日付を返す', () => {
+      expect(calcTargetDate(90, false)).toBe('Apr 15, 2026');
+    });
+
+    it('0日の場合は今日の日付を返す', () => {
+      expect(calcTargetDate(0, false)).toBe('Jan 15, 2026');
     });
   });
 });

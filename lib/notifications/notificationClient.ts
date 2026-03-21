@@ -1,5 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { t } from '@/locales/i18n';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -32,8 +32,8 @@ export const notificationClient = {
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: "今日はどうでしたか？",
-        body: "1日の振り返りをしましょう。記録を続けることが、あなたの成長につながります。",
+        title: t('notification.reminderTitle'),
+        body: t('notification.reminderBody'),
       },
       trigger: {
         type: 'calendar',

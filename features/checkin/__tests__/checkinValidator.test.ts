@@ -1,6 +1,10 @@
 import { checkinValidator } from '../checkinValidator';
 import type { CheckinFormInput } from '@/types/checkin';
 
+jest.mock('@/locales/i18n', () => ({
+  t: (key: string) => key,
+}));
+
 const validInput: CheckinFormInput = {
   watchedPorn: false,
   urgeLevel: 2,
@@ -23,7 +27,7 @@ describe('checkinValidator', () => {
   it('watchedPorn=nullの場合ok=falseとエラーメッセージを返す', () => {
     const result = checkinValidator.validate({ ...validInput, watchedPorn: null });
     expect(result.ok).toBe(false);
-    expect(result.error).toBe('ポルノ視聴の有無を選択してください');
+    expect(result.error).toBe('checkinForm.validationError');
   });
 
   it('各スライダー値が最低値でもバリデーション通過', () => {

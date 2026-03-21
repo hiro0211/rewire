@@ -243,6 +243,7 @@ export const ja = {
       productivity: '集中力・生産性を上げたい',
       relationship: 'パートナーとの関係をよくしたい',
       selfEsteem: '自己嫌悪から抜け出したい',
+      other: 'その他',
     },
     perceivedChange: {
       question: 'アプリを使い始めてどんな変化を感じますか？',
@@ -250,10 +251,12 @@ export const ja = {
       slight: '少し変化を感じる',
       unsure: 'まだわからない',
       none: '特に変化はない',
+      other: 'その他',
     },
     freeText: {
       question: 'アプリへのご意見・ご要望があればお聞かせください',
     },
+    validationError: '未回答の必須質問があります: {{ids}}',
   },
   preBenefits: {
     tags: {
@@ -341,6 +344,7 @@ export const ja = {
     submitFailed: '送信に失敗しました',
     optional: '任意',
     inputPlaceholder: 'ここに入力してください',
+    otherPlaceholder: '具体的に教えてください',
   },
   surveyPrompt: {
     title: 'アンケートのお願い',
@@ -495,6 +499,7 @@ export const ja = {
     submit: '記録する',
     error: 'エラー',
     submitFailed: '記録に失敗しました',
+    validationError: 'ポルノ視聴の有無を選択してください',
     memo: {
       label: '一言メモ（任意）',
       placeholder: '今日の気づきや感情...',
@@ -711,5 +716,9 @@ export const ja = {
   brand: {
     catchphrase1: '昨日までの自分は、もういい。',
     catchphrase2: '今から新しい自分へ生まれ変わる。',
+  },
+  notification: {
+    reminderTitle: '今日はどうでしたか？',
+    reminderBody: '1日の振り返りをしましょう。記録を続けることが、あなたの成長につながります。',
   },
 } as const;

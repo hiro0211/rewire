@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
@@ -10,15 +10,22 @@ interface SurveyChoiceStepProps {
   question: SurveyQuestion;
   selectedValue: string | undefined;
   onSelect: (value: string) => void;
+  otherTextValue?: string;
+  onOtherTextChange?: (text: string) => void;
 }
 
 export function SurveyChoiceStep({
   question,
   selectedValue,
   onSelect,
+  otherTextValue,
+  onOtherTextChange,
 }: SurveyChoiceStepProps) {
   const { colors } = useTheme();
   const { t } = useLocale();
+
+  const showOtherInput =
+    question.otherTextId && selectedValue === 'other';
 
   return (
     <View style={styles.container}>
@@ -80,6 +87,26 @@ export function SurveyChoiceStep({
           );
         })}
       </View>
+
+      {showOtherInput && (
+        <TextInput
+          testID="other-text-input"
+          style={[
+            styles.otherInput,
+            {
+              color: colors.text,
+              backgroundColor: colors.pillBackground,
+              borderColor: colors.pillBorder,
+            },
+          ]}
+          value={otherTextValue ?? ''}
+          onChangeText={onOtherTextChange}
+          placeholder={t('surveyForm.otherPlaceholder')}
+          placeholderTextColor={colors.textSecondary}
+          multiline
+          textAlignVertical="top"
+        />
+      )}
     </View>
   );
 }
@@ -123,5 +150,13 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: FONT_SIZE.md,
     flex: 1,
+  },
+  otherInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: SPACING.lg,
+    fontSize: FONT_SIZE.md,
+    minHeight: 80,
+    marginTop: 16,
   },
 });

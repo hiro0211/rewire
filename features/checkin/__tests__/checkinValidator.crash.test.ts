@@ -1,5 +1,9 @@
 import { checkinValidator } from '../checkinValidator';
 
+jest.mock('@/locales/i18n', () => ({
+  t: (key: string) => key,
+}));
+
 describe('checkinValidator crash prevention', () => {
   it('watchedPorn=null → バリデーションエラー', () => {
     const result = checkinValidator.validate({ watchedPorn: null, urgeLevel: 3, stressLevel: 3, qualityOfLife: 3 });

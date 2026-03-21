@@ -1,4 +1,5 @@
 import { REQUIRED_SURVEY_QUESTIONS } from '@/constants/survey';
+import { t } from '@/locales/i18n';
 
 type ValidationResult = { ok: true } | { ok: false; error: string };
 
@@ -10,7 +11,7 @@ export const surveyValidator = {
 
     if (missing.length > 0) {
       const ids = missing.map((q) => q.id).join(', ');
-      return { ok: false, error: `未回答の必須質問があります: ${ids}` };
+      return { ok: false, error: t('survey.validationError', { ids }) };
     }
 
     return { ok: true };

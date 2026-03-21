@@ -21,6 +21,14 @@ export function SurveyStepRenderer({
           question={question}
           selectedValue={answers[question.id]}
           onSelect={(value) => onSelectAnswer(question.id, value)}
+          otherTextValue={
+            question.otherTextId ? answers[question.otherTextId] : undefined
+          }
+          onOtherTextChange={
+            question.otherTextId
+              ? (text) => onSelectAnswer(question.otherTextId!, text)
+              : undefined
+          }
         />
       );
     case 'text_input':

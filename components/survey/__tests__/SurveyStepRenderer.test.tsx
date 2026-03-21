@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { SurveyStepRenderer } from '../SurveyStepRenderer';
 import { SURVEY_QUESTIONS } from '@/constants/survey';
 
@@ -21,5 +21,33 @@ describe('SurveyStepRenderer', () => {
       <SurveyStepRenderer {...defaultProps} question={textQuestion} />
     );
     expect(getByTestId('survey-text-input')).toBeTruthy();
+  });
+
+  describe('otherTextId がある質問', () => {
+    const motivationQuestion = SURVEY_QUESTIONS.find((q) => q.id === 'motivation')!;
+
+    it('otherが選択されたときテキスト入力欄が表示される', () => {
+      const { getByTestId } = render(
+        <SurveyStepRenderer
+          question={motivationQuestion}
+          answers={{ motivation: 'other', motivation_other_text: '' }}
+          onSelectAnswer={jest.fn()}
+        />
+      );
+      expect(getByTestId('other-text-input')).toBeTruthy();
+    });
+
+    it('テキスト入力するとonSelectAnswerがotherTextIdで呼ばれる', () => {
+      const onSelectAnswer = jest.fn();
+      const { getByTestId } = render(
+        <SurveyStepRenderer
+          question={motivationQuestion}
+          answers={{ motivation: 'other', motivation_other_text: '' }}
+          onSelectAnswer={onSelectAnswer}
+        />
+      );
+      fireEvent.changeText(getByTestId('other-text-input'), 'テスト入力');
+      expect(onSelectAnswer).toHaveBeenCalledWith('motivation_other_text', 'テスト入力');
+    });
   });
 });

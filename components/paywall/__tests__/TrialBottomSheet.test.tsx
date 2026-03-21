@@ -5,6 +5,21 @@ jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(),
 }));
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string, options?: Record<string, string>) => {
+      if (options) {
+        return Object.entries(options).reduce(
+          (str, [k, v]) => str.replace(`{{${k}}}`, v),
+          key,
+        );
+      }
+      return key;
+    },
+    locale: 'ja' as const,
+    isJapanese: true,
+  }),
+}));
 
 import { TrialBottomSheet } from '../TrialBottomSheet';
 
@@ -33,44 +48,42 @@ describe('TrialBottomSheet', () => {
     const { queryByText } = render(
       <TrialBottomSheet {...defaultProps} visible={false} />
     );
-    expect(queryByText('3日間無料でお試し')).toBeNull();
+    expect(queryByText('paywall.tryFree')).toBeNull();
   });
 
-  it('トライアルタイトル「3日間無料でお試し」が表示される', () => {
+  it('トライアルタイトルキー paywall.tryFree が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(getByText('3日間無料でお試し')).toBeTruthy();
+    expect(getByText('paywall.tryFree')).toBeTruthy();
   });
 
-  it('価格テキストが表示される', () => {
+  it('価格テキストキー paywall.trialBilling が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(getByText('3日間無料、その後 ¥2,500/年')).toBeTruthy();
+    expect(getByText(/paywall\.trialBilling/)).toBeTruthy();
   });
 
-  it('「今すぐ支払いなし」が表示される', () => {
+  it('paywall.noPaymentNow が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(getByText('今すぐ支払いなし')).toBeTruthy();
+    expect(getByText('paywall.noPaymentNow')).toBeTruthy();
   });
 
-  it('CTAボタン「無料トライアルを始める」が表示される', () => {
+  it('CTAボタン paywall.startFreeTrial が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(getByText('無料トライアルを始める')).toBeTruthy();
+    expect(getByText('paywall.startFreeTrial')).toBeTruthy();
   });
 
-  it('SubscriptionTerms が表示される', () => {
+  it('paywall.trialAutoRenew が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(
-      getByText(/無料トライアル終了後、サブスクリプション料金が自動で課金されます/)
-    ).toBeTruthy();
+    expect(getByText(/paywall\.trialAutoRenew/)).toBeTruthy();
   });
 
-  it('「購入の復元」リンクが表示される', () => {
+  it('paywall.restorePurchase が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(getByText('購入の復元')).toBeTruthy();
+    expect(getByText('paywall.restorePurchase')).toBeTruthy();
   });
 
-  it('「閉じる」テキストリンクが表示される', () => {
+  it('common.close が表示される', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    expect(getByText('閉じる')).toBeTruthy();
+    expect(getByText('common.close')).toBeTruthy();
   });
 
   it('背景タップで onDismiss が呼ばれる', () => {
@@ -81,7 +94,7 @@ describe('TrialBottomSheet', () => {
 
   it('「閉じる」タップで onDismiss が呼ばれる', () => {
     const { getByText } = render(<TrialBottomSheet {...defaultProps} />);
-    fireEvent.press(getByText('閉じる'));
+    fireEvent.press(getByText('common.close'));
     expect(defaultProps.onDismiss).toHaveBeenCalledTimes(1);
   });
 });

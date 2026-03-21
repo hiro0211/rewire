@@ -5,16 +5,18 @@ import {
   formatStopwatchTime,
   type StopwatchTime,
 } from '@/lib/stats/statsCalculator';
+import { useLocale } from '@/hooks/useLocale';
 
 interface UseStopwatchResult extends StopwatchTime {
   formatted: string;
 }
 
 export function useStopwatch(startDate: string | null): UseStopwatchResult {
+  const { isJapanese } = useLocale();
   const compute = useCallback(() => {
     const time = calculateStopwatchTime(startDate);
-    return { ...time, formatted: formatStopwatchTime(time) };
-  }, [startDate]);
+    return { ...time, formatted: formatStopwatchTime(time, isJapanese) };
+  }, [startDate, isJapanese]);
 
   const [value, setValue] = useState<UseStopwatchResult>(compute);
 

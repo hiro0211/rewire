@@ -5,16 +5,18 @@ import { useStopwatch } from '@/hooks/dashboard/useStopwatch';
 import { buildShareText } from '@/lib/share/shareService';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { logger } from '@/lib/logger';
+import { useLocale } from '@/hooks/useLocale';
 
 export function useShareWidget() {
   const viewShotRef = useRef<any>(null);
   const { streakStartDate } = useStreak();
   const stopwatch = useStopwatch(streakStartDate);
+  const { isJapanese } = useLocale();
 
   const share = useCallback(async () => {
     analyticsClient.logEvent('share_tapped');
 
-    const text = buildShareText(stopwatch);
+    const text = buildShareText(stopwatch, isJapanese);
 
     let fileUri: string | undefined;
     try {
@@ -44,7 +46,7 @@ export function useShareWidget() {
     }
 
     await Share.share({ message: text });
-  }, [stopwatch]);
+  }, [stopwatch, isJapanese]);
 
   return { viewShotRef, share };
 }

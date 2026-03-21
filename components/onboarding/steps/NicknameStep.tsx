@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 
 interface NicknameStepProps {
   nickname: string;
@@ -10,16 +11,17 @@ interface NicknameStepProps {
 
 export function NicknameStep({ nickname, onChangeNickname }: NicknameStepProps) {
   const { colors } = useTheme();
+  const { t } = useLocale();
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>あなたの名前は？</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('onboarding.nickname.title')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        {'アプリ内で呼びかけるニックネームを教えてください。\n（匿名で構いません）'}
+        {t('onboarding.nickname.description')}
       </Text>
       <TextInput
         style={[styles.input, { borderBottomColor: colors.primary, color: colors.text }]}
-        placeholder="ニックネーム"
+        placeholder={t('onboarding.nickname.placeholder')}
         placeholderTextColor={colors.textSecondary}
         value={nickname}
         onChangeText={onChangeNickname}

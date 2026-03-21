@@ -9,6 +9,7 @@ export interface SurveyQuestion {
   type: 'choice' | 'text_input';
   options?: SurveyOption[];
   required: boolean;
+  otherTextId?: string;
 }
 
 export interface SurveyResponse {

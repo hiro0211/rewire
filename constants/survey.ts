@@ -35,8 +35,10 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       { labelKey: 'survey.motivation.productivity', value: 'productivity' },
       { labelKey: 'survey.motivation.relationship', value: 'relationship' },
       { labelKey: 'survey.motivation.selfEsteem', value: 'self_esteem' },
+      { labelKey: 'survey.motivation.other', value: 'other' },
     ],
     required: true,
+    otherTextId: 'motivation_other_text',
   },
   {
     id: 'perceived_change',
@@ -47,8 +49,10 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       { labelKey: 'survey.perceivedChange.slight', value: 'slight' },
       { labelKey: 'survey.perceivedChange.unsure', value: 'unsure' },
       { labelKey: 'survey.perceivedChange.none', value: 'none' },
+      { labelKey: 'survey.perceivedChange.other', value: 'other' },
     ],
     required: true,
+    otherTextId: 'perceived_change_other_text',
   },
   {
     id: 'free_text',
