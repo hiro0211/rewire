@@ -2,6 +2,7 @@ import { STEPS } from '@/constants/onboarding';
 import { isDateInFuture } from '@/lib/date/datePickerUtils';
 
 export interface OnboardingFormState {
+  step: number;
   nickname: string;
   privacyAgreed: boolean;
   dataAgreed: boolean;

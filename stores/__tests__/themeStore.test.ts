@@ -36,9 +36,20 @@ describe('themeStore', () => {
     });
 
     it('AsyncStorageのsettingsキーに永続化する', async () => {
+      mockGet.mockResolvedValueOnce(null);
       await useThemeStore.getState().setThemePreference('light');
 
       expect(mockSet).toHaveBeenCalledWith('settings', { themePreference: 'light' });
+    });
+
+    it('既存のsettingsデータをマージして保存する', async () => {
+      mockGet.mockResolvedValueOnce({ localePreference: 'ja' });
+      await useThemeStore.getState().setThemePreference('light');
+
+      expect(mockSet).toHaveBeenCalledWith('settings', {
+        localePreference: 'ja',
+        themePreference: 'light',
+      });
     });
   });
 

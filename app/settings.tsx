@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Linking, Platform, Text } from 'react-native';
+import * as StoreReview from 'expo-store-review';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
 import { SettingSection } from '@/components/settings/SettingSection';
@@ -125,9 +126,28 @@ export default function SettingsScreen() {
             label={t('settings.labels.manageSubscription')}
             icon="star"
             onPress={handleManageSubscription}
-            isLast
+            isLast={Platform.OS !== 'ios'}
           />
+          {Platform.OS === 'ios' && (
+            <SettingItem
+              label={t('settings.labels.rateApp')}
+              icon="star-outline"
+              onPress={() => StoreReview.requestReview()}
+              isLast
+            />
+          )}
         </SettingSection>
+
+        {!user.isPro && (
+          <SettingSection title={t('promo.title')}>
+            <SettingItem
+              label={t('settings.labels.promoCode')}
+              icon="gift-outline"
+              onPress={() => router.push(ROUTES.promo)}
+              isLast
+            />
+          </SettingSection>
+        )}
 
         {!isSurveyCompleted && (
           <SettingSection title={t('settings.sections.survey')}>

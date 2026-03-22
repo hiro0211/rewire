@@ -7,9 +7,11 @@ import { useLocale } from '@/hooks/useLocale';
 
 interface SurveyCompletionStepProps {
   onClose: () => void;
+  titleOverride?: string;
+  bodyOverride?: string;
 }
 
-export function SurveyCompletionStep({ onClose }: SurveyCompletionStepProps) {
+export function SurveyCompletionStep({ onClose, titleOverride, bodyOverride }: SurveyCompletionStepProps) {
   const { colors } = useTheme();
   const { t } = useLocale();
 
@@ -20,11 +22,11 @@ export function SurveyCompletionStep({ onClose }: SurveyCompletionStepProps) {
       </View>
 
       <Text style={[styles.title, { color: colors.text }]}>
-        {t('surveyCompletion.title')}
+        {titleOverride ?? t('surveyCompletion.title')}
       </Text>
 
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        {t('surveyCompletion.body')}
+        {bodyOverride ?? t('surveyCompletion.body')}
       </Text>
 
       <TouchableOpacity

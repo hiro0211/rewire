@@ -20,7 +20,8 @@ export const useLocaleStore = create<LocaleState & LocaleActions>((set) => ({
 
   setLocalePreference: async (pref) => {
     set({ localePreference: pref });
-    await asyncStorageClient.set('settings', { localePreference: pref });
+    const existing = await asyncStorageClient.get<Record<string, unknown>>('settings') ?? {};
+    await asyncStorageClient.set('settings', { ...existing, localePreference: pref });
   },
 
   loadLocalePreference: async () => {

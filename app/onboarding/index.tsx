@@ -39,6 +39,7 @@ export default function OnboardingScreen() {
   const { t } = useLocale();
 
   const stateRef = useRef<OnboardingFormState>({
+    step: nav.step,
     nickname: form.nickname,
     privacyAgreed: form.privacyAgreed,
     dataAgreed: form.dataAgreed,
@@ -48,6 +49,7 @@ export default function OnboardingScreen() {
     lastViewedDay: form.lastViewedDay,
   });
   stateRef.current = {
+    step: nav.step,
     nickname: form.nickname,
     privacyAgreed: form.privacyAgreed,
     dataAgreed: form.dataAgreed,

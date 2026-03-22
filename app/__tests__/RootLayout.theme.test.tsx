@@ -48,9 +48,6 @@ jest.mock('expo-status-bar', () => ({
 }));
 
 // Mock tracking/subscription
-jest.mock('@/lib/tracking/trackingClient', () => ({
-  trackingClient: { requestPermissions: jest.fn() },
-}));
 jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: { setUserProperty: jest.fn() },
 }));

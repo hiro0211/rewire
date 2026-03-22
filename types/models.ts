@@ -15,6 +15,8 @@ export interface User {
   assessmentScore?: number;
   subscriptionPlan?: SubscriptionPlan;
   subscriptionExpiresAt?: string | null;
+  promoCode?: string;
+  promoRedeemedAt?: string;
 }
 
 export interface DailyCheckin {

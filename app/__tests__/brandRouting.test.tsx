@@ -17,7 +17,10 @@ jest.mock('@/components/onboarding/StarryBackground', () => {
 
 let mockUser: any = null;
 jest.mock('@/stores/userStore', () => ({
-  useUserStore: () => ({ user: mockUser }),
+  useUserStore: Object.assign(
+    () => ({ user: mockUser }),
+    { getState: () => ({ user: mockUser }) },
+  ),
 }));
 
 import { BrandScreen } from '../brand';
@@ -77,6 +80,15 @@ describe('BrandScreen ルーティング分岐', () => {
   it('isPro=true → /streak', () => {
     mockUser = { nickname: 'Test', isPro: true };
     render(<BrandScreen />);
+    act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+    expect(mockReplace).toHaveBeenCalledWith('/streak');
+  });
+
+  it('レンダー後にisPro=trueに更新された場合、/streakへ遷移する', () => {
+    mockUser = { nickname: 'Test', isPro: false };
+    render(<BrandScreen />);
+    // サブスクリプション同期がタイマー発火前に完了したシミュレーション
+    mockUser = { nickname: 'Test', isPro: true };
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/streak');
   });

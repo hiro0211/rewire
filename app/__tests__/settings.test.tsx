@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert, Platform, Linking } from 'react-native';
+import * as StoreReview from 'expo-store-review';
 
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
@@ -206,5 +207,22 @@ describe('SettingsScreen', () => {
     expect(getByText('お問い合わせ')).toBeTruthy();
     expect(getByText('利用規約')).toBeTruthy();
     expect(getByText('プライバシーポリシー')).toBeTruthy();
+  });
+
+  describe('アプリを評価する', () => {
+    it('iOSで「アプリを評価する」項目が表示される', () => {
+      Platform.OS = 'ios';
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('アプリを評価する')).toBeTruthy();
+    });
+
+    it('タップ時にrequestReviewが呼ばれる', async () => {
+      Platform.OS = 'ios';
+      const requestReviewSpy = jest.spyOn(StoreReview, 'requestReview').mockResolvedValue(undefined);
+      const { getByTestId } = render(<SettingsScreen />);
+      await fireEvent.press(getByTestId('setting-アプリを評価する'));
+      expect(requestReviewSpy).toHaveBeenCalled();
+      requestReviewSpy.mockRestore();
+    });
   });
 });

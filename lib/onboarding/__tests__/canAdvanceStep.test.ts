@@ -1,7 +1,9 @@
 import { canAdvanceStep } from '../canAdvanceStep';
+import type { OnboardingFormState } from '../canAdvanceStep';
 import { STEPS } from '@/constants/onboarding';
 
 const baseState = {
+  step: 0,
   nickname: '',
   privacyAgreed: false,
   dataAgreed: false,
@@ -81,5 +83,10 @@ describe('canAdvanceStep', () => {
   it('analyzing ステップでは常に進める', () => {
     const idx = STEPS.findIndex((s) => s.type === 'analyzing');
     expect(canAdvanceStep(idx, baseState)).toBe(true);
+  });
+
+  it('OnboardingFormState に step プロパティが含まれる', () => {
+    const state: OnboardingFormState = { ...baseState, step: 3 };
+    expect(state.step).toBe(3);
   });
 });

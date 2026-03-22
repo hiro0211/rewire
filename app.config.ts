@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Rewire',
   slug: 'rewire',
-  version: '1.0.0',
+  version: '1.1.0',
   icon: './assets/images/icon.png',
   orientation: 'portrait',
   scheme: 'rewire',
@@ -19,8 +19,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: 'rewire.app.com',
     googleServicesFile: './GoogleService-Info.plist',
     infoPlist: {
-      NSUserTrackingUsageDescription:
-        'アプリの改善のために利用状況データを収集します。許可しない場合でもアプリは通常通りご利用いただけます。',
       CFBundleAllowMixedLocalizations: true,
       ITSAppUsesNonExemptEncryption: false,
     },
@@ -43,7 +41,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     'expo-router',
-    'expo-tracking-transparency',
     'expo-secure-store',
     [
       'expo-build-properties',

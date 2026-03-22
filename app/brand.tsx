@@ -69,9 +69,10 @@ export function BrandScreen() {
 
     // Navigate
     timeouts.push(setTimeout(() => {
-      if (!user || !user.nickname) {
+      const freshUser = useUserStore.getState().user;
+      if (!freshUser || !freshUser.nickname) {
         router.replace(ROUTES.onboarding);
-      } else if (!user.isPro) {
+      } else if (!freshUser.isPro) {
         router.replace(routeWithParams('/paywall', { source: 'returning' }));
       } else {
         router.replace(ROUTES.streak);

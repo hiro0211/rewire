@@ -21,10 +21,10 @@ jest.mock('@/components/onboarding/StarryBackground', () => {
 
 // Mock userStore
 jest.mock('@/stores/userStore', () => ({
-  useUserStore: () => ({
-    user: null,
-    hasHydrated: true,
-  }),
+  useUserStore: Object.assign(
+    () => ({ user: null, hasHydrated: true }),
+    { getState: () => ({ user: null }) },
+  ),
 }));
 
 import * as Haptics from 'expo-haptics';

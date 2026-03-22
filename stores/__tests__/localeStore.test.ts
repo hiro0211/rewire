@@ -22,9 +22,18 @@ describe('localeStore', () => {
   });
 
   it('setLocalePreferenceで言語設定を変更できる', async () => {
+    mockGet.mockResolvedValueOnce(null);
     await useLocaleStore.getState().setLocalePreference('en');
     expect(useLocaleStore.getState().localePreference).toBe('en');
-    expect(mockSet).toHaveBeenCalledWith('settings', { localePreference: 'en' });
+  });
+
+  it('setLocalePreferenceで既存のsettingsデータをマージして保存する', async () => {
+    mockGet.mockResolvedValueOnce({ themePreference: 'light' });
+    await useLocaleStore.getState().setLocalePreference('ja');
+    expect(mockSet).toHaveBeenCalledWith('settings', {
+      themePreference: 'light',
+      localePreference: 'ja',
+    });
   });
 
   it('loadLocalePreferenceでAsyncStorageから読み込める', async () => {

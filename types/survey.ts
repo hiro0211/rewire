@@ -18,4 +18,6 @@ export interface SurveyResponse {
   completedAt: string;
   appVersion: string;
   platform: 'ios' | 'android';
+  promoCode?: string;
+  promoSource?: string;
 }

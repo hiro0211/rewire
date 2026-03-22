@@ -20,7 +20,8 @@ export const useThemeStore = create<ThemeState & ThemeActions>((set) => ({
 
   setThemePreference: async (pref) => {
     set({ themePreference: pref });
-    await asyncStorageClient.set('settings', { themePreference: pref });
+    const existing = await asyncStorageClient.get<Record<string, unknown>>('settings') ?? {};
+    await asyncStorageClient.set('settings', { ...existing, themePreference: pref });
   },
 
   loadThemePreference: async () => {

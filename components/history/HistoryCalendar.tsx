@@ -70,7 +70,7 @@ export const HistoryCalendar = () => {
       {/* Week days */}
       <View style={styles.weekDays}>
         {weekDays.map((day, index) => (
-          <Text key={day} style={[styles.weekDayText, { color: colors.textSecondary }, index === 0 && { color: colors.error }]}>
+          <Text key={index} style={[styles.weekDayText, { color: colors.textSecondary }, index === 0 && { color: colors.error }]}>
             {day}
           </Text>
         ))}

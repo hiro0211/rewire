@@ -15,9 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "rewire.app.com",
-      "infoPlist": {
-        "NSUserTrackingUsageDescription": "広告のパーソナライズのために使用します。許可しない場合でもアプリは通常通りご利用いただけます。"
-      }
+      "buildNumber": "6"
     },
     "android": {
       "adaptiveIcon": {

@@ -17,7 +17,10 @@ jest.mock('@/components/onboarding/StarryBackground', () => {
 
 let mockUser: any = null;
 jest.mock('@/stores/userStore', () => ({
-  useUserStore: () => ({ user: mockUser }),
+  useUserStore: Object.assign(
+    () => ({ user: mockUser }),
+    { getState: () => ({ user: mockUser }) },
+  ),
 }));
 
 import { BrandScreen } from '../brand';
