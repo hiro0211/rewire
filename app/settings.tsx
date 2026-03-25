@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Linking, Platform, Text } from 'react-native';
+import Constants from 'expo-constants';
 import * as StoreReview from 'expo-store-review';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { SettingItem } from '@/components/settings/SettingItem';
@@ -138,17 +139,6 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        {!user.isPro && (
-          <SettingSection title={t('promo.title')}>
-            <SettingItem
-              label={t('settings.labels.promoCode')}
-              icon="gift-outline"
-              onPress={() => router.push(ROUTES.promo)}
-              isLast
-            />
-          </SettingSection>
-        )}
-
         {!isSurveyCompleted && (
           <SettingSection title={t('settings.sections.survey')}>
             <SettingItem
@@ -187,7 +177,7 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        <Text style={[styles.version, { color: colors.textSecondary }]}>Version 1.0.0 (Build 1)</Text>
+        <Text style={[styles.version, { color: colors.textSecondary }]}>Version {Constants.expoConfig?.version ?? '1.0.0'}</Text>
       </ScrollView>
 
       <ProfileEditModal

@@ -151,7 +151,7 @@ describe('SettingsScreen', () => {
 
   it('バージョン情報が表示される', () => {
     const { getByText } = render(<SettingsScreen />);
-    expect(getByText('Version 1.0.0 (Build 1)')).toBeTruthy();
+    expect(getByText(/^Version /)).toBeTruthy();
   });
 
   it('データリセットボタンが存在する', () => {

@@ -39,5 +39,4 @@ export const ROUTES = {
   history: route('/history'),
   achievements: route('/achievements'),
   survey: route('/survey'),
-  promo: route('/promo'),
 } as const;

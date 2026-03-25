@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
@@ -22,13 +22,8 @@ export default function SurveyScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { t } = useLocale();
-  const params = useLocalSearchParams<{ promoCode?: string; promoSource?: string }>();
 
-  const { submit, isSubmitting, isComplete, isPromo } = useSurveySubmit(
-    params.promoCode && params.promoSource
-      ? { promoCode: params.promoCode, promoSource: params.promoSource }
-      : undefined,
-  );
+  const { submit, isSubmitting, isComplete } = useSurveySubmit();
 
   const handleNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -59,11 +54,7 @@ export default function SurveyScreen() {
   if (isComplete) {
     return (
       <SafeAreaWrapper style={[styles.container, { backgroundColor: colors.background }]}>
-        <SurveyCompletionStep
-          onClose={handleClose}
-          titleOverride={isPromo ? t('promo.proUnlockedTitle') : undefined}
-          bodyOverride={isPromo ? t('promo.proUnlockedBody') : undefined}
-        />
+        <SurveyCompletionStep onClose={handleClose} />
       </SafeAreaWrapper>
     );
   }

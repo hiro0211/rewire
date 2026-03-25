@@ -22,7 +22,7 @@ export interface BrandTimings {
 export const BRAND_TIMING_CONFIG: BrandTimingConfig = {
   logoDelay: 300,
   lineStartDelay: 1000,
-  lineInterval: 800,
+  lineInterval: 3000,
   lineAnimDuration: 400,
   postTextPause: 800,
   charInterval: 80,
