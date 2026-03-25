@@ -1,9 +1,11 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { RADIUS, SPACING, FONT_SIZE, LAYOUT } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { usePressAnimation } from '@/hooks/ui/usePressAnimation';
 
 interface ButtonProps {
   title: string;
@@ -27,6 +29,7 @@ export function Button({
   textStyle,
 }: ButtonProps) {
   const { colors, gradients, glow } = useTheme();
+  const { onPressIn, onPressOut, animatedStyle } = usePressAnimation();
   const height = size === 'lg' ? 58 : LAYOUT.buttonHeight;
 
   const handlePress = () => {
@@ -58,53 +61,60 @@ export function Button({
 
   if (variant === 'gradient' && !disabled) {
     return (
-      <TouchableOpacity
-        style={[styles.gradientOuter, { height, shadowColor: glow.purple }, style]}
-        onPress={handlePress}
-        activeOpacity={0.7}
-        disabled={disabled || loading}
-      >
-        <LinearGradient
-          colors={[...gradients.button]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.gradientInner, { height }]}
+      <Animated.View style={[animatedStyle, style]}>
+        <TouchableOpacity
+          style={[styles.gradientOuter, { height, shadowColor: glow.purple }]}
+          onPress={handlePress}
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
+          activeOpacity={0.9}
+          disabled={disabled || loading}
         >
-          {loading ? (
-            <ActivityIndicator color={colors.contrastText} />
-          ) : (
-            <Text style={[styles.text, { color: colors.contrastText }, textStyle]}>
-              {title}
-            </Text>
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
+          <LinearGradient
+            colors={[...gradients.button]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.gradientInner, { height }]}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.contrastText} />
+            ) : (
+              <Text style={[styles.text, { color: colors.contrastText }, textStyle]}>
+                {title}
+              </Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.container,
-        {
-          backgroundColor: getBackgroundColor(),
-          height,
-        },
-        disabled && styles.disabled,
-        style,
-      ]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-      disabled={disabled || loading}
-    >
-      {loading ? (
-        <ActivityIndicator color={getTextColor()} />
-      ) : (
-        <Text style={[styles.text, { color: getTextColor() }, textStyle]}>
-          {title}
-        </Text>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={[animatedStyle, style]}>
+      <TouchableOpacity
+        style={[
+          styles.container,
+          {
+            backgroundColor: getBackgroundColor(),
+            height,
+          },
+          disabled && styles.disabled,
+        ]}
+        onPress={handlePress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        activeOpacity={0.9}
+        disabled={disabled || loading}
+      >
+        {loading ? (
+          <ActivityIndicator color={getTextColor()} />
+        ) : (
+          <Text style={[styles.text, { color: getTextColor() }, textStyle]}>
+            {title}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
