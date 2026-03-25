@@ -31,6 +31,8 @@ export const en: Translations = {
     redo: 'Redo',
     enterResult: "Log today's result",
     share: 'Share',
+    urgeLevel7d: 'Urge Level (7d)',
+    trendChart: 'Trend Chart',
   },
   streak: {
     currentStreak: 'Current Streak',
