@@ -1,5 +1,24 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: {
+      View,
+      createAnimatedComponent: (c: any) => c,
+    },
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: (fn: any) => fn(),
+    useAnimatedProps: () => ({}),
+    withSpring: (v: any) => v,
+    withTiming: (v: any) => v,
+    withRepeat: (v: any) => v,
+    withSequence: (...args: any[]) => args[args.length - 1],
+  };
+});
+
 import { SOSButton } from '../SOSButton';
 
 const mockPush = jest.fn();

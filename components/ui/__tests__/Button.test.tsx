@@ -1,5 +1,22 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: {
+      View,
+      createAnimatedComponent: (c: any) => c,
+    },
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: (fn: any) => fn(),
+    useAnimatedProps: () => ({}),
+    withSpring: (v: any) => v,
+    withTiming: (v: any) => v,
+  };
+});
+
 import { Button } from '../Button';
 import * as Haptics from 'expo-haptics';
 
@@ -45,5 +62,42 @@ describe('Button', () => {
     );
     fireEvent.press(getByText('テスト'));
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('Animated.View ラッパーでレンダリングされる（プレスアニメーション）', () => {
+    const { toJSON } = render(<Button title="テスト" onPress={jest.fn()} />);
+    expect(toJSON()).toBeTruthy();
+  });
+
+  it('variant="primary" でクラッシュしない', () => {
+    expect(() =>
+      render(<Button title="テスト" onPress={jest.fn()} variant="primary" />)
+    ).not.toThrow();
+  });
+
+  it('variant="secondary" でクラッシュしない', () => {
+    expect(() =>
+      render(<Button title="テスト" onPress={jest.fn()} variant="secondary" />)
+    ).not.toThrow();
+  });
+
+  it('variant="danger" でクラッシュしない', () => {
+    expect(() =>
+      render(<Button title="テスト" onPress={jest.fn()} variant="danger" />)
+    ).not.toThrow();
+  });
+
+  it('variant="ghost" でクラッシュしない', () => {
+    expect(() =>
+      render(<Button title="テスト" onPress={jest.fn()} variant="ghost" />)
+    ).not.toThrow();
+  });
+
+  it('loading=true のとき ActivityIndicator が表示される', () => {
+    const { UNSAFE_getByType } = render(
+      <Button title="テスト" onPress={jest.fn()} loading />
+    );
+    const { ActivityIndicator } = require('react-native');
+    expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
   });
 });

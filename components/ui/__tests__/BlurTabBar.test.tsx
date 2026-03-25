@@ -34,6 +34,11 @@ jest.mock('@/hooks/useTheme', () => ({
       textSecondary: '#6B6B7B',
       border: '#2A2A35',
     },
+    glow: {
+      cyan: 'rgba(0, 212, 255, 0.2)',
+      purple: 'rgba(139, 92, 246, 0.3)',
+      danger: 'rgba(239, 68, 68, 0.3)',
+    },
     isDark: true,
   }),
 }));
