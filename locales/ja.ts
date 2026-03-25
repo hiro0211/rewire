@@ -23,6 +23,8 @@ export const ja = {
     redo: 'やり直す',
     enterResult: '今日の結果を入力',
     share: 'シェア',
+    urgeLevel7d: '衝動レベル 7日間',
+    trendChart: 'トレンドチャート',
   },
   streak: {
     currentStreak: '現在の記録',

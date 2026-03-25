@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
@@ -7,9 +8,13 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { GlowDivider } from '@/components/ui/GlowDivider';
+import { Sparkline } from '@/components/ui/Sparkline';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 import { useUserStore } from '@/stores/userStore';
+import { usePressAnimation } from '@/hooks/ui/usePressAnimation';
+import { useCheckinTrends } from '@/hooks/dashboard/useCheckinTrends';
 import { StreakEditModal } from './StreakEditModal';
+import { StatsDetailModal } from './StatsDetailModal';
 import { format, parseISO } from 'date-fns';
 import { ja as jaLocale, enUS } from 'date-fns/locale';
 
@@ -34,8 +39,13 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
   const { relapseCount, stopwatch, goalDays, streakStartDate } = useDashboardStats();
   const { updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const { colors, glow } = useTheme();
   const { t, isJapanese } = useLocale();
+  const { onPressIn, onPressOut, animatedStyle } = usePressAnimation();
+  const { urgeLevel } = useCheckinTrends(7);
+  const { width: screenWidth } = useWindowDimensions();
+  const sparklineWidth = screenWidth - SPACING.lg * 2 - 64;
 
   const handleSave = (date: string) => {
     updateUser({ streakStartDate: date });
@@ -55,10 +65,14 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
     <View testID="stats-row" style={styles.wrapper}>
       <Wrapper {...wrapperProps}>
         <GradientCard variant="hero" testID="stat-stopwatch">
+          <Animated.View style={animatedStyle}>
           <TouchableOpacity
             testID="hero-card-touch"
+            onPress={() => setDetailModalVisible(true)}
             onLongPress={() => setEditModalVisible(true)}
-            activeOpacity={0.7}
+            onPressIn={onPressIn}
+            onPressOut={onPressOut}
+            activeOpacity={0.9}
             style={styles.heroInner}
           >
             <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>{t('streak.currentStreak')}</Text>
@@ -74,6 +88,18 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
             ) : null}
 
             <GlowDivider />
+
+            <View style={styles.sparklineRow}>
+              <Text style={[styles.sparklineLabel, { color: colors.textSecondary }]}>
+                {t('dashboard.urgeLevel7d')}
+              </Text>
+              <Sparkline
+                data={urgeLevel}
+                color={colors.cyan}
+                width={Math.max(sparklineWidth, 80)}
+                height={32}
+              />
+            </View>
 
             <View style={styles.inlineStats}>
               <View testID="stat-relapse" style={styles.inlineStat}>
@@ -99,6 +125,7 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
               </View>
             </View>
           </TouchableOpacity>
+          </Animated.View>
         </GradientCard>
       </Wrapper>
 
@@ -117,6 +144,11 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
         initialDate={streakStartDate || new Date().toISOString().split('T')[0]}
         onClose={() => setEditModalVisible(false)}
         onSave={handleSave}
+      />
+
+      <StatsDetailModal
+        visible={detailModalVisible}
+        onClose={() => setDetailModalVisible(false)}
       />
     </View>
   );
@@ -140,6 +172,17 @@ const styles = StyleSheet.create({
   },
   heroSince: {
     fontSize: FONT_SIZE.xs,
+  },
+  sparklineRow: {
+    width: '100%',
+    marginVertical: SPACING.sm,
+    alignItems: 'center',
+    gap: 4,
+  },
+  sparklineLabel: {
+    fontSize: FONT_SIZE.xs,
+    alignSelf: 'flex-start',
+    marginBottom: 2,
   },
   inlineStats: {
     flexDirection: 'row',
