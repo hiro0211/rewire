@@ -42,6 +42,13 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'ja' }],
 }));
 
+jest.mock('@/hooks/dashboard/useTimeBasedLayout', () => ({
+  useTimeBasedLayout: () => ({
+    sections: ['checkin', 'streak', 'sos'],
+    timeOfDay: 'morning',
+  }),
+}));
+
 import DashboardScreen from '../index';
 
 describe('DashboardScreen', () => {

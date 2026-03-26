@@ -29,7 +29,7 @@ describe('brandConfig', () => {
     it('デフォルト設定で正しいタイミングを返す', () => {
       const result = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
       expect(result.logo).toBe(300);
-      expect(result.lines).toEqual([1000, 1800]);
+      expect(result.lines).toEqual([1000, 4000]);
       expect(result.lineAnimDuration).toBe(400);
     });
 

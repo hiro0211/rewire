@@ -52,6 +52,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
+    './plugins/withFirebaseAnalyticsNoAdId',
     '@react-native-firebase/app',
     './plugins/withContentBlocker',
     './plugins/withWidget',

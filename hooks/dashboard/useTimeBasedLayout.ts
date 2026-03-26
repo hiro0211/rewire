@@ -1,6 +1,5 @@
 export type DashboardSection =
   | 'streak'
-  | 'chart'
   | 'checkin'
   | 'sos';
 
@@ -15,7 +14,7 @@ export function useTimeBasedLayout(): TimeBasedLayout {
   // 朝 5-11時: チェックイン促進 → ストリーク
   if (hour >= 5 && hour < 12) {
     return {
-      sections: ['checkin', 'streak', 'chart', 'sos'],
+      sections: ['checkin', 'streak', 'sos'],
       timeOfDay: 'morning',
     };
   }
@@ -23,7 +22,7 @@ export function useTimeBasedLayout(): TimeBasedLayout {
   // 昼 12-17時: ストリーク → チャート → SOS
   if (hour >= 12 && hour < 18) {
     return {
-      sections: ['streak', 'chart', 'checkin', 'sos'],
+      sections: ['streak', 'checkin', 'sos'],
       timeOfDay: 'afternoon',
     };
   }
@@ -31,7 +30,7 @@ export function useTimeBasedLayout(): TimeBasedLayout {
   // 夜 18-22時: ストリーク大 → 振り返りチャート → SOS
   if (hour >= 18 && hour < 23) {
     return {
-      sections: ['streak', 'checkin', 'chart', 'sos'],
+      sections: ['streak', 'checkin', 'sos'],
       timeOfDay: 'evening',
     };
   }

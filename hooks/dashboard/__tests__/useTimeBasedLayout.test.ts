@@ -21,7 +21,7 @@ describe('useTimeBasedLayout', () => {
     setHour(5);
     const { result } = renderHook(() => useTimeBasedLayout());
     expect(result.current.timeOfDay).toBe('morning');
-    expect(result.current.sections).toEqual(['checkin', 'streak', 'chart', 'sos']);
+    expect(result.current.sections).toEqual(['checkin', 'streak', 'sos']);
   });
 
   it('朝11時は morning レイアウトを返す', () => {
@@ -35,7 +35,7 @@ describe('useTimeBasedLayout', () => {
     setHour(12);
     const { result } = renderHook(() => useTimeBasedLayout());
     expect(result.current.timeOfDay).toBe('afternoon');
-    expect(result.current.sections).toEqual(['streak', 'chart', 'checkin', 'sos']);
+    expect(result.current.sections).toEqual(['streak', 'checkin', 'sos']);
   });
 
   it('昼17時は afternoon レイアウトを返す', () => {
@@ -49,7 +49,7 @@ describe('useTimeBasedLayout', () => {
     setHour(18);
     const { result } = renderHook(() => useTimeBasedLayout());
     expect(result.current.timeOfDay).toBe('evening');
-    expect(result.current.sections).toEqual(['streak', 'checkin', 'chart', 'sos']);
+    expect(result.current.sections).toEqual(['streak', 'checkin', 'sos']);
   });
 
   it('夜22時は evening レイアウトを返す', () => {
@@ -83,7 +83,7 @@ describe('useTimeBasedLayout', () => {
     const { result } = renderHook(() => useTimeBasedLayout());
     expect(Array.isArray(result.current.sections)).toBe(true);
     result.current.sections.forEach((s) => {
-      expect(['streak', 'chart', 'checkin', 'sos']).toContain(s);
+      expect(['streak', 'checkin', 'sos']).toContain(s);
     });
   });
 

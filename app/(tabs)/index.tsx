@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } 
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SOSButton } from '@/components/dashboard/SOSButton';
-import { CheckinTrendCard } from '@/components/dashboard/CheckinTrendCard';
 import { GradientCard } from '@/components/ui/GradientCard';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
@@ -112,12 +111,6 @@ export default function DashboardScreen() {
     />
   );
 
-  const chartSection = (
-    <View key="chart" style={styles.section}>
-      <CheckinTrendCard />
-    </View>
-  );
-
   const sosSection = (
     <View key="sos" style={styles.panicButtonContainer}>
       <SOSButton />
@@ -126,7 +119,6 @@ export default function DashboardScreen() {
 
   const sectionMap: Record<string, React.ReactElement> = {
     streak: streakSection,
-    chart: chartSection,
     checkin: checkinSection,
     sos: sosSection,
   };
