@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "rewire.app.com",
-      "buildNumber": "36"
+      "buildNumber": "38"
     },
     "android": {
       "adaptiveIcon": {
