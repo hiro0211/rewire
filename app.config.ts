@@ -15,10 +15,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     backgroundColor: '#0A0A0F',
   },
   ios: {
+    ...config.ios,
     supportsTablet: true,
     bundleIdentifier: 'rewire.app.com',
     googleServicesFile: './GoogleService-Info.plist',
     infoPlist: {
+      ...config.ios?.infoPlist,
       CFBundleAllowMixedLocalizations: true,
       ITSAppUsesNonExemptEncryption: false,
     },
