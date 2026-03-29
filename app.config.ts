@@ -50,11 +50,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         ios: {
           deploymentTarget: '15.1',
           useFrameworks: 'static',
-          forceStaticLinking: ['RNFBApp', 'RNFBAnalytics', 'RNFBFirestore'],
+          forceStaticLinking: ['RNFBApp', 'RNFBFirestore'],
         },
       },
     ],
-    './plugins/withFirebaseAnalyticsNoAdId',
     '@react-native-firebase/app',
     './plugins/withContentBlocker',
     './plugins/withWidget',

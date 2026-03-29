@@ -1,79 +1,98 @@
-const mockLogEvent = jest.fn();
-const mockLogScreenView = jest.fn();
-const mockSetUserId = jest.fn();
-const mockSetUserProperties = jest.fn();
+import { logger } from '@/lib/logger';
 
-jest.mock('@react-native-firebase/analytics', () => {
-  const analyticsFn = () => ({
-    logEvent: mockLogEvent,
-    logScreenView: mockLogScreenView,
-    setUserId: mockSetUserId,
-    setUserProperties: mockSetUserProperties,
-  });
-  return { __esModule: true, default: analyticsFn };
-});
-
-jest.mock('@/lib/nativeGuard', () => ({
-  isExpoGo: false,
+jest.mock('@/lib/logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    warn: jest.fn(),
+  },
 }));
 
 import { analyticsClient } from '../analyticsClient';
 
-describe('analyticsClient', () => {
+describe('analyticsClient (no-op)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('logEvent', () => {
-    it('Firebase analytics().logEvent() を呼ぶ', async () => {
-      await analyticsClient.logEvent('test_event', { key: 'value' });
-      expect(mockLogEvent).toHaveBeenCalledWith('test_event', { key: 'value' });
-    });
-
-    it('パラメータなしでも呼べる', async () => {
-      await analyticsClient.logEvent('test_event');
-      expect(mockLogEvent).toHaveBeenCalledWith('test_event', undefined);
-    });
-
-    it('エラー時にクラッシュしない', async () => {
-      mockLogEvent.mockRejectedValueOnce(new Error('Firebase error'));
+    it('エラーを投げずに完了する', async () => {
       await expect(
-        analyticsClient.logEvent('test_event')
+        analyticsClient.logEvent('test_event', { key: 'value' }),
       ).resolves.toBeUndefined();
+    });
+
+    it('__DEV__ 時に logger.debug を呼ぶ', async () => {
+      await analyticsClient.logEvent('test_event', { key: 'value' });
+      expect(logger.debug).toHaveBeenCalledWith(
+        'Analytics',
+        'logEvent:',
+        'test_event',
+        { key: 'value' },
+      );
     });
   });
 
   describe('logScreenView', () => {
-    it('analytics().logScreenView() を呼ぶ', async () => {
+    it('エラーを投げずに完了する', async () => {
+      await expect(
+        analyticsClient.logScreenView('HomeScreen'),
+      ).resolves.toBeUndefined();
+    });
+
+    it('__DEV__ 時に logger.debug を呼ぶ', async () => {
       await analyticsClient.logScreenView('HomeScreen');
-      expect(mockLogScreenView).toHaveBeenCalledWith({
-        screen_name: 'HomeScreen',
-        screen_class: 'HomeScreen',
-      });
+      expect(logger.debug).toHaveBeenCalledWith(
+        'Analytics',
+        'logScreenView:',
+        'HomeScreen',
+      );
     });
   });
 
   describe('setUserId', () => {
-    it('analytics().setUserId() を呼ぶ', async () => {
-      await analyticsClient.setUserId('user-123');
-      expect(mockSetUserId).toHaveBeenCalledWith('user-123');
+    it('エラーを投げずに完了する', async () => {
+      await expect(
+        analyticsClient.setUserId('user-123'),
+      ).resolves.toBeUndefined();
     });
 
     it('null を渡せる', async () => {
-      await analyticsClient.setUserId(null);
-      expect(mockSetUserId).toHaveBeenCalledWith(null);
+      await expect(
+        analyticsClient.setUserId(null),
+      ).resolves.toBeUndefined();
+    });
+
+    it('__DEV__ 時に logger.debug を呼ぶ', async () => {
+      await analyticsClient.setUserId('user-123');
+      expect(logger.debug).toHaveBeenCalledWith(
+        'Analytics',
+        'setUserId:',
+        'user-123',
+      );
     });
   });
 
   describe('setUserProperty', () => {
-    it('analytics().setUserProperties() を呼ぶ', async () => {
-      await analyticsClient.setUserProperty('goal_days', '30');
-      expect(mockSetUserProperties).toHaveBeenCalledWith({ goal_days: '30' });
+    it('エラーを投げずに完了する', async () => {
+      await expect(
+        analyticsClient.setUserProperty('goal_days', '30'),
+      ).resolves.toBeUndefined();
     });
 
     it('null を渡せる', async () => {
-      await analyticsClient.setUserProperty('goal_days', null);
-      expect(mockSetUserProperties).toHaveBeenCalledWith({ goal_days: null });
+      await expect(
+        analyticsClient.setUserProperty('goal_days', null),
+      ).resolves.toBeUndefined();
+    });
+
+    it('__DEV__ 時に logger.debug を呼ぶ', async () => {
+      await analyticsClient.setUserProperty('goal_days', '30');
+      expect(logger.debug).toHaveBeenCalledWith(
+        'Analytics',
+        'setUserProperty:',
+        'goal_days',
+        '30',
+      );
     });
   });
 });
