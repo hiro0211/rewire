@@ -18,6 +18,7 @@ import { GlowOverlay } from '@/components/streak/GlowOverlay';
 import { ConfettiEffect } from '@/components/streak/ConfettiEffect';
 import { getCountUpDuration } from '@/constants/streakCelebration';
 import { ROUTES } from '@/lib/routing/routes';
+import { t } from '@/locales/i18n';
 
 export default function StreakScreen() {
   const router = useRouter();
@@ -28,6 +29,9 @@ export default function StreakScreen() {
   const goalReached = streak >= goal;
   const tier = getStreakTier(streak, goalReached);
   const countUpDuration = getCountUpDuration(streak);
+  const subText = goalReached
+    ? t('streak.goalReached')
+    : t('streak.daysAchieved', { days: streak });
 
   const handleContinue = useCallback(() => {
     const hapticMap = {
@@ -51,7 +55,7 @@ export default function StreakScreen() {
       <View style={[styles.content, { paddingTop: insets.top + 60 }]}>
         <View style={styles.numberSection}>
           <StreakNumber streak={streak} />
-          <StreakSubText text={tier.subText} delay={countUpDuration} />
+          <StreakSubText text={subText} delay={countUpDuration} />
         </View>
 
         <View style={styles.trackerSection}>
