@@ -63,7 +63,7 @@ describe('useTimeBasedLayout', () => {
     setHour(23);
     const { result } = renderHook(() => useTimeBasedLayout());
     expect(result.current.timeOfDay).toBe('night');
-    expect(result.current.sections).toEqual(['sos', 'streak']);
+    expect(result.current.sections).toEqual(['streak', 'sos']);
   });
 
   it('深夜0時は night レイアウトを返す', () => {
@@ -93,9 +93,9 @@ describe('useTimeBasedLayout', () => {
     expect(result.current.sections[0]).toBe('checkin');
   });
 
-  it('night の sections は sos で始まる', () => {
+  it('night の sections は streak で始まる', () => {
     setHour(1);
     const { result } = renderHook(() => useTimeBasedLayout());
-    expect(result.current.sections[0]).toBe('sos');
+    expect(result.current.sections[0]).toBe('streak');
   });
 });

@@ -37,7 +37,7 @@ export function useTimeBasedLayout(): TimeBasedLayout {
 
   // 深夜 23-4時: ミニマル（SOS + ストリークのみ）
   return {
-    sections: ['sos', 'streak'],
+    sections: ['streak', 'sos'],
     timeOfDay: 'night',
   };
 }
