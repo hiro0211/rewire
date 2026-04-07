@@ -35,9 +35,9 @@ export function useTimeBasedLayout(): TimeBasedLayout {
     };
   }
 
-  // 深夜 23-4時: ミニマル（SOS + ストリークのみ）
+  // 深夜 23-4時: ストリーク → 振り返り → SOS
   return {
-    sections: ['streak', 'sos'],
+    sections: ['streak', 'checkin', 'sos'],
     timeOfDay: 'night',
   };
 }

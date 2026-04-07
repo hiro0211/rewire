@@ -51,7 +51,6 @@ credentials/
 
 # Firebase
 google-services.json
-GoogleService-Info.plist
 # typescript
 *.tsbuildinfo
 
