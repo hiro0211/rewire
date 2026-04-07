@@ -1,4 +1,4 @@
-import { StarryBackground } from '@/components/onboarding/StarryBackground';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import {
   BRAND_CATCHPHRASE_KEYS,
   BRAND_TIMING_CONFIG,
@@ -83,10 +83,7 @@ export function BrandScreen() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <StarryBackground
-      twinkle={true}
-      gradientColors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}
-    >
+    <AuroraBackground>
       <View style={styles.content}>
         <Animated.Image
           source={require('@/assets/images/icon.png')}
@@ -120,7 +117,7 @@ export function BrandScreen() {
           ))}
         </View>
       </View>
-    </StarryBackground>
+    </AuroraBackground>
   );
 }
 

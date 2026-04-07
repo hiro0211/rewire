@@ -6,11 +6,11 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-jest.mock('@/components/onboarding/StarryBackground', () => {
+jest.mock('@/components/ui/AuroraBackground', () => {
   const { View } = require('react-native');
   return {
-    StarryBackground: ({ children, ...props }: any) => (
-      <View testID="starry-background" {...props}>{children}</View>
+    AuroraBackground: ({ children }: any) => (
+      <View testID="aurora-container">{children}</View>
     ),
   };
 });
