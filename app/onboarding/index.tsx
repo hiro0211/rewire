@@ -9,7 +9,8 @@ import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { StarryBackground } from '@/components/onboarding/StarryBackground';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { OnboardingStepRenderer } from '@/components/onboarding/OnboardingStepRenderer';
 import { canAdvanceStep } from '@/lib/onboarding/canAdvanceStep';
 import type { OnboardingFormState } from '@/lib/onboarding/canAdvanceStep';
@@ -125,12 +126,9 @@ export default function OnboardingScreen() {
   const skipTarget = isAssessmentStep(currentStep) ? EDUCATION_START_INDEX : FEATURES_STEP_INDEX;
   const footerButtonTitle = currentStep.type === 'score_result' ? t('checkin.checkSymptoms') : t('common.next');
 
-  const backgroundConfig = currentStep.type === 'damage_intro'
-    ? { gradientColors: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] as string[], showStars: false }
-    : {};
-
   return (
-    <StarryBackground {...backgroundConfig}>
+    <AuroraBackground>
+      <StarryOverlay />
       <SafeAreaWrapper style={styles.container}>
         <View style={styles.header}>
           <View style={styles.headerRow}>
@@ -186,7 +184,7 @@ export default function OnboardingScreen() {
           </View>
         )}
       </SafeAreaWrapper>
-    </StarryBackground>
+    </AuroraBackground>
   );
 }
 
