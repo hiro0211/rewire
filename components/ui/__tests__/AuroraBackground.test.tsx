@@ -9,6 +9,18 @@ jest.mock('react-native-reanimated', () => ({
   useFrameCallback: () => {},
 }));
 
+// Patch AppState before component import to avoid native module error
+import { AppState } from 'react-native';
+jest.spyOn(AppState, 'addEventListener').mockImplementation(
+  () => ({ remove: jest.fn() }) as any,
+);
+
+// Simulate dev client (not Expo Go) so Skia path is taken
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: { executionEnvironment: 'bare' },
+}));
+
 // @shopify/react-native-skia is auto-mocked via __mocks__/@shopify/react-native-skia.tsx
 
 import { AuroraBackground } from '../AuroraBackground';

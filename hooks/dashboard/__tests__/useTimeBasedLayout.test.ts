@@ -21,7 +21,7 @@ describe('useTimeBasedLayout', () => {
     setHour(5);
     const { result } = renderHook(() => useTimeBasedLayout());
     expect(result.current.timeOfDay).toBe('morning');
-    expect(result.current.sections).toEqual(['checkin', 'streak', 'sos']);
+    expect(result.current.sections).toEqual(['streak', 'checkin', 'sos']);
   });
 
   it('朝11時は morning レイアウトを返す', () => {
@@ -87,10 +87,21 @@ describe('useTimeBasedLayout', () => {
     });
   });
 
-  it('morning の sections は checkin で始まる', () => {
+  it('morning の sections は streak で始まる', () => {
     setHour(8);
     const { result } = renderHook(() => useTimeBasedLayout());
-    expect(result.current.sections[0]).toBe('checkin');
+    expect(result.current.sections[0]).toBe('streak');
+  });
+
+  it('全時間帯で checkin は streak より後に来る', () => {
+    [5, 10, 12, 15, 18, 21, 23, 2].forEach((hour) => {
+      setHour(hour);
+      const { result } = renderHook(() => useTimeBasedLayout());
+      const streakIdx = result.current.sections.indexOf('streak');
+      const checkinIdx = result.current.sections.indexOf('checkin');
+      expect(streakIdx).toBeGreaterThanOrEqual(0);
+      expect(checkinIdx).toBeGreaterThan(streakIdx);
+    });
   });
 
   it('night の sections は streak で始まる', () => {

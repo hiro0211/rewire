@@ -4,7 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 // ブランド画面を常に表示する（dev clientでもスキップしない）
-const DEV_SKIP_ONBOARDING = false;
+const DEV_SKIP_ONBOARDING = true;
 
 export default function Index() {
   const { hasHydrated } = useUserStore();

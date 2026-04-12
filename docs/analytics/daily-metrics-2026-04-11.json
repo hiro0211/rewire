@@ -1,0 +1,38 @@
+{
+  "date": "2026-04-11",
+  "metrics": {
+    "impressions": 0,
+    "product_page_views": 0,
+    "app_units": 0,
+    "sessions": 0,
+    "active_devices": 0,
+    "trial_starts": 0,
+    "paid_conversions": 0,
+    "cancellations": 0,
+    "active_subscriptions": 0
+  },
+  "funnel": {
+    "page_view_rate": null,
+    "download_rate": null,
+    "trial_start_rate": null,
+    "trial_to_paid_rate": null,
+    "monthly_churn_rate": null
+  },
+  "bottleneck": null,
+  "sources": {
+    "Unavailable": {
+      "impressions": 0,
+      "product_page_views": 0,
+      "app_units": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    },
+    "App Store Search": {
+      "impressions": 0,
+      "product_page_views": 0,
+      "app_units": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    }
+  }
+}

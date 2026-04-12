@@ -13,6 +13,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0"
+      },
       "env": {
         "EXPO_PUBLIC_REVENUECAT_API_KEY_IOS": "appl_QNlmHdDhxCrkCyiQxKDblEFaBmy"
       }
@@ -20,10 +23,11 @@
     "production": {
       "autoIncrement": true,
       "ios": {
-        "image": "macos-sequoia-15.6-xcode-16.4"
+        "image": "macos-sequoia-15.6-xcode-26.0"
       },
       "env": {
-        "EXPO_PUBLIC_REVENUECAT_API_KEY_IOS": "appl_QNlmHdDhxCrkCyiQxKDblEFaBmy"
+        "EXPO_PUBLIC_REVENUECAT_API_KEY_IOS": "appl_QNlmHdDhxCrkCyiQxKDblEFaBmy",
+        "EAS_BUILD_DISABLE_COCOAPODS_CACHE": "1"
       }
     }
   },

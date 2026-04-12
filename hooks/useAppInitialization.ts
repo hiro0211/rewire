@@ -54,6 +54,8 @@ export function useAppInitialization() {
       }
       if (cancelled || !Purchases) return;
 
+      // Do not call collectDeviceIdentifiers — we do not collect IDFA.
+
       try {
         const status = await subscriptionClient.getSubscriptionStatus();
         if (!cancelled) {

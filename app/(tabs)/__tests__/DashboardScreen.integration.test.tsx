@@ -158,8 +158,8 @@ describe('DashboardScreen 結合テスト', () => {
 
   // --- 時間帯によるセクション順序 ---
   describe('時間帯によるセクション順序', () => {
-    it('午前中はcheckinセクションが最初に表示される', () => {
-      mockSections = ['checkin', 'streak', 'sos'];
+    it('午前中も streak セクションが checkin の前に表示される', () => {
+      mockSections = ['streak', 'checkin', 'sos'];
       mockTimeOfDay = 'morning';
       const { getByText } = render(<DashboardScreen />);
       // checkin section: 「今日の振り返り」が表示される
@@ -207,10 +207,10 @@ describe('DashboardScreen 結合テスト', () => {
       expect(getByTestId('stat-goal')).toBeTruthy();
     });
 
-    it('SOSボタンタップで/breathingに遷移する', () => {
+    it('SOSボタンタップで/panicに遷移する', () => {
       const { getByTestId } = render(<DashboardScreen />);
       fireEvent.press(getByTestId('panic-button'));
-      expect(mockPush).toHaveBeenCalledWith('/breathing');
+      expect(mockPush).toHaveBeenCalledWith('/panic');
     });
   });
 

@@ -6,12 +6,19 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-jest.mock('@/components/ui/AuroraBackground', () => {
+jest.mock('@/components/onboarding/StarryBackground', () => {
   const { View } = require('react-native');
   return {
-    AuroraBackground: ({ children }: any) => (
-      <View testID="aurora-container">{children}</View>
+    StarryBackground: ({ children }: any) => (
+      <View testID="starry-container">{children}</View>
     ),
+  };
+});
+
+jest.mock('@/components/ui/ShootingStars', () => {
+  const { View } = require('react-native');
+  return {
+    ShootingStars: () => <View testID="shooting-stars-mock" />,
   };
 });
 
@@ -79,13 +86,13 @@ describe('BrandScreen routing', () => {
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
   });
 
-  it('nicknameあり+isPro=trueの場合/streakに遷移する', () => {
+  it('nicknameあり+isPro=trueの場合/(tabs)に遷移する', () => {
     mockUser = { nickname: 'TestUser', isPro: true };
     render(<BrandScreen />);
 
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
 
-    expect(mockReplace).toHaveBeenCalledWith('/streak');
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
   });
 
   it('2800ms前には遷移しない', () => {

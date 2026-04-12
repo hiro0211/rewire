@@ -6,11 +6,11 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-jest.mock('@/components/ui/AuroraBackground', () => {
+jest.mock('@/components/onboarding/StarryBackground', () => {
   const { View } = require('react-native');
   return {
-    AuroraBackground: ({ children }: any) => (
-      <View testID="aurora-container">{children}</View>
+    StarryBackground: ({ children }: any) => (
+      <View testID="starry-container">{children}</View>
     ),
   };
 });
@@ -77,19 +77,19 @@ describe('BrandScreen ルーティング分岐', () => {
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
   });
 
-  it('isPro=true → /streak', () => {
+  it('isPro=true → /(tabs)（ダッシュボードへ直接遷移）', () => {
     mockUser = { nickname: 'Test', isPro: true };
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
-    expect(mockReplace).toHaveBeenCalledWith('/streak');
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
   });
 
-  it('レンダー後にisPro=trueに更新された場合、/streakへ遷移する', () => {
+  it('レンダー後にisPro=trueに更新された場合、/(tabs)へ遷移する', () => {
     mockUser = { nickname: 'Test', isPro: false };
     render(<BrandScreen />);
     // サブスクリプション同期がタイマー発火前に完了したシミュレーション
     mockUser = { nickname: 'Test', isPro: true };
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
-    expect(mockReplace).toHaveBeenCalledWith('/streak');
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
   });
 });

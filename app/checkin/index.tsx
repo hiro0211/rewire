@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SPACING } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { ROUTES } from '@/lib/routing/routes';
 
 export default function CheckinScreen() {
   const { formState, setField } = useCheckinForm();
@@ -30,7 +31,7 @@ export default function CheckinScreen() {
       if (formState.watchedPorn) {
         router.replace('/recovery');
       } else {
-        router.replace('/checkin/complete');
+        router.replace(ROUTES.streak);
       }
     } else {
       Alert.alert(t('checkinForm.error'), result.error || t('checkinForm.submitFailed'));

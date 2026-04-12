@@ -55,20 +55,20 @@ describe('SOSButton (PanicButton)', () => {
     expect(queryByText('衝動が来たらタップ')).toBeNull();
   });
 
-  it('ボタン押下で router.push("/breathing") が呼ばれる', () => {
+  it('ボタン押下で router.push("/panic") が呼ばれる', () => {
     const { getByTestId } = render(<SOSButton />);
     fireEvent.press(getByTestId('panic-button'));
-    expect(mockPush).toHaveBeenCalledWith('/breathing');
+    expect(mockPush).toHaveBeenCalledWith('/panic');
   });
 
   it('クラッシュしない', () => {
     expect(() => render(<SOSButton />)).not.toThrow();
   });
 
-  it('ボタン押下で sos_tapped イベントが送信される', () => {
+  it('ボタン押下で panic_button_tapped イベントが送信される', () => {
     const { getByTestId } = render(<SOSButton />);
     fireEvent.press(getByTestId('panic-button'));
-    expect(mockLogEvent).toHaveBeenCalledWith('sos_tapped');
+    expect(mockLogEvent).toHaveBeenCalledWith('panic_button_tapped');
   });
 
   it('ボタン押下でハプティクス(Warning)が呼ばれる', () => {

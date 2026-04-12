@@ -45,8 +45,52 @@ export const ja = {
     askCalmedDown: '誘惑は落ち着きましたか？',
     noTryAgain: 'いいえ（もう一度）',
     inhale: 'ゆっくり息を吸ってください',
+    hold: 'そのまま息を止めて',
     exhale: 'ゆっくり息を吐いてください',
     preparing: '準備...',
+  },
+  panic: {
+    title: 'パニックボタン',
+    sideEffectsTitle: 'ポルノを見てしまうと？',
+    cameraPrompt: 'カメラを有効にする',
+    cameraFallback: 'カメラが利用できません',
+    thinkingOfWatching: '⚠️ 見そうになっている',
+    watchedPorn: '👎 ポルノを見てしまった',
+    messages: {
+      m1: '後になってまた後悔するよ？',
+      m2: 'そしてまた自分を嫌いになる',
+      m3: 'またポルノ漬けの生活に戻るの？',
+      m4: 'もうやめるって誓ったでしょ',
+      m5: '乗り越えるたびに、強くなれる',
+      m6: '今が踏ん張りどき',
+      m7: '大丈夫、あなたなら乗り越えられる',
+    },
+    sideEffects: {
+      selfHate: {
+        title: '自己嫌悪・罪悪感',
+        description: '視聴後の後悔が積み重なり、自己肯定感がどんどん下がる。',
+      },
+      numbness: {
+        title: '快感の麻痺',
+        description: '脳が強い刺激に慣れてしまい、日常の小さな喜びや達成感を感じにくくなる。',
+      },
+      ed: {
+        title: '勃起不全（ED）',
+        description: 'ポルノに依存するほど、実際の性行為で身体が反応しなくなる。',
+      },
+      willpower: {
+        title: '意志力・自制心の崩壊',
+        description: '衝動を抑える力が弱まり、目先の快楽を優先してしまうようになる。',
+      },
+      focus: {
+        title: '集中力の低下',
+        description: '仕事や勉強に集中できなくなり、頭にモヤがかかったような状態が続く。',
+      },
+      isolation: {
+        title: '社会的孤立',
+        description: '人付き合いを避けるようになり、孤独感が深まる。',
+      },
+    },
   },
   checkin: {
     checkSymptoms: '症状を確認してみる',

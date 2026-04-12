@@ -46,7 +46,10 @@ jest.mock('@/lib/subscription/subscriptionClient', () => ({
 }));
 
 jest.mock('@/lib/subscription/purchasesModule', () => ({
-  Purchases: { addCustomerInfoUpdateListener: jest.fn() },
+  Purchases: {
+    addCustomerInfoUpdateListener: jest.fn(),
+    collectDeviceIdentifiers: jest.fn(),
+  },
 }));
 
 jest.mock('expo-font', () => ({
@@ -83,6 +86,28 @@ describe('useAppInitialization', () => {
   it('初期化時にloadThemePreferenceが呼ばれる', () => {
     renderHook(() => useAppInitialization());
     expect(mockLoadThemePreference).toHaveBeenCalled();
+  });
+
+  describe('トラッキング無効化', () => {
+    it('hydration後にsubscription初期化が呼ばれる', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      expect(mockInitialize).toHaveBeenCalled();
+    });
+
+    it('collectDeviceIdentifiersは呼ばれない (IDFA非収集)', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      expect((Purchases as any).collectDeviceIdentifiers).not.toHaveBeenCalled();
+    });
   });
 
   describe('サブスクリプション初期同期', () => {

@@ -32,6 +32,7 @@ export const ROUTES = {
   privacyPolicy: route('/privacy-policy'),
   checkin: route('/checkin'),
   checkinComplete: route('/checkin/complete'),
+  panic: route('/panic'),
   breathing: route('/breathing'),
   breathingAsk: route('/breathing/ask'),
   breathingSuccess: route('/breathing/success'),

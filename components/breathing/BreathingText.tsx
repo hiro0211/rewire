@@ -15,6 +15,7 @@ export function BreathingText({ phase }: BreathingTextProps) {
   const { colors } = useTheme();
   const { t } = useLocale();
   const text = phase === 'inhale' ? t('breathing.inhale') :
+               phase === 'hold' ? t('breathing.hold') :
                phase === 'exhale' ? t('breathing.exhale') :
                t('breathing.preparing');
 

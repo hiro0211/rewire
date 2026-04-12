@@ -3,16 +3,19 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { BREATHING_CONFIG } from '@/constants/breathing';
 
-export type BreathPhase = 'idle' | 'inhale' | 'exhale' | 'complete';
+export type BreathPhase = 'idle' | 'inhale' | 'hold' | 'exhale' | 'complete';
 
 // 吸う: ガタガタと力強い断続的な振動（300ms間隔で Heavy）
 const HAPTIC_INTERVAL_INHALE = 300;
+// 息止め: 控えめで安定した振動（200ms間隔で Medium）
+const HAPTIC_INTERVAL_HOLD = 200;
 // 吐く: スーッと流れるような連続振動（100ms間隔で Soft）
 const HAPTIC_INTERVAL_EXHALE = 100;
 
 export const useBreathingEngine = () => {
   const [phase, setPhase] = useState<BreathPhase>('idle');
   const [cycleCount, setCycleCount] = useState(0);
+  const cycleCountRef = useRef(0);
   const router = useRouter();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hapticTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -34,6 +37,15 @@ export const useBreathingEngine = () => {
     }, HAPTIC_INTERVAL_INHALE);
   };
 
+  const startHoldHaptic = () => {
+    stopHaptic();
+    // 息止め: 中程度の振動で集中を促す
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticTimerRef.current = setInterval(() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }, HAPTIC_INTERVAL_HOLD);
+  };
+
   const startExhaleHaptic = () => {
     stopHaptic();
     // 吐く: スーッと流れるような連続振動
@@ -43,35 +55,37 @@ export const useBreathingEngine = () => {
     }, HAPTIC_INTERVAL_EXHALE);
   };
 
-  const startSession = () => {
-    setCycleCount(0);
-    setPhase('inhale');
-    runCycle();
-  };
-
   const runCycle = () => {
     setPhase('inhale');
     startInhaleHaptic();
     timerRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
-      setPhase('exhale');
-      startExhaleHaptic();
+      setPhase('hold');
+      startHoldHaptic();
       timerRef.current = setTimeout(() => {
         if (!mountedRef.current) return;
-        setCycleCount((c) => {
-          const nextCount = c + 1;
-          if (nextCount >= BREATHING_CONFIG.CYCLES_PER_SESSION) {
+        setPhase('exhale');
+        startExhaleHaptic();
+        timerRef.current = setTimeout(() => {
+          if (!mountedRef.current) return;
+          cycleCountRef.current += 1;
+          setCycleCount(cycleCountRef.current);
+          if (cycleCountRef.current >= BREATHING_CONFIG.CYCLES_PER_SESSION) {
             stopHaptic();
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             setPhase('complete');
-            return nextCount;
           } else {
             runCycle();
-            return nextCount;
           }
-        });
-      }, BREATHING_CONFIG.EXHALE_DURATION);
+        }, BREATHING_CONFIG.EXHALE_DURATION);
+      }, BREATHING_CONFIG.HOLD_DURATION);
     }, BREATHING_CONFIG.INHALE_DURATION);
+  };
+
+  const startSession = () => {
+    cycleCountRef.current = 0;
+    setCycleCount(0);
+    runCycle();
   };
 
   // Navigate when session completes (safe: runs in useEffect, not in setState callback)

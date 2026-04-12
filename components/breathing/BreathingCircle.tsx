@@ -5,7 +5,6 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   Easing,
-  withRepeat,
 } from 'react-native-reanimated';
 import { useTheme } from '@/hooks/useTheme';
 import { BREATHING_CONFIG } from '@/constants/breathing';
@@ -27,6 +26,10 @@ export function BreathingCircle({ phase }: BreathingCircleProps) {
         easing: Easing.bezier(0.4, 0.0, 0.2, 1),
       });
       opacity.value = withTiming(0.8, { duration: BREATHING_CONFIG.INHALE_DURATION });
+    } else if (phase === 'hold') {
+      // Hold: keep the circle at its fully-expanded size without animating.
+      scale.value = 1;
+      opacity.value = 0.8;
     } else if (phase === 'exhale') {
       scale.value = withTiming(0.4, {
         duration: BREATHING_CONFIG.EXHALE_DURATION,

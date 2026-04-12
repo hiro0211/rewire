@@ -7,4 +7,9 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/\\.claude/worktrees/',
+  ],
+  modulePathIgnorePatterns: ['<rootDir>/\\.claude/worktrees/'],
 };

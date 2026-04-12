@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BreathingCircle } from '@/components/breathing/BreathingCircle';
 import { BreathingText } from '@/components/breathing/BreathingText';
+import { BreathingTimer } from '@/components/breathing/BreathingTimer';
 
 import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
 import { useTheme } from '@/hooks/useTheme';
@@ -40,7 +41,10 @@ export default function BreathingScreen() {
       <View style={styles.center}>
         <BreathingText phase={phase} />
         <BreathingCircle phase={phase} />
+      </View>
 
+      <View style={styles.timerContainer}>
+        <BreathingTimer phase={phase} cycleCount={cycleCount} />
       </View>
     </View>
   );
@@ -77,6 +81,13 @@ const styles = StyleSheet.create({
   center: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timerContainer: {
+    position: 'absolute',
+    bottom: 60,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
 });

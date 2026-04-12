@@ -53,7 +53,8 @@ export default function RootLayout() {
           <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="checkin/index" options={{ headerShown: true, title: t('nav.checkin') }} />
           <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />
-          <Stack.Screen name="breathing/index" options={{ headerShown: false }} />
+          <Stack.Screen name="panic/index" options={{ headerShown: false, animation: 'fade' }} />
+          <Stack.Screen name="breathing/index" options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
           <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
           <Stack.Screen name="recovery/index" options={{ headerShown: false }} />

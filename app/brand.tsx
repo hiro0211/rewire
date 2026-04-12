@@ -1,4 +1,5 @@
-import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { StarryBackground } from '@/components/onboarding/StarryBackground';
+import { ShootingStars } from '@/components/ui/ShootingStars';
 import {
   BRAND_CATCHPHRASE_KEYS,
   BRAND_TIMING_CONFIG,
@@ -75,7 +76,7 @@ export function BrandScreen() {
       } else if (!freshUser.isPro) {
         router.replace(routeWithParams('/paywall', { source: 'returning' }));
       } else {
-        router.replace(ROUTES.streak);
+        router.replace(ROUTES.tabs);
       }
     }, TIMINGS.navigate));
 
@@ -83,7 +84,8 @@ export function BrandScreen() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <AuroraBackground>
+    <StarryBackground twinkle={true} gradientColors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}>
+      <ShootingStars />
       <View style={styles.content}>
         <Animated.Image
           source={require('@/assets/images/icon.png')}
@@ -117,7 +119,7 @@ export function BrandScreen() {
           ))}
         </View>
       </View>
-    </AuroraBackground>
+    </StarryBackground>
   );
 }
 

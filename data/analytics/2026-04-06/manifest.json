@@ -1,9 +1,8 @@
 {
   "date": "2026-04-06",
   "reports": [
-    "discovery_engagement_standard",
-    "discovery_engagement_detailed",
-    "web_preview_standard"
+    "App Downloads Standard",
+    "App Store Purchases Standard"
   ],
-  "file_count": 3
+  "file_count": 2
 }

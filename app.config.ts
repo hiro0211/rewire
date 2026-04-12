@@ -23,6 +23,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       ...config.ios?.infoPlist,
       CFBundleAllowMixedLocalizations: true,
       ITSAppUsesNonExemptEncryption: false,
+      NSCameraUsageDescription:
+        'パニックボタン画面で自分の顔を映し、衝動に対して自分自身と向き合うために使用します。映像は端末内でのみ表示され、保存・送信されません。',
     },
   },
   locales: {
@@ -45,20 +47,30 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-secure-store',
     [
+      'expo-camera',
+      {
+        cameraPermission:
+          'パニックボタン画面で自分の顔を映し、衝動に対して自分自身と向き合うために使用します。映像は端末内でのみ表示され、保存・送信されません。',
+        recordAudioAndroid: false,
+      },
+    ],
+    [
       'expo-build-properties',
       {
         ios: {
           deploymentTarget: '15.1',
           useFrameworks: 'static',
-          forceStaticLinking: ['RNFBApp', 'RNFBFirestore'],
+          forceStaticLinking: ['RNFBApp', 'RNFBAnalytics', 'RNFBFirestore'],
         },
       },
     ],
+    './plugins/withFirebaseAnalyticsNoAdId',
     '@react-native-firebase/app',
     './plugins/withContentBlocker',
     './plugins/withWidget',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',
+    './plugins/withRemoveTrackingDescription',
   ],
   extra: {
     eas: {

@@ -58,8 +58,8 @@ export function SOSButton() {
 
   const handlePress = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    analyticsClient.logEvent('sos_tapped');
-    router.push('/breathing');
+    analyticsClient.logEvent('panic_button_tapped');
+    router.push('/panic');
   };
 
   const containerStyle = useAnimatedStyle(() => ({

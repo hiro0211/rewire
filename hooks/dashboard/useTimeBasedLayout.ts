@@ -11,10 +11,10 @@ export interface TimeBasedLayout {
 export function useTimeBasedLayout(): TimeBasedLayout {
   const hour = new Date().getHours();
 
-  // 朝 5-11時: チェックイン促進 → ストリーク
+  // 朝 5-11時: ストリーク → チェックイン → SOS
   if (hour >= 5 && hour < 12) {
     return {
-      sections: ['checkin', 'streak', 'sos'],
+      sections: ['streak', 'checkin', 'sos'],
       timeOfDay: 'morning',
     };
   }

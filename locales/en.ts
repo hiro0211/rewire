@@ -53,8 +53,58 @@ export const en: Translations = {
     askCalmedDown: 'Has the urge settled down?',
     noTryAgain: 'No (try again)',
     inhale: 'Breathe in slowly',
+    hold: 'Hold your breath',
     exhale: 'Breathe out slowly',
     preparing: 'Preparing...',
+  },
+  panic: {
+    title: 'Panic Button',
+    sideEffectsTitle: 'What happens if you watch?',
+    cameraPrompt: 'Enable camera',
+    cameraFallback: 'Camera unavailable',
+    thinkingOfWatching: '⚠️ Thinking of watching',
+    watchedPorn: '👎 I watched porn',
+    messages: {
+      m1: "You'll regret it again later, won't you?",
+      m2: "And you'll hate yourself all over again",
+      m3: 'Going back to a porn-soaked life?',
+      m4: 'You promised yourself you would stop',
+      m5: 'Each time you overcome it, you grow stronger',
+      m6: 'This is your moment to push through',
+      m7: "It's okay — you can get through this",
+    },
+    sideEffects: {
+      selfHate: {
+        title: 'Self-loathing & guilt',
+        description:
+          'Regret piles up after each session and your self-esteem keeps eroding.',
+      },
+      numbness: {
+        title: 'Numbed pleasure',
+        description:
+          'Your brain adapts to extreme stimuli and everyday joys start to feel flat.',
+      },
+      ed: {
+        title: 'Erectile dysfunction',
+        description:
+          'The deeper the dependency, the less your body responds during real intimacy.',
+      },
+      willpower: {
+        title: 'Collapsing willpower',
+        description:
+          'The ability to resist urges weakens and you end up chasing short-term pleasure.',
+      },
+      focus: {
+        title: 'Loss of focus',
+        description:
+          'Work and studies become harder, and a persistent mental fog settles in.',
+      },
+      isolation: {
+        title: 'Social isolation',
+        description:
+          'You start avoiding people and loneliness sinks deeper into your life.',
+      },
+    },
   },
   checkin: {
     checkSymptoms: 'Check Your Symptoms',
