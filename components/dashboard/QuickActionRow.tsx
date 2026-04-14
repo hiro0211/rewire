@@ -24,16 +24,10 @@ export function QuickActionRow() {
         testID="qa-checkin"
       />
       <QuickActionButton
-        icon="book-outline"
-        label={t('quickAction.journal')}
-        onPress={() => router.push('/history')}
-        testID="qa-journal"
-      />
-      <QuickActionButton
-        icon="warning-outline"
-        label={t('quickAction.sos')}
-        onPress={() => router.push('/breathing')}
-        testID="qa-sos"
+        icon="calendar-outline"
+        label={t('quickAction.calendar')}
+        onPress={() => router.push('/streak-calendar')}
+        testID="qa-calendar"
       />
     </View>
   );

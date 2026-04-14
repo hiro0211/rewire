@@ -44,14 +44,10 @@ export default function TabLayout() {
         name="articles"
         options={{ href: null }}
       />
+      {/* カレンダーは /streak-calendar 独立画面に移行 */}
       <Tabs.Screen
         name="history"
-        options={{
-          title: t('nav.recordHistory'),
-          headerShown: true,
-          tabBarLabel: t('nav.history'),
-          tabBarIcon: ({ color, size }) => <Ionicons name={color === colors.cyan ? 'calendar' : 'calendar-outline'} size={size} color={color} />,
-        }}
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="learn"

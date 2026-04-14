@@ -24,9 +24,8 @@ jest.mock('@/hooks/useLocale', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'quickAction.breathe': '呼吸',
-        'quickAction.checkin': 'チェックイン',
-        'quickAction.journal': 'ジャーナル',
-        'quickAction.sos': 'SOS',
+        'quickAction.checkin': '振り返り',
+        'quickAction.calendar': 'カレンダー',
       };
       return map[key] ?? key;
     },
@@ -38,23 +37,34 @@ describe('QuickActionRow', () => {
     mockPush.mockClear();
   });
 
-  it('4つのアクションボタンを表示する', () => {
+  it('3つのアクションボタンを表示する', () => {
     render(<QuickActionRow />);
     expect(screen.getByText('呼吸')).toBeTruthy();
-    expect(screen.getByText('チェックイン')).toBeTruthy();
-    expect(screen.getByText('ジャーナル')).toBeTruthy();
-    expect(screen.getByText('SOS')).toBeTruthy();
+    expect(screen.getByText('振り返り')).toBeTruthy();
+    expect(screen.getByText('カレンダー')).toBeTruthy();
+  });
+
+  it('ジャーナルとSOSボタンは表示しない', () => {
+    render(<QuickActionRow />);
+    expect(screen.queryByTestId('qa-journal')).toBeNull();
+    expect(screen.queryByTestId('qa-sos')).toBeNull();
   });
 
   it('呼吸ボタンタップでbreathingページに遷移する', () => {
     render(<QuickActionRow />);
-    fireEvent.press(screen.getByText('呼吸'));
+    fireEvent.press(screen.getByTestId('qa-breathe'));
     expect(mockPush).toHaveBeenCalledWith('/breathing');
   });
 
-  it('チェックインボタンタップでcheckinページに遷移する', () => {
+  it('振り返りボタンタップでcheckinページに遷移する', () => {
     render(<QuickActionRow />);
-    fireEvent.press(screen.getByText('チェックイン'));
+    fireEvent.press(screen.getByTestId('qa-checkin'));
     expect(mockPush).toHaveBeenCalledWith('/checkin');
+  });
+
+  it('カレンダーボタンタップでstreak-calendarページに遷移する', () => {
+    render(<QuickActionRow />);
+    fireEvent.press(screen.getByTestId('qa-calendar'));
+    expect(mockPush).toHaveBeenCalledWith('/streak-calendar');
   });
 });
