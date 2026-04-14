@@ -37,7 +37,8 @@ export const ja = {
   },
   quickAction: {
     breathe: '呼吸',
-    review: '今日の振り返り',
+    checkin: '振り返り',
+    calendar: 'カレンダー',
   },
   streak: {
     currentStreak: '現在の記録',

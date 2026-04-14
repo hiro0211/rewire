@@ -45,7 +45,8 @@ export const en: Translations = {
   },
   quickAction: {
     breathe: 'Breathe',
-    review: 'Daily Review',
+    checkin: 'Check-in',
+    calendar: 'Calendar',
   },
   streak: {
     currentStreak: 'Current Streak',
