@@ -26,6 +26,12 @@ export const ja = {
     urgeLevel7d: '衝動レベル 7日間',
     trendChart: 'トレンドチャート',
   },
+  quickAction: {
+    breathe: '呼吸',
+    checkin: 'チェックイン',
+    journal: '記録',
+    sos: 'SOS',
+  },
   streak: {
     currentStreak: '現在の記録',
     consecutiveDays: '連続日数',

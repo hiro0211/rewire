@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { format, parseISO } from 'date-fns';
+import { ja as jaLocale, enUS } from 'date-fns/locale';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
@@ -11,15 +13,21 @@ import { GlowDivider } from '@/components/ui/GlowDivider';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 import { useUserStore } from '@/stores/userStore';
 import { usePressAnimation } from '@/hooks/ui/usePressAnimation';
+import { getStreakTier } from '@/hooks/streak/useStreakTier';
+import { AnimatedOrb } from './AnimatedOrb';
 import { StreakEditModal } from './StreakEditModal';
-import { format, parseISO } from 'date-fns';
-import { ja as jaLocale, enUS } from 'date-fns/locale';
 
-function formatStartDate(dateStr: string | null, t: (key: string, opts?: Record<string, unknown>) => string, isJapanese: boolean): string {
+function formatStartDate(
+  dateStr: string | null,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+  isJapanese: boolean,
+): string {
   if (!dateStr) return '';
   try {
     const date = parseISO(dateStr);
-    const formatted = format(date, isJapanese ? 'yyyy/MM/dd' : 'MM/dd/yyyy', { locale: isJapanese ? jaLocale : enUS });
+    const formatted = format(date, isJapanese ? 'yyyy/MM/dd' : 'MM/dd/yyyy', {
+      locale: isJapanese ? jaLocale : enUS,
+    });
     return t('streak.since', { date: formatted });
   } catch {
     return '';
@@ -34,11 +42,15 @@ interface StatsRowProps {
 
 export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowProps) {
   const { relapseCount, stopwatch, goalDays, streakStartDate } = useDashboardStats();
-  const { updateUser } = useUserStore();
+  const { user, updateUser } = useUserStore();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const { colors, glow } = useTheme();
   const { t, isJapanese } = useLocale();
   const { onPressIn, onPressOut, animatedStyle } = usePressAnimation();
+
+  const streakDays = stopwatch.days ?? 0;
+  const goalReached = user?.goalDays ? streakDays >= user.goalDays : false;
+  const tier = getStreakTier(streakDays, goalReached);
 
   const handleSave = (date: string) => {
     updateUser({ streakStartDate: date });
@@ -57,17 +69,27 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
   return (
     <View testID="stats-row" style={styles.wrapper}>
       <Wrapper {...wrapperProps}>
-        <GradientCard variant="hero" testID="stat-stopwatch">
+        {/* Animated Orb */}
+        <View style={styles.orbSection}>
           <Animated.View style={animatedStyle}>
-          <TouchableOpacity
-            testID="hero-card-touch"
-            onLongPress={() => setEditModalVisible(true)}
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
-            activeOpacity={0.9}
-            style={styles.heroInner}
-          >
-            <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>{t('streak.currentStreak')}</Text>
+            <TouchableOpacity
+              testID="orb-touch"
+              onLongPress={() => setEditModalVisible(true)}
+              onPressIn={onPressIn}
+              onPressOut={onPressOut}
+              activeOpacity={0.9}
+            >
+              <AnimatedOrb tierName={tier.name} size={200} />
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+
+        {/* Hero card — inline stats */}
+        <GradientCard variant="hero" testID="stat-stopwatch">
+          <View style={styles.heroInner}>
+            <Text style={[styles.heroLabel, { color: colors.textSecondary }]}>
+              {t('streak.currentStreak')}
+            </Text>
             <Text
               style={[styles.heroValue, { color: colors.cyan }]}
               adjustsFontSizeToFit
@@ -76,14 +98,18 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
               {stopwatch.formatted}
             </Text>
             {streakStartDate ? (
-              <Text style={[styles.heroSince, { color: colors.textSecondary }]}>{formatStartDate(streakStartDate, t, isJapanese)}</Text>
+              <Text style={[styles.heroSince, { color: colors.textSecondary }]}>
+                {formatStartDate(streakStartDate, t, isJapanese)}
+              </Text>
             ) : null}
 
             <GlowDivider />
 
             <View style={styles.inlineStats}>
               <View testID="stat-relapse" style={styles.inlineStat}>
-                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>{t('streak.relapseCount')}</Text>
+                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>
+                  {t('streak.relapseCount')}
+                </Text>
                 <Text
                   style={[
                     styles.miniValue,
@@ -94,21 +120,27 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
                 </Text>
               </View>
 
-              <View style={[styles.inlineDivider, {
-                backgroundColor: glow.purple,
-                shadowColor: glow.purple,
-              }]} />
+              <View
+                style={[
+                  styles.inlineDivider,
+                  { backgroundColor: glow.purple, shadowColor: glow.purple },
+                ]}
+              />
 
               <View testID="stat-goal" style={styles.inlineStat}>
-                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>{t('settings.labels.goalDays')}</Text>
-                <Text style={[styles.miniValue, { color: colors.text }]}>{t('settings.labels.daysFormat', { days: goalDays })}</Text>
+                <Text style={[styles.miniLabel, { color: colors.textSecondary }]}>
+                  {t('settings.labels.goalDays')}
+                </Text>
+                <Text style={[styles.miniValue, { color: colors.text }]}>
+                  {t('settings.labels.daysFormat', { days: goalDays })}
+                </Text>
               </View>
             </View>
-          </TouchableOpacity>
-          </Animated.View>
+          </View>
         </GradientCard>
       </Wrapper>
 
+      {/* Share button */}
       <TouchableOpacity
         testID="share-button"
         onPress={handleShare}
@@ -116,7 +148,9 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
         activeOpacity={0.7}
       >
         <Ionicons name="share-outline" size={16} color={colors.textSecondary} />
-        <Text style={[styles.shareText, { color: colors.textSecondary }]}>{t('dashboard.share')}</Text>
+        <Text style={[styles.shareText, { color: colors.textSecondary }]}>
+          {t('dashboard.share')}
+        </Text>
       </TouchableOpacity>
 
       <StreakEditModal
@@ -131,7 +165,11 @@ export function StatsRow({ onShare, viewShotRef, ViewShotComponent }: StatsRowPr
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: SPACING.xxxl,
+    marginBottom: SPACING.xl,
+  },
+  orbSection: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
   },
   heroInner: {
     alignItems: 'center',

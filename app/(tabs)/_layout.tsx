@@ -22,6 +22,7 @@ export default function TabLayout() {
         },
         headerTitleAlign: 'left',
         headerShadowVisible: false,
+        tabBarShowLabel: false,
       }}
     >
       <Tabs.Screen

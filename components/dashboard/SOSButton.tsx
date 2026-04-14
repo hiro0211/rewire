@@ -7,6 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
   withSequence,
+  cancelAnimation,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -46,6 +47,10 @@ export function SOSButton() {
       -1,
       false,
     );
+    return () => {
+      cancelAnimation(pulseOpacity);
+      cancelAnimation(pulseScale);
+    };
   }, []);
 
   const handlePressIn = () => {

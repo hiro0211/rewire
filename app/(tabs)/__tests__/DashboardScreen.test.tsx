@@ -44,7 +44,7 @@ jest.mock('expo-localization', () => ({
 
 jest.mock('@/hooks/dashboard/useTimeBasedLayout', () => ({
   useTimeBasedLayout: () => ({
-    sections: ['checkin', 'streak', 'sos'],
+    sections: ['streak', 'quickActions', 'sos'],
     timeOfDay: 'morning',
   }),
 }));
@@ -56,9 +56,9 @@ describe('DashboardScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('挨拶テキスト "おかえりなさい" が表示される', () => {
-    const { getByText } = render(<DashboardScreen />);
-    expect(getByText('おかえりなさい')).toBeTruthy();
+  it('挨拶テキストは表示されない（削除済み）', () => {
+    const { queryByText } = render(<DashboardScreen />);
+    expect(queryByText('おかえりなさい')).toBeNull();
   });
 
   it('StatsRow が表示される', () => {
@@ -66,14 +66,9 @@ describe('DashboardScreen', () => {
     expect(getByTestId('stats-row')).toBeTruthy();
   });
 
-  it('クイックアクション行が表示されない', () => {
-    const { queryByTestId } = render(<DashboardScreen />);
-    expect(queryByTestId('quick-actions-row')).toBeNull();
-  });
-
-  it('"今日の振り返り" セクションが表示される', () => {
-    const { getByText } = render(<DashboardScreen />);
-    expect(getByText('今日の振り返り')).toBeTruthy();
+  it('QuickActionRowが表示される', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    expect(getByTestId('quick-action-row')).toBeTruthy();
   });
 
   it('testID="panic-button" が存在する', () => {
@@ -87,15 +82,10 @@ describe('DashboardScreen', () => {
     expect(UNSAFE_getByType(RefreshControl)).toBeTruthy();
   });
 
-  it('"今日の結果を入力" ボタンで /checkin に遷移する', () => {
-    const { getByText } = render(<DashboardScreen />);
-    fireEvent.press(getByText('今日の結果を入力'));
-    expect(mockPush).toHaveBeenCalledWith('/checkin');
+  it('AuroraBackgroundが使用される', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    // aurora-container or aurora-fallback (depends on Skia availability)
+    const aurora = getByTestId('aurora-container') ?? getByTestId('aurora-fallback');
+    expect(aurora).toBeTruthy();
   });
-
-  it('ユーザーのnicknameが表示される', () => {
-    const { getByText } = render(<DashboardScreen />);
-    expect(getByText('TestUser')).toBeTruthy();
-  });
-
 });

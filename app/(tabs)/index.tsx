@@ -1,18 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
-import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
+import { View, StyleSheet, ScrollView, RefreshControl, StatusBar } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SOSButton } from '@/components/dashboard/SOSButton';
-import { GradientCard } from '@/components/ui/GradientCard';
+import { QuickActionRow } from '@/components/dashboard/QuickActionRow';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useShareWidget } from '@/hooks/dashboard/useShareWidget';
-import { useTimeBasedLayout } from '@/hooks/dashboard/useTimeBasedLayout';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
-import { useLocale } from '@/hooks/useLocale';
-import { Button } from '@/components/ui/Button';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { useSurveyEligibility } from '@/hooks/survey/useSurveyEligibility';
 import { useSurveyPromptActions } from '@/hooks/survey/useSurveyPromptActions';
@@ -32,14 +31,12 @@ if (!isExpoGo) {
 }
 
 export default function DashboardScreen() {
-  const { user, loadUser } = useUserStore();
-  const { loadCheckins, todayCheckin } = useCheckinStore();
-  const router = useRouter();
+  const { loadUser } = useUserStore();
+  const { loadCheckins } = useCheckinStore();
   const [refreshing, setRefreshing] = useState(false);
-  const { colors } = useTheme();
-  const { t } = useLocale();
+  const { colors, isDark } = useTheme();
   const { viewShotRef, share } = useShareWidget();
-  const { sections } = useTimeBasedLayout();
+  const insets = useSafeAreaInsets();
   const { shouldShowSurvey } = useSurveyEligibility();
   const [surveyModalVisible, setSurveyModalVisible] = useState(false);
   const { handleAccept, handleDismiss } = useSurveyPromptActions(
@@ -78,55 +75,15 @@ export default function DashboardScreen() {
     setRefreshing(false);
   }, [loadCheckins, loadUser]);
 
-  const checkinSection = (
-    <View key="checkin" style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('dashboard.todayReview')}</Text>
-      {todayCheckin ? (
-        <GradientCard>
-          <View style={styles.doneInner}>
-            <Text style={[styles.doneText, { color: colors.success }]}>{t('dashboard.completed')}</Text>
-            <Text style={[styles.doneSubText, { color: colors.textSecondary }]}>{t('dashboard.continueMessage')}</Text>
-            <TouchableOpacity onPress={() => router.push('/checkin')} style={styles.redoButton}>
-              <Text style={[styles.redoText, { color: colors.textSecondary }]}>{t('dashboard.redo')}</Text>
-            </TouchableOpacity>
-          </View>
-        </GradientCard>
-      ) : (
-        <Button
-          title={t('dashboard.enterResult')}
-          onPress={() => router.push('/checkin')}
-          variant="gradient"
-          style={styles.checkinButton}
-        />
-      )}
-    </View>
-  );
-
-  const streakSection = (
-    <StatsRow
-      key="streak"
-      onShare={share}
-      viewShotRef={viewShotRef}
-      ViewShotComponent={ViewShot}
-    />
-  );
-
-  const sosSection = (
-    <View key="sos" style={styles.panicButtonContainer}>
-      <SOSButton />
-    </View>
-  );
-
-  const sectionMap: Record<string, React.ReactElement> = {
-    streak: streakSection,
-    checkin: checkinSection,
-    sos: sosSection,
-  };
-
   return (
-    <SafeAreaWrapper style={styles.container}>
+    <AuroraBackground>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" />
+      <StarryOverlay />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + SPACING.lg },
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -135,12 +92,17 @@ export default function DashboardScreen() {
           />
         }
       >
-        <View style={styles.header}>
-          <Text style={[styles.greeting, { color: colors.textSecondary }]}>{t('dashboard.greeting')}</Text>
-          <Text style={[styles.username, { color: colors.text }]}>{user?.nickname}</Text>
-        </View>
+        <StatsRow
+          onShare={share}
+          viewShotRef={viewShotRef}
+          ViewShotComponent={ViewShot}
+        />
 
-        {sections.map((section) => sectionMap[section])}
+        <QuickActionRow />
+
+        <View style={styles.panicButtonContainer}>
+          <SOSButton />
+        </View>
       </ScrollView>
 
       <SurveyPromptModal
@@ -157,58 +119,14 @@ export default function DashboardScreen() {
         onFeedbackTap={handleFeedbackTap}
         onDismiss={handleReviewDismiss}
       />
-    </SafeAreaWrapper>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 0,
-  },
   scrollContent: {
     padding: SPACING.lg,
     paddingBottom: 100, // extra padding for floating tab bar
-  },
-  header: {
-    marginBottom: SPACING.xl,
-  },
-  greeting: {
-    fontSize: FONT_SIZE.sm,
-  },
-  username: {
-    fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
-  },
-  section: {
-    marginBottom: SPACING.xxxl,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
-    marginBottom: SPACING.md,
-  },
-  checkinButton: {
-    marginTop: SPACING.xs,
-  },
-  doneInner: {
-    alignItems: 'center',
-  },
-  doneText: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  doneSubText: {
-    fontSize: FONT_SIZE.sm,
-  },
-  redoButton: {
-    marginTop: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-  },
-  redoText: {
-    fontSize: FONT_SIZE.xs,
-    textDecorationLine: 'underline',
   },
   panicButtonContainer: {
     marginTop: SPACING.xxxl,

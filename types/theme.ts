@@ -5,6 +5,8 @@ export interface ColorPalette {
   background: string;
   surface: string;
   surfaceHighlight: string;
+  surfaceGlass: string;
+  borderGlass: string;
   text: string;
   textSecondary: string;
   primary: string;
@@ -32,6 +34,8 @@ export interface GradientPalette {
   button: readonly string[];
   danger: readonly string[];
   accent: readonly string[];
+  orb: readonly string[];
+  glass: readonly string[];
 }
 
 export interface GlowPalette {

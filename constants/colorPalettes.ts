@@ -3,8 +3,10 @@ import type { ColorPalette, GradientPalette, GlowPalette, ShadowPalette } from '
 // Dark palette — identical to existing COLORS + contrastText
 export const DARK_COLORS: ColorPalette = {
   background: '#0A0A0F',
-  surface: '#16161E',
+  surface: '#0F0F15',
   surfaceHighlight: '#1F1F2C',
+  surfaceGlass: 'rgba(255,255,255,0.06)',
+  borderGlass: 'rgba(255,255,255,0.12)',
   text: '#E8E8ED',
   textSecondary: '#6B6B7B',
   primary: '#4A90D9',
@@ -29,6 +31,8 @@ export const LIGHT_COLORS: ColorPalette = {
   background: '#F5F5F7',
   surface: '#FFFFFF',
   surfaceHighlight: '#EEEEF0',
+  surfaceGlass: 'rgba(255,255,255,0.7)',
+  borderGlass: 'rgba(0,0,0,0.06)',
   text: '#1A1A1F',
   textSecondary: '#6B6B7B',
   primary: '#3A7BD5',
@@ -56,6 +60,8 @@ export const DARK_GRADIENTS: GradientPalette = {
   button: ['#8B5CF6', '#6D28D9'] as const,
   danger: ['#EF4444', '#7F1D1D'] as const,
   accent: ['#00D4FF', '#8B5CF6'] as const,
+  orb: ['#4A90D9', '#8B5CF6', '#00D4FF'] as const,
+  glass: ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] as const,
 };
 
 export const LIGHT_GRADIENTS: GradientPalette = {
@@ -65,6 +71,8 @@ export const LIGHT_GRADIENTS: GradientPalette = {
   button: ['#7C4DFF', '#5B21B6'] as const,
   danger: ['#EF4444', '#B91C1C'] as const,
   accent: ['#00B4D8', '#7C4DFF'] as const,
+  orb: ['#3A7BD5', '#7C4DFF', '#00B4D8'] as const,
+  glass: ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.3)'] as const,
 };
 
 export const DARK_GLOW: GlowPalette = {

@@ -24,6 +24,7 @@ jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({
     user: mockUser,
     loadUser: mockLoadUser,
+    updateUser: jest.fn(),
   }),
 }));
 
@@ -33,6 +34,7 @@ jest.mock('@/stores/checkinStore', () => ({
   useCheckinStore: () => ({
     loadCheckins: mockLoadCheckins,
     todayCheckin: mockTodayCheckin,
+    checkins: [],
   }),
 }));
 
@@ -46,9 +48,9 @@ jest.mock('@/components/dashboard/SOSButton', () => {
   return { SOSButton: () => <View><Text>SOSButton</Text></View> };
 });
 
-jest.mock('@/components/common/SafeAreaWrapper', () => {
-  const { View } = require('react-native');
-  return { SafeAreaWrapper: ({ children }: any) => <View>{children}</View> };
+jest.mock('@/components/dashboard/QuickActionRow', () => {
+  const { View, Text } = require('react-native');
+  return { QuickActionRow: () => <View testID="quick-action-row"><Text>QuickActionRow</Text></View> };
 });
 
 jest.mock('@expo/vector-icons', () => {
@@ -119,32 +121,19 @@ describe('DashboardScreen', () => {
     expect(() => render(<DashboardScreen />)).not.toThrow();
   });
 
-  it('挨拶とニックネームが表示される', () => {
-    const { getByText } = render(<DashboardScreen />);
-    expect(getByText('おかえりなさい')).toBeTruthy();
-    expect(getByText('TestUser')).toBeTruthy();
+  it('挨拶テキストは表示されない（削除済み）', () => {
+    const { queryByText } = render(<DashboardScreen />);
+    expect(queryByText('おかえりなさい')).toBeNull();
   });
 
-  it('チェックイン未完了時に「今日の結果を入力」ボタンが表示される', () => {
-    mockTodayCheckin = null;
+  it('StatsRowが表示される', () => {
     const { getByText } = render(<DashboardScreen />);
-    expect(getByText('今日の結果を入力')).toBeTruthy();
+    expect(getByText('StatsRow')).toBeTruthy();
   });
 
-  it('チェックイン完了時に「完了済み」が表示される', () => {
-    mockTodayCheckin = {
-      id: '1',
-      date: '2025-01-01',
-      watchedPorn: false,
-      urgeLevel: 2,
-      stressLevel: 2,
-      qualityOfLife: 3,
-      memo: '',
-      createdAt: '2025-01-01',
-    };
+  it('QuickActionRowが表示される', () => {
     const { getByText } = render(<DashboardScreen />);
-    expect(getByText('完了済み')).toBeTruthy();
-    expect(getByText('やり直す')).toBeTruthy();
+    expect(getByText('QuickActionRow')).toBeTruthy();
   });
 
   it('useFocusEffectでloadCheckinsとloadUserが呼ばれる', () => {

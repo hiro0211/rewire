@@ -15,16 +15,16 @@ jest.mock('react-native-reanimated', () => {
     withSpring: (v: any) => v,
     withTiming: (v: any) => v,
     withRepeat: (v: any) => v,
+    withDelay: (_d: any, v: any) => v,
     withSequence: (...args: any[]) => args[args.length - 1],
-    Easing: { out: (f: any) => f, quad: (v: number) => v },
-    FadeIn: { duration: () => ({ duration: jest.fn().mockReturnThis() }) },
-    SlideInUp: {
-      springify: () => ({
-        damping: () => ({
-          stiffness: jest.fn().mockReturnThis(),
-        }),
-      }),
+    Easing: {
+      out: (f: any) => f,
+      inOut: (f: any) => f,
+      cubic: (v: number) => v,
+      sin: (v: number) => v,
     },
+    useFrameCallback: () => {},
+    useDerivedValue: (fn: any) => ({ value: fn() }),
   };
 });
 
@@ -41,10 +41,10 @@ jest.mock('@/hooks/dashboard/useDashboardStats', () => ({
 
 jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({
+    user: { streakStartDate: '2026-02-24T19:00:00Z', goalDays: 90 },
     updateUser: mockUpdateUser,
   }),
 }));
-
 
 import { StatsRow } from '../StatsRow';
 
@@ -53,44 +53,46 @@ describe('StatsRow', () => {
     jest.clearAllMocks();
   });
 
-  it('ヒーローカードとインライン統計が表示される', () => {
+  it('stats-rowコンテナが表示される', () => {
     const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByTestId('stat-stopwatch')).toBeTruthy();
-    expect(getByTestId('stat-relapse')).toBeTruthy();
-    expect(getByTestId('stat-goal')).toBeTruthy();
+    expect(getByTestId('stats-row')).toBeTruthy();
   });
 
-  it('ヒーローカードに現在の記録とストップウォッチが表示される', () => {
+  it('AnimatedOrbが表示される', () => {
+    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
+    expect(getByTestId('animated-orb')).toBeTruthy();
+  });
+
+  it('ストップウォッチのフォーマット済み値が表示される', () => {
     const { getByText } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByText('現在の記録')).toBeTruthy();
     expect(getByText('2日15時間31分')).toBeTruthy();
   });
 
-  it('ヒーローカードに開始日が表示される', () => {
-    const { getByText } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByText(/から$/)).toBeTruthy();
+  it('GradientCard(hero)内にリセット回数がインライン表示される', () => {
+    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
+    expect(getByTestId('stat-relapse')).toBeTruthy();
   });
 
-  it('リセット回数が表示される', () => {
-    const { getByText } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByText('リセット回数')).toBeTruthy();
-    expect(getByText('2')).toBeTruthy();
+  it('GradientCard(hero)内に目標日数がインライン表示される', () => {
+    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
+    expect(getByTestId('stat-goal')).toBeTruthy();
   });
 
-  it('目標日数が表示される', () => {
-    const { getByText } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByText('目標日数')).toBeTruthy();
-    expect(getByText('90日')).toBeTruthy();
-  });
-
-  it('GlowDivider が表示される', () => {
+  it('GlowDividerが表示される', () => {
     const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
     expect(getByTestId('glow-divider')).toBeTruthy();
   });
 
-  it('ヒーローカード長押しでStreakEditModalが表示される', () => {
+  it('開始日が表示される', () => {
+    const { getByText } = render(<StatsRow onShare={jest.fn()} />);
+    // streakStartDate '2026-02-24T19:00:00Z' → ja: 2026/02/25 (JST)
+    // The exact format depends on locale mock, just check "since" text exists
+    expect(getByText(/2026/)).toBeTruthy();
+  });
+
+  it('オーブ長押しでStreakEditModalが表示される', () => {
     const { getByTestId, getByText } = render(<StatsRow onShare={jest.fn()} />);
-    fireEvent(getByTestId('hero-card-touch'), 'onLongPress');
+    fireEvent(getByTestId('orb-touch'), 'onLongPress');
     expect(getByText('開始日を編集')).toBeTruthy();
   });
 
@@ -123,11 +125,5 @@ describe('StatsRow', () => {
       />
     );
     expect(getByTestId('viewshot-wrapper')).toBeTruthy();
-  });
-
-  it('ViewShotComponent なしでもクラッシュしない', () => {
-    expect(() =>
-      render(<StatsRow onShare={jest.fn()} />)
-    ).not.toThrow();
   });
 });

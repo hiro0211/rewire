@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 // --- Router mock ---
 const mockPush = jest.fn();
@@ -93,25 +93,10 @@ jest.mock('@/components/review/ReviewPromptModal', () => {
   };
 });
 
-// --- Time-based layout mock (controllable) ---
-let mockSections: string[] = ['streak', 'checkin', 'sos'];
-let mockTimeOfDay = 'afternoon';
-jest.mock('@/hooks/dashboard/useTimeBasedLayout', () => ({
-  useTimeBasedLayout: () => ({
-    sections: mockSections,
-    timeOfDay: mockTimeOfDay,
-  }),
-}));
-
 // --- Native module mocks ---
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   return { Ionicons: ({ name }: any) => <Text>{name}</Text> };
-});
-
-jest.mock('@/components/common/SafeAreaWrapper', () => {
-  const { View } = require('react-native');
-  return { SafeAreaWrapper: ({ children, style }: any) => <View style={style}>{children}</View> };
 });
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
@@ -141,8 +126,6 @@ describe('DashboardScreen 結合テスト', () => {
       { date: '2026-03-22', watchedPorn: true, urgeLevel: 5, stressLevel: 4, qualityOfLife: 2 },
       { date: '2026-03-23', watchedPorn: false, urgeLevel: 2, stressLevel: 1, qualityOfLife: 5 },
     ];
-    mockSections = ['streak', 'checkin', 'sos'];
-    mockTimeOfDay = 'afternoon';
     mockShouldShowSurvey = false;
     mockShouldShowReview = false;
   });
@@ -156,54 +139,35 @@ describe('DashboardScreen 結合テスト', () => {
     });
   });
 
-  // --- 時間帯によるセクション順序 ---
-  describe('時間帯によるセクション順序', () => {
-    it('午前中も streak セクションが checkin の前に表示される', () => {
-      mockSections = ['streak', 'checkin', 'sos'];
-      mockTimeOfDay = 'morning';
-      const { getByText } = render(<DashboardScreen />);
-      // checkin section: 「今日の振り返り」が表示される
-      expect(getByText('今日の振り返り')).toBeTruthy();
-      // stats-row (streak section) も表示される
-      expect(getByText('現在の記録')).toBeTruthy();
-    });
-
-    it('深夜はSOSとストリークのみ表示される', () => {
-      mockSections = ['sos', 'streak'];
-      mockTimeOfDay = 'night';
-      const { getByTestId, queryByText } = render(<DashboardScreen />);
-      // SOS button is present
+  // --- コンポーネント表示 ---
+  describe('コンポーネント表示', () => {
+    it('StatsRow、QuickActionRow、SOSButtonが表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('stats-row')).toBeTruthy();
+      expect(getByTestId('quick-action-row')).toBeTruthy();
       expect(getByTestId('panic-button')).toBeTruthy();
-      // streak section is present
-      expect(getByTestId('stats-row')).toBeTruthy();
-      // checkin section is not rendered
-      expect(queryByText('今日の振り返り')).toBeNull();
     });
-  });
 
-  // --- StatsRow + SOSButton 連携 ---
-  describe('コンポーネント連携表示', () => {
-    it('全セクションが連携して表示される', () => {
-      mockSections = ['streak', 'checkin', 'sos'];
-      const { getByTestId, getByText } = render(<DashboardScreen />);
-      // StatsRow (streak)
-      expect(getByTestId('stats-row')).toBeTruthy();
+    it('AuroraBackgroundが表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      // Skia mock returns aurora-container
+      expect(getByTestId('aurora-container')).toBeTruthy();
+    });
+
+    it('挨拶テキストは表示されない', () => {
+      const { queryByText } = render(<DashboardScreen />);
+      expect(queryByText('おかえりなさい')).toBeNull();
+    });
+
+    it('AnimatedOrbが表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('animated-orb')).toBeTruthy();
+    });
+
+    it('GradientCard(hero)内にインライン統計が表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
       expect(getByTestId('stat-stopwatch')).toBeTruthy();
-      // SOSButton
-      expect(getByTestId('panic-button')).toBeTruthy();
-      // Checkin section
-      expect(getByText('今日の振り返り')).toBeTruthy();
-    });
-
-    it('StatsRowにリラプス回数が表示される', () => {
-      const { getByTestId } = render(<DashboardScreen />);
-      const relapseView = getByTestId('stat-relapse');
-      // mockCheckins has 1 relapse (watchedPorn: true)
-      expect(relapseView).toBeTruthy();
-    });
-
-    it('StatsRowにゴール日数が表示される', () => {
-      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('stat-relapse')).toBeTruthy();
       expect(getByTestId('stat-goal')).toBeTruthy();
     });
 
@@ -214,68 +178,8 @@ describe('DashboardScreen 結合テスト', () => {
     });
   });
 
-  // --- チェックイン未完了フロー ---
-  describe('チェックイン未完了フロー', () => {
-    it('「今日の結果を入力」ボタンが表示される', () => {
-      mockTodayCheckin = null;
-      const { getByText } = render(<DashboardScreen />);
-      expect(getByText('今日の結果を入力')).toBeTruthy();
-    });
-
-    it('「今日の結果を入力」タップで/checkinに遷移する', () => {
-      mockTodayCheckin = null;
-      const { getByText } = render(<DashboardScreen />);
-      fireEvent.press(getByText('今日の結果を入力'));
-      expect(mockPush).toHaveBeenCalledWith('/checkin');
-    });
-  });
-
-  // --- チェックイン完了フロー ---
-  describe('チェックイン完了フロー', () => {
-    beforeEach(() => {
-      mockTodayCheckin = {
-        id: '1',
-        userId: 'u1',
-        date: '2026-03-25',
-        watchedPorn: false,
-        urgeLevel: 2,
-        stressLevel: 2,
-        qualityOfLife: 4,
-        memo: '',
-        createdAt: '2026-03-25T08:00:00Z',
-      };
-    });
-
-    it('完了テキストが表示される', () => {
-      const { getByText } = render(<DashboardScreen />);
-      expect(getByText('完了済み')).toBeTruthy();
-    });
-
-    it('「やり直す」ボタンが表示される', () => {
-      const { getByText } = render(<DashboardScreen />);
-      expect(getByText('やり直す')).toBeTruthy();
-    });
-
-    it('「やり直す」タップで/checkinに遷移する', () => {
-      const { getByText } = render(<DashboardScreen />);
-      fireEvent.press(getByText('やり直す'));
-      expect(mockPush).toHaveBeenCalledWith('/checkin');
-    });
-
-    it('「今日の結果を入力」ボタンは表示されない', () => {
-      const { queryByText } = render(<DashboardScreen />);
-      expect(queryByText('今日の結果を入力')).toBeNull();
-    });
-  });
-
-  // --- ヘッダー表示 ---
-  describe('ヘッダー表示', () => {
-    it('挨拶テキストとニックネームが表示される', () => {
-      const { getByText } = render(<DashboardScreen />);
-      expect(getByText('おかえりなさい')).toBeTruthy();
-      expect(getByText('TestUser')).toBeTruthy();
-    });
-
+  // --- ヘッダー ---
+  describe('ヘッダー', () => {
     it('ユーザーがnullでもクラッシュしない', () => {
       mockUser = null;
       expect(() => render(<DashboardScreen />)).not.toThrow();

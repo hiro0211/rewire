@@ -34,6 +34,12 @@ export const en: Translations = {
     urgeLevel7d: 'Urge Level (7d)',
     trendChart: 'Trend Chart',
   },
+  quickAction: {
+    breathe: 'Breathe',
+    checkin: 'Check-in',
+    journal: 'Journal',
+    sos: 'SOS',
+  },
   streak: {
     currentStreak: 'Current Streak',
     consecutiveDays: 'Consecutive Days',
