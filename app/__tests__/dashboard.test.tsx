@@ -48,10 +48,44 @@ jest.mock('@/components/dashboard/SOSButton', () => {
   return { SOSButton: () => <View><Text>SOSButton</Text></View> };
 });
 
-jest.mock('@/components/dashboard/QuickActionRow', () => {
+jest.mock('@/components/dashboard/QuickActionGrid', () => {
   const { View, Text } = require('react-native');
-  return { QuickActionRow: () => <View testID="quick-action-row"><Text>QuickActionRow</Text></View> };
+  return { QuickActionGrid: () => <View testID="quick-action-grid"><Text>QuickActionGrid</Text></View> };
 });
+
+jest.mock('@/components/dashboard/DayChip', () => {
+  const { View, Text } = require('react-native');
+  return { DayChip: ({ day }: any) => <View><Text>Day {day}</Text></View> };
+});
+
+jest.mock('@/components/dashboard/SegmentedStreakCard', () => {
+  const { View, Text } = require('react-native');
+  return { SegmentedStreakCard: () => <View><Text>SegmentedStreakCard</Text></View> };
+});
+
+jest.mock('@/components/dashboard/BrainRewiringBar', () => {
+  const { View, Text } = require('react-native');
+  return { BrainRewiringBar: () => <View><Text>BrainRewiringBar</Text></View> };
+});
+
+
+jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
+
+jest.mock('@/hooks/dashboard/useShareWidget', () => ({
+  useShareWidget: () => ({
+    viewShotRef: { current: null },
+    share: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/dashboard/useDashboardStats', () => ({
+  useDashboardStats: () => ({
+    relapseCount: 0,
+    stopwatch: { days: 7, hours: 0, minutes: 0, formatted: '7日0分' },
+    goalDays: 30,
+    streakStartDate: '2025-01-01',
+  }),
+}));
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
@@ -131,9 +165,9 @@ describe('DashboardScreen', () => {
     expect(getByText('StatsRow')).toBeTruthy();
   });
 
-  it('QuickActionRowが表示される', () => {
+  it('QuickActionGridが表示される', () => {
     const { getByText } = render(<DashboardScreen />);
-    expect(getByText('QuickActionRow')).toBeTruthy();
+    expect(getByText('QuickActionGrid')).toBeTruthy();
   });
 
   it('useFocusEffectでloadCheckinsとloadUserが呼ばれる', () => {

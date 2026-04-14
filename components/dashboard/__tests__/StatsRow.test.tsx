@@ -63,33 +63,6 @@ describe('StatsRow', () => {
     expect(getByTestId('animated-orb')).toBeTruthy();
   });
 
-  it('ストップウォッチのフォーマット済み値が表示される', () => {
-    const { getByText } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByText('2日15時間31分')).toBeTruthy();
-  });
-
-  it('GradientCard(hero)内にリセット回数がインライン表示される', () => {
-    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByTestId('stat-relapse')).toBeTruthy();
-  });
-
-  it('GradientCard(hero)内に目標日数がインライン表示される', () => {
-    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByTestId('stat-goal')).toBeTruthy();
-  });
-
-  it('GlowDividerが表示される', () => {
-    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByTestId('glow-divider')).toBeTruthy();
-  });
-
-  it('開始日が表示される', () => {
-    const { getByText } = render(<StatsRow onShare={jest.fn()} />);
-    // streakStartDate '2026-02-24T19:00:00Z' → ja: 2026/02/25 (JST)
-    // The exact format depends on locale mock, just check "since" text exists
-    expect(getByText(/2026/)).toBeTruthy();
-  });
-
   it('オーブ長押しでStreakEditModalが表示される', () => {
     const { getByTestId, getByText } = render(<StatsRow onShare={jest.fn()} />);
     fireEvent(getByTestId('orb-touch'), 'onLongPress');

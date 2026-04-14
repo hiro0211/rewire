@@ -141,16 +141,15 @@ describe('DashboardScreen 結合テスト', () => {
 
   // --- コンポーネント表示 ---
   describe('コンポーネント表示', () => {
-    it('StatsRow、QuickActionRow、SOSButtonが表示される', () => {
+    it('StatsRow、QuickActionGrid、SOSButtonが表示される', () => {
       const { getByTestId } = render(<DashboardScreen />);
       expect(getByTestId('stats-row')).toBeTruthy();
-      expect(getByTestId('quick-action-row')).toBeTruthy();
+      expect(getByTestId('quick-action-grid')).toBeTruthy();
       expect(getByTestId('panic-button')).toBeTruthy();
     });
 
     it('AuroraBackgroundが表示される', () => {
       const { getByTestId } = render(<DashboardScreen />);
-      // Skia mock returns aurora-container
       expect(getByTestId('aurora-container')).toBeTruthy();
     });
 
@@ -164,11 +163,19 @@ describe('DashboardScreen 結合テスト', () => {
       expect(getByTestId('animated-orb')).toBeTruthy();
     });
 
-    it('GradientCard(hero)内にインライン統計が表示される', () => {
+    it('DayChip が表示される', () => {
       const { getByTestId } = render(<DashboardScreen />);
-      expect(getByTestId('stat-stopwatch')).toBeTruthy();
-      expect(getByTestId('stat-relapse')).toBeTruthy();
-      expect(getByTestId('stat-goal')).toBeTruthy();
+      expect(getByTestId('day-chip')).toBeTruthy();
+    });
+
+    it('SegmentedStreakCard が表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('segmented-streak-card')).toBeTruthy();
+    });
+
+    it('BrainRewiringBar が表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('brain-rewiring-bar')).toBeTruthy();
     });
 
     it('SOSボタンタップで/panicに遷移する', () => {

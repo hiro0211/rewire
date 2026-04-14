@@ -1,36 +1,43 @@
 import { ORB_TIERS, getOrbConfig } from '../orbConfig';
-import type { StreakTierName } from '../streakCelebration';
+import type { GrowthStageName } from '../growthStages';
 
 describe('orbConfig', () => {
   describe('ORB_TIERS', () => {
-    it('basicティアはブルー系の色を持つ', () => {
-      const tier = ORB_TIERS.basic;
+    it('sparkティアはブルー系の色を持つ', () => {
+      const tier = ORB_TIERS.spark;
       expect(tier.colors).toHaveLength(3);
       expect(tier.pulseDuration).toBe(4000);
     });
 
-    it('weeklyティアはパープル系でbasicより速いパルス', () => {
-      const tier = ORB_TIERS.weekly;
+    it('dawnティアはパープル系でsparkより速いパルス', () => {
+      const tier = ORB_TIERS.dawn;
       expect(tier.colors).toHaveLength(3);
       expect(tier.pulseDuration).toBe(3500);
-      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.basic.pulseDuration);
+      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.spark.pulseDuration);
     });
 
-    it('monthlyティアはシアン→パープル系', () => {
-      const tier = ORB_TIERS.monthly;
+    it('nebulaティアはシアン→パープル系', () => {
+      const tier = ORB_TIERS.nebula;
       expect(tier.colors).toHaveLength(3);
       expect(tier.pulseDuration).toBe(3000);
     });
 
-    it('milestoneティアは最速パルスで3色グラデーション', () => {
-      const tier = ORB_TIERS.milestone;
+    it('galaxyティアはnebulaより速いパルスで3色グラデーション', () => {
+      const tier = ORB_TIERS.galaxy;
       expect(tier.colors).toHaveLength(3);
       expect(tier.pulseDuration).toBe(2500);
-      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.monthly.pulseDuration);
+      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.nebula.pulseDuration);
+    });
+
+    it('cosmosティアは最速パルスで3色グラデーション', () => {
+      const tier = ORB_TIERS.cosmos;
+      expect(tier.colors).toHaveLength(3);
+      expect(tier.pulseDuration).toBe(2000);
+      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.galaxy.pulseDuration);
     });
 
     it('全ティアがscaleMin/scaleMaxを持つ', () => {
-      const tierNames: StreakTierName[] = ['basic', 'weekly', 'monthly', 'milestone'];
+      const tierNames: GrowthStageName[] = ['spark', 'dawn', 'nebula', 'galaxy', 'cosmos'];
       for (const name of tierNames) {
         const tier = ORB_TIERS[name];
         expect(tier.scaleMin).toBeLessThan(tier.scaleMax);
@@ -39,14 +46,15 @@ describe('orbConfig', () => {
   });
 
   describe('getOrbConfig', () => {
-    it('ストリーク0日でbasicを返す', () => {
-      expect(getOrbConfig('basic')).toBe(ORB_TIERS.basic);
+    it('sparkで正しい設定を返す', () => {
+      expect(getOrbConfig('spark')).toBe(ORB_TIERS.spark);
     });
 
     it('各ティア名で正しい設定を返す', () => {
-      expect(getOrbConfig('weekly')).toBe(ORB_TIERS.weekly);
-      expect(getOrbConfig('monthly')).toBe(ORB_TIERS.monthly);
-      expect(getOrbConfig('milestone')).toBe(ORB_TIERS.milestone);
+      expect(getOrbConfig('dawn')).toBe(ORB_TIERS.dawn);
+      expect(getOrbConfig('nebula')).toBe(ORB_TIERS.nebula);
+      expect(getOrbConfig('galaxy')).toBe(ORB_TIERS.galaxy);
+      expect(getOrbConfig('cosmos')).toBe(ORB_TIERS.cosmos);
     });
   });
 });

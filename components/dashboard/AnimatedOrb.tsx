@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
 import { getOrbConfig } from '@/constants/orbConfig';
 import { ORB_SHADER } from '@/constants/shaders/orb';
-import type { StreakTierName } from '@/constants/streakCelebration';
+import type { GrowthStageName } from '@/constants/growthStages';
 
 const isExpoGo = Constants.executionEnvironment === 'storeClient';
 
@@ -47,7 +47,7 @@ function hexToVec3(hex: string): [number, number, number] {
 }
 
 interface AnimatedOrbProps {
-  tierName: StreakTierName;
+  tierName: GrowthStageName;
   size?: number;
 }
 

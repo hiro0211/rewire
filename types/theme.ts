@@ -33,6 +33,7 @@ export interface GradientPalette {
   hero: readonly string[];
   button: readonly string[];
   danger: readonly string[];
+  sos: readonly string[];
   accent: readonly string[];
   orb: readonly string[];
   glass: readonly string[];

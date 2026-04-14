@@ -1,0 +1,58 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react-native';
+import { QuickActionGrid } from '../QuickActionGrid';
+
+const mockPush = jest.fn();
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
+jest.mock('@/hooks/useTheme', () => ({
+  useTheme: () => ({
+    colors: {
+      text: '#E8E8ED',
+      textSecondary: '#6B6B7B',
+      surfaceGlass: 'rgba(255,255,255,0.06)',
+      borderGlass: 'rgba(255,255,255,0.12)',
+    },
+    isDark: true,
+  }),
+}));
+
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => {
+      const map: Record<string, string> = {
+        'quickAction.breathe': '呼吸',
+        'quickAction.review': '今日の振り返り',
+      };
+      return map[key] ?? key;
+    },
+  }),
+}));
+
+describe('QuickActionGrid', () => {
+  beforeEach(() => {
+    mockPush.mockClear();
+  });
+
+  it('2ボタンがレンダリングされる', () => {
+    render(<QuickActionGrid />);
+    expect(screen.getByTestId('quick-action-grid')).toBeTruthy();
+    expect(screen.getByText('呼吸')).toBeTruthy();
+    expect(screen.getByText('今日の振り返り')).toBeTruthy();
+  });
+
+  it('呼吸ボタンタップで /breathing に遷移する', () => {
+    render(<QuickActionGrid />);
+    fireEvent.press(screen.getByTestId('qa-breathe'));
+    expect(mockPush).toHaveBeenCalledWith('/breathing');
+  });
+
+  it('振り返りボタンタップで /checkin に遷移する', () => {
+    render(<QuickActionGrid />);
+    fireEvent.press(screen.getByTestId('qa-checkin'));
+    expect(mockPush).toHaveBeenCalledWith('/checkin');
+  });
+});

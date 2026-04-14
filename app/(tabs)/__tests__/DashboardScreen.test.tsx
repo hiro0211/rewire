@@ -49,6 +49,45 @@ jest.mock('@/hooks/dashboard/useTimeBasedLayout', () => ({
   }),
 }));
 
+jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
+
+jest.mock('@/hooks/dashboard/useShareWidget', () => ({
+  useShareWidget: () => ({
+    viewShotRef: { current: null },
+    share: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/survey/useSurveyEligibility', () => ({
+  useSurveyEligibility: () => ({ shouldShowSurvey: false }),
+}));
+jest.mock('@/hooks/survey/useSurveyPromptActions', () => ({
+  useSurveyPromptActions: () => ({
+    handleAccept: jest.fn(),
+    handleDismiss: jest.fn(),
+  }),
+}));
+jest.mock('@/components/survey/SurveyPromptModal', () => {
+  const { View } = require('react-native');
+  return { SurveyPromptModal: () => <View /> };
+});
+jest.mock('@/hooks/review/useReviewEligibility', () => ({
+  useReviewEligibility: () => ({ shouldShowReview: false }),
+}));
+jest.mock('@/hooks/review/useReviewPromptActions', () => ({
+  useReviewPromptActions: () => ({
+    selectedRating: 0,
+    showFeedback: false,
+    handleRate: jest.fn(),
+    handleFeedbackTap: jest.fn(),
+    handleDismiss: jest.fn(),
+  }),
+}));
+jest.mock('@/components/review/ReviewPromptModal', () => {
+  const { View } = require('react-native');
+  return { ReviewPromptModal: () => <View /> };
+});
+
 import DashboardScreen from '../index';
 
 describe('DashboardScreen', () => {
@@ -66,9 +105,9 @@ describe('DashboardScreen', () => {
     expect(getByTestId('stats-row')).toBeTruthy();
   });
 
-  it('QuickActionRowが表示される', () => {
+  it('QuickActionGridが表示される', () => {
     const { getByTestId } = render(<DashboardScreen />);
-    expect(getByTestId('quick-action-row')).toBeTruthy();
+    expect(getByTestId('quick-action-grid')).toBeTruthy();
   });
 
   it('testID="panic-button" が存在する', () => {
@@ -84,8 +123,22 @@ describe('DashboardScreen', () => {
 
   it('AuroraBackgroundが使用される', () => {
     const { getByTestId } = render(<DashboardScreen />);
-    // aurora-container or aurora-fallback (depends on Skia availability)
     const aurora = getByTestId('aurora-container') ?? getByTestId('aurora-fallback');
     expect(aurora).toBeTruthy();
+  });
+
+  it('DayChipが表示される', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    expect(getByTestId('day-chip')).toBeTruthy();
+  });
+
+  it('SegmentedStreakCardが表示される', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    expect(getByTestId('segmented-streak-card')).toBeTruthy();
+  });
+
+  it('BrainRewiringBarが表示される', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    expect(getByTestId('brain-rewiring-bar')).toBeTruthy();
   });
 });

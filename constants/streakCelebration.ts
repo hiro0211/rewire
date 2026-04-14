@@ -1,11 +1,16 @@
+import type { GrowthStageName } from './growthStages';
+
+export { type GrowthStageName } from './growthStages';
+
 export const STREAK_TIERS = {
-  basic: { min: 0, max: 6 },
-  weekly: { min: 7, max: 29 },
-  monthly: { min: 30, max: 89 },
-  milestone: { min: 90, max: Infinity },
+  spark: { min: 0, max: 6 },
+  dawn: { min: 7, max: 29 },
+  nebula: { min: 30, max: 89 },
+  galaxy: { min: 90, max: 364 },
+  cosmos: { min: 365, max: Infinity },
 } as const;
 
-export type StreakTierName = keyof typeof STREAK_TIERS;
+export type StreakTierName = GrowthStageName;
 
 export interface StreakTierConfig {
   name: StreakTierName;
@@ -17,29 +22,36 @@ export interface StreakTierConfig {
 }
 
 export const TIER_CONFIGS: Record<StreakTierName, Omit<StreakTierConfig, 'subText'>> = {
-  basic: {
-    name: 'basic',
+  spark: {
+    name: 'spark',
     hapticStyle: 'light',
     showParticles: false,
     showGlow: false,
     showConfetti: false,
   },
-  weekly: {
-    name: 'weekly',
+  dawn: {
+    name: 'dawn',
     hapticStyle: 'medium',
     showParticles: true,
     showGlow: false,
     showConfetti: false,
   },
-  monthly: {
-    name: 'monthly',
+  nebula: {
+    name: 'nebula',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
     showConfetti: false,
   },
-  milestone: {
-    name: 'milestone',
+  galaxy: {
+    name: 'galaxy',
+    hapticStyle: 'heavy',
+    showParticles: true,
+    showGlow: true,
+    showConfetti: true,
+  },
+  cosmos: {
+    name: 'cosmos',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,

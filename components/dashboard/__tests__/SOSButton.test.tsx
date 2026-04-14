@@ -16,6 +16,7 @@ jest.mock('react-native-reanimated', () => {
     withTiming: (v: any) => v,
     withRepeat: (v: any) => v,
     withSequence: (...args: any[]) => args[args.length - 1],
+    cancelAnimation: () => {},
   };
 });
 

@@ -41,6 +41,50 @@ jest.mock('@/hooks/dashboard/useDashboardStats', () => ({
   }),
 }));
 
+jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
+
+jest.mock('@/hooks/dashboard/useShareWidget', () => ({
+  useShareWidget: () => ({
+    viewShotRef: { current: null },
+    share: jest.fn(),
+  }),
+}));
+
+jest.mock('@expo/vector-icons', () => {
+  const { Text } = require('react-native');
+  return { Ionicons: ({ name }: any) => <Text>{name}</Text> };
+});
+
+jest.mock('@/hooks/survey/useSurveyEligibility', () => ({
+  useSurveyEligibility: () => ({ shouldShowSurvey: false }),
+}));
+jest.mock('@/hooks/survey/useSurveyPromptActions', () => ({
+  useSurveyPromptActions: () => ({
+    handleAccept: jest.fn(),
+    handleDismiss: jest.fn(),
+  }),
+}));
+jest.mock('@/components/survey/SurveyPromptModal', () => {
+  const { View } = require('react-native');
+  return { SurveyPromptModal: () => <View /> };
+});
+jest.mock('@/hooks/review/useReviewEligibility', () => ({
+  useReviewEligibility: () => ({ shouldShowReview: false }),
+}));
+jest.mock('@/hooks/review/useReviewPromptActions', () => ({
+  useReviewPromptActions: () => ({
+    selectedRating: 0,
+    showFeedback: false,
+    handleRate: jest.fn(),
+    handleFeedbackTap: jest.fn(),
+    handleDismiss: jest.fn(),
+  }),
+}));
+jest.mock('@/components/review/ReviewPromptModal', () => {
+  const { View } = require('react-native');
+  return { ReviewPromptModal: () => <View /> };
+});
+
 import DashboardScreen from '../index';
 
 describe('DashboardScreen crash prevention', () => {

@@ -81,20 +81,20 @@ export function SOSButton() {
       <Animated.View
         style={[
           styles.pulse,
-          { backgroundColor: glow.danger },
+          { backgroundColor: glow.cyan },
           pulseStyle,
         ]}
         pointerEvents="none"
       />
       <Pressable
         testID="panic-button"
-        style={[styles.container, { shadowColor: glow.danger }]}
+        style={[styles.container, { shadowColor: glow.cyan, borderColor: 'rgba(0, 212, 255, 0.3)' }]}
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
         <LinearGradient
-          colors={[...gradients.danger]}
+          colors={[...gradients.sos]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradient}
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     borderRadius: RADIUS.lg,
+    borderWidth: 1,
     overflow: 'hidden',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
