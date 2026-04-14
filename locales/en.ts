@@ -23,6 +23,13 @@ export const en: Translations = {
     edit: 'Edit',
     close: 'Close',
   },
+  growthStage: {
+    spark: 'Spark',
+    dawn: 'Dawn',
+    nebula: 'Nebula',
+    galaxy: 'Galaxy',
+    cosmos: 'Cosmos',
+  },
   dashboard: {
     greeting: 'Welcome back',
     todayReview: "Today's Check-in",
@@ -33,12 +40,12 @@ export const en: Translations = {
     share: 'Share',
     urgeLevel7d: 'Urge Level (7d)',
     trendChart: 'Trend Chart',
+    elapsed: 'Elapsed',
+    brainRewiring: 'Brain Reset',
   },
   quickAction: {
     breathe: 'Breathe',
-    checkin: 'Check-in',
-    journal: 'Journal',
-    sos: 'SOS',
+    review: 'Daily Review',
   },
   streak: {
     currentStreak: 'Current Streak',

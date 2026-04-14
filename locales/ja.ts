@@ -15,6 +15,13 @@ export const ja = {
     edit: '編集',
     close: '閉じる',
   },
+  growthStage: {
+    spark: 'スパーク',
+    dawn: 'ドーン',
+    nebula: 'ネビュラ',
+    galaxy: 'ギャラクシー',
+    cosmos: 'コスモス',
+  },
   dashboard: {
     greeting: 'おかえりなさい',
     todayReview: '今日の振り返り',
@@ -25,12 +32,12 @@ export const ja = {
     share: 'シェア',
     urgeLevel7d: '衝動レベル 7日間',
     trendChart: 'トレンドチャート',
+    elapsed: '経過時間',
+    brainRewiring: '脳のリセット',
   },
   quickAction: {
     breathe: '呼吸',
-    checkin: 'チェックイン',
-    journal: '記録',
-    sos: 'SOS',
+    review: '今日の振り返り',
   },
   streak: {
     currentStreak: '現在の記録',
