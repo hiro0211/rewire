@@ -106,12 +106,12 @@ describe('BlurTabBar', () => {
     jest.clearAllMocks();
   });
 
-  it('全タブのラベルが表示される', () => {
+  it('ラベルテキストは表示されない', () => {
     const props = createMockProps();
-    const { getByText } = render(<BlurTabBar {...props} />);
-    expect(getByText('ホーム')).toBeTruthy();
-    expect(getByText('履歴')).toBeTruthy();
-    expect(getByText('プロフィール')).toBeTruthy();
+    const { queryByText } = render(<BlurTabBar {...props} />);
+    expect(queryByText('ホーム')).toBeNull();
+    expect(queryByText('履歴')).toBeNull();
+    expect(queryByText('プロフィール')).toBeNull();
   });
 
   it('全タブのアイコンが表示される', () => {
@@ -124,16 +124,16 @@ describe('BlurTabBar', () => {
 
   it('タブタップ時にnavigation.navigateが呼ばれる', () => {
     const props = createMockProps();
-    const { getByText } = render(<BlurTabBar {...props} />);
-    fireEvent.press(getByText('履歴'));
+    const { getByTestId } = render(<BlurTabBar {...props} />);
+    fireEvent.press(getByTestId('icon-history'));
 
     expect(props.navigation.navigate).toHaveBeenCalled();
   });
 
   it('タブタップ時にハプティクス(impactAsync Light)が呼ばれる', () => {
     const props = createMockProps();
-    const { getByText } = render(<BlurTabBar {...props} />);
-    fireEvent.press(getByText('履歴'));
+    const { getByTestId } = render(<BlurTabBar {...props} />);
+    fireEvent.press(getByTestId('icon-history'));
     expect(mockImpactAsync).toHaveBeenCalledWith('Light');
   });
 
@@ -145,8 +145,8 @@ describe('BlurTabBar', () => {
     // Remove tabBarIcon to simulate href: null hidden tab
     props.descriptors['stats-key'].options.tabBarIcon = undefined;
 
-    const { queryByText } = render(<BlurTabBar {...props} />);
-    expect(queryByText('統計')).toBeNull();
-    expect(queryByText('ホーム')).toBeTruthy();
+    const { queryByTestId } = render(<BlurTabBar {...props} />);
+    expect(queryByTestId('icon-stats')).toBeNull();
+    expect(queryByTestId('icon-index')).toBeTruthy();
   });
 });

@@ -127,11 +127,6 @@ describe('DashboardScreen', () => {
     expect(aurora).toBeTruthy();
   });
 
-  it('DayChipが表示される', () => {
-    const { getByTestId } = render(<DashboardScreen />);
-    expect(getByTestId('day-chip')).toBeTruthy();
-  });
-
   it('SegmentedStreakCardが表示される', () => {
     const { getByTestId } = render(<DashboardScreen />);
     expect(getByTestId('segmented-streak-card')).toBeTruthy();
@@ -140,5 +135,15 @@ describe('DashboardScreen', () => {
   it('BrainRewiringBarが表示される', () => {
     const { getByTestId } = render(<DashboardScreen />);
     expect(getByTestId('brain-rewiring-bar')).toBeTruthy();
+  });
+
+  it('シェアボタンが表示される', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    expect(getByTestId('share-button')).toBeTruthy();
+  });
+
+  it('share-capture-area が存在する', () => {
+    const { getByTestId } = render(<DashboardScreen />);
+    expect(getByTestId('share-capture-area')).toBeTruthy();
   });
 });

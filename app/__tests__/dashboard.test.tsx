@@ -53,11 +53,6 @@ jest.mock('@/components/dashboard/QuickActionGrid', () => {
   return { QuickActionGrid: () => <View testID="quick-action-grid"><Text>QuickActionGrid</Text></View> };
 });
 
-jest.mock('@/components/dashboard/DayChip', () => {
-  const { View, Text } = require('react-native');
-  return { DayChip: ({ day }: any) => <View><Text>Day {day}</Text></View> };
-});
-
 jest.mock('@/components/dashboard/SegmentedStreakCard', () => {
   const { View, Text } = require('react-native');
   return { SegmentedStreakCard: () => <View><Text>SegmentedStreakCard</Text></View> };

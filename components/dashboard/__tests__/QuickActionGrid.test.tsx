@@ -25,7 +25,8 @@ jest.mock('@/hooks/useLocale', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         'quickAction.breathe': '呼吸',
-        'quickAction.review': '今日の振り返り',
+        'quickAction.checkin': '振り返り',
+        'quickAction.calendar': 'カレンダー',
       };
       return map[key] ?? key;
     },
@@ -37,11 +38,12 @@ describe('QuickActionGrid', () => {
     mockPush.mockClear();
   });
 
-  it('2ボタンがレンダリングされる', () => {
+  it('3ボタンがレンダリングされる', () => {
     render(<QuickActionGrid />);
     expect(screen.getByTestId('quick-action-grid')).toBeTruthy();
     expect(screen.getByText('呼吸')).toBeTruthy();
-    expect(screen.getByText('今日の振り返り')).toBeTruthy();
+    expect(screen.getByText('振り返り')).toBeTruthy();
+    expect(screen.getByText('カレンダー')).toBeTruthy();
   });
 
   it('呼吸ボタンタップで /breathing に遷移する', () => {
@@ -54,5 +56,11 @@ describe('QuickActionGrid', () => {
     render(<QuickActionGrid />);
     fireEvent.press(screen.getByTestId('qa-checkin'));
     expect(mockPush).toHaveBeenCalledWith('/checkin');
+  });
+
+  it('カレンダーボタンタップで /history に遷移する', () => {
+    render(<QuickActionGrid />);
+    fireEvent.press(screen.getByTestId('qa-calendar'));
+    expect(mockPush).toHaveBeenCalledWith('/history');
   });
 });

@@ -102,10 +102,11 @@ jest.mock('@expo/vector-icons', () => {
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 
 // Share mock
+const mockShare = jest.fn();
 jest.mock('@/hooks/dashboard/useShareWidget', () => ({
   useShareWidget: () => ({
     viewShotRef: { current: null },
-    share: jest.fn(),
+    share: mockShare,
   }),
 }));
 
@@ -163,11 +164,6 @@ describe('DashboardScreen 結合テスト', () => {
       expect(getByTestId('animated-orb')).toBeTruthy();
     });
 
-    it('DayChip が表示される', () => {
-      const { getByTestId } = render(<DashboardScreen />);
-      expect(getByTestId('day-chip')).toBeTruthy();
-    });
-
     it('SegmentedStreakCard が表示される', () => {
       const { getByTestId } = render(<DashboardScreen />);
       expect(getByTestId('segmented-streak-card')).toBeTruthy();
@@ -182,6 +178,22 @@ describe('DashboardScreen 結合テスト', () => {
       const { getByTestId } = render(<DashboardScreen />);
       fireEvent.press(getByTestId('panic-button'));
       expect(mockPush).toHaveBeenCalledWith('/panic');
+    });
+
+    it('シェアボタンが表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('share-button')).toBeTruthy();
+    });
+
+    it('share-capture-area が存在する', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      expect(getByTestId('share-capture-area')).toBeTruthy();
+    });
+
+    it('シェアボタンタップで share が呼ばれる', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      fireEvent.press(getByTestId('share-button'));
+      expect(mockShare).toHaveBeenCalledTimes(1);
     });
   });
 

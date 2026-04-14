@@ -31,6 +31,22 @@ jest.mock('react-native-svg', () => {
   };
 });
 
+jest.mock('@/components/ui/AuroraBackground', () => {
+  const { View } = require('react-native');
+  return {
+    AuroraBackground: ({ children }: any) => (
+      <View testID="aurora-container">{children}</View>
+    ),
+  };
+});
+
+jest.mock('@/components/ui/StarryOverlay', () => {
+  const { View } = require('react-native');
+  return {
+    StarryOverlay: () => <View testID="starry-overlay" />,
+  };
+});
+
 import OnboardingScreen from '../onboarding/index';
 
 describe('OnboardingScreen', () => {
@@ -48,9 +64,9 @@ describe('OnboardingScreen', () => {
     expect(getByText('チェックを始める')).toBeTruthy();
   });
 
-  it('Welcome ステップで testID="starry-background" が存在する', () => {
+  it('Welcome ステップで testID="aurora-container" が存在する', () => {
     const { getByTestId } = render(<OnboardingScreen />);
-    expect(getByTestId('starry-background')).toBeTruthy();
+    expect(getByTestId('aurora-container')).toBeTruthy();
   });
 
   it('"チェックを始める" を押すと次のステップに遷移する', () => {

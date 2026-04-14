@@ -41,7 +41,7 @@ export const en: Translations = {
     urgeLevel7d: 'Urge Level (7d)',
     trendChart: 'Trend Chart',
     elapsed: 'Elapsed',
-    brainRewiring: 'Brain Reset',
+    brainRewiring: 'Recovery Progress',
   },
   quickAction: {
     breathe: 'Breathe',

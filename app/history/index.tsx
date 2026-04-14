@@ -1,87 +1,65 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { Card } from '@/components/ui/Card';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Stack } from 'expo-router';
+import { SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
+import { GradientCard } from '@/components/ui/GradientCard';
+import { HistoryCalendar } from '@/components/history/HistoryCalendar';
+import { HistoryList } from '@/components/history/HistoryList';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { format, parseISO } from 'date-fns';
 
 export default function HistoryScreen() {
-  const { checkins, loadCheckins } = useCheckinStore();
+  const [viewIndex, setViewIndex] = useState(0);
+  const loadCheckins = useCheckinStore((state) => state.loadCheckins);
   const { colors } = useTheme();
   const { t } = useLocale();
+  const viewModes = [t('historyView.calendar'), t('historyView.list')];
 
   useEffect(() => {
     loadCheckins();
   }, []);
 
   return (
-    <SafeAreaWrapper>
-      <Stack.Screen options={{ title: t('nav.history'), headerBackTitle: t('common.back') }} />
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>{t('nav.history')}</Text>
-      </View>
-      <FlatList
-        data={checkins}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Card style={styles.card}>
-            <View style={styles.row}>
-              <Text style={[styles.date, { color: colors.text }]}>{format(parseISO(item.date), 'MM/dd')}</Text>
-              <View style={styles.status}>
-                {item.watchedPorn ? (
-                  <Text style={[styles.fail, { color: colors.danger }]}>⚠️ Reset</Text>
-                ) : (
-                    <Text style={[styles.success, { color: colors.success }]}>✅ Success</Text>
-                )}
-              </View>
-            </View>
-            {item.memo ? <Text style={[styles.memo, { color: colors.textSecondary }]}>{item.memo}</Text> : null}
-          </Card>
-        )}
-        contentContainerStyle={styles.list}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen
+        options={{
+          title: t('nav.recordHistory'),
+          headerBackTitle: t('common.back'),
+        }}
       />
-    </SafeAreaWrapper>
+
+      <View style={styles.segmentContainer}>
+        <SegmentedControl
+          segments={viewModes}
+          selectedIndex={viewIndex}
+          onChange={setViewIndex}
+        />
+      </View>
+
+      <View style={styles.content}>
+        <GradientCard style={styles.calendarCard}>
+          {viewIndex === 0 ? <HistoryCalendar /> : <HistoryList />}
+        </GradientCard>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    padding: SPACING.lg,
+  container: {
+    flex: 1,
   },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
-  },
-  list: {
-    padding: SPACING.lg,
-  },
-  card: {
+  segmentContainer: {
+    paddingHorizontal: SPACING.md,
     marginBottom: SPACING.md,
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.xs,
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING.md,
   },
-  date: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: 'bold',
-  },
-  status: {
-    flexDirection: 'row',
-  },
-  success: {
-    fontWeight: 'bold',
-  },
-  fail: {
-    fontWeight: 'bold',
-  },
-  memo: {
-    fontSize: FONT_SIZE.sm,
-    marginTop: SPACING.xs,
+  calendarCard: {
+    flex: 1,
   },
 });

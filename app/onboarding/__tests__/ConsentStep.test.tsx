@@ -64,6 +64,22 @@ jest.mock('@react-native-picker/picker', () => {
   return { Picker };
 });
 
+jest.mock('@/components/ui/AuroraBackground', () => {
+  const { View } = require('react-native');
+  return {
+    AuroraBackground: ({ children }: any) => (
+      <View testID="aurora-container">{children}</View>
+    ),
+  };
+});
+
+jest.mock('@/components/ui/StarryOverlay', () => {
+  const { View } = require('react-native');
+  return {
+    StarryOverlay: () => <View testID="starry-overlay" />,
+  };
+});
+
 import OnboardingScreen from '../../onboarding/index';
 
 /**

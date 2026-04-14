@@ -54,49 +54,23 @@ describe('StatsRow', () => {
   });
 
   it('stats-rowコンテナが表示される', () => {
-    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
+    const { getByTestId } = render(<StatsRow />);
     expect(getByTestId('stats-row')).toBeTruthy();
   });
 
   it('AnimatedOrbが表示される', () => {
-    const { getByTestId } = render(<StatsRow onShare={jest.fn()} />);
+    const { getByTestId } = render(<StatsRow />);
     expect(getByTestId('animated-orb')).toBeTruthy();
   });
 
   it('オーブ長押しでStreakEditModalが表示される', () => {
-    const { getByTestId, getByText } = render(<StatsRow onShare={jest.fn()} />);
+    const { getByTestId, getByText } = render(<StatsRow />);
     fireEvent(getByTestId('orb-touch'), 'onLongPress');
     expect(getByText('開始日を編集')).toBeTruthy();
   });
 
-  it('シェアボタンが表示される', () => {
-    const { getByTestId, getByText } = render(<StatsRow onShare={jest.fn()} />);
-    expect(getByTestId('share-button')).toBeTruthy();
-    expect(getByText('シェア')).toBeTruthy();
-  });
-
-  it('シェアボタンタップで onShare が呼ばれる', () => {
-    const mockOnShare = jest.fn();
-    const { getByTestId } = render(<StatsRow onShare={mockOnShare} />);
-    fireEvent.press(getByTestId('share-button'));
-    expect(mockOnShare).toHaveBeenCalledTimes(1);
-  });
-
-  it('ViewShotComponent を渡すとキャプチャラッパーが表示される', () => {
-    const React = require('react');
-    const { View } = require('react-native');
-    const MockViewShot = React.forwardRef((props: any, ref: any) =>
-      React.createElement(View, { ...props, testID: 'viewshot-wrapper' })
-    );
-    const ref = React.createRef();
-
-    const { getByTestId } = render(
-      <StatsRow
-        onShare={jest.fn()}
-        viewShotRef={ref}
-        ViewShotComponent={MockViewShot}
-      />
-    );
-    expect(getByTestId('viewshot-wrapper')).toBeTruthy();
+  it('シェアボタンは表示されない', () => {
+    const { queryByTestId } = render(<StatsRow />);
+    expect(queryByTestId('share-button')).toBeNull();
   });
 });

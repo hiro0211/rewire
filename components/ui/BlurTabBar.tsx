@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,8 +54,6 @@ export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps
             const { options } = descriptors[route.key];
             const isFocused = state.routes[state.index].key === route.key;
             const color = isFocused ? colors.cyan : colors.textSecondary;
-            const label = (options.tabBarLabel as string) ?? options.title ?? route.name;
-
             return (
               <Pressable
                 key={route.key}
@@ -73,7 +71,6 @@ export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps
                 accessibilityState={isFocused ? { selected: true } : {}}
               >
                 {options.tabBarIcon?.({ color, size: 22, focused: isFocused })}
-                <Text style={[styles.label, { color }]}>{label}</Text>
               </Pressable>
             );
           })}
@@ -111,9 +108,5 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 2,
     borderRadius: 20,
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: '500',
   },
 });

@@ -20,9 +20,15 @@ export function QuickActionGrid() {
         />
         <GlassCircle
           iconName="pulse-outline"
-          label={t('quickAction.review')}
+          label={t('quickAction.checkin')}
           onPress={() => router.push('/checkin')}
           testID="qa-checkin"
+        />
+        <GlassCircle
+          iconName="calendar-outline"
+          label={t('quickAction.calendar')}
+          onPress={() => router.push('/history')}
+          testID="qa-calendar"
         />
       </View>
     </View>

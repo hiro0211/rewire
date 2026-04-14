@@ -20,14 +20,10 @@ export function SegmentedStreakCard({ elapsed, streakDays, goalDays }: Segmented
       <View style={styles.row}>
         <View style={styles.segment}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>
-            {t('dashboard.elapsed')}
+            {t('streak.consecutiveDays')}
           </Text>
-          <Text
-            style={[styles.value, { color: colors.cyan }]}
-            adjustsFontSizeToFit
-            numberOfLines={1}
-          >
-            {elapsed}
+          <Text style={[styles.value, { color: colors.text }]}>
+            {streakDays}
           </Text>
         </View>
 
@@ -40,10 +36,14 @@ export function SegmentedStreakCard({ elapsed, streakDays, goalDays }: Segmented
 
         <View style={styles.segment}>
           <Text style={[styles.label, { color: colors.textSecondary }]}>
-            {t('streak.consecutiveDays')}
+            {t('dashboard.elapsed')}
           </Text>
-          <Text style={[styles.value, { color: colors.text }]}>
-            {streakDays}
+          <Text
+            style={[styles.value, { color: colors.cyan }]}
+            adjustsFontSizeToFit
+            numberOfLines={1}
+          >
+            {elapsed}
           </Text>
         </View>
 
