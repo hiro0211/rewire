@@ -1,8 +1,8 @@
-import { BadgePreviewRow } from '@/components/achievements/BadgePreviewRow';
-import { DayCardsRow } from '@/components/achievements/DayCardsRow';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ToolCard } from '@/components/profile/ToolCard';
 import { GradientCard } from '@/components/ui/GradientCard';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { FONT_SIZE, SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
@@ -11,23 +11,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { achievements, summary, streak } = useAchievements();
+  const { summary } = useAchievements();
   const { colors } = useTheme();
   const { t } = useLocale();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <AuroraBackground>
+      <StarryOverlay />
+      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
         <ProfileHeader />
-
-        {/* Badge Preview */}
-        <View style={styles.section}>
-          <BadgePreviewRow achievements={achievements} />
-        </View>
 
         {/* Achievements Link */}
         <View style={styles.achievementsContainer}>
@@ -48,11 +45,6 @@ export default function ProfileScreen() {
           </GradientCard>
         </View>
 
-        {/* Day Cards */}
-        <View style={styles.section}>
-          <DayCardsRow streak={streak} />
-        </View>
-
         {/* Tool Cards */}
         <View style={styles.toolCards}>
           {Platform.OS === 'ios' && (
@@ -66,19 +58,13 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     paddingBottom: SPACING.xxxl,
-  },
-  section: {
-    marginTop: SPACING.lg,
   },
   achievementsContainer: {
     marginHorizontal: SPACING.screenPadding,

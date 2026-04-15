@@ -2,7 +2,8 @@ import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { LessonProgressBar } from '@/components/learn/LessonProgressBar';
 import { LessonTimeline } from '@/components/learn/LessonTimeline';
 import { useLearnStore } from '@/stores/learnStore';
@@ -10,12 +11,14 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { LESSONS, type Lesson } from '@/constants/lessons';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 export default function LearnScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { t } = useLocale();
+  const insets = useSafeAreaInsets();
   const { completedLessons, loadProgress, resetProgress, isUnlocked } = useLearnStore();
 
   useFocusEffect(
@@ -46,9 +49,10 @@ export default function LearnScreen() {
   };
 
   return (
-    <SafeAreaWrapper edges={['top']}>
+    <AuroraBackground>
+      <StarryOverlay />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + SPACING.screenPadding }]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={[styles.title, { color: colors.text }]}>{t('learn.title')}</Text>
@@ -78,13 +82,13 @@ export default function LearnScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
-    </SafeAreaWrapper>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
   scrollContent: {
-    padding: SPACING.screenPadding,
+    paddingHorizontal: SPACING.screenPadding,
     paddingBottom: 100,
   },
   title: {

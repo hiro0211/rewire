@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Ellipse } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
-import { BADGE_TIER_COLORS, type BadgeDefinition } from '@/constants/badges';
+import type { NeuralBadgeDefinition } from '@/constants/badges/BADGE_DEFINITIONS';
 import { useTheme } from '@/hooks/useTheme';
 
 const SIZES = {
@@ -12,14 +12,8 @@ const SIZES = {
   large: 96,
 } as const;
 
-const ICON_SIZES = {
-  small: 20,
-  medium: 30,
-  large: 40,
-} as const;
-
 interface BadgeOrbProps {
-  badge: BadgeDefinition;
+  badge: NeuralBadgeDefinition;
   isUnlocked: boolean;
   size?: keyof typeof SIZES;
   onPress?: () => void;
@@ -27,14 +21,11 @@ interface BadgeOrbProps {
 
 export function BadgeOrb({ badge, isUnlocked, size = 'medium', onPress }: BadgeOrbProps) {
   const dim = SIZES[size];
-  const iconSize = ICON_SIZES[size];
-  const tierColor = BADGE_TIER_COLORS[badge.tier];
   const { colors } = useTheme();
 
-  const gradientColors = isUnlocked
-    ? (badge.gradientColors as [string, string, ...string[]])
-    : ['#2A2A35', '#1A1A22'] as [string, string];
-  const iconName = isUnlocked ? badge.iconName : 'lock-closed';
+  const gradientColors: [string, string] = isUnlocked
+    ? [badge.colors.core, badge.colors.accent]
+    : ['#2A2A35', '#1A1A22'];
   const iconColor = isUnlocked ? colors.contrastText : colors.textSecondary;
 
   const content = (
@@ -48,7 +39,7 @@ export function BadgeOrb({ badge, isUnlocked, size = 'medium', onPress }: BadgeO
           opacity: isUnlocked ? 1 : 0.6,
         },
         isUnlocked && {
-          shadowColor: tierColor,
+          shadowColor: badge.colors.glow,
           shadowOffset: { width: 0, height: 0 },
           shadowOpacity: 0.6,
           shadowRadius: dim / 4,
@@ -62,11 +53,7 @@ export function BadgeOrb({ badge, isUnlocked, size = 'medium', onPress }: BadgeO
         start={{ x: 0.3, y: 0 }}
         end={{ x: 0.7, y: 1 }}
       >
-        <Svg
-          width={dim}
-          height={dim}
-          style={StyleSheet.absoluteFill}
-        >
+        <Svg width={dim} height={dim} style={StyleSheet.absoluteFill}>
           <Ellipse
             cx={dim * 0.5}
             cy={dim * 0.3}
@@ -75,7 +62,9 @@ export function BadgeOrb({ badge, isUnlocked, size = 'medium', onPress }: BadgeO
             fill="rgba(255,255,255,0.15)"
           />
         </Svg>
-        <Ionicons name={iconName as any} size={iconSize} color={iconColor} />
+        {!isUnlocked && (
+          <Ionicons name="lock-closed" size={dim * 0.3} color={iconColor} />
+        )}
       </LinearGradient>
     </View>
   );

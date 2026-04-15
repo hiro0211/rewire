@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
@@ -13,6 +14,7 @@ import { useCheckinStore } from '@/stores/checkinStore';
 export default function HistoryScreen() {
   const [viewIndex, setViewIndex] = useState(0);
   const loadCheckins = useCheckinStore((state) => state.loadCheckins);
+  const router = useRouter();
   const { colors } = useTheme();
   const { t } = useLocale();
   const viewModes = [t('historyView.calendar'), t('historyView.list')];
@@ -27,6 +29,15 @@ export default function HistoryScreen() {
         options={{
           title: t('nav.recordHistory'),
           headerBackTitle: t('common.back'),
+          headerLeft: () => (
+            <TouchableOpacity
+              testID="history-back-button"
+              onPress={() => router.back()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="chevron-back" size={28} color={colors.primary} />
+            </TouchableOpacity>
+          ),
         }}
       />
 

@@ -34,7 +34,7 @@ export function StatsRow() {
             onPressOut={onPressOut}
             activeOpacity={0.9}
           >
-            <AnimatedOrb tierName={tier.name} size={200} />
+            <AnimatedOrb chapterId={tier.name} size={200} />
           </TouchableOpacity>
         </Animated.View>
       </View>

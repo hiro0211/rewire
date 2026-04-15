@@ -2,85 +2,65 @@
 
 ## Data Availability Note
 
-The April 13 report instance was successfully fetched from App Store Connect, but the TSV
-data rows cover dates through 2026-04-12. This is normal — ASC data processing has a ~1 day
-lag. Below is the analysis for the most recent date with data.
+Today's fetch from App Store Connect returned **409 Conflict** on the analytics report request endpoint
+(an ONGOING request already exists for this app). No new TSV was ingested today. The existing
+`data/analytics/2026-04-13/` directory was populated yesterday and contains events dated
+2026-04-10 through 2026-04-12. This is consistent with ASC's ~1 day processing lag.
 
-The fetched report contains only **Impression** events (from "App Store Discovery and
-Engagement Standard"). Product Page Views, Downloads, Trial Starts, and Paid Conversions
-are not present in the dataset for this date. The APP_USAGE category reports (Sessions,
-Installations, etc.) had no daily instances available yet in ASC.
+The most recent date with data is **2026-04-12** (2 impressions).
 
-## Funnel Summary (script output)
+## Funnel Summary (2026-04-12)
 
 | Stage | Count | Conversion Rate | vs Benchmark |
 |-------|-------|----------------|--------------|
-| Impressions | 0 | N/A | — |
-| → Page Views | 0 | N/A | — |
+| Impressions | 2 | — | — |
+| → Page Views | 0 | 0.0% | 🔴 Below (25-35%) |
 | → Downloads | 0 | N/A | — |
 | → Trial Starts | 0 | N/A | — |
 | → Paid | 0 | N/A | — |
-| Churn Rate | 0/0 | N/A | — |
 
-(The analyze_funnel.py script expects column-based metrics like `Impressions`; the event-row
-TSV format returned by ASC does not populate these columns, so the script reports 0. Raw
-event-level totals are below.)
+## 3-Day Impression Trend
 
-## Raw Impression Totals (from TSV)
+| Date | Impressions | Source |
+|------|-------------|--------|
+| 2026-04-10 | 4 | App Store search |
+| 2026-04-11 | 7 | App Store search |
+| 2026-04-12 | 2 | App Store search |
 
-Total Impression events in file: **13**
+Impressions dropped ~71% day-over-day (7 → 2). This is an extremely low volume and the trend
+is moving in the wrong direction.
 
-| Date | Impressions |
-|------|-------------|
-| 2026-04-10 | 4 |
-| 2026-04-11 | 7 |
-| 2026-04-12 | 2 |
+## Channel Breakdown (across 4/10–4/12)
 
-## Channel Breakdown
+| Channel | Impressions | Page Views | Downloads |
+|---------|-------------|------------|-----------|
+| App Store Search | 13 | 0 | 0 |
+| App Store Browse | 0 | 0 | 0 |
+| TikTok | 0 | 0 | 0 |
+| Web Referral | 0 | 0 | 0 |
 
-| Channel | Impressions |
-|---------|-------------|
-| App Store search | 13 |
-
-100% of impressions came from App Store search. No TikTok, web referral, or browse
-impressions were recorded.
-
-## Territory Breakdown
-
-| Territory | Impressions |
-|-----------|-------------|
-| JP | 8 |
-| CN | 2 |
-| PH | 1 |
-| VN | 1 |
-| HK | 1 |
-
-Japan continues to be the dominant territory (~62% of impressions).
-
-## Device Breakdown
-
-| Device | Impressions |
-|--------|-------------|
-| iPhone | 9 |
-| iPad | 4 |
+100% of impressions came from App Store Search. Zero browse/editorial visibility and no
+external traffic (TikTok / web) during this window.
 
 ## Bottleneck Analysis
 
-Impression volume remains the primary bottleneck — with only 2-7 impressions/day, there is
-not enough top-of-funnel traffic to measure downstream conversion meaningfully. The funnel
-cannot be optimized until impression volume grows by 1-2 orders of magnitude.
+The dominant bottleneck remains at the **top of funnel (discovery)**. With only 2 impressions
+yesterday and zero page views, there is no opportunity for mid-funnel or conversion optimization
+to move the needle. Fixing impression volume is prerequisite to learning anything about the
+page-view and download rates.
 
 ## Top 3 Improvement Actions
 
-1. **Drive impression volume with TikTok/paid channels.** Organic App Store search alone is
-   delivering single-digit impressions/day. Launch or re-activate TikTok campaigns to get
-   the funnel to a measurable scale (target: 500+ impressions/day).
-2. **ASO for Japanese keywords.** JP drives 62% of impressions on very low volume — expand
-   Japanese keyword coverage and localize the subtitle/screenshots to capitalize on the
-   strongest organic market.
-3. **Verify ASC data pipeline.** Product Page Views, Downloads, and subscription metrics
-   are absent from the fetched reports. Confirm the ONGOING report request has the right
-   report types subscribed, and backfill missing report categories (APP_USAGE daily
-   instances were empty).
+1. **ASO keyword expansion** — Search-only visibility at 2–7 impressions/day indicates very
+   narrow keyword coverage. Research competitor keywords in the wellness/habit-tracking space
+   and add relevant long-tail keywords to the app subtitle and keyword field this week.
 
-*Report generated: 2026-04-14*
+2. **Restart paid acquisition** — With zero TikTok or web-referral traffic detected, even a
+   small test budget (¥10k–¥30k) on TikTok or Apple Search Ads would meaningfully diversify
+   acquisition and surface page-view / download rates for the first time.
+
+3. **Resolve the 409 on the ASC analytics request** — The daily fetch has been failing with
+   a conflict. Check `scripts/analytics/` for the existing ONGOING request ID and either
+   reuse it or delete-and-recreate, so fresh data lands automatically each day.
+
+*Report generated: 2026-04-15 09:05 (enriched from event-based TSV)*

@@ -7,13 +7,22 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@/hooks/achievements/useAchievements', () => ({
-  useAchievements: () => ({ unlocked: [], locked: [] }),
+  useAchievements: () => ({ unlocked: [] }),
+}));
+
+jest.mock('@/hooks/dashboard/useStreak', () => ({
+  useStreak: () => ({ streak: 0 }),
 }));
 
 let mockUser: any = null;
 jest.mock('@/stores/userStore', () => ({
   useUserStore: () => ({ user: mockUser }),
 }));
+
+jest.mock('@/components/dashboard/AnimatedOrb', () => {
+  const { View } = require('react-native');
+  return { AnimatedOrb: (props: any) => <View testID="animated-orb" /> };
+});
 
 import { ProfileHeader } from '../ProfileHeader';
 
@@ -56,8 +65,9 @@ describe('ProfileHeader crash prevention', () => {
     expect(getByText(/Rewire参加/)).toBeTruthy();
   });
 
-  it('unlocked=空配列 → デフォルトアイコン表示', () => {
+  it('AnimatedOrbが表示される', () => {
     mockUser = { nickname: 'Test', goalDays: 30 };
-    expect(() => render(<ProfileHeader />)).not.toThrow();
+    const { getByTestId } = render(<ProfileHeader />);
+    expect(getByTestId('animated-orb')).toBeTruthy();
   });
 });

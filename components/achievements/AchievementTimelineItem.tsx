@@ -4,10 +4,10 @@ import { BadgeOrb } from './BadgeOrb';
 import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { BADGE_TIER_COLORS, type BadgeDefinition } from '@/constants/badges';
+import type { NeuralBadgeDefinition } from '@/constants/badges/BADGE_DEFINITIONS';
 
 interface AchievementTimelineItemProps {
-  badge: BadgeDefinition;
+  badge: NeuralBadgeDefinition;
   isUnlocked: boolean;
   position: 'left' | 'right';
   isLast: boolean;
@@ -19,30 +19,27 @@ export function AchievementTimelineItem({
   position,
   isLast,
 }: AchievementTimelineItemProps) {
-  const tierColor = BADGE_TIER_COLORS[badge.tier];
+  const glowColor = badge.colors.glow;
   const isLeft = position === 'left';
   const { colors } = useTheme();
-  const { t } = useLocale();
+  const { isJapanese } = useLocale();
 
   return (
     <View style={styles.wrapper}>
-      {/* Dashed connector */}
       {!isLast && (
         <View style={styles.connectorContainer}>
           <View
             style={[
               styles.connector,
-              { borderColor: isUnlocked ? tierColor : colors.border },
+              { borderColor: isUnlocked ? glowColor : colors.border },
             ]}
           />
         </View>
       )}
 
       <View style={[styles.row, isLeft ? styles.rowLeft : styles.rowRight]}>
-        {/* Badge orb */}
         <BadgeOrb badge={badge} isUnlocked={isUnlocked} size="medium" />
 
-        {/* Info */}
         <View style={[styles.info, isLeft ? styles.infoLeft : styles.infoRight]}>
           <Text
             style={[
@@ -51,23 +48,23 @@ export function AchievementTimelineItem({
               !isUnlocked && styles.locked,
             ]}
           >
-            {t(badge.nameKey)}
+            {isJapanese ? badge.nameJa : badge.nameEn}
           </Text>
           <View
             style={[
               styles.dayPill,
               { borderColor: colors.border },
-              isUnlocked && { borderColor: tierColor },
+              isUnlocked && { borderColor: glowColor },
             ]}
           >
             <Text
               style={[
                 styles.dayText,
                 { color: colors.textSecondary },
-                isUnlocked && { color: tierColor },
+                isUnlocked && { color: glowColor },
               ]}
             >
-              {badge.requiredDays} Days
+              {badge.day} Days
             </Text>
           </View>
           <Text
@@ -78,7 +75,7 @@ export function AchievementTimelineItem({
             ]}
             numberOfLines={2}
           >
-            {t(badge.descriptionKey)}
+            {badge.message}
           </Text>
         </View>
       </View>

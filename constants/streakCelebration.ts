@@ -1,16 +1,6 @@
-import type { GrowthStageName } from './growthStages';
+import type { ChapterId } from './badges/BadgeChapter';
 
-export { type GrowthStageName } from './growthStages';
-
-export const STREAK_TIERS = {
-  spark: { min: 0, max: 6 },
-  dawn: { min: 7, max: 29 },
-  nebula: { min: 30, max: 89 },
-  galaxy: { min: 90, max: 364 },
-  cosmos: { min: 365, max: Infinity },
-} as const;
-
-export type StreakTierName = GrowthStageName;
+export type StreakTierName = ChapterId;
 
 export interface StreakTierConfig {
   name: StreakTierName;
@@ -21,37 +11,44 @@ export interface StreakTierConfig {
   showConfetti: boolean;
 }
 
-export const TIER_CONFIGS: Record<StreakTierName, Omit<StreakTierConfig, 'subText'>> = {
-  spark: {
-    name: 'spark',
+export const TIER_CONFIGS: Record<ChapterId, Omit<StreakTierConfig, 'subText'>> = {
+  chaos: {
+    name: 'chaos',
     hapticStyle: 'light',
     showParticles: false,
     showGlow: false,
     showConfetti: false,
   },
-  dawn: {
-    name: 'dawn',
+  ignition: {
+    name: 'ignition',
     hapticStyle: 'medium',
     showParticles: true,
     showGlow: false,
     showConfetti: false,
   },
-  nebula: {
-    name: 'nebula',
+  formation: {
+    name: 'formation',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
     showConfetti: false,
   },
-  galaxy: {
-    name: 'galaxy',
+  life: {
+    name: 'life',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
     showConfetti: true,
   },
-  cosmos: {
-    name: 'cosmos',
+  expansion: {
+    name: 'expansion',
+    hapticStyle: 'heavy',
+    showParticles: true,
+    showGlow: true,
+    showConfetti: true,
+  },
+  transcendence: {
+    name: 'transcendence',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
@@ -74,7 +71,7 @@ export const getCountUpDuration = (streak: number): number =>
     COUNT_UP_ANIMATION.maxDuration,
   );
 
-/** Get sub text key and params for a streak tier and day count */
+/** Get sub text key for a streak tier and day count */
 export const getSubTextKey = (_tier: StreakTierName, _streak: number, goalReached: boolean): string => {
   if (goalReached) return 'streak.goalReached';
   return 'streak.daysAchieved';

@@ -6,17 +6,18 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
-import { BadgeOrb } from '@/components/achievements/BadgeOrb';
-import { useAchievements } from '@/hooks/achievements/useAchievements';
+import { useStreak } from '@/hooks/dashboard/useStreak';
+import { AnimatedOrb } from '@/components/dashboard/AnimatedOrb';
+import { getBadgeByDay } from '@/lib/badges/getBadgeByDay';
 
 export function ProfileHeader() {
   const router = useRouter();
   const { user } = useUserStore();
-  const { unlocked } = useAchievements();
+  const { streak } = useStreak();
   const { colors } = useTheme();
   const { t, isJapanese } = useLocale();
 
-  const latestBadge = unlocked.length > 0 ? unlocked[unlocked.length - 1] : null;
+  const badge = getBadgeByDay(streak);
 
   const joinDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString(isJapanese ? 'ja-JP' : 'en-US', {
@@ -41,12 +42,11 @@ export function ProfileHeader() {
 
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
-          {latestBadge ? (
-            <BadgeOrb badge={latestBadge} isUnlocked size="large" />
-          ) : (
-            <Ionicons name="person-circle-outline" size={96} color={colors.textSecondary} />
-          )}
+          <AnimatedOrb chapterId={badge.chapter} size={120} />
         </View>
+        <Text style={[styles.gradeName, { color: colors.primary }]}>
+          {isJapanese ? badge.nameJa : badge.nameEn}
+        </Text>
         <Text style={[styles.nickname, { color: colors.text }]}>{user?.nickname || t('profile.defaultName')}</Text>
         {joinDate ? (
           <Text style={[styles.joinDate, { color: colors.textSecondary }]}>{t('profile.joinDate', { date: joinDate })}</Text>
@@ -79,6 +79,13 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginBottom: SPACING.sm,
+  },
+  gradeName: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 4,
   },
   nickname: {
     fontSize: FONT_SIZE.xl,

@@ -2,45 +2,40 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { AchievementSummaryCircle } from '@/components/achievements/AchievementSummaryCircle';
-import { AchievementTimelineItem } from '@/components/achievements/AchievementTimelineItem';
+import { CosmosProgressTimeline } from '@/components/profile/CosmosProgressTimeline';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
-
 export default function AchievementsScreen() {
-  const { achievements, summary } = useAchievements();
+  const { achievements, summary, streak } = useAchievements();
   const { colors } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Summary */}
-      <View style={styles.summaryRow}>
-        <View style={styles.summaryText}>
-          <Text style={[styles.summaryCount, { color: colors.text }]}>
-            {summary.unlocked}/{summary.total} Unlocked
-          </Text>
+    <AuroraBackground>
+      <StarryOverlay />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Summary */}
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryText}>
+            <Text style={[styles.summaryCount, { color: colors.text }]}>
+              {summary.unlocked}/{summary.total} Unlocked
+            </Text>
+          </View>
+          <AchievementSummaryCircle percentage={summary.percentage} />
         </View>
-        <AchievementSummaryCircle percentage={summary.percentage} />
-      </View>
 
-      {/* Timeline */}
-      <ScrollView contentContainerStyle={styles.timeline}>
-        {achievements.map(({ badge, isUnlocked }, index) => (
-          <AchievementTimelineItem
-            key={badge.id}
-            badge={badge}
-            isUnlocked={isUnlocked}
-            position={index % 2 === 0 ? 'left' : 'right'}
-            isLast={index === achievements.length - 1}
-          />
-        ))}
+        {/* Cosmos Timeline */}
+        <CosmosProgressTimeline streak={streak} achievements={achievements} />
       </ScrollView>
-    </View>
+    </AuroraBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollContent: {
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xxxl,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -55,9 +50,5 @@ const styles = StyleSheet.create({
   summaryCount: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-  },
-  timeline: {
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.xxxl,
   },
 });

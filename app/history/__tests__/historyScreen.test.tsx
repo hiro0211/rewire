@@ -1,9 +1,19 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-jest.mock('expo-router', () => ({
-  Stack: { Screen: (props: any) => null },
-}));
+const mockBack = jest.fn();
+jest.mock('expo-router', () => {
+  const React = require('react');
+  return {
+    Stack: {
+      Screen: ({ options }: any) => {
+        const headerLeft = options?.headerLeft;
+        return headerLeft ? React.createElement(React.Fragment, null, headerLeft()) : null;
+      },
+    },
+    useRouter: () => ({ back: mockBack }),
+  };
+});
 
 const mockLoadCheckins = jest.fn();
 jest.mock('@/stores/checkinStore', () => ({
@@ -78,6 +88,10 @@ jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(),
 }));
 
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: 'Ionicons',
+}));
+
 import HistoryScreen from '../index';
 
 describe('HistoryScreen', () => {
@@ -118,5 +132,16 @@ describe('HistoryScreen', () => {
   it('マウント時にloadCheckinsが呼ばれる', () => {
     render(<HistoryScreen />);
     expect(mockLoadCheckins).toHaveBeenCalled();
+  });
+
+  it('戻るボタンが表示される', () => {
+    const { getByTestId } = render(<HistoryScreen />);
+    expect(getByTestId('history-back-button')).toBeTruthy();
+  });
+
+  it('戻るボタンを押すとrouter.back()が呼ばれる', () => {
+    const { getByTestId } = render(<HistoryScreen />);
+    fireEvent.press(getByTestId('history-back-button'));
+    expect(mockBack).toHaveBeenCalled();
   });
 });

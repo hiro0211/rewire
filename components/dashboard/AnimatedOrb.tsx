@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
 import { getOrbConfig } from '@/constants/orbConfig';
 import { ORB_SHADER } from '@/constants/shaders/orb';
-import type { GrowthStageName } from '@/constants/growthStages';
+import type { ChapterId } from '@/constants/badges/BadgeChapter';
 
 const isExpoGo = Constants.executionEnvironment === 'storeClient';
 
@@ -47,13 +47,13 @@ function hexToVec3(hex: string): [number, number, number] {
 }
 
 interface AnimatedOrbProps {
-  tierName: GrowthStageName;
+  chapterId: ChapterId;
   size?: number;
 }
 
-export function AnimatedOrb({ tierName, size = 200 }: AnimatedOrbProps) {
-  const { isDark, glow } = useTheme();
-  const config = getOrbConfig(tierName);
+export function AnimatedOrb({ chapterId, size = 200 }: AnimatedOrbProps) {
+  const { isDark } = useTheme();
+  const config = getOrbConfig(chapterId);
 
   const time = useSharedValue(0);
   const active = useSharedValue(true);
@@ -133,7 +133,7 @@ export function AnimatedOrb({ tierName, size = 200 }: AnimatedOrbProps) {
             width: size * 1.4,
             height: size * 1.4,
             borderRadius: size * 0.7,
-            backgroundColor: glow.cyan,
+            backgroundColor: config.glowColor,
             left: -(size * 0.2),
             top: -(size * 0.2),
           },

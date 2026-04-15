@@ -1,60 +1,87 @@
-import { ORB_TIERS, getOrbConfig } from '../orbConfig';
-import type { GrowthStageName } from '../growthStages';
+import { ORB_CHAPTERS, getOrbConfig } from '../orbConfig';
+import { CHAPTER_IDS, type ChapterId } from '../badges/BadgeChapter';
 
 describe('orbConfig', () => {
-  describe('ORB_TIERS', () => {
-    it('sparkティアはブルー系の色を持つ', () => {
-      const tier = ORB_TIERS.spark;
-      expect(tier.colors).toHaveLength(3);
-      expect(tier.pulseDuration).toBe(4000);
+  describe('ORB_CHAPTERS', () => {
+    it('全6章の設定が定義されている', () => {
+      for (const id of CHAPTER_IDS) {
+        expect(ORB_CHAPTERS[id]).toBeDefined();
+      }
     });
 
-    it('dawnティアはパープル系でsparkより速いパルス', () => {
-      const tier = ORB_TIERS.dawn;
-      expect(tier.colors).toHaveLength(3);
-      expect(tier.pulseDuration).toBe(3500);
-      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.spark.pulseDuration);
+    it('chaosチャプターは淡い銀色', () => {
+      const ch = ORB_CHAPTERS.chaos;
+      expect(ch.colors).toEqual(['#C9CBE0', '#F5F6FA', '#9E8CC4']);
+      expect(ch.pulseDuration).toBe(4000);
     });
 
-    it('nebulaティアはシアン→パープル系', () => {
-      const tier = ORB_TIERS.nebula;
-      expect(tier.colors).toHaveLength(3);
-      expect(tier.pulseDuration).toBe(3000);
+    it('ignitionチャプターはオレンジ系でchaosより速いパルス', () => {
+      const ch = ORB_CHAPTERS.ignition;
+      expect(ch.colors).toEqual(['#FFB547', '#FFE4A0', '#FF7847']);
+      expect(ch.pulseDuration).toBe(3500);
+      expect(ch.pulseDuration).toBeLessThan(ORB_CHAPTERS.chaos.pulseDuration);
     });
 
-    it('galaxyティアはnebulaより速いパルスで3色グラデーション', () => {
-      const tier = ORB_TIERS.galaxy;
-      expect(tier.colors).toHaveLength(3);
-      expect(tier.pulseDuration).toBe(2500);
-      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.nebula.pulseDuration);
+    it('formationチャプターはブラウン系', () => {
+      const ch = ORB_CHAPTERS.formation;
+      expect(ch.colors).toEqual(['#D17842', '#F4C58A', '#8B3A0F']);
+      expect(ch.pulseDuration).toBe(3000);
     });
 
-    it('cosmosティアは最速パルスで3色グラデーション', () => {
-      const tier = ORB_TIERS.cosmos;
-      expect(tier.colors).toHaveLength(3);
-      expect(tier.pulseDuration).toBe(2000);
-      expect(tier.pulseDuration).toBeLessThan(ORB_TIERS.galaxy.pulseDuration);
+    it('lifeチャプターはブルー系でformationより速いパルス', () => {
+      const ch = ORB_CHAPTERS.life;
+      expect(ch.colors).toEqual(['#4A90E2', '#A8D8F0', '#2B5F9E']);
+      expect(ch.pulseDuration).toBe(2600);
+      expect(ch.pulseDuration).toBeLessThan(
+        ORB_CHAPTERS.formation.pulseDuration
+      );
     });
 
-    it('全ティアがscaleMin/scaleMaxを持つ', () => {
-      const tierNames: GrowthStageName[] = ['spark', 'dawn', 'nebula', 'galaxy', 'cosmos'];
-      for (const name of tierNames) {
-        const tier = ORB_TIERS[name];
-        expect(tier.scaleMin).toBeLessThan(tier.scaleMax);
+    it('expansionチャプターはシアン系', () => {
+      const ch = ORB_CHAPTERS.expansion;
+      expect(ch.colors).toEqual(['#5CE1E6', '#B8F5F7', '#1E6B7F']);
+      expect(ch.pulseDuration).toBe(2200);
+    });
+
+    it('transcendenceチャプターはピンク系で最速パルス', () => {
+      const ch = ORB_CHAPTERS.transcendence;
+      expect(ch.colors).toEqual(['#EC4899', '#FBCFE8', '#831843']);
+      expect(ch.pulseDuration).toBe(1800);
+      expect(ch.pulseDuration).toBeLessThan(
+        ORB_CHAPTERS.expansion.pulseDuration
+      );
+    });
+
+    it('全チャプターがscaleMin < scaleMaxを満たす', () => {
+      for (const id of CHAPTER_IDS) {
+        const ch = ORB_CHAPTERS[id];
+        expect(ch.scaleMin).toBeLessThan(ch.scaleMax);
+      }
+    });
+
+    it('全チャプターがrgba形式のglowColorを持つ', () => {
+      for (const id of CHAPTER_IDS) {
+        expect(ORB_CHAPTERS[id].glowColor).toMatch(/^rgba\(/);
+      }
+    });
+
+    it('パルス速度が章の進行とともに速くなる', () => {
+      const durations = CHAPTER_IDS.map((id) => ORB_CHAPTERS[id].pulseDuration);
+      for (let i = 1; i < durations.length; i++) {
+        expect(durations[i]).toBeLessThan(durations[i - 1]);
       }
     });
   });
 
   describe('getOrbConfig', () => {
-    it('sparkで正しい設定を返す', () => {
-      expect(getOrbConfig('spark')).toBe(ORB_TIERS.spark);
+    it('chaosで正しい設定を返す', () => {
+      expect(getOrbConfig('chaos')).toBe(ORB_CHAPTERS.chaos);
     });
 
-    it('各ティア名で正しい設定を返す', () => {
-      expect(getOrbConfig('dawn')).toBe(ORB_TIERS.dawn);
-      expect(getOrbConfig('nebula')).toBe(ORB_TIERS.nebula);
-      expect(getOrbConfig('galaxy')).toBe(ORB_TIERS.galaxy);
-      expect(getOrbConfig('cosmos')).toBe(ORB_TIERS.cosmos);
+    it('各チャプターIDで正しい設定を返す', () => {
+      for (const id of CHAPTER_IDS) {
+        expect(getOrbConfig(id)).toBe(ORB_CHAPTERS[id]);
+      }
     });
   });
 });

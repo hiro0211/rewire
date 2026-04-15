@@ -1,106 +1,82 @@
 import { getStreakTier } from '../useStreakTier';
 
 describe('getStreakTier', () => {
-  describe('基本ティア判定（goalReached=false）', () => {
-    it('streak=0 のとき spark を返す', () => {
-      const result = getStreakTier(0, false);
-      expect(result.name).toBe('spark');
+  describe('6章ベースのティア判定（goalReached=false）', () => {
+    it('streak=0 のとき chaos を返す', () => {
+      expect(getStreakTier(0, false).name).toBe('chaos');
     });
 
-    it('streak=6 のとき spark を返す', () => {
-      const result = getStreakTier(6, false);
-      expect(result.name).toBe('spark');
+    it('streak=6 のとき chaos を返す', () => {
+      expect(getStreakTier(6, false).name).toBe('chaos');
     });
 
-    it('streak=7 のとき dawn を返す', () => {
-      const result = getStreakTier(7, false);
-      expect(result.name).toBe('dawn');
+    it('streak=7 のとき ignition を返す', () => {
+      expect(getStreakTier(7, false).name).toBe('ignition');
     });
 
-    it('streak=29 のとき dawn を返す', () => {
-      const result = getStreakTier(29, false);
-      expect(result.name).toBe('dawn');
+    it('streak=29 のとき ignition を返す', () => {
+      expect(getStreakTier(29, false).name).toBe('ignition');
     });
 
-    it('streak=30 のとき nebula を返す', () => {
-      const result = getStreakTier(30, false);
-      expect(result.name).toBe('nebula');
+    it('streak=30 のとき formation を返す', () => {
+      expect(getStreakTier(30, false).name).toBe('formation');
     });
 
-    it('streak=89 のとき nebula を返す', () => {
-      const result = getStreakTier(89, false);
-      expect(result.name).toBe('nebula');
+    it('streak=89 のとき formation を返す', () => {
+      expect(getStreakTier(89, false).name).toBe('formation');
     });
 
-    it('streak=90 のとき galaxy を返す', () => {
-      const result = getStreakTier(90, false);
-      expect(result.name).toBe('galaxy');
+    it('streak=90 のとき life を返す', () => {
+      expect(getStreakTier(90, false).name).toBe('life');
     });
 
-    it('streak=364 のとき galaxy を返す', () => {
-      const result = getStreakTier(364, false);
-      expect(result.name).toBe('galaxy');
+    it('streak=269 のとき life を返す', () => {
+      expect(getStreakTier(269, false).name).toBe('life');
     });
 
-    it('streak=365 のとき cosmos を返す', () => {
-      const result = getStreakTier(365, false);
-      expect(result.name).toBe('cosmos');
+    it('streak=270 のとき expansion を返す', () => {
+      expect(getStreakTier(270, false).name).toBe('expansion');
     });
 
-    it('streak=1000 のとき cosmos を返す', () => {
-      const result = getStreakTier(1000, false);
-      expect(result.name).toBe('cosmos');
+    it('streak=729 のとき expansion を返す', () => {
+      expect(getStreakTier(729, false).name).toBe('expansion');
+    });
+
+    it('streak=730 のとき transcendence を返す', () => {
+      expect(getStreakTier(730, false).name).toBe('transcendence');
+    });
+
+    it('streak=1000 のとき transcendence を返す', () => {
+      expect(getStreakTier(1000, false).name).toBe('transcendence');
     });
   });
 
-  describe('goalReached=true のとき対応ステージの設定を返す', () => {
-    it('streak=7, goalReached=true → dawn', () => {
+  describe('goalReached=true のとき対応チャプターの設定を返す', () => {
+    it('streak=7, goalReached=true → ignition + goalReached', () => {
       const result = getStreakTier(7, true);
-      expect(result.name).toBe('dawn');
+      expect(result.name).toBe('ignition');
       expect(result.subText).toBe('streak.goalReached');
     });
 
-    it('streak=1, goalReached=true → spark', () => {
+    it('streak=1, goalReached=true → chaos + goalReached', () => {
       const result = getStreakTier(1, true);
-      expect(result.name).toBe('spark');
+      expect(result.name).toBe('chaos');
       expect(result.subText).toBe('streak.goalReached');
     });
   });
 
-  describe('サブテキスト（翻訳キーを返す）', () => {
-    it('spark tier は streak.daysAchieved キーを返す', () => {
-      const result = getStreakTier(3, false);
-      expect(result.subText).toBe('streak.daysAchieved');
+  describe('サブテキスト', () => {
+    it('goalReached=false は streak.daysAchieved を返す', () => {
+      expect(getStreakTier(3, false).subText).toBe('streak.daysAchieved');
     });
 
-    it('streak=0 は streak.daysAchieved キーを返す', () => {
-      const result = getStreakTier(0, false);
-      expect(result.subText).toBe('streak.daysAchieved');
-    });
-
-    it('dawn tier は streak.daysAchieved キーを返す', () => {
-      const result = getStreakTier(7, false);
-      expect(result.subText).toBe('streak.daysAchieved');
-    });
-
-    it('nebula tier は streak.daysAchieved キーを返す', () => {
-      const result = getStreakTier(30, false);
-      expect(result.subText).toBe('streak.daysAchieved');
-    });
-
-    it('galaxy tier は streak.daysAchieved キーを返す', () => {
-      const result = getStreakTier(90, false);
-      expect(result.subText).toBe('streak.daysAchieved');
-    });
-
-    it('goalReached=true のとき streak.goalReached キーを返す', () => {
-      const result = getStreakTier(5, true);
-      expect(result.subText).toBe('streak.goalReached');
+    it('goalReached=true は streak.goalReached を返す', () => {
+      expect(getStreakTier(5, true).subText).toBe('streak.goalReached');
     });
   });
 
   describe('エフェクト設定', () => {
-    it('spark tier はエフェクトなし', () => {
+    it('chaos はエフェクトなし、lightハプティクス', () => {
       const result = getStreakTier(3, false);
       expect(result.showParticles).toBe(false);
       expect(result.showGlow).toBe(false);
@@ -108,7 +84,7 @@ describe('getStreakTier', () => {
       expect(result.hapticStyle).toBe('light');
     });
 
-    it('dawn tier はパーティクルのみ', () => {
+    it('ignition はパーティクルのみ、mediumハプティクス', () => {
       const result = getStreakTier(7, false);
       expect(result.showParticles).toBe(true);
       expect(result.showGlow).toBe(false);
@@ -116,7 +92,7 @@ describe('getStreakTier', () => {
       expect(result.hapticStyle).toBe('medium');
     });
 
-    it('nebula tier はパーティクル+グロー', () => {
+    it('formation はパーティクル+グロー、heavyハプティクス', () => {
       const result = getStreakTier(30, false);
       expect(result.showParticles).toBe(true);
       expect(result.showGlow).toBe(true);
@@ -124,7 +100,7 @@ describe('getStreakTier', () => {
       expect(result.hapticStyle).toBe('heavy');
     });
 
-    it('galaxy tier は全エフェクト', () => {
+    it('life は全エフェクト', () => {
       const result = getStreakTier(90, false);
       expect(result.showParticles).toBe(true);
       expect(result.showGlow).toBe(true);
@@ -132,8 +108,16 @@ describe('getStreakTier', () => {
       expect(result.hapticStyle).toBe('heavy');
     });
 
-    it('cosmos tier は全エフェクト', () => {
-      const result = getStreakTier(365, false);
+    it('expansion は全エフェクト', () => {
+      const result = getStreakTier(270, false);
+      expect(result.showParticles).toBe(true);
+      expect(result.showGlow).toBe(true);
+      expect(result.showConfetti).toBe(true);
+      expect(result.hapticStyle).toBe('heavy');
+    });
+
+    it('transcendence は全エフェクト', () => {
+      const result = getStreakTier(730, false);
       expect(result.showParticles).toBe(true);
       expect(result.showGlow).toBe(true);
       expect(result.showConfetti).toBe(true);
