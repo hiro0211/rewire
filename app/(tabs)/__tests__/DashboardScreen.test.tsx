@@ -42,13 +42,6 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'ja' }],
 }));
 
-jest.mock('@/hooks/dashboard/useTimeBasedLayout', () => ({
-  useTimeBasedLayout: () => ({
-    sections: ['streak', 'quickActions', 'sos'],
-    timeOfDay: 'morning',
-  }),
-}));
-
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 
 jest.mock('@/hooks/dashboard/useShareWidget', () => ({
