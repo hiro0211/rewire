@@ -1,23 +1,19 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-jest.mock('@/components/ui/AuroraBackground', () => {
+jest.mock('@/components/common/SafeAreaWrapper', () => {
   const { View } = require('react-native');
   return {
-    AuroraBackground: ({ children }: any) => (
-      <View testID="aurora-background">{children}</View>
+    SafeAreaWrapper: ({ children }: any) => (
+      <View testID="safe-area-wrapper">{children}</View>
     ),
   };
-});
-
-jest.mock('@/components/ui/StarryOverlay', () => {
-  const { View } = require('react-native');
-  return { StarryOverlay: () => <View testID="starry-overlay" /> };
 });
 
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
     colors: { text: '#fff', textSecondary: '#999', background: '#000' },
+    gradients: { background: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] },
     isDark: true,
   }),
 }));
@@ -64,13 +60,15 @@ jest.mock('@/components/learn/LessonTimeline', () => {
 import LearnScreen from '../learn';
 
 describe('LearnScreen', () => {
-  it('AuroraBackgroundでラップされている', () => {
+  it('SafeAreaWrapperでラップされている', () => {
     const { getByTestId } = render(<LearnScreen />);
-    expect(getByTestId('aurora-background')).toBeTruthy();
+    expect(getByTestId('safe-area-wrapper')).toBeTruthy();
   });
 
-  it('StarryOverlayが表示される', () => {
-    const { getByTestId } = render(<LearnScreen />);
-    expect(getByTestId('starry-overlay')).toBeTruthy();
+  it('AuroraBackground / StarryOverlay は使用されない', () => {
+    const { queryByTestId } = render(<LearnScreen />);
+    expect(queryByTestId('aurora-background')).toBeNull();
+    expect(queryByTestId('aurora-container')).toBeNull();
+    expect(queryByTestId('starry-overlay')).toBeNull();
   });
 });

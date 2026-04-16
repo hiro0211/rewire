@@ -14,6 +14,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
 import { getOrbConfig } from '@/constants/orbConfig';
 import { ORB_SHADER } from '@/constants/shaders/orb';
+import { OrbGlowLayers } from './OrbGlowLayers';
+import { OrbParticles } from './OrbParticles';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 
 const isExpoGo = Constants.executionEnvironment === 'storeClient';
@@ -71,19 +73,6 @@ export function AnimatedOrb({ chapterId, size = 200 }: AnimatedOrbProps) {
     );
   }, [config]);
 
-  // Glow opacity pulse
-  const glowOpacity = useSharedValue(0.3);
-  useEffect(() => {
-    glowOpacity.value = withRepeat(
-      withTiming(0.7, {
-        duration: config.pulseDuration,
-        easing: Easing.inOut(Easing.sin),
-      }),
-      -1,
-      true,
-    );
-  }, [config]);
-
   // AppState: pause on background
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
@@ -102,10 +91,6 @@ export function AnimatedOrb({ chapterId, size = 200 }: AnimatedOrbProps) {
     transform: [{ scale: scale.value }],
   }));
 
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
-  }));
-
   const [c1, c2, c3] = config.colors;
   // Pre-compute color vectors on JS thread (hexToVec3 cannot run in worklet)
   const [r1, g1, b1] = hexToVec3(c1);
@@ -122,26 +107,42 @@ export function AnimatedOrb({ chapterId, size = 200 }: AnimatedOrbProps) {
 
   const useSkia = isDark && runtimeEffect && SkiaCanvas && SkiaFill && SkiaShader;
 
-  return (
-    <View testID="animated-orb" style={[styles.container, { width: size, height: size }]}>
-      {/* Glow behind orb */}
-      <Animated.View
-        testID="orb-glow"
-        style={[
-          styles.glow,
-          {
-            width: size * 1.4,
-            height: size * 1.4,
-            borderRadius: size * 0.7,
-            backgroundColor: config.glowColor,
-            left: -(size * 0.2),
-            top: -(size * 0.2),
-          },
-          glowStyle,
-        ]}
-      />
+  // Container expanded to accommodate glow + particles (size * 1.6)
+  const containerSize = size * 1.6;
+  const offset = (containerSize - size) / 2;
 
-      <Animated.View style={[{ width: size, height: size }, pulseStyle]}>
+  return (
+    <View
+      testID="animated-orb"
+      style={[styles.container, { width: containerSize, height: containerSize }]}
+    >
+      {/* Multi-layer glow + pulse ring behind orb */}
+      <View
+        pointerEvents="none"
+        style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
+      >
+        <OrbGlowLayers
+          size={size}
+          glowColor={config.glowColor}
+          pulseDuration={config.pulseDuration}
+        />
+      </View>
+
+      {/* Orbiting particles */}
+      <View
+        pointerEvents="none"
+        style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
+      >
+        <OrbParticles size={size} count={config.particleCount} tintColor={c1} />
+      </View>
+
+      {/* Core orb with breathing scale */}
+      <Animated.View
+        style={[
+          { width: size, height: size, position: 'absolute', left: offset, top: offset },
+          pulseStyle,
+        ]}
+      >
         {useSkia ? (
           <SkiaCanvas style={{ width: size, height: size }} testID="orb-canvas">
             <SkiaFill>
@@ -150,7 +151,9 @@ export function AnimatedOrb({ chapterId, size = 200 }: AnimatedOrbProps) {
           </SkiaCanvas>
         ) : (
           // Fallback: circular LinearGradient with Reanimated pulse
-          <View style={[styles.fallbackOrb, { width: size, height: size, borderRadius: size / 2 }]}>
+          <View
+            style={[styles.fallbackOrb, { width: size, height: size, borderRadius: size / 2 }]}
+          >
             <LinearGradient
               colors={[...config.colors]}
               start={{ x: 0, y: 0 }}
@@ -169,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  glow: {
+  overlay: {
     position: 'absolute',
   },
   fallbackOrb: {

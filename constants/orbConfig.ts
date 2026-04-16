@@ -6,6 +6,7 @@ export interface OrbTierConfig {
   pulseDuration: number;
   scaleMin: number;
   scaleMax: number;
+  particleCount: number;
 }
 
 export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
@@ -15,6 +16,7 @@ export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
     pulseDuration: 4000,
     scaleMin: 0.96,
     scaleMax: 1.04,
+    particleCount: 4,
   },
   ignition: {
     colors: ['#FFB547', '#FFE4A0', '#FF7847'],
@@ -22,6 +24,7 @@ export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
     pulseDuration: 3500,
     scaleMin: 0.95,
     scaleMax: 1.05,
+    particleCount: 6,
   },
   formation: {
     colors: ['#D17842', '#F4C58A', '#8B3A0F'],
@@ -29,6 +32,7 @@ export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
     pulseDuration: 3000,
     scaleMin: 0.94,
     scaleMax: 1.06,
+    particleCount: 7,
   },
   life: {
     colors: ['#4A90E2', '#A8D8F0', '#2B5F9E'],
@@ -36,6 +40,7 @@ export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
     pulseDuration: 2600,
     scaleMin: 0.93,
     scaleMax: 1.07,
+    particleCount: 8,
   },
   expansion: {
     colors: ['#5CE1E6', '#B8F5F7', '#1E6B7F'],
@@ -43,6 +48,7 @@ export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
     pulseDuration: 2200,
     scaleMin: 0.92,
     scaleMax: 1.08,
+    particleCount: 9,
   },
   transcendence: {
     colors: ['#EC4899', '#FBCFE8', '#831843'],
@@ -50,6 +56,7 @@ export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
     pulseDuration: 1800,
     scaleMin: 0.91,
     scaleMax: 1.09,
+    particleCount: 10,
   },
 };
 

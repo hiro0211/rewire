@@ -149,9 +149,10 @@ describe('DashboardScreen 結合テスト', () => {
       expect(getByTestId('panic-button')).toBeTruthy();
     });
 
-    it('AuroraBackgroundが表示される', () => {
-      const { getByTestId } = render(<DashboardScreen />);
-      expect(getByTestId('aurora-container')).toBeTruthy();
+    it('SafeAreaWrapperが背景として使用される（AuroraBackgroundは不使用）', () => {
+      const { queryByTestId } = render(<DashboardScreen />);
+      expect(queryByTestId('aurora-container')).toBeNull();
+      expect(queryByTestId('starry-overlay')).toBeNull();
     });
 
     it('挨拶テキストは表示されない', () => {
@@ -159,9 +160,9 @@ describe('DashboardScreen 結合テスト', () => {
       expect(queryByText('おかえりなさい')).toBeNull();
     });
 
-    it('AnimatedOrbが表示される', () => {
+    it('StatsRowが表示される（AnimatedOrb含む）', () => {
       const { getByTestId } = render(<DashboardScreen />);
-      expect(getByTestId('animated-orb')).toBeTruthy();
+      expect(getByTestId('stats-row')).toBeTruthy();
     });
 
     it('SegmentedStreakCard が表示される', () => {

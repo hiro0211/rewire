@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AuroraBackground } from '@/components/ui/AuroraBackground';
-import { StarryOverlay } from '@/components/ui/StarryOverlay';
+import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SegmentedStreakCard } from '@/components/dashboard/SegmentedStreakCard';
 import { ShareWidgetCard } from '@/components/dashboard/ShareWidgetCard';
@@ -44,10 +42,9 @@ export default function DashboardScreen() {
   const { loadUser } = useUserStore();
   const { loadCheckins } = useCheckinStore();
   const [refreshing, setRefreshing] = useState(false);
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { t } = useLocale();
   const { viewShotRef, share } = useShareWidget();
-  const insets = useSafeAreaInsets();
   const { stopwatch, goalDays, relapseCount } = useDashboardStats();
   const { shouldShowSurvey } = useSurveyEligibility();
   const [surveyModalVisible, setSurveyModalVisible] = useState(false);
@@ -103,13 +100,11 @@ export default function DashboardScreen() {
   const sosAnim = useEntranceAnimation({ delay: 400 });
 
   return (
-    <AuroraBackground>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" />
-      <StarryOverlay />
+    <SafeAreaWrapper>
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + SPACING.xxxl },
+          { paddingTop: SPACING.xxxl },
         ]}
         refreshControl={
           <RefreshControl
@@ -183,7 +178,7 @@ export default function DashboardScreen() {
         onFeedbackTap={handleFeedbackTap}
         onDismiss={handleReviewDismiss}
       />
-    </AuroraBackground>
+    </SafeAreaWrapper>
   );
 }
 

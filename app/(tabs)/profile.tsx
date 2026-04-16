@@ -1,8 +1,7 @@
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ToolCard } from '@/components/profile/ToolCard';
 import { GradientCard } from '@/components/ui/GradientCard';
-import { AuroraBackground } from '@/components/ui/AuroraBackground';
-import { StarryOverlay } from '@/components/ui/StarryOverlay';
+import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { FONT_SIZE, SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
@@ -11,19 +10,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { summary } = useAchievements();
   const { colors } = useTheme();
   const { t } = useLocale();
-  const insets = useSafeAreaInsets();
 
   return (
-    <AuroraBackground>
-      <StarryOverlay />
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top }]}>
+    <SafeAreaWrapper>
+      <ScrollView contentContainerStyle={styles.content}>
         <ProfileHeader />
 
         {/* Achievements Link */}
@@ -58,7 +54,7 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
-    </AuroraBackground>
+    </SafeAreaWrapper>
   );
 }
 

@@ -29,8 +29,15 @@ describe('AnimatedOrb', () => {
     expect(screen.getByTestId('animated-orb')).toBeTruthy();
   });
 
-  it('グローエフェクトを表示する', () => {
+  it('3層のグローエフェクトを表示する', () => {
     render(<AnimatedOrb chapterId="formation" />);
-    expect(screen.getByTestId('orb-glow')).toBeTruthy();
+    expect(screen.getByTestId('orb-glow-inner')).toBeTruthy();
+    expect(screen.getByTestId('orb-glow-outer')).toBeTruthy();
+    expect(screen.getByTestId('orb-pulse-ring')).toBeTruthy();
+  });
+
+  it('パーティクルエフェクトを表示する', () => {
+    render(<AnimatedOrb chapterId="life" />);
+    expect(screen.getByTestId('orb-particles')).toBeTruthy();
   });
 });

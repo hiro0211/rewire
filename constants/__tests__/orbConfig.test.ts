@@ -52,6 +52,20 @@ describe('orbConfig', () => {
       );
     });
 
+    it('全チャプターがparticleCountを持つ', () => {
+      for (const id of CHAPTER_IDS) {
+        expect(ORB_CHAPTERS[id].particleCount).toBeGreaterThanOrEqual(4);
+        expect(ORB_CHAPTERS[id].particleCount).toBeLessThanOrEqual(10);
+      }
+    });
+
+    it('particleCountが章の進行とともに増える', () => {
+      const counts = CHAPTER_IDS.map((id) => ORB_CHAPTERS[id].particleCount);
+      for (let i = 1; i < counts.length; i++) {
+        expect(counts[i]).toBeGreaterThanOrEqual(counts[i - 1]);
+      }
+    });
+
     it('全チャプターがscaleMin < scaleMaxを満たす', () => {
       for (const id of CHAPTER_IDS) {
         const ch = ORB_CHAPTERS[id];

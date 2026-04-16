@@ -114,10 +114,13 @@ describe('DashboardScreen', () => {
     expect(UNSAFE_getByType(RefreshControl)).toBeTruthy();
   });
 
-  it('AuroraBackgroundが使用される', () => {
-    const { getByTestId } = render(<DashboardScreen />);
-    const aurora = getByTestId('aurora-container') ?? getByTestId('aurora-fallback');
-    expect(aurora).toBeTruthy();
+  it('SafeAreaWrapperが背景として使用される', () => {
+    const { queryByTestId } = render(<DashboardScreen />);
+    // AuroraBackground は使用されない
+    expect(queryByTestId('aurora-container')).toBeNull();
+    expect(queryByTestId('aurora-fallback')).toBeNull();
+    // StarryOverlay も使用されない
+    expect(queryByTestId('starry-overlay')).toBeNull();
   });
 
   it('SegmentedStreakCardが表示される', () => {
