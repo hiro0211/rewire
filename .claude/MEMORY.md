@@ -175,3 +175,121 @@ Apple の定義上「トラッキング」に該当しない構成にしてリ�
 #### 新規（復元）
 - `plugins/withFirebaseAnalyticsNoAdId.js`（commit `a953d00^` から復元）
 - `plugins/__tests__/withFirebaseAnalyticsNoAdId.test.js`（同上）
+
+## 2026-04-16
+
+### 作業内容
+ホーム画面ダッシュボードのオーブカルーセル化（QUITTR風）+ 経過時間表示から日数を削除
+
+### 完了した作業（TDDサイクルで全Phase完了）
+
+#### Phase A: `formatStopwatchTime` 拡張
+- `FormatStopwatchOptions { includeDays?: boolean }` を追加
+- `includeDays: false` で日パートを省略（例: `{days:45, hours:22, minutes:9}` → `"22時間9分"` / `"22h 9m"`）
+- 既存の `buildShareText` (`lib/share/shareService.ts`) は options 省略で従来通り `"45日22時間9分"` を維持
+- テスト6件追加（日本語/英語/時間0/days=0/デフォルト互換）
+
+#### Phase B: `useStopwatch` に `formattedShort` 追加
+- `UseStopwatchResult` に `formattedShort` プロパティ追加
+- `formatStopwatchTime(time, isJapanese, { includeDays: false })` を2重呼び出しで生成（O(文字列連結)程度、60秒ごとなので負荷なし）
+
+#### Phase C: `OrbCarouselItem` 新規作成
+- プロップス: `badge, itemWidth, activeOrbSize, isActive, onLongPress`
+- アクティブ: `<AnimatedOrb chapterId={badge.chapter} size={200} />` + TouchableOpacity 長押し
+- 非アクティブ: `LinearGradient` 3色角丸円 + scale 0.55 + opacity 0.4
+- `React.memo` で wrap（毎分のuseStopwatch tickによる再描画を防ぐ）
+- 日本語/英語単数形対応（`1 day` vs `N days`）
+- a11y: アクティブは `role="button"`/`label`/`state.selected=true`、非アクティブは `role="image"`
+
+#### Phase D: `OrbCarousel` 新規作成
+- `FlatList horizontal` + `snapToInterval={itemWidth}` + `snapToAlignment="center"` + `decelerationRate="fast"`
+- `ITEM_WIDTH = activeOrbSize(200) + 80 = 280`、左右ピーク設計
+- `useWindowDimensions()` で回転対応
+- `getBadgeByDay(currentDays)` で初期 `initialScrollIndex` 解決
+- `getItemLayout` 提供 + `onScrollToIndexFailed` は `requestAnimationFrame` + `listRef.scrollToOffset` で適切に retry
+- `windowSize=3`, `initialNumToRender=3`, `maxToRenderPerBatch=3`
+- `removeClippedSubviews` は付けない（iOS horizontal FlatList で blank cell バグ既知）
+
+#### Phase E: `StatsRow` 置換
+- `AnimatedOrb` 直接描画 → `<OrbCarousel currentDays={streakDays} onLongPress={openEdit} />`
+- `useCallback` で `openEdit`/`closeEdit`/`handleSave` をメモ化（毎分の再レンダーで OrbCarousel の renderItem 閉包が invalidate しないように）
+- 不要になった `usePressAnimation`, `getStreakTier`, `AnimatedOrb` import 削除
+
+#### Phase F: 経過時間表示変更
+- `app/(tabs)/index.tsx:135`: `elapsed={stopwatch.formatted}` → `elapsed={stopwatch.formattedShort}`
+- シェアテキスト（ShareWidgetCard）は従来通り `stopwatch.formatted`（日数含む）
+
+### テスト結果
+- 新規追加: `formatStopwatchTime` includeDays:false 6件、`useStopwatch` formattedShort 1件、`OrbCarouselItem` 7件、`OrbCarousel` 7件、`StatsRow` 更新3件 = 計24件
+- 全体テスト: **232スイート / 1599テスト全パス**（以前の MEMORY.md に記載の10失敗は後続コミットで解消済みだった）
+- `npx tsc --noEmit`: 変更ファイルに新規エラーなし
+- `npm run lint`: 変更ファイルに新規エラーなし（既存の warning のみ）
+
+### 注意事項
+- `FormatStopwatchOptions` は optionsオブジェクトパターン（boolean 1つだけだが計画仕様に従った）
+- `OrbCarouselItem` は `React.memo` が必須 — `useStopwatch` が 60秒ごとに `StatsRow` を再レンダーするため、memo なしだと FlatList 内の全 mounted アイテム（~3）が毎分再描画される
+- `StatsRow` の callbacks は `useCallback` 必須 — インラインアローだと毎分新しい参照になり、`OrbCarousel.renderItem` の deps が invalidate する
+- `useWindowDimensions()` を `Dimensions.get('window')` の代わりに使用（回転・split-screen 対応）
+- `onScrollToIndexFailed` は `requestAnimationFrame` + `scrollToOffset` で retry（`getItemLayout` 提供済みなので本来稀だが、安全網として実装）
+- 英語単数形: `1 day` vs `N days`（Nebula の `day=1` のみ影響）
+- QUITTR風UI: アクティブ 200px Skia シェーダー + グロー + パーティクル、非アクティブ scale 0.55 flat LinearGradient
+- Skia オーブはアクティブ1個のみ（18個すべて Skia は確実にフレーム落ち）
+- 実データへの副作用なし（カルーセル内部 state のみ更新、streak 等は unchanged）
+
+### 新規ファイル
+- `components/dashboard/OrbCarousel.tsx`
+- `components/dashboard/OrbCarouselItem.tsx`
+- `components/dashboard/__tests__/OrbCarousel.test.tsx`
+- `components/dashboard/__tests__/OrbCarouselItem.test.tsx`
+
+### 変更ファイル
+- `lib/stats/statsCalculator.ts` — `FormatStopwatchOptions` 追加、`formatStopwatchTime` 拡張
+- `lib/stats/__tests__/statsCalculator.test.ts` — `includeDays:false` テスト追加
+- `hooks/dashboard/useStopwatch.ts` — `formattedShort` プロパティ追加
+- `hooks/dashboard/__tests__/useStopwatch.test.ts` — `formattedShort` テスト追加
+- `components/dashboard/StatsRow.tsx` — `OrbCarousel` に置換、`useCallback` 導入
+- `components/dashboard/__tests__/StatsRow.test.tsx` — `animated-orb` → `orb-carousel` テスト更新
+- `app/(tabs)/index.tsx` — `stopwatch.formatted` → `stopwatch.formattedShort`（SegmentedStreakCard 経過時間のみ、ShareWidgetCard は維持）
+
+### 未コミット状態
+ユーザー側でレビュー後コミット予定
+
+## 2026-04-16（追補）: OrbCarousel 中央揃え修正 + 前後天体ピーク表示
+
+### 作業内容
+実機スクショで確認した2つの視覚的不具合を修正（TDDサイクルで実装）:
+1. **中心ずれ**: アクティブオーブが画面中央から右に16pxずれる
+2. **ピーク不在**: 左右の前/次の天体がほぼ表示されない
+
+### 根本原因
+- `useWindowDimensions()` で画面幅 390 を基準に `sidePadding` 算出していたが、FlatList は親の `scrollContent { padding: SPACING.lg (=16) }` 内側にあり実ビューポート幅は 358 → 差分 16px がずれ
+- `itemWidth = 200 + 80 = 280` で隣接アイテム中心が画面外に大きくはみ出し、非アクティブオーブ実効径 110 では可視領域ゼロ
+
+### 修正内容
+#### OrbCarousel.tsx
+- `useWindowDimensions` 削除 → `listWidth` state + `onLayout` 実測ベースに変更
+- `sidePadding = listWidth > 0 ? (listWidth - itemWidth) / 2 : 0`（onLayout 前は 0）
+- `ITEM_WIDTH_PADDING`: `80` → `20`（itemWidth=220）
+  - 画面幅 390 で隣接アイテム中心が ±220 → 左右約30pxの天体ピーク
+
+#### OrbCarouselItem.tsx
+- `styles.container` / `styles.orbArea` に `overflow: 'visible'` 追加（AnimatedOrb のグロー領域 320px が cell 220px を超えるため）
+
+### テスト
+- 追加テスト4件（onLayout 前の paddingHorizontal=0 / onLayout 後 69 / snapToInterval=220 / getItemLayout.length=220）
+- 初回 Red（4失敗）→ 実装 Green（11/11 passed）
+- 全体: 232スイート / 1603テスト 全パス
+- tsc/lint: 変更ファイルに新規エラー・警告なし
+
+### 変更ファイル
+- `components/dashboard/OrbCarousel.tsx`
+- `components/dashboard/OrbCarouselItem.tsx`
+- `components/dashboard/__tests__/OrbCarousel.test.tsx`
+
+### 注意事項
+- `onLayout` 発火前の初回フラッシュで一瞬 item が左寄せに見える可能性あり（実害は最小、initialScrollIndex の自動スクロールと同フレーム発火のため）
+- `onScrollToIndexFailed` 既存 retry が sidePadding=0 状態の initial scroll 失敗を吸収
+
+### 未コミット状態
+ユーザー側でレビュー後コミット予定
+

@@ -51,6 +51,11 @@ describe('useStopwatch', () => {
     expect(result.current.minutes).toBe(1);
   });
 
+  it('formattedShortは日数を含まない文字列を返す', () => {
+    const { result } = renderHook(() => useStopwatch('2026-02-24T19:00:00Z'));
+    expect(result.current.formattedShort).toBe('15時間30分');
+  });
+
   it('AppState.active時に即更新される', () => {
     jest.setSystemTime(new Date('2026-02-26T10:00:00Z'));
     const { result } = renderHook(() => useStopwatch('2026-02-26T09:00:00Z'));

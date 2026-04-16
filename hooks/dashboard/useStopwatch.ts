@@ -9,13 +9,18 @@ import { useLocale } from '@/hooks/useLocale';
 
 interface UseStopwatchResult extends StopwatchTime {
   formatted: string;
+  formattedShort: string;
 }
 
 export function useStopwatch(startDate: string | null): UseStopwatchResult {
   const { isJapanese } = useLocale();
   const compute = useCallback(() => {
     const time = calculateStopwatchTime(startDate);
-    return { ...time, formatted: formatStopwatchTime(time, isJapanese) };
+    return {
+      ...time,
+      formatted: formatStopwatchTime(time, isJapanese),
+      formattedShort: formatStopwatchTime(time, isJapanese, { includeDays: false }),
+    };
   }, [startDate, isJapanese]);
 
   const [value, setValue] = useState<UseStopwatchResult>(compute);

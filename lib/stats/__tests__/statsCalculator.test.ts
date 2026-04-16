@@ -92,6 +92,42 @@ describe('formatStopwatchTime - 英語', () => {
   });
 });
 
+describe('formatStopwatchTime - includeDays:false', () => {
+  it('日本語で日パートを省略する', () => {
+    expect(
+      formatStopwatchTime({ days: 45, hours: 22, minutes: 9 }, true, { includeDays: false })
+    ).toBe('22時間9分');
+  });
+
+  it('英語で日パートを省略する', () => {
+    expect(
+      formatStopwatchTime({ days: 45, hours: 22, minutes: 9 }, false, { includeDays: false })
+    ).toBe('22h 9m');
+  });
+
+  it('日本語で時間0の場合は"分"のみ', () => {
+    expect(
+      formatStopwatchTime({ days: 5, hours: 0, minutes: 9 }, true, { includeDays: false })
+    ).toBe('9分');
+  });
+
+  it('英語で時間0の場合は"m"のみ', () => {
+    expect(
+      formatStopwatchTime({ days: 5, hours: 0, minutes: 9 }, false, { includeDays: false })
+    ).toBe('9m');
+  });
+
+  it('days=0でも時間・分のみを返す（回帰防止）', () => {
+    expect(
+      formatStopwatchTime({ days: 0, hours: 3, minutes: 5 }, true, { includeDays: false })
+    ).toBe('3時間5分');
+  });
+
+  it('options未指定時は従来の"日時間分"形式を返す', () => {
+    expect(formatStopwatchTime({ days: 45, hours: 22, minutes: 9 }, true)).toBe('45日22時間9分');
+  });
+});
+
 describe('calculateRelapseCount', () => {
   it('空配列は0を返す', () => {
     expect(calculateRelapseCount([])).toBe(0);

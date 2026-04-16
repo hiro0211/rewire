@@ -132,7 +132,7 @@ export default function DashboardScreen() {
 
         <Animated.View style={streakCardAnim.animatedStyle}>
           <SegmentedStreakCard
-            elapsed={stopwatch.formatted}
+            elapsed={stopwatch.formattedShort}
             streakDays={streakDays}
             goalDays={goalDays}
           />

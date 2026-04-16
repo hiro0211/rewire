@@ -22,6 +22,7 @@ jest.mock('react-native-reanimated', () => {
       inOut: (f: any) => f,
       cubic: (v: number) => v,
       sin: (v: number) => v,
+      quad: (v: number) => v,
     },
     useFrameCallback: () => {},
     useDerivedValue: (fn: any) => ({ value: fn() }),
@@ -58,14 +59,14 @@ describe('StatsRow', () => {
     expect(getByTestId('stats-row')).toBeTruthy();
   });
 
-  it('AnimatedOrbが表示される', () => {
+  it('OrbCarouselが表示される', () => {
     const { getByTestId } = render(<StatsRow />);
-    expect(getByTestId('animated-orb')).toBeTruthy();
+    expect(getByTestId('orb-carousel')).toBeTruthy();
   });
 
-  it('オーブ長押しでStreakEditModalが表示される', () => {
+  it('アクティブオーブ長押しでStreakEditModalが表示される', () => {
     const { getByTestId, getByText } = render(<StatsRow />);
-    fireEvent(getByTestId('orb-touch'), 'onLongPress');
+    fireEvent(getByTestId('orb-carousel-item-active-touch'), 'onLongPress');
     expect(getByText('開始日を編集')).toBeTruthy();
   });
 

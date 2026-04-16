@@ -26,20 +26,30 @@ export function calculateStopwatchTime(
   return { days, hours, minutes };
 }
 
-export function formatStopwatchTime(time: StopwatchTime, isJapanese: boolean = true): string {
-  if (time.days === 0 && time.hours === 0 && time.minutes === 0) {
+export interface FormatStopwatchOptions {
+  includeDays?: boolean;
+}
+
+export function formatStopwatchTime(
+  time: StopwatchTime,
+  isJapanese: boolean = true,
+  options: FormatStopwatchOptions = {}
+): string {
+  const includeDays = options.includeDays ?? true;
+
+  if (time.hours === 0 && time.minutes === 0 && (!includeDays || time.days === 0)) {
     return isJapanese ? '0分' : '0m';
   }
 
   const parts: string[] = [];
   if (isJapanese) {
-    if (time.days > 0) parts.push(`${time.days}日`);
+    if (includeDays && time.days > 0) parts.push(`${time.days}日`);
     if (time.hours > 0) parts.push(`${time.hours}時間`);
     parts.push(`${time.minutes}分`);
     return parts.join('');
   }
 
-  if (time.days > 0) parts.push(`${time.days}d`);
+  if (includeDays && time.days > 0) parts.push(`${time.days}d`);
   if (time.hours > 0) parts.push(`${time.hours}h`);
   parts.push(`${time.minutes}m`);
   return parts.join(' ');
