@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import Animated from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SegmentedStreakCard } from '@/components/dashboard/SegmentedStreakCard';
@@ -38,6 +39,16 @@ if (!isExpoGo) {
   }
 }
 
+// Tab bar dimensions from BlurTabBar (pill padding 8+8 + tab paddingVertical 6+6 + icon ~22 ≈ 50px)
+// + margin 8 above safe-area bottom + gap 12 between tab bar and SOS button
+const TAB_BAR_HEIGHT = 50;
+const TAB_BAR_MARGIN = 8;
+const SOS_GAP_ABOVE_TAB_BAR = 12;
+const TAB_BAR_OFFSET = TAB_BAR_MARGIN + TAB_BAR_HEIGHT + SOS_GAP_ABOVE_TAB_BAR;
+// Total vertical space reserved below scroll content so nothing is hidden by the floating SOS button
+const SOS_BUTTON_HEIGHT = 56;
+const SCROLL_BOTTOM_PADDING = TAB_BAR_OFFSET + SOS_BUTTON_HEIGHT + 24;
+
 export default function DashboardScreen() {
   const { loadUser } = useUserStore();
   const { loadCheckins } = useCheckinStore();
@@ -46,6 +57,7 @@ export default function DashboardScreen() {
   const { t } = useLocale();
   const { viewShotRef, share } = useShareWidget();
   const { stopwatch, goalDays, relapseCount } = useDashboardStats();
+  const insets = useSafeAreaInsets();
   const { shouldShowSurvey } = useSurveyEligibility();
   const [surveyModalVisible, setSurveyModalVisible] = useState(false);
   const { handleAccept, handleDismiss } = useSurveyPromptActions(
@@ -146,11 +158,21 @@ export default function DashboardScreen() {
           <QuickActionGrid />
         </Animated.View>
 
-        <Animated.View style={[sosAnim.animatedStyle, styles.sosSection]}>
+      </ScrollView>
+
+      {/* Floating SOS button — fixed above the tab bar */}
+      <View
+        testID="sos-floating-container"
+        pointerEvents="box-none"
+        style={[
+          styles.sosFloatingContainer,
+          { bottom: insets.bottom + TAB_BAR_OFFSET },
+        ]}
+      >
+        <Animated.View style={sosAnim.animatedStyle}>
           <SOSButton />
         </Animated.View>
-
-      </ScrollView>
+      </View>
 
       {/* Off-screen: share widget card capture */}
       <View style={styles.offScreen} pointerEvents="none">
@@ -185,14 +207,15 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: 100,
+    paddingBottom: SCROLL_BOTTOM_PADDING,
   },
   section: {
     marginTop: SPACING.md,
   },
-  sosSection: {
-    marginTop: SPACING.xxxl,
-    marginBottom: SPACING.xxxl,
+  sosFloatingContainer: {
+    position: 'absolute',
+    left: SPACING.lg,
+    right: SPACING.lg,
   },
   offScreen: {
     position: 'absolute',

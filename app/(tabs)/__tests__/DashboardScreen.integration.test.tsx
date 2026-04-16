@@ -181,6 +181,24 @@ describe('DashboardScreen 結合テスト', () => {
       expect(mockPush).toHaveBeenCalledWith('/panic');
     });
 
+    it('SOSボタンはスクロールに追従せず固定表示される', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      const container = getByTestId('sos-floating-container');
+      expect(container).toBeTruthy();
+      const styles = Array.isArray(container.props.style)
+        ? Object.assign({}, ...container.props.style.flat().filter(Boolean))
+        : container.props.style;
+      expect(styles.position).toBe('absolute');
+      // タブバーの上に配置されるため bottom > 0
+      expect(styles.bottom).toBeGreaterThan(0);
+    });
+
+    it('SOSボタンはタッチを透過するboxNoneコンテナに入る', () => {
+      const { getByTestId } = render(<DashboardScreen />);
+      const container = getByTestId('sos-floating-container');
+      expect(container.props.pointerEvents).toBe('box-none');
+    });
+
     it('シェアボタンが表示される', () => {
       const { getByTestId } = render(<DashboardScreen />);
       expect(getByTestId('share-button')).toBeTruthy();
