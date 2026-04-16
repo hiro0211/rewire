@@ -60,7 +60,7 @@ export default function RootLayout() {
           <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
           <Stack.Screen name="history/index" options={{ headerShown: true, title: t('nav.history') }} />
           <Stack.Screen name="settings" options={{ headerShown: true, title: t('nav.settings') }} />
-          <Stack.Screen name="achievements" options={{ headerShown: true, title: 'Achievements' }} />
+          <Stack.Screen name="achievements" options={{ headerShown: false }} />
           <Stack.Screen name="terms" options={{ headerShown: true, title: t('nav.terms') }} />
           <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: t('nav.privacyPolicy') }} />
           <Stack.Screen name="survey" options={{ headerShown: false, presentation: 'fullScreenModal' }} />

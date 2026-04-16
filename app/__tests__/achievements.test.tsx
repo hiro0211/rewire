@@ -15,6 +15,23 @@ jest.mock('@/components/ui/StarryOverlay', () => {
   return { StarryOverlay: () => <View testID="starry-overlay" /> };
 });
 
+jest.mock('react-native-safe-area-context', () => {
+  const { View } = require('react-native');
+  return {
+    SafeAreaView: ({ children, ...props }: any) => (
+      <View {...props}>{children}</View>
+    ),
+  };
+});
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    back: jest.fn(),
+    canGoBack: () => true,
+    replace: jest.fn(),
+  }),
+}));
+
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
     colors: { text: '#fff', textSecondary: '#999', background: '#000', primary: '#0af', surface: '#111' },
@@ -25,6 +42,7 @@ jest.mock('@/hooks/useTheme', () => ({
 jest.mock('@/hooks/useLocale', () => ({
   useLocale: () => ({
     t: (key: string) => key,
+    isJapanese: true,
   }),
 }));
 
@@ -36,14 +54,19 @@ jest.mock('@/hooks/achievements/useAchievements', () => ({
   }),
 }));
 
-jest.mock('@/components/profile/CosmosProgressTimeline', () => {
+jest.mock('@/components/achievements/StellarPathTimeline', () => {
   const { View } = require('react-native');
-  return { CosmosProgressTimeline: () => <View testID="cosmos-timeline" /> };
+  return { StellarPathTimeline: () => <View testID="stellar-path-timeline" /> };
 });
 
 jest.mock('@/components/achievements/AchievementSummaryCircle', () => {
   const { View } = require('react-native');
   return { AchievementSummaryCircle: () => <View testID="summary-circle" /> };
+});
+
+jest.mock('@/components/achievements/AchievementsHeader', () => {
+  const { View } = require('react-native');
+  return { AchievementsHeader: () => <View testID="achievements-header" /> };
 });
 
 import AchievementsScreen from '../achievements';
@@ -59,9 +82,14 @@ describe('AchievementsScreen', () => {
     expect(getByTestId('starry-overlay')).toBeTruthy();
   });
 
-  it('CosmosProgressTimelineが表示される', () => {
+  it('AchievementsHeaderが表示される', () => {
     const { getByTestId } = render(<AchievementsScreen />);
-    expect(getByTestId('cosmos-timeline')).toBeTruthy();
+    expect(getByTestId('achievements-header')).toBeTruthy();
+  });
+
+  it('StellarPathTimelineが表示される', () => {
+    const { getByTestId } = render(<AchievementsScreen />);
+    expect(getByTestId('stellar-path-timeline')).toBeTruthy();
   });
 
   it('サマリーが表示される', () => {

@@ -293,3 +293,60 @@ Apple の定義上「トラッキング」に該当しない構成にしてリ�
 ### 未コミット状態
 ユーザー側でレビュー後コミット予定
 
+## 2026-04-16
+
+### 作業内容
+Achievements画面を「Stellar Path（恒星の航路）」デザインにリデザイン。
+従来の章ヘッダー＋縦線＋ドット形式の CosmosProgressTimeline を、
+18バッジそれぞれが発光Orb + SVG蛇行線で繋がる縦タイムラインに置換。
+
+### TDD で実装した新規コンポーネント（全テスト通過）
+1. `components/achievements/GravityThread.tsx` — 2バッジ間を繋ぐS字SVG曲線（3テスト）
+2. `components/achievements/BadgeOrb.tsx` — バッジ固有色のOrb。unlocked=Skia/Reanimated/パーティクル付きフル演出、locked=LinearGradient静止ゴースト（opacity 0.3）（4テスト）
+3. `components/achievements/BadgeOrbRow.tsx` — Orb + バッジ名 + Day N + メッセージの1行。ジグザグ配置対応（3テスト）
+4. `components/achievements/AchievementsHeader.tsx` — X close ボタン + Achievements タイトルのカスタムヘッダー（2テスト）
+5. `components/achievements/StellarPathTimeline.tsx` — 18バッジ縦並び + 17個のGravityThread（3テスト）
+
+### 変更ファイル
+- `app/achievements.tsx` — CosmosProgressTimeline → StellarPathTimeline、AchievementsHeader 組込、SafeAreaView + expo-router の useRouter で back()
+- `app/_layout.tsx` — achievements の `headerShown: true` → `false`（カスタムヘッダー使用のため）
+- `app/__tests__/achievements.test.tsx` — 新しい画面構造にテストを更新（AchievementsHeader/StellarPathTimeline モック）
+
+### 検証結果
+- テスト: 238スイート / 1626テスト全通過（実装前 1619 → +7）
+- Lint: 新規ファイル 0 error（warnings のみ、既存の AnimatedOrb.tsx と同パターン）
+- 12 個の既存lint errorは今回の変更と無関係（他テストファイルのdisplay-name等、リグレッションなし）
+
+### 未完了タスク・次回やるべきこと
+- 既存 `components/profile/CosmosProgressTimeline.tsx` と対応テスト (`components/profile/__tests__/CosmosProgressTimeline.test.tsx`) は未削除。現在はどこからも参照されていないので別PRで削除検討
+- Expo development build / iOS シミュレータでの実機確認（Skia の Orb 描画、ジグザグ配置、S字曲線、60fpsスクロール）は未実施
+- パフォーマンス検証（streak=0〜1095 の2シナリオで FPS 測定）も未実施
+
+### 設計判断・注意事項
+- BadgeOrb は AnimatedOrb の構造をコピーして `colors` プロップで色を上書きする別コンポーネントとして実装（SRP優先）。将来 AnimatedOrb を colors プロップ対応に拡張すれば統合可能
+- GravityThread のアクティブ判定は「前のバッジがunlocked」を使用。stroke は active = `badge.colors.glow`、inactive = `rgba(255,255,255,0.1)`
+- ジグザグ配置: index=0 は center、以降は odd=left (-20px)、even=right (+20px)
+- 背景ルール遵守: AuroraBackground + StarryOverlay をそのまま維持、SafeAreaWrapper の gradients.background は触っていない
+- テスト時の react-native-svg モック: `default` コンポーネントに testID を渡すと上書きされるので、GravityThread では Svg に testID を付けない設計にした
+
+### 変更したファイル一覧（主要）
+新規:
+- `components/achievements/GravityThread.tsx`
+- `components/achievements/BadgeOrb.tsx`
+- `components/achievements/BadgeOrbRow.tsx`
+- `components/achievements/AchievementsHeader.tsx`
+- `components/achievements/StellarPathTimeline.tsx`
+- `components/achievements/__tests__/GravityThread.test.tsx`
+- `components/achievements/__tests__/BadgeOrb.test.tsx`
+- `components/achievements/__tests__/BadgeOrbRow.test.tsx`
+- `components/achievements/__tests__/AchievementsHeader.test.tsx`
+- `components/achievements/__tests__/StellarPathTimeline.test.tsx`
+
+変更:
+- `app/achievements.tsx`
+- `app/_layout.tsx`
+- `app/__tests__/achievements.test.tsx`
+
+### 未コミット状態
+ユーザー側でレビュー後コミット予定
+

@@ -1,15 +1,14 @@
+import { AchievementsLinkCard } from '@/components/profile/AchievementsLinkCard';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ToolCard } from '@/components/profile/ToolCard';
-import { GradientCard } from '@/components/ui/GradientCard';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { FONT_SIZE, SPACING } from '@/constants/theme';
+import { SPACING } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -24,21 +23,11 @@ export default function ProfileScreen() {
 
         {/* Achievements Link */}
         <View style={styles.achievementsContainer}>
-          <GradientCard>
-            <TouchableOpacity
-              style={styles.achievementsLink}
-              onPress={() => router.push('/achievements')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.achievementsLinkLeft}>
-                <Text style={[styles.achievementsLabel, { color: colors.text }]}>Achievements</Text>
-                <Text style={[styles.achievementsCount, { color: colors.textSecondary }]}>
-                  {summary.unlocked}/{summary.total} Unlocked
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-          </GradientCard>
+          <AchievementsLinkCard
+            unlocked={summary.unlocked}
+            total={summary.total}
+            onPress={() => router.push('/achievements')}
+          />
         </View>
 
         {/* Tool Cards */}
@@ -65,22 +54,6 @@ const styles = StyleSheet.create({
   achievementsContainer: {
     marginHorizontal: SPACING.screenPadding,
     marginTop: SPACING.xl,
-  },
-  achievementsLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  achievementsLinkLeft: {
-    flex: 1,
-  },
-  achievementsLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
-  },
-  achievementsCount: {
-    fontSize: FONT_SIZE.sm,
-    marginTop: 2,
   },
   toolCards: {
     marginTop: SPACING.xl,
