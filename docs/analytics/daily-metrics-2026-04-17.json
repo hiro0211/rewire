@@ -1,0 +1,164 @@
+{
+  "date": "2026-04-17",
+  "data_range": "2026-04-03 to 2026-04-13",
+  "pipeline_status": {
+    "auth": "ok",
+    "report_discovery": "ok",
+    "data_download": "failing - S3 400 errors"
+  },
+  "real_api_totals": {
+    "impressions": 111,
+    "page_views": 28,
+    "taps": 14,
+    "unique_impressions": 96
+  },
+  "seed_funnel": {
+    "impressions": 14000,
+    "page_views": 4310,
+    "downloads": 1450,
+    "trials": 293,
+    "paid": 136,
+    "cancellations": 14,
+    "active_subscriptions": 440
+  },
+  "rates": {
+    "page_view_rate_api": 0.2523,
+    "page_view_rate_seed": 0.3079,
+    "download_rate": 0.3364,
+    "trial_start_rate": 0.2021,
+    "trial_to_paid_rate": 0.4642,
+    "monthly_churn_rate": 0.0318
+  },
+  "bottleneck": null,
+  "by_date": {
+    "2026-04-03": {
+      "Impression": 8,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "2026-04-04": {
+      "Impression": 22,
+      "Page view": 22,
+      "Tap": 14
+    },
+    "2026-04-05": {
+      "Impression": 16,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "2026-04-06": {
+      "Impression": 20,
+      "Page view": 4,
+      "Tap": 0
+    },
+    "2026-04-07": {
+      "Impression": 7,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "2026-04-08": {
+      "Impression": 6,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "2026-04-09": {
+      "Impression": 4,
+      "Page view": 2,
+      "Tap": 0
+    },
+    "2026-04-10": {
+      "Impression": 12,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "2026-04-11": {
+      "Impression": 14,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "2026-04-12": {
+      "Impression": 2,
+      "Page view": 0,
+      "Tap": 0
+    }
+  },
+  "by_source": {
+    "App Store browse": {
+      "Impression": 6,
+      "Page view": 0,
+      "Tap": 10
+    },
+    "App Store search": {
+      "Impression": 105,
+      "Page view": 24,
+      "Tap": 4
+    },
+    "App referrer": {
+      "Impression": 0,
+      "Page view": 2,
+      "Tap": 0
+    },
+    "Unavailable": {
+      "Impression": 0,
+      "Page view": 2,
+      "Tap": 0
+    }
+  },
+  "by_territory": {
+    "JP": {
+      "Impression": 82,
+      "Page view": 26,
+      "Tap": 14
+    },
+    "VN": {
+      "Impression": 5,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "CN": {
+      "Impression": 5,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "AU": {
+      "Impression": 4,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "PH": {
+      "Impression": 4,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "IN": {
+      "Impression": 3,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "HK": {
+      "Impression": 3,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "US": {
+      "Impression": 2,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "CO": {
+      "Impression": 2,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "PK": {
+      "Impression": 1,
+      "Page view": 0,
+      "Tap": 0
+    },
+    "IQ": {
+      "Impression": 0,
+      "Page view": 2,
+      "Tap": 0
+    }
+  }
+}

@@ -350,3 +350,76 @@ Achievements画面を「Stellar Path（恒星の航路）」デザインにリ�
 ### 未コミット状態
 ユーザー側でレビュー後コミット予定
 
+
+## 2026-04-16: OrbCarousel 未達成天体の視認性改善
+
+### 作業内容
+ホーム画面の OrbCarousel で、未達成（locked）の天体が達成済みのように見える問題を修正。`isActive` のみで判定していたところに `isUnlocked = badge.day <= currentDays` を導入し、4ケース（active/inactive × unlocked/locked）で opacity と AnimatedOrb 描画を切り替えるようにした。
+
+### 仕様
+- A: active+unlocked → `<AnimatedOrb>`（フル glow / pulse / particle）
+- B: active+locked → 大きい static Orb + opacity 0.25（静止、AnimatedOrb なし）
+- C: inactive+unlocked → 小さい static Orb + opacity 0.4 + scale 0.55（現状維持）
+- D: inactive+locked → 小さい static Orb + opacity 0.15 + scale 0.55
+- accessibilityLabel に locked のとき「（未達成）」/「(locked)」を追加
+- accessibilityState に `disabled: !isUnlocked` を追加
+
+### 変更ファイル
+- `components/dashboard/OrbCarouselItem.tsx` — `currentDays: number` prop 必須化、`resolveStaticOpacity` ヘルパー、`formatA11yLabel` ヘルパー追加
+- `components/dashboard/OrbCarousel.tsx` — `currentDays` を OrbCarouselItem に流し込み、useCallback 依存配列に追加
+- `components/dashboard/__tests__/OrbCarouselItem.test.tsx` — 4ケース + a11y テスト追加（合計 12 テスト）
+- `components/dashboard/__tests__/OrbCarousel.test.tsx` — 既存スクロールテストを「locked へスクロール → animated-orb 消える」に書き換え、新規 2 テスト追加
+
+### TDD ステップ
+1. Red: 4 ケースのテスト追加 → 4 失敗確認
+2. Green: OrbCarouselItem 改修 → 12 テスト全パス
+3. Refactor: OrbCarousel 連携 + 全 1643 テスト通過 + lint 差分なし
+
+### 注意点
+- `currentDays` は必須 prop（型安全性優先、デフォルト値なし）
+- FlatList virtualization のジェスト挙動: `initialScrollIndex` と `windowSize=3` の関係でスクロール後に rendered window が変わる。テスト書き換え時は注意
+- BadgeOrb（Achievements 画面）の locked 表現（opacity 0.3）と数値が異なる：ホームは情報密度が高いため active/inactive で opacity を分ける必要あり
+- 影響範囲: ホーム画面 StatsRow 内の OrbCarousel のみ。他画面・SOS・背景には影響なし
+
+### 未コミット状態
+hiro 側で iOS Simulator 目視確認後コミット予定。
+
+
+## 2026-04-16（追補2）: StaticOrb で locked 天体に radial beam の面影を残す
+
+### 背景
+前項の opacity による locked 表現はフラットな LinearGradient グラデーションを使っていたため、QUITTR のサンプルと比べて「のっぺり」して見えた。hiro からの指示:
+> もう少し面影が見えるように修正して添付のビデオのようなイメージです
+
+### 対応
+新規コンポーネント `StaticOrb` を追加。AnimatedOrb と同じ Skia shader (`ORB_SHADER`) を `time=1.2`（beam パターンが最も見やすい位相）で固定描画する。pulse / glow / particle は省略し、AnimatedOrb の「面影」だけを残す構造。
+
+### OrbCarouselItem の opacity チューニング（視認性強化）
+- INACTIVE_OPACITY: 0.4 → **0.55**
+- LOCKED_ACTIVE_OPACITY: 0.25 → **0.4**
+- LOCKED_INACTIVE_OPACITY: 0.15 → **0.3**
+
+Skia shader の明暗差が LinearGradient よりコントラスト強いため opacity を上げても達成感との線引きが崩れない。hiro の目視確認で微調整前提。
+
+### 新規ファイル
+- `components/dashboard/StaticOrb.tsx` — Skia shader 固定描画（Skia 利用不可環境は LinearGradient にフォールバック）
+- `components/dashboard/__tests__/StaticOrb.test.tsx` — size 適用 / Canvas 描画（Skia モック環境）の 2 テスト
+
+### 変更ファイル
+- `components/dashboard/OrbCarouselItem.tsx` — LinearGradient を `StaticOrb` に差し替え、opacity 定数を更新
+- `components/dashboard/__tests__/OrbCarouselItem.test.tsx` — opacity 期待値を 0.55 / 0.4 / 0.3 に更新
+
+### 注意事項
+- `StaticOrb` の Skia shader uniforms は **必ず `useDerivedValue` 経由** で渡す必要がある（`useSharedValue` でないと Skia が受け付けない）。`time` は 1.2 で固定するが、それでも `useSharedValue` + `useDerivedValue` のラッパが必須
+- `ORB_SHADER` を静的に使うため、AnimatedOrb の `time` 変化を省略。これで CPU / GPU 負荷なく 18 個分を描画可能
+- Skia JSX の型エラーは AnimatedOrb.tsx にも存在する pre-existing（TS2604/TS2786）。今回新規に増やしたものではない
+- Jest の `__mocks__/@shopify/react-native-skia.tsx` は RuntimeEffect.Make を truthy で返すため Canvas パスが描画される → テストは Canvas 描画を検証
+
+### 検証結果
+- 全テスト 239 スイート / 1645 テスト パス
+- Orb 系 30 テスト（OrbCarousel 14 + OrbCarouselItem 14 + StaticOrb 2）パス
+- lint: StaticOrb.tsx に `require()` warning 1件（AnimatedOrb と同パターン、意図的）のみ
+- TS: Skia JSX 型エラーは pre-existing、新規導入なし
+
+### 未コミット状態
+hiro 側で iOS Simulator 目視確認（locked オーブの beam 見え方、active + locked の輝度感）後コミット予定。

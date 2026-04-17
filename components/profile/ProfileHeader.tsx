@@ -32,11 +32,15 @@ export function ProfileHeader() {
       <View style={styles.topRow}>
         <View style={styles.spacer} />
         <TouchableOpacity
-          style={styles.gearButton}
+          testID="profile-gear-button"
+          style={[
+            styles.gearButton,
+            { backgroundColor: colors.surfaceGlass, borderColor: colors.borderGlass },
+          ]}
           onPress={() => router.push('/settings')}
           hitSlop={12}
         >
-          <Ionicons name="settings-outline" size={24} color={colors.textSecondary} />
+          <Ionicons name="settings-outline" size={22} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -71,7 +75,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gearButton: {
-    padding: SPACING.xs,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarSection: {
     alignItems: 'center',

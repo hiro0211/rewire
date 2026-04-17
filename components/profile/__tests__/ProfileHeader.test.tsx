@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
@@ -20,7 +21,13 @@ jest.mock('@/stores/userStore', () => ({
 
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
-    colors: { text: '#fff', textSecondary: '#999', primary: '#0af' },
+    colors: {
+      text: '#fff',
+      textSecondary: '#999',
+      primary: '#0af',
+      surfaceGlass: 'rgba(255,255,255,0.06)',
+      borderGlass: 'rgba(255,255,255,0.22)',
+    },
     isDark: true,
   }),
 }));
@@ -57,5 +64,15 @@ describe('ProfileHeader', () => {
   it('ニックネームを表示する', () => {
     const { getByText } = render(<ProfileHeader />);
     expect(getByText('TestUser')).toBeTruthy();
+  });
+
+  it('gear ボタンに円形背景と border が適用される（押せると分かる）', () => {
+    const { getByTestId } = render(<ProfileHeader />);
+    const btn = getByTestId('profile-gear-button');
+    const flat = StyleSheet.flatten(btn.props.style);
+    expect(flat.borderWidth).toBe(1);
+    expect(flat.borderRadius).toBeGreaterThan(0);
+    expect(flat.backgroundColor).toBe('rgba(255,255,255,0.06)');
+    expect(flat.borderColor).toBe('rgba(255,255,255,0.22)');
   });
 });

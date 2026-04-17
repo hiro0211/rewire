@@ -21,10 +21,13 @@ export function AchievementsHeader({ onClose }: AchievementsHeaderProps) {
         testID="achievements-header-close"
         onPress={onClose}
         activeOpacity={0.7}
-        style={styles.closeButton}
+        style={[
+          styles.closeButton,
+          { backgroundColor: colors.surfaceGlass, borderColor: colors.borderGlass },
+        ]}
         hitSlop={8}
       >
-        <Ionicons name="close" size={28} color={colors.text} />
+        <Ionicons name="close" size={24} color={colors.text} />
       </TouchableOpacity>
 
       <Text style={[styles.title, { color: colors.text }]}>Achievements</Text>
@@ -47,6 +50,8 @@ const styles = StyleSheet.create({
   closeButton: {
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
+    borderRadius: BUTTON_SIZE / 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

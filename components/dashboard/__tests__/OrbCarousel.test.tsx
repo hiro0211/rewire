@@ -82,13 +82,14 @@ describe('OrbCarousel', () => {
   });
 
   it('onMomentumScrollEndで活性indexが更新される', () => {
+    // currentDays=0: 初期 Stardust(index 0) がアクティブで unlocked、Nebula(index 1) は locked
     const { getByTestId, queryByTestId } = render(<OrbCarousel currentDays={0} />);
     const list = getByTestId('orb-carousel');
 
-    // 初期状態: index 0（Stardust）がアクティブで animated-orb 1個
+    // 初期状態: Stardust active + unlocked → animated-orb 1個
     expect(queryByTestId('animated-orb')).toBeTruthy();
 
-    // 次のindex(1, Nebula)まで1アイテム分スクロール
+    // Nebula(index 1, day=1) にスクロール → locked
     const itemWidth = list.props.snapToInterval as number;
     fireEvent.scroll(list, {
       nativeEvent: {
@@ -105,8 +106,8 @@ describe('OrbCarousel', () => {
       },
     });
 
-    // まだ1個の animated-orb が存在（アクティブが切り替わっただけ）
-    expect(queryByTestId('animated-orb')).toBeTruthy();
+    // 活性indexが1に更新された結果: Nebula は locked なので animated-orb は描画されない
+    expect(queryByTestId('animated-orb')).toBeNull();
   });
 
   it('onLongPressをアクティブアイテムに伝播する', () => {
@@ -144,7 +145,7 @@ describe('OrbCarousel', () => {
     expect(getByTestId('orb-carousel').props.snapToAlignment).toBe('start');
   });
 
-  it('onLayout後、ListHeaderComponent が width=69 の spacer View を返す', () => {
+  it('onLayout後、ListHeaderComponent が width=109 の spacer View を返す', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={0} />);
     const list = getByTestId('orb-carousel');
     fireEvent(list, 'layout', {
@@ -153,10 +154,10 @@ describe('OrbCarousel', () => {
     const header = list.props.ListHeaderComponent;
     // JSX Element として渡される
     expect(header).toBeTruthy();
-    expect(header.props.style.width).toBe(69);
+    expect(header.props.style.width).toBe(109);
   });
 
-  it('onLayout後、ListFooterComponent が width=69 の spacer View を返す', () => {
+  it('onLayout後、ListFooterComponent が width=109 の spacer View を返す', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={0} />);
     const list = getByTestId('orb-carousel');
     fireEvent(list, 'layout', {
@@ -164,18 +165,31 @@ describe('OrbCarousel', () => {
     });
     const footer = list.props.ListFooterComponent;
     expect(footer).toBeTruthy();
-    expect(footer.props.style.width).toBe(69);
+    expect(footer.props.style.width).toBe(109);
   });
 
-  it('snapToInterval が 220 (ITEM_WIDTH_PADDING=20)', () => {
+  it('snapToInterval が 140 (ITEM_WIDTH_PADDING=20)', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={0} />);
-    expect(getByTestId('orb-carousel').props.snapToInterval).toBe(220);
+    expect(getByTestId('orb-carousel').props.snapToInterval).toBe(140);
   });
 
-  it('getItemLayout の length が 220', () => {
+  it('getItemLayout の length が 140', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={0} />);
     const list = getByTestId('orb-carousel');
-    expect(list.props.getItemLayout(null, 0).length).toBe(220);
-    expect(list.props.getItemLayout(null, 3).offset).toBe(660);
+    expect(list.props.getItemLayout(null, 0).length).toBe(140);
+    expect(list.props.getItemLayout(null, 3).offset).toBe(420);
+  });
+
+  it('currentDays=0 で Stardust(day=0) が active+unlocked のとき animated-orb が描画される', () => {
+    // 初期 active が unlocked のパターン
+    const { queryByTestId } = render(<OrbCarousel currentDays={0} />);
+    expect(queryByTestId('animated-orb')).toBeTruthy();
+  });
+
+  it('currentDays=0 で全バッジが locked または active 以外のとき animated-orb 数は最大1', () => {
+    // currentDays=0 では Stardust(day=0) のみ unlocked
+    // 初期 active=Stardust → animated-orb 1個
+    const { getAllByTestId } = render(<OrbCarousel currentDays={0} />);
+    expect(getAllByTestId('animated-orb').length).toBe(1);
   });
 });

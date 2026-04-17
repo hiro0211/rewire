@@ -17,7 +17,7 @@ export function PaywallCloseButton({ onPress }: PaywallCloseButtonProps) {
       onPress={onPress}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
     >
-      <Text style={[styles.text, { color: colors.textSecondary }]}>✕</Text>
+      <Text style={[styles.text, { color: colors.text }]}>✕</Text>
     </TouchableOpacity>
   );
 }

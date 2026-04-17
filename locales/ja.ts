@@ -34,7 +34,7 @@ export const ja = {
     urgeLevel7d: '衝動レベル 7日間',
     trendChart: 'トレンドチャート',
     elapsed: '経過時間',
-    brainRewiring: 'リカバリー進捗',
+    goalAchievement: '目標達成率',
   },
   quickAction: {
     breathe: '呼吸',

@@ -27,4 +27,4 @@ No significant bottleneck detected (all stages within benchmark).
 2. Set up weekly A/B tests on the lowest-performing funnel stage.
 3. Analyze TikTok campaign performance vs organic to optimize ad spend.
 
-*Report generated: 2026-04-16 09:02*
+*Report generated: 2026-04-17 09:03*

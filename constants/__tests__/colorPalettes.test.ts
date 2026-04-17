@@ -22,6 +22,29 @@ describe('colorPalettes', () => {
     it('contrastText が #FFFFFF である', () => {
       expect(DARK_COLORS.contrastText).toBe('#FFFFFF');
     });
+
+    it('borderGlass が押せる境界として視認できる不透明度である', () => {
+      // 背景 #0A0A0F 上でガラスカード/ボタンの境界を可視化するため、
+      // iOS HIG 視認性基準に合わせて不透明度を 0.22 に引き上げる
+      expect(DARK_COLORS.borderGlass).toBe('rgba(255,255,255,0.22)');
+    });
+
+    it('pillBorder が borderGlass と同じ視認レベルである', () => {
+      // DayChip 等のピル型要素も同じ視認レベルで統一
+      expect(DARK_COLORS.pillBorder).toBe('rgba(255, 255, 255, 0.22)');
+    });
+
+    it('textSecondary が WCAG AA を満たす明るさである', () => {
+      // #0A0A0F 背景で 2.8:1 → 6.8:1（AA 達成）に引き上げ。
+      // Apple HIG 推奨: ラベル・説明文の可読性向上
+      expect(DARK_COLORS.textSecondary).toBe('#9CA0B5');
+    });
+
+    it('border が surface 上で視認できる明るさである', () => {
+      // surface(#0F0F15) 上で #2A2A35 は 1.4:1 でほぼ不可視。
+      // #3A3A4A に引き上げて ToolCard 等の境界を可視化
+      expect(DARK_COLORS.border).toBe('#3A3A4A');
+    });
   });
 
   describe('LIGHT_COLORS', () => {
@@ -37,6 +60,15 @@ describe('colorPalettes', () => {
 
     it('contrastTextが#FFFFFFである（ボタン文字用）', () => {
       expect(LIGHT_COLORS.contrastText).toBe('#FFFFFF');
+    });
+
+    it('borderGlass が押せる境界として視認できる不透明度である', () => {
+      // 明るい背景でも境界が認識できるよう 0.06 → 0.14 に引き上げ
+      expect(LIGHT_COLORS.borderGlass).toBe('rgba(0,0,0,0.14)');
+    });
+
+    it('pillBorder が borderGlass と同じ視認レベルである', () => {
+      expect(LIGHT_COLORS.pillBorder).toBe('rgba(0, 0, 0, 0.14)');
     });
   });
 

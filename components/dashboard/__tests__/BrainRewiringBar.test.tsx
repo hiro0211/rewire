@@ -22,7 +22,7 @@ jest.mock('@/hooks/useLocale', () => ({
   useLocale: () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
-        'dashboard.brainRewiring': 'Brain Rewiring',
+        'dashboard.goalAchievement': 'Goal Achievement',
       };
       return map[key] ?? key;
     },
@@ -53,6 +53,6 @@ describe('BrainRewiringBar', () => {
 
   it('ラベルが表示される', () => {
     render(<BrainRewiringBar progress={0.3} />);
-    expect(screen.getByText('Brain Rewiring')).toBeTruthy();
+    expect(screen.getByText('Goal Achievement')).toBeTruthy();
   });
 });

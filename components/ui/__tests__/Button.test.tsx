@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('react-native-reanimated', () => {
@@ -62,6 +63,16 @@ describe('Button', () => {
     );
     fireEvent.press(getByText('テスト'));
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it('disabled 時に opacity 0.4 が適用される（非活性化を明確化）', () => {
+    const { UNSAFE_getByType } = render(
+      <Button title="テスト" onPress={jest.fn()} disabled />
+    );
+    const { TouchableOpacity } = require('react-native');
+    const touchable = UNSAFE_getByType(TouchableOpacity);
+    const flatStyle = StyleSheet.flatten(touchable.props.style);
+    expect(flatStyle.opacity).toBe(0.4);
   });
 
   it('Animated.View ラッパーでレンダリングされる（プレスアニメーション）', () => {

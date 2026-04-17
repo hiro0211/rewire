@@ -40,7 +40,7 @@ export function BrainRewiringBar({ progress }: BrainRewiringBarProps) {
     <GlassCard testID="brain-rewiring-bar">
       <View style={styles.header}>
         <Text style={[styles.label, { color: colors.text }]}>
-          {t('dashboard.brainRewiring')}
+          {t('dashboard.goalAchievement')}
         </Text>
         <Text style={[styles.percent, { color: colors.textSecondary }]}>
           {percent}%

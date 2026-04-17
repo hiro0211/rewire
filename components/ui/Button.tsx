@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.4,
   },
   text: {
     fontSize: FONT_SIZE.md,

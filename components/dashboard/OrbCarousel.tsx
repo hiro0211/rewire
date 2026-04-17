@@ -14,7 +14,7 @@ import {
 } from '@/constants/badges/BADGE_DEFINITIONS';
 import { getBadgeByDay } from '@/lib/badges/getBadgeByDay';
 
-const ACTIVE_SIZE_DEFAULT = 200;
+const ACTIVE_SIZE_DEFAULT = 120;
 const ITEM_WIDTH_PADDING = 20;
 
 interface OrbCarouselProps {
@@ -58,10 +58,11 @@ export function OrbCarousel({
         itemWidth={itemWidth}
         activeOrbSize={activeOrbSize}
         isActive={index === activeIndex}
+        currentDays={currentDays}
         onLongPress={onLongPress}
       />
     ),
-    [activeIndex, itemWidth, activeOrbSize, onLongPress]
+    [activeIndex, itemWidth, activeOrbSize, currentDays, onLongPress]
   );
 
   const getItemLayout = useCallback(
