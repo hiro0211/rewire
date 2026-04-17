@@ -1,6 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import { hexToVec3 } from '@/lib/color/hexToVec3';
 import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
+
 import React, { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
@@ -46,7 +47,7 @@ export function CoreOrbRenderer({
         color1: [r1, g1, b1],
         color2: [r2, g2, b2],
         color3: [r3, g3, b3],
-        ...(glowBoost ? { glowBoost: glowBoost.value } : {}),
+        glowBoost: glowBoost?.value ?? 0,
     }));
 
     const useSkia = isDark && runtimeEffect && SkiaCanvas && SkiaFill && SkiaShader;

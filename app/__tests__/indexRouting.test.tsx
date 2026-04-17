@@ -27,9 +27,9 @@ describe('Index routing', () => {
     mockHasHydrated = true;
   });
 
-  it('/(tabs)にリダイレクトする（DEV_SKIP_ONBOARDING=true）', () => {
+  it('/brand にリダイレクトする（DEV_SKIP_ONBOARDING=false）', () => {
     const { getByTestId } = render(<Index />);
-    expect(getByTestId('redirect').props.children).toBe('/(tabs)');
+    expect(getByTestId('redirect').props.children).toBe('/brand');
   });
 
   it('ハイドレーション未完了時にローディングが表示される', () => {
