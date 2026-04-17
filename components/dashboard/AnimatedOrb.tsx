@@ -1,54 +1,23 @@
-import React, { useEffect } from 'react';
-import { AppState, Pressable, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
   useDerivedValue,
-  useFrameCallback,
 } from 'react-native-reanimated';
-import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
 import { getOrbConfig } from '@/constants/orbConfig';
-import { ORB_SHADER } from '@/constants/shaders/orb';
+import { hexToVec3 } from '@/lib/color/hexToVec3';
+import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
+import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
 import { useOrbTapAnimation } from '@/hooks/dashboard/useOrbTapAnimation';
+import { OrbSoftAura } from './OrbSoftAura';
+import { OrbScatteredStars } from './OrbScatteredStars';
 import { OrbGlowLayers } from './OrbGlowLayers';
 import { OrbParticles } from './OrbParticles';
 import { OrbTapRipple } from './OrbTapRipple';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 
-const isExpoGo = Constants.executionEnvironment === 'storeClient';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SkiaCanvas: React.ComponentType<any> | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SkiaFill: React.ComponentType<any> | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SkiaShader: React.ComponentType<any> | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let runtimeEffect: any = null;
-
-if (!isExpoGo) {
-  try {
-    const skia = require('@shopify/react-native-skia');
-    SkiaCanvas = skia.Canvas;
-    SkiaFill = skia.Fill;
-    SkiaShader = skia.Shader;
-    runtimeEffect = skia.Skia.RuntimeEffect.Make(ORB_SHADER);
-  } catch {
-    // Skia native bridge not available
-  }
-}
-
-function hexToVec3(hex: string): [number, number, number] {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return [r, g, b];
-}
+const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
 
 interface AnimatedOrbProps {
   chapterId: ChapterId;
@@ -61,43 +30,13 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
   const { isDark } = useTheme();
   const config = getOrbConfig(chapterId);
 
-  const time = useSharedValue(0);
-  const active = useSharedValue(true);
-
-  // Tap animation hook
+  const { time, breathingScale } = useOrbBreathing(config);
   const { tapScale, glowIntensity, rippleTrigger, handlePressIn, handlePressOut } =
     useOrbTapAnimation();
 
-  // Breathing pulse animation
-  const breathingScale = useSharedValue(config.scaleMin);
-  useEffect(() => {
-    breathingScale.value = withRepeat(
-      withTiming(config.scaleMax, {
-        duration: config.pulseDuration,
-        easing: Easing.inOut(Easing.sin),
-      }),
-      -1,
-      true,
-    );
-  }, [config]);
-
-  // AppState: pause on background
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      active.value = state === 'active';
-    });
-    return () => sub.remove();
-  }, []);
-
-  useFrameCallback((info) => {
-    if (active.value) {
-      time.value = (info.timeSinceFirstFrame ?? 0) / 1000;
-    }
-  });
-
   // Compose breathing + tap scale
   const finalScale = useDerivedValue(() => breathingScale.value * tapScale.value);
-  const pulseStyle = useAnimatedStyle(() => ({
+  const pulseStyle = useDerivedValue(() => ({
     transform: [{ scale: finalScale.value }],
   }));
 
@@ -135,6 +74,22 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
         testID="animated-orb"
         style={[styles.container, { width: containerSize, height: containerSize }]}
       >
+        {/* Large soft halo behind the orb */}
+        <View
+          pointerEvents="none"
+          style={[styles.overlay, { width: containerSize, height: containerSize }]}
+        >
+          <OrbSoftAura size={size} glowColor={config.glowColor} />
+        </View>
+
+        {/* Scattered star particles */}
+        <View
+          pointerEvents="none"
+          style={[styles.overlay, { width: containerSize, height: containerSize }]}
+        >
+          <OrbScatteredStars size={size} />
+        </View>
+
         {/* Multi-layer glow + pulse ring behind orb */}
         <View
           pointerEvents="none"
@@ -144,7 +99,6 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
             size={size}
             glowColor={config.glowColor}
             pulseDuration={config.pulseDuration}
-            glowIntensity={glowIntensity}
           />
         </View>
 

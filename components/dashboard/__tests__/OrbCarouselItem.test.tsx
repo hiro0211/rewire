@@ -25,7 +25,21 @@ jest.mock('react-native-reanimated', () => {
       quad: (v: number) => v,
     },
     useFrameCallback: () => {},
+    useAnimatedReaction: () => {},
     useDerivedValue: (fn: any) => ({ value: fn() }),
+  };
+});
+
+jest.mock('react-native-svg', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: (props: any) => <View {...props} />,
+    Svg: (props: any) => <View {...props} />,
+    Defs: (props: any) => <View {...props} />,
+    RadialGradient: (props: any) => <View {...props} />,
+    Stop: (props: any) => <View {...props} />,
+    Circle: (props: any) => <View {...props} />,
   };
 });
 

@@ -1,53 +1,20 @@
-import React, { useEffect } from 'react';
-import { AppState, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
   useDerivedValue,
-  useFrameCallback,
 } from 'react-native-reanimated';
-import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
+import { hexToVec3 } from '@/lib/color/hexToVec3';
+import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
+import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
 import { getOrbConfig } from '@/constants/orbConfig';
-import { ORB_SHADER } from '@/constants/shaders/orb';
 import { OrbGlowLayers } from '@/components/dashboard/OrbGlowLayers';
 import { OrbParticles } from '@/components/dashboard/OrbParticles';
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 
-const isExpoGo = Constants.executionEnvironment === 'storeClient';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SkiaCanvas: React.ComponentType<any> | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SkiaFill: React.ComponentType<any> | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SkiaShader: React.ComponentType<any> | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let runtimeEffect: any = null;
-
-if (!isExpoGo) {
-  try {
-    const skia = require('@shopify/react-native-skia');
-    SkiaCanvas = skia.Canvas;
-    SkiaFill = skia.Fill;
-    SkiaShader = skia.Shader;
-    runtimeEffect = skia.Skia.RuntimeEffect.Make(ORB_SHADER);
-  } catch {
-    // Skia native bridge not available
-  }
-}
-
-function hexToVec3(hex: string): [number, number, number] {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return [r, g, b];
-}
+const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
 
 interface BadgeOrbProps {
   /** バッジ固有の3色（BADGE_DEFINITIONS[i].colors） */
@@ -144,37 +111,7 @@ function UnlockedBadgeOrb({
   chapterConfig,
   isDark,
 }: UnlockedBadgeOrbProps) {
-  const time = useSharedValue(0);
-  const active = useSharedValue(true);
-
-  const scale = useSharedValue(chapterConfig.scaleMin);
-  useEffect(() => {
-    scale.value = withRepeat(
-      withTiming(chapterConfig.scaleMax, {
-        duration: chapterConfig.pulseDuration,
-        easing: Easing.inOut(Easing.sin),
-      }),
-      -1,
-      true,
-    );
-  }, [chapterConfig]);
-
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      active.value = state === 'active';
-    });
-    return () => sub.remove();
-  }, []);
-
-  useFrameCallback((info) => {
-    if (active.value) {
-      time.value = (info.timeSinceFirstFrame ?? 0) / 1000;
-    }
-  });
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
   const [c1, c2, c3] = colors;
   const [r1, g1, b1] = hexToVec3(c1);

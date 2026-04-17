@@ -1,37 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSharedValue, useDerivedValue } from 'react-native-reanimated';
-import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
-import { ORB_SHADER } from '@/constants/shaders/orb';
+import { hexToVec3 } from '@/lib/color/hexToVec3';
+import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 
-const isExpoGo = Constants.executionEnvironment === 'storeClient';
-
-let SkiaCanvas: React.ComponentType<any> | null = null;
-let SkiaFill: React.ComponentType<any> | null = null;
-let SkiaShader: React.ComponentType<any> | null = null;
-let runtimeEffect: any = null;
-
-if (!isExpoGo) {
-  try {
-    const skia = require('@shopify/react-native-skia');
-    SkiaCanvas = skia.Canvas;
-    SkiaFill = skia.Fill;
-    SkiaShader = skia.Shader;
-    runtimeEffect = skia.Skia.RuntimeEffect.Make(ORB_SHADER);
-  } catch {
-    // Skia native bridge not available
-  }
-}
-
-function hexToVec3(hex: string): [number, number, number] {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return [r, g, b];
-}
+const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
 
 interface StaticOrbProps {
   colors: BadgeColorTriad;
