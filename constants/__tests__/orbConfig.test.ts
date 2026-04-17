@@ -9,9 +9,9 @@ describe('orbConfig', () => {
       }
     });
 
-    it('chaosチャプターは淡い銀色', () => {
+    it('chaosチャプターは海王星ブルー', () => {
       const ch = ORB_CHAPTERS.chaos;
-      expect(ch.colors).toEqual(['#C9CBE0', '#F5F6FA', '#9E8CC4']);
+      expect(ch.colors).toEqual(['#4A7EC2', '#8CB4E0', '#1E3D6B']);
       expect(ch.pulseDuration).toBe(4000);
     });
 

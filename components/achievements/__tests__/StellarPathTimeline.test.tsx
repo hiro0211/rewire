@@ -25,7 +25,17 @@ jest.mock('react-native-svg', () => {
         {children}
       </View>
     ),
+    Svg: ({ children, ...props }: any) => (
+      <View testID="svg-root" {...props}>
+        {children}
+      </View>
+    ),
     Path: (props: any) => <View testID="svg-path" {...props} />,
+    Defs: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    RadialGradient: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Stop: (props: any) => <View {...props} />,
+    Rect: (props: any) => <View {...props} />,
+    Circle: (props: any) => <View {...props} />,
   };
 });
 
@@ -58,8 +68,8 @@ describe('StellarPathTimeline', () => {
   it('GravityThread はバッジ数 - 1 個描画される（最後のバッジの後には無い）', () => {
     const achievements = computeAchievements(0);
     render(<StellarPathTimeline streak={0} achievements={achievements} />);
-    // GravityThread は Svg で描かれる → mock では svg-root が1つずつ
-    const threads = screen.getAllByTestId('svg-root');
+    // GravityThread は Svg + Path で描かれる → mock では svg-path が1つずつ
+    const threads = screen.getAllByTestId('svg-path');
     expect(threads).toHaveLength(BADGE_DEFINITIONS.length - 1);
   });
 });

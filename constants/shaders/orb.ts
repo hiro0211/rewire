@@ -2,7 +2,7 @@
  * SkSL shader for animated orb gradient sphere.
  * Creates a radial gradient with 3 color nodes that slowly rotate,
  * FBM-based nebula distortion, atmospheric fringe, and inner glow core.
- * Uniforms: time (seconds), resolution (px), color1/color2/color3 (vec3).
+ * Uniforms: time (seconds), resolution (px), color1/color2/color3 (vec3), glowBoost (0-1).
  */
 export const ORB_SHADER = `
 uniform float time;
@@ -10,6 +10,7 @@ uniform vec2 resolution;
 uniform vec3 color1;
 uniform vec3 color2;
 uniform vec3 color3;
+uniform float glowBoost;
 
 float hash(vec2 p) {
     p = fract(p * vec2(234.34, 435.345));
@@ -47,9 +48,9 @@ vec4 main(vec2 fragCoord) {
     vec2 center = vec2(0.5);
     float dist = length(uv - center);
 
-    // Circular mask — smooth sphere edge (extended for atmosphere)
-    float sphere = 1.0 - smoothstep(0.38, 0.50, dist);
-    float atmosphere = 1.0 - smoothstep(0.44, 0.56, dist);
+    // Circular mask — contained within canvas (all effects fade to 0 by dist=0.48)
+    float sphere = 1.0 - smoothstep(0.18, 0.45, dist);
+    float atmosphere = 1.0 - smoothstep(0.30, 0.48, dist);
     if (atmosphere < 0.01) return vec4(0.0);
 
     // Slow rotating color nodes
@@ -82,13 +83,13 @@ vec4 main(vec2 fragCoord) {
     float total = d1 + d2 + d3;
     if (total > 0.001) color /= total;
 
-    // Edge darkening for 3D sphere illusion
-    float edgeFade = 1.0 - smoothstep(0.2, 0.48, dist);
-    color *= (0.6 + 0.4 * edgeFade);
+    // Edge darkening for 3D sphere illusion — wider range + more contrast
+    float edgeFade = 1.0 - smoothstep(0.08, 0.40, dist);
+    color *= (0.5 + 0.5 * edgeFade);
 
-    // Inner glow core — subtle brightening near center
-    float innerGlow = 1.0 - smoothstep(0.0, 0.22, dist);
-    color += (color1 * 0.5 + color2 * 0.3) * innerGlow * 0.35;
+    // Inner glow core — wider center luminance
+    float innerGlow = 1.0 - smoothstep(0.0, 0.28, dist);
+    color += (color1 * 0.5 + color2 * 0.3) * innerGlow * (0.35 + glowBoost * 0.4);
 
     // Wider specular highlight
     float highlight = smoothstep(0.28, 0.0, length(uv - vec2(0.40, 0.36)));
@@ -97,8 +98,8 @@ vec4 main(vec2 fragCoord) {
     // --- Atmosphere layer: pale color fringe outside sphere body ---
     float atmosphereRing = atmosphere - sphere;
     vec3 atmoColor = mix(color2, color1, 0.5);
-    vec3 finalColor = color * sphere + atmoColor * atmosphereRing * 0.5;
-    float finalAlpha = sphere + atmosphereRing * 0.45;
+    vec3 finalColor = color * sphere + atmoColor * atmosphereRing * 0.65;
+    float finalAlpha = sphere + atmosphereRing * 0.55;
 
     return vec4(finalColor, finalAlpha);
 }

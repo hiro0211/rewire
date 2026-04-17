@@ -43,7 +43,7 @@ if (!isExpoGo) {
 // + margin 8 above safe-area bottom + gap 12 between tab bar and SOS button
 const TAB_BAR_HEIGHT = 50;
 const TAB_BAR_MARGIN = 8;
-const SOS_GAP_ABOVE_TAB_BAR = 12;
+const SOS_GAP_ABOVE_TAB_BAR = 3;
 const TAB_BAR_OFFSET = TAB_BAR_MARGIN + TAB_BAR_HEIGHT + SOS_GAP_ABOVE_TAB_BAR;
 // Total vertical space reserved below scroll content so nothing is hidden by the floating SOS button
 const SOS_BUTTON_HEIGHT = 56;

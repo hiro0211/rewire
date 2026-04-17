@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 import { AnimatedOrb } from '../AnimatedOrb';
 import { CHAPTER_IDS } from '@/constants/badges/BadgeChapter';
 
@@ -39,5 +39,29 @@ describe('AnimatedOrb', () => {
   it('パーティクルエフェクトを表示する', () => {
     render(<AnimatedOrb chapterId="life" />);
     expect(screen.getByTestId('orb-particles')).toBeTruthy();
+  });
+
+  it('Pressableが存在する', () => {
+    render(<AnimatedOrb chapterId="chaos" />);
+    expect(screen.getByTestId('orb-pressable')).toBeTruthy();
+  });
+
+  it('onPress が発火する', () => {
+    const onPress = jest.fn();
+    render(<AnimatedOrb chapterId="chaos" onPress={onPress} />);
+    fireEvent.press(screen.getByTestId('orb-pressable'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('onLongPress が発火する', () => {
+    const onLongPress = jest.fn();
+    render(<AnimatedOrb chapterId="chaos" onLongPress={onLongPress} />);
+    fireEvent(screen.getByTestId('orb-pressable'), 'onLongPress');
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('波紋エフェクト要素が存在する', () => {
+    render(<AnimatedOrb chapterId="chaos" />);
+    expect(screen.getByTestId('orb-tap-ripple')).toBeTruthy();
   });
 });

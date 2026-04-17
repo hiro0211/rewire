@@ -11,8 +11,8 @@ export interface OrbTierConfig {
 
 export const ORB_CHAPTERS: Record<ChapterId, OrbTierConfig> = {
   chaos: {
-    colors: ['#C9CBE0', '#F5F6FA', '#9E8CC4'],
-    glowColor: 'rgba(201, 203, 224, 0.3)',
+    colors: ['#4A7EC2', '#8CB4E0', '#1E3D6B'],
+    glowColor: 'rgba(74, 126, 194, 0.3)',
     pulseDuration: 4000,
     scaleMin: 0.96,
     scaleMax: 1.04,
