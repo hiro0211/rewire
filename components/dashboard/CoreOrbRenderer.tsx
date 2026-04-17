@@ -1,7 +1,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import { hexToVec3 } from '@/lib/color/hexToVec3';
 import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
-import React, { useId } from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
@@ -32,8 +32,8 @@ export function CoreOrbRenderer({
     testID,
 }: CoreOrbRendererProps) {
     const { isDark } = useTheme();
-    const uniqueId = useId();
-    const fallbackGradId = `core-fallback-grad-${uniqueId}`;
+    const stableId = useRef(Math.random().toString(36).slice(2, 8)).current;
+    const fallbackGradId = `core-fallback-grad-${stableId}`;
 
     const [c1, c2, c3] = colors;
     const [r1, g1, b1] = hexToVec3(c1);

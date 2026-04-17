@@ -1,6 +1,6 @@
-import React, { useId } from 'react';
+import React, { useRef } from 'react';
 import { View } from 'react-native';
-import Svg, { Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 interface OrbSoftAuraProps {
   size: number;
@@ -13,8 +13,8 @@ interface OrbSoftAuraProps {
  * クロスプラットフォームで滑らかなグロー効果を提供する。
  */
 export function OrbSoftAura({ size, glowColor }: OrbSoftAuraProps) {
-  const uniqueId = useId();
-  const gradId = `soft-aura-grad-${uniqueId}`;
+  const stableId = useRef(Math.random().toString(36).slice(2, 8)).current;
+  const gradId = `soft-aura-grad-${stableId}`;
   const containerSize = size * 2.0;
 
   return (

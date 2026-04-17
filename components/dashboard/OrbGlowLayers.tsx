@@ -1,4 +1,4 @@
-import React, { useEffect, useId } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
   Easing,
@@ -17,10 +17,8 @@ interface OrbGlowLayersProps {
 }
 
 export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersProps) {
-  const uniqueId = useId();
-  const outerGradId = `outer-grad-${uniqueId}`;
-  const innerGradId = `inner-grad-${uniqueId}`;
-  const ringGradId = `ring-grad-${uniqueId}`;
+  const stableId = useRef(Math.random().toString(36).slice(2, 8)).current;
+  const ringGradId = `ring-grad-${stableId}`;
 
   // Inner glow pulse
   const innerOpacity = useSharedValue(0.6);
