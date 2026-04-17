@@ -1,13 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
-  useSharedValue,
+  Easing,
   useAnimatedStyle,
+  useSharedValue,
+  withDelay,
   withRepeat,
   withTiming,
-  withDelay,
-  Easing,
 } from 'react-native-reanimated';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 interface OrbGlowLayersProps {
   size: number;
@@ -16,6 +17,11 @@ interface OrbGlowLayersProps {
 }
 
 export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersProps) {
+  const uniqueId = useId();
+  const outerGradId = `outer-grad-${uniqueId}`;
+  const innerGradId = `inner-grad-${uniqueId}`;
+  const ringGradId = `ring-grad-${uniqueId}`;
+
   // Inner glow pulse
   const innerOpacity = useSharedValue(0.4);
   useEffect(() => {
@@ -78,14 +84,22 @@ export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersP
           {
             width: outerSize,
             height: outerSize,
-            borderRadius: outerSize / 2,
-            backgroundColor: glowColor,
             left: -(outerSize - size) / 2,
             top: -(outerSize - size) / 2,
           },
           outerStyle,
         ]}
-      />
+      >
+        <Svg width="100%" height="100%">
+          <Defs>
+            <RadialGradient id={outerGradId} cx="50%" cy="50%" rx="50%" ry="50%">
+              <Stop offset="0" stopColor={glowColor} stopOpacity="1" />
+              <Stop offset="1" stopColor={glowColor} stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <Circle cx="50%" cy="50%" r="50%" fill={`url(#${outerGradId})`} />
+        </Svg>
+      </Animated.View>
       {/* Inner glow */}
       <Animated.View
         testID="orb-glow-inner"
@@ -95,14 +109,22 @@ export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersP
           {
             width: innerSize,
             height: innerSize,
-            borderRadius: innerSize / 2,
-            backgroundColor: glowColor,
             left: -(innerSize - size) / 2,
             top: -(innerSize - size) / 2,
           },
           innerStyle,
         ]}
-      />
+      >
+        <Svg width="100%" height="100%">
+          <Defs>
+            <RadialGradient id={innerGradId} cx="50%" cy="50%" rx="50%" ry="50%">
+              <Stop offset="0" stopColor={glowColor} stopOpacity="1" />
+              <Stop offset="1" stopColor={glowColor} stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <Circle cx="50%" cy="50%" r="50%" fill={`url(#${innerGradId})`} />
+        </Svg>
+      </Animated.View>
       {/* Pulse ring */}
       <Animated.View
         testID="orb-pulse-ring"
@@ -112,16 +134,23 @@ export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersP
           {
             width: ringSize,
             height: ringSize,
-            borderRadius: ringSize / 2,
-            borderWidth: 1,
-            borderColor: glowColor,
-            backgroundColor: 'transparent',
             left: -(ringSize - size) / 2,
             top: -(ringSize - size) / 2,
           },
           ringStyle,
         ]}
-      />
+      >
+        <Svg width="100%" height="100%">
+          <Defs>
+            <RadialGradient id={ringGradId} cx="50%" cy="50%" rx="50%" ry="50%">
+              <Stop offset="0.75" stopColor={glowColor} stopOpacity="0" />
+              <Stop offset="0.9" stopColor={glowColor} stopOpacity="1" />
+              <Stop offset="1" stopColor={glowColor} stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <Circle cx="50%" cy="50%" r="50%" fill={`url(#${ringGradId})`} />
+        </Svg>
+      </Animated.View>
     </>
   );
 }
