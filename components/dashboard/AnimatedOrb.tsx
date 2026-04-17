@@ -1,23 +1,18 @@
+import type { ChapterId } from '@/constants/badges/BadgeChapter';
+import { getOrbConfig } from '@/constants/orbConfig';
+import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
+import { useOrbTapAnimation } from '@/hooks/dashboard/useOrbTapAnimation';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '@/hooks/useTheme';
-import { getOrbConfig } from '@/constants/orbConfig';
-import { hexToVec3 } from '@/lib/color/hexToVec3';
-import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
-import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
-import { useOrbTapAnimation } from '@/hooks/dashboard/useOrbTapAnimation';
-import { OrbSoftAura } from './OrbSoftAura';
-import { OrbScatteredStars } from './OrbScatteredStars';
+import { CoreOrbRenderer } from './CoreOrbRenderer';
 import { OrbGlowLayers } from './OrbGlowLayers';
 import { OrbParticles } from './OrbParticles';
+import { OrbScatteredStars } from './OrbScatteredStars';
+import { OrbSoftAura } from './OrbSoftAura';
 import { OrbTapRipple } from './OrbTapRipple';
-import type { ChapterId } from '@/constants/badges/BadgeChapter';
-
-const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
 
 interface AnimatedOrbProps {
   chapterId: ChapterId;
@@ -27,7 +22,6 @@ interface AnimatedOrbProps {
 }
 
 export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: AnimatedOrbProps) {
-  const { isDark } = useTheme();
   const config = getOrbConfig(chapterId);
 
   const { time, breathingScale } = useOrbBreathing(config);
@@ -40,22 +34,7 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
     transform: [{ scale: finalScale.value }],
   }));
 
-  const [c1, c2, c3] = config.colors;
-  // Pre-compute color vectors on JS thread (hexToVec3 cannot run in worklet)
-  const [r1, g1, b1] = hexToVec3(c1);
-  const [r2, g2, b2] = hexToVec3(c2);
-  const [r3, g3, b3] = hexToVec3(c3);
-
-  const uniforms = useDerivedValue(() => ({
-    time: time.value,
-    resolution: [size, size],
-    color1: [r1, g1, b1],
-    color2: [r2, g2, b2],
-    color3: [r3, g3, b3],
-    glowBoost: glowIntensity.value,
-  }));
-
-  const useSkia = isDark && runtimeEffect && SkiaCanvas && SkiaFill && SkiaShader;
+  const [c1] = config.colors;
 
   // Container expanded to accommodate glow + particles (size * 2.0)
   const containerSize = size * 2.0;
@@ -117,25 +96,13 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
             pulseStyle,
           ]}
         >
-          {useSkia ? (
-            <SkiaCanvas style={{ width: size, height: size }} testID="orb-canvas">
-              <SkiaFill>
-                <SkiaShader source={runtimeEffect} uniforms={uniforms} />
-              </SkiaFill>
-            </SkiaCanvas>
-          ) : (
-            // Fallback: circular LinearGradient with Reanimated pulse
-            <View
-              style={[styles.fallbackOrb, { width: size, height: size, borderRadius: size / 2 }]}
-            >
-              <LinearGradient
-                colors={[...config.colors]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-            </View>
-          )}
+          <CoreOrbRenderer
+            colors={config.colors}
+            size={size}
+            time={time}
+            glowBoost={glowIntensity}
+            testID="orb-canvas"
+          />
         </Animated.View>
 
         {/* Tap ripple ring */}
@@ -165,8 +132,5 @@ const styles = StyleSheet.create({
   centered: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  fallbackOrb: {
-    overflow: 'hidden',
   },
 });

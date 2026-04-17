@@ -1,20 +1,14 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, {
-  useDerivedValue,
-} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '@/hooks/useTheme';
-import { hexToVec3 } from '@/lib/color/hexToVec3';
-import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
-import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
-import { getOrbConfig } from '@/constants/orbConfig';
+import { CoreOrbRenderer } from '@/components/dashboard/CoreOrbRenderer';
 import { OrbGlowLayers } from '@/components/dashboard/OrbGlowLayers';
 import { OrbParticles } from '@/components/dashboard/OrbParticles';
-import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
-
-const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
+import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
+import { getOrbConfig } from '@/constants/orbConfig';
+import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 interface BadgeOrbProps {
   /** バッジ固有の3色（BADGE_DEFINITIONS[i].colors） */
@@ -37,7 +31,6 @@ export function BadgeOrb({
   isUnlocked,
   chapterId,
 }: BadgeOrbProps) {
-  const { isDark } = useTheme();
   const chapterConfig = getOrbConfig(chapterId);
 
   const containerSize = size * 1.6;
@@ -93,7 +86,6 @@ export function BadgeOrb({
       colors={tripleColors}
       size={size}
       chapterConfig={chapterConfig}
-      isDark={isDark}
     />
   );
 }
@@ -102,31 +94,16 @@ interface UnlockedBadgeOrbProps {
   colors: [string, string, string];
   size: number;
   chapterConfig: ReturnType<typeof getOrbConfig>;
-  isDark: boolean;
 }
 
 function UnlockedBadgeOrb({
   colors,
   size,
   chapterConfig,
-  isDark,
 }: UnlockedBadgeOrbProps) {
   const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
-  const [c1, c2, c3] = colors;
-  const [r1, g1, b1] = hexToVec3(c1);
-  const [r2, g2, b2] = hexToVec3(c2);
-  const [r3, g3, b3] = hexToVec3(c3);
-
-  const uniforms = useDerivedValue(() => ({
-    time: time.value,
-    resolution: [size, size],
-    color1: [r1, g1, b1],
-    color2: [r2, g2, b2],
-    color3: [r3, g3, b3],
-  }));
-
-  const useSkia = isDark && runtimeEffect && SkiaCanvas && SkiaFill && SkiaShader;
+  const [c1, c2] = colors;
 
   const containerSize = size * 1.6;
   const offset = (containerSize - size) / 2;
@@ -166,24 +143,12 @@ function UnlockedBadgeOrb({
           pulseStyle,
         ]}
       >
-        {useSkia ? (
-          <SkiaCanvas style={{ width: size, height: size }} testID="badge-orb-canvas">
-            <SkiaFill>
-              <SkiaShader source={runtimeEffect} uniforms={uniforms} />
-            </SkiaFill>
-          </SkiaCanvas>
-        ) : (
-          <View
-            style={[styles.fallbackOrb, { width: size, height: size, borderRadius: size / 2 }]}
-          >
-            <LinearGradient
-              colors={colors}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </View>
-        )}
+        <CoreOrbRenderer
+          colors={colors}
+          size={size}
+          time={time}
+          testID="badge-orb-canvas"
+        />
       </Animated.View>
     </View>
   );
