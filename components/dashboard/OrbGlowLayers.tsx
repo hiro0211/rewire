@@ -23,20 +23,20 @@ export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersP
   const ringGradId = `ring-grad-${uniqueId}`;
 
   // Inner glow pulse
-  const innerOpacity = useSharedValue(0.4);
+  const innerOpacity = useSharedValue(0.6);
   useEffect(() => {
     innerOpacity.value = withRepeat(
-      withTiming(0.8, { duration: pulseDuration, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1.0, { duration: pulseDuration, easing: Easing.inOut(Easing.sin) }),
       -1,
       true,
     );
   }, [pulseDuration]);
 
   // Outer halo pulse (slower)
-  const outerOpacity = useSharedValue(0.15);
+  const outerOpacity = useSharedValue(0.3);
   useEffect(() => {
     outerOpacity.value = withRepeat(
-      withTiming(0.35, {
+      withTiming(0.6, {
         duration: pulseDuration * 1.3,
         easing: Easing.inOut(Easing.sin),
       }),
@@ -91,13 +91,7 @@ export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersP
         ]}
       >
         <Svg width="100%" height="100%">
-          <Defs>
-            <RadialGradient id={outerGradId} cx="50%" cy="50%" rx="50%" ry="50%">
-              <Stop offset="0" stopColor={glowColor} stopOpacity="1" />
-              <Stop offset="1" stopColor={glowColor} stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
-          <Circle cx="50%" cy="50%" r="50%" fill={`url(#${outerGradId})`} />
+          <Circle cx="50%" cy="50%" r="50%" fill={glowColor} />
         </Svg>
       </Animated.View>
       {/* Inner glow */}
@@ -116,13 +110,7 @@ export function OrbGlowLayers({ size, glowColor, pulseDuration }: OrbGlowLayersP
         ]}
       >
         <Svg width="100%" height="100%">
-          <Defs>
-            <RadialGradient id={innerGradId} cx="50%" cy="50%" rx="50%" ry="50%">
-              <Stop offset="0" stopColor={glowColor} stopOpacity="1" />
-              <Stop offset="1" stopColor={glowColor} stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
-          <Circle cx="50%" cy="50%" r="50%" fill={`url(#${innerGradId})`} />
+          <Circle cx="50%" cy="50%" r="50%" fill={glowColor} />
         </Svg>
       </Animated.View>
       {/* Pulse ring */}

@@ -1,10 +1,10 @@
 import { useTheme } from '@/hooks/useTheme';
 import { hexToVec3 } from '@/lib/color/hexToVec3';
 import { skiaOrbInit } from '@/lib/dashboard/skiaOrbInit';
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useId } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
+import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
 
@@ -32,6 +32,8 @@ export function CoreOrbRenderer({
     testID,
 }: CoreOrbRendererProps) {
     const { isDark } = useTheme();
+    const uniqueId = useId();
+    const fallbackGradId = `core-fallback-grad-${uniqueId}`;
 
     const [c1, c2, c3] = colors;
     const [r1, g1, b1] = hexToVec3(c1);
@@ -62,14 +64,19 @@ export function CoreOrbRenderer({
     return (
         <View
             testID={testID ?? 'orb-fallback'}
-            style={[styles.fallbackOrb, { width: size, height: size, borderRadius: size / 2 }]}
+            style={[styles.fallbackOrb, { width: size, height: size }]}
         >
-            <LinearGradient
-                colors={[...colors]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-            />
+            <Svg width="100%" height="100%">
+                <Defs>
+                    <RadialGradient id={fallbackGradId} cx="50%" cy="50%" rx="50%" ry="50%">
+                        <Stop offset="0" stopColor={c1} stopOpacity="1" />
+                        <Stop offset="0.4" stopColor={c2} stopOpacity="1" />
+                        <Stop offset="0.75" stopColor={c3} stopOpacity="0.8" />
+                        <Stop offset="0.95" stopColor={c3} stopOpacity="0" />
+                    </RadialGradient>
+                </Defs>
+                <Circle cx="50%" cy="50%" r="50%" fill={`url(#${fallbackGradId})`} />
+            </Svg>
         </View>
     );
 }
