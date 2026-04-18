@@ -7,6 +7,7 @@ import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SegmentedStreakCard } from '@/components/dashboard/SegmentedStreakCard';
 import { ShareWidgetCard } from '@/components/dashboard/ShareWidgetCard';
 import { BrainRewiringBar } from '@/components/dashboard/BrainRewiringBar';
+import { NextBadgeProgress } from '@/components/dashboard/NextBadgeProgress';
 import { QuickActionGrid } from '@/components/dashboard/QuickActionGrid';
 import { SOSButton } from '@/components/dashboard/SOSButton';
 import { useUserStore } from '@/stores/userStore';
@@ -156,6 +157,7 @@ export default function DashboardScreen() {
 
         <Animated.View style={[rewiringBarAnim.animatedStyle, styles.section]}>
           <BrainRewiringBar progress={rewiringProgress} />
+          <NextBadgeProgress currentDay={streakDays} />
         </Animated.View>
 
         <Animated.View style={quickActionAnim.animatedStyle}>
