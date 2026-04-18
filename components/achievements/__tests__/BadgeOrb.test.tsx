@@ -144,3 +144,70 @@ describe('SaturnRing 特殊描画', () => {
     expect(ringEllipse).toBeTruthy();
   });
 });
+
+// BinaryStars バッジの colors
+const BINARY_STARS_COLORS: BadgeColorTriad = {
+  core: '#00D4FF',
+  glow: '#80ECFF',
+  accent: '#0088AA',
+};
+
+describe('StellarSystemOverlay 特殊描画', () => {
+  it('badgeId="BinaryStars" のとき stellar-system-overlay が描画される', () => {
+    render(
+      <BadgeOrb
+        colors={BINARY_STARS_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="BinaryStars"
+      />,
+    );
+    expect(screen.getByTestId('stellar-system-overlay')).toBeTruthy();
+  });
+
+  it('badgeId="BinaryStars" のとき軌道円（orbital-ring）が複数描画される', () => {
+    render(
+      <BadgeOrb
+        colors={BINARY_STARS_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="BinaryStars"
+      />,
+    );
+    const orbitalRings = screen.getAllByTestId('orbital-ring');
+    expect(orbitalRings.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('badgeId="BinaryStars" のとき惑星ドット（planet-dot）が軌道数と同数描画される', () => {
+    render(
+      <BadgeOrb
+        colors={BINARY_STARS_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="BinaryStars"
+      />,
+    );
+    const rings = screen.getAllByTestId('orbital-ring');
+    const dots = screen.getAllByTestId('planet-dot');
+    expect(dots.length).toBe(rings.length);
+  });
+
+  it('badgeId="SolarSystem" のとき stellar-system-overlay は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={SOLAR_SYSTEM_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="SolarSystem"
+      />,
+    );
+    expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
+  });
+
+  it('badgeId なしのとき stellar-system-overlay は描画されない', () => {
+    render(
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+    );
+    expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
+  });
+});
