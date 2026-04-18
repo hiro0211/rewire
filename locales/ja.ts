@@ -35,6 +35,7 @@ export const ja = {
     trendChart: 'トレンドチャート',
     elapsed: '経過時間',
     goalAchievement: '目標達成率',
+    relapses: 'リセット',
   },
   quickAction: {
     breathe: '呼吸',

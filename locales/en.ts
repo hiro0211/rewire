@@ -43,6 +43,7 @@ export const en: Translations = {
     trendChart: 'Trend Chart',
     elapsed: 'Elapsed',
     goalAchievement: 'Goal Achievement',
+    relapses: 'Relapses',
   },
   quickAction: {
     breathe: 'Breathe',

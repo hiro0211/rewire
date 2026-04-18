@@ -7,70 +7,54 @@ import { SPACING, FONT_SIZE } from '@/constants/theme';
 
 interface SegmentedStreakCardProps {
   elapsed: string;
-  streakDays: number;
+  relapseCount: number;
   goalDays: number;
 }
 
-export function SegmentedStreakCard({ elapsed, streakDays, goalDays }: SegmentedStreakCardProps) {
-  const { colors, glow } = useTheme();
+export function SegmentedStreakCard({ elapsed, relapseCount, goalDays }: SegmentedStreakCardProps) {
+  const { colors } = useTheme();
   const { t } = useLocale();
 
   return (
-    <GlassCard testID="segmented-streak-card">
-      <View style={styles.row}>
-        <View style={styles.segment}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>
-            {t('streak.consecutiveDays')}
-          </Text>
-          <Text style={[styles.value, { color: colors.text }]}>
-            {streakDays}
-          </Text>
-        </View>
+    <View testID="segmented-streak-card" style={styles.row}>
+      <GlassCard style={styles.segment}>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t('dashboard.relapses')}
+        </Text>
+        <Text style={[styles.value, { color: colors.text }]}>
+          {relapseCount}
+        </Text>
+      </GlassCard>
 
-        <View
-          style={[
-            styles.divider,
-            { backgroundColor: glow.purple, shadowColor: glow.purple },
-          ]}
-        />
+      <GlassCard style={styles.segment} borderColor={colors.cyan}>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t('dashboard.elapsed')}
+        </Text>
+        <Text
+          style={[styles.value, { color: colors.cyan }]}
+          adjustsFontSizeToFit
+          numberOfLines={1}
+        >
+          {elapsed}
+        </Text>
+      </GlassCard>
 
-        <View style={styles.segment}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>
-            {t('dashboard.elapsed')}
-          </Text>
-          <Text
-            style={[styles.value, { color: colors.cyan }]}
-            adjustsFontSizeToFit
-            numberOfLines={1}
-          >
-            {elapsed}
-          </Text>
-        </View>
-
-        <View
-          style={[
-            styles.divider,
-            { backgroundColor: glow.purple, shadowColor: glow.purple },
-          ]}
-        />
-
-        <View style={styles.segment}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>
-            {t('streak.goal')}
-          </Text>
-          <Text style={[styles.value, { color: colors.text }]}>
-            {goalDays}
-          </Text>
-        </View>
-      </View>
-    </GlassCard>
+      <GlassCard style={styles.segment}>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>
+          {t('streak.goal')}
+        </Text>
+        <Text style={[styles.value, { color: colors.text }]}>
+          {goalDays}
+        </Text>
+      </GlassCard>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: SPACING.sm,
   },
   segment: {
     flex: 1,
@@ -79,17 +63,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FONT_SIZE.xs,
     marginBottom: SPACING.xs,
+    textAlign: 'center',
   },
   value: {
     fontSize: FONT_SIZE.lg,
     fontWeight: 'bold',
-  },
-  divider: {
-    width: 1,
-    height: 32,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    textAlign: 'center',
   },
 });

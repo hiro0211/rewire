@@ -40,9 +40,9 @@ if (!isExpoGo) {
 }
 
 // Tab bar dimensions from BlurTabBar (pill padding 8+8 + tab paddingVertical 6+6 + icon ~22 ≈ 50px)
-// + margin 8 above safe-area bottom + gap 12 between tab bar and SOS button
+// + margin 4 above safe-area bottom + gap 3 between tab bar and SOS button
 const TAB_BAR_HEIGHT = 50;
-const TAB_BAR_MARGIN = 8;
+const TAB_BAR_MARGIN = 4;
 const SOS_GAP_ABOVE_TAB_BAR = 3;
 const TAB_BAR_OFFSET = TAB_BAR_MARGIN + TAB_BAR_HEIGHT + SOS_GAP_ABOVE_TAB_BAR;
 // Total vertical space reserved below scroll content so nothing is hidden by the floating SOS button
@@ -132,8 +132,8 @@ export default function DashboardScreen() {
 
         <Animated.View style={streakCardAnim.animatedStyle}>
           <SegmentedStreakCard
-            elapsed={stopwatch.formattedShort}
-            streakDays={streakDays}
+            elapsed={stopwatch.formatted}
+            relapseCount={relapseCount}
             goalDays={goalDays}
           />
         </Animated.View>

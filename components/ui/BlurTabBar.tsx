@@ -34,7 +34,7 @@ export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps
     <View
       style={[
         styles.outerContainer,
-        { bottom: insets.bottom + 8 },
+        { bottom: insets.bottom + 4 },
       ]}
       pointerEvents="box-none"
     >
