@@ -3,7 +3,7 @@ import { getBadgeProgress } from '@/lib/badges/getBadgeProgress';
 import { getNextBadge } from '@/lib/badges/getNextBadge';
 import { useTheme } from '@/hooks/useTheme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { type DimensionValue, StyleSheet, Text, View } from 'react-native';
 
 interface NextBadgeProgressProps {
   currentDay: number;
@@ -32,7 +32,7 @@ export function NextBadgeProgress({ currentDay }: NextBadgeProgressProps) {
     );
   }
 
-  const progressPercent = `${Math.round(progress * 100)}%`;
+  const progressPercent = `${Math.round(progress * 100)}%` as DimensionValue;
 
   return (
     <View style={styles.container}>
