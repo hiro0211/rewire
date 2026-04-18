@@ -266,6 +266,59 @@ describe('StarClusterOverlay 特殊描画', () => {
   });
 });
 
+// Cosmos バッジの colors
+const COSMOS_COLORS: BadgeColorTriad = {
+  core: '#F43F5E',
+  glow: '#FFE4E8',
+  accent: '#9F1239',
+};
+
+describe('CosmosOverlay 特殊描画', () => {
+  it('badgeId="Cosmos" のとき cosmos-overlay が描画される', () => {
+    render(
+      <BadgeOrb
+        colors={COSMOS_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="Cosmos"
+      />,
+    );
+    expect(screen.getByTestId('cosmos-overlay')).toBeTruthy();
+  });
+
+  it('badgeId="Cosmos" のとき光点（cosmos-particle）が20個以上描画される', () => {
+    render(
+      <BadgeOrb
+        colors={COSMOS_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="Cosmos"
+      />,
+    );
+    const particles = screen.getAllByTestId('cosmos-particle');
+    expect(particles.length).toBeGreaterThanOrEqual(20);
+  });
+
+  it('badgeId="GalaxyCluster" のとき cosmos-overlay は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={COSMOS_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="GalaxyCluster"
+      />,
+    );
+    expect(screen.queryByTestId('cosmos-overlay')).toBeNull();
+  });
+
+  it('badgeId なしのとき cosmos-overlay は描画されない', () => {
+    render(
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+    );
+    expect(screen.queryByTestId('cosmos-overlay')).toBeNull();
+  });
+});
+
 // Galaxy バッジの colors
 const GALAXY_COLORS: BadgeColorTriad = {
   core: '#EC4899',

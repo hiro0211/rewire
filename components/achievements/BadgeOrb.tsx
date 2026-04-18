@@ -63,6 +63,7 @@ export function BadgeOrb({
   const showStellarOverlay = badgeId === 'BinaryStars';
   const showGalaxySpiral = badgeId === 'Galaxy';
   const showStarCluster = badgeId === 'StarCluster';
+  const showCosmos = badgeId === 'Cosmos';
 
   if (!isUnlocked) {
     // Locked: 静止ゴースト（アニメ・Skia・パーティクルなし）
@@ -116,6 +117,7 @@ export function BadgeOrb({
       showStellarOverlay={showStellarOverlay}
       showGalaxySpiral={showGalaxySpiral}
       showStarCluster={showStarCluster}
+      showCosmos={showCosmos}
     />
   );
 }
@@ -491,6 +493,103 @@ function PlanetDot({ size, radius, color, duration }: PlanetDotProps) {
   );
 }
 
+// ── CosmosOverlay ─────────────────────────────────────────────────────────
+
+/** 全バッジのコアカラーから選ぶ宇宙光点カラーパレット */
+const COSMOS_PARTICLE_COLORS = [
+  '#C9CBE0', '#B8A9D4', '#D4C5A0',
+  '#FFB547', '#FFD700', '#FFF0C0',
+  '#D17842', '#A0785A', '#C45030',
+  '#4A90E2', '#2ECC71', '#8B5CF6',
+  '#5CE1E6', '#00D4FF', '#38BDF8',
+  '#EC4899', '#A855F7', '#F43F5E',
+] as const;
+
+interface CosmosParticleConfig {
+  x: number;
+  y: number;
+  r: number;
+  color: string;
+  period: number;
+}
+
+/** 25個の光点を決定論的に配置する（毎回同じ位置を保証） */
+function buildParticleConfigs(size: number): CosmosParticleConfig[] {
+  // 疑似乱数（シード固定）でランダム感を演出
+  const configs: CosmosParticleConfig[] = [];
+  const count = 25;
+  for (let i = 0; i < count; i++) {
+    // シード付き疑似配置: 黄金角でらせん配置
+    const angle = i * 2.399963; // 黄金角 ≈ 137.5°
+    const radFraction = 0.2 + (i / count) * 0.75;
+    const r = radFraction * (size / 2);
+    configs.push({
+      x: size / 2 + r * Math.cos(angle),
+      y: size / 2 + r * Math.sin(angle),
+      r: 1.5 + (i % 3) * 0.8,
+      color: COSMOS_PARTICLE_COLORS[i % COSMOS_PARTICLE_COLORS.length],
+      period: 1200 + (i * 180) % 1600,
+    });
+  }
+  return configs;
+}
+
+interface CosmosOverlayProps {
+  size: number;
+}
+
+/**
+ * 宇宙バッジ専用の全色光点オーバーレイ。
+ * 25個の光点を黄金角スパイラルで配置し、各点が独立して点滅する。
+ */
+function CosmosOverlay({ size }: CosmosOverlayProps) {
+  const particles = buildParticleConfigs(size);
+
+  return (
+    <View
+      testID="cosmos-overlay"
+      pointerEvents="none"
+      style={{ position: 'absolute', width: size, height: size }}
+    >
+      {particles.map((p, i) => (
+        <CosmosParticle key={i} config={p} />
+      ))}
+    </View>
+  );
+}
+
+function CosmosParticle({ config }: { config: CosmosParticleConfig }) {
+  const opacity = useSharedValue(0.2);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withTiming(1.0, { duration: config.period, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true,
+    );
+  }, [opacity, config.period]);
+
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  return (
+    <Animated.View
+      testID="cosmos-particle"
+      style={[
+        {
+          position: 'absolute',
+          width: config.r * 2,
+          height: config.r * 2,
+          borderRadius: config.r,
+          backgroundColor: config.color,
+          left: config.x - config.r,
+          top: config.y - config.r,
+        },
+        animStyle,
+      ]}
+    />
+  );
+}
+
 // ── UnlockedBadgeOrb ───────────────────────────────────────────────────────
 
 interface UnlockedBadgeOrbProps {
@@ -502,6 +601,7 @@ interface UnlockedBadgeOrbProps {
   showStellarOverlay: boolean;
   showGalaxySpiral: boolean;
   showStarCluster: boolean;
+  showCosmos: boolean;
 }
 
 function UnlockedBadgeOrb({
@@ -513,6 +613,7 @@ function UnlockedBadgeOrb({
   showStellarOverlay,
   showGalaxySpiral,
   showStarCluster,
+  showCosmos,
 }: UnlockedBadgeOrbProps) {
   const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
@@ -592,6 +693,15 @@ function UnlockedBadgeOrb({
           style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
         >
           <StarClusterOverlay size={size} color={glowColor} />
+        </View>
+      )}
+
+      {showCosmos && (
+        <View
+          pointerEvents="none"
+          style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
+        >
+          <CosmosOverlay size={size} />
         </View>
       )}
     </View>
