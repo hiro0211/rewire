@@ -12,43 +12,43 @@ export interface StreakTierConfig {
 }
 
 export const TIER_CONFIGS: Record<ChapterId, Omit<StreakTierConfig, 'subText'>> = {
-  chaos: {
-    name: 'chaos',
+  birth: {
+    name: 'birth',
     hapticStyle: 'light',
     showParticles: false,
     showGlow: false,
     showConfetti: false,
   },
-  ignition: {
-    name: 'ignition',
+  innerPlanets: {
+    name: 'innerPlanets',
     hapticStyle: 'medium',
     showParticles: true,
     showGlow: false,
     showConfetti: false,
   },
-  formation: {
-    name: 'formation',
+  terrestrial: {
+    name: 'terrestrial',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
     showConfetti: false,
   },
-  life: {
-    name: 'life',
+  outerPlanets: {
+    name: 'outerPlanets',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
     showConfetti: true,
   },
-  expansion: {
-    name: 'expansion',
+  stellar: {
+    name: 'stellar',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,
     showConfetti: true,
   },
-  transcendence: {
-    name: 'transcendence',
+  cosmic: {
+    name: 'cosmic',
     hapticStyle: 'heavy',
     showParticles: true,
     showGlow: true,

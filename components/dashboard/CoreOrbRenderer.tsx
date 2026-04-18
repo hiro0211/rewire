@@ -10,7 +10,7 @@ import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 const { SkiaCanvas, SkiaFill, SkiaShader, runtimeEffect } = skiaOrbInit();
 
 interface CoreOrbRendererProps {
-    /** Hex 3色 [core, glow, accent] */
+    /** Hex 3色 [core, mid, outer] */
     colors: readonly [string, string, string];
     /** オーブの直径 (px) */
     size: number;

@@ -55,7 +55,7 @@ describe('StellarPathTimeline', () => {
   it('streak=10 のとき、Day ≤ 10 のバッジが unlocked 扱い', () => {
     const achievements = computeAchievements(10);
     render(<StellarPathTimeline streak={10} achievements={achievements} />);
-    // Day <= 10 の4個: Stardust(0), Nebula(1), Protostar(3), Ignition(7)
+    // Day <= 10 の4個: stardust(0), nebula(1), protostar(3), moon(7)
     const unlockedBadges = BADGE_DEFINITIONS.filter((b) => b.day <= 10);
     expect(unlockedBadges).toHaveLength(4);
     for (const badge of unlockedBadges) {

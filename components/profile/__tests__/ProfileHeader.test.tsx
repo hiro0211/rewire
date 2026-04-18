@@ -56,9 +56,9 @@ describe('ProfileHeader', () => {
     expect(getByTestId('animated-orb')).toBeTruthy();
   });
 
-  it('バッジ名を表示する（streak=15 → MainSequence → 主系列星）', () => {
+  it('バッジ名を表示する（streak=15 → mercury → 水星）', () => {
     const { getByText } = render(<ProfileHeader />);
-    expect(getByText('主系列星')).toBeTruthy();
+    expect(getByText('水星')).toBeTruthy();
   });
 
   it('ニックネームを表示する', () => {

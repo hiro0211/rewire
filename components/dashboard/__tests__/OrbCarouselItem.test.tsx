@@ -61,7 +61,7 @@ jest.mock('@/hooks/useLocale', () => ({
 import { OrbCarouselItem } from '../OrbCarouselItem';
 import { BADGE_DEFINITIONS } from '@/constants/badges/BADGE_DEFINITIONS';
 
-const planetesimal = BADGE_DEFINITIONS.find((b) => b.id === 'Planetesimal')!;
+const planetesimal = BADGE_DEFINITIONS.find((b) => b.id === 'mars')!;
 
 function getFlatStyle(node: any) {
   return Array.isArray(node.props.style)
@@ -80,7 +80,7 @@ describe('OrbCarouselItem', () => {
         currentDays={45}
       />
     );
-    expect(getByText('微惑星')).toBeTruthy();
+    expect(getByText('火星')).toBeTruthy();
   });
 
   it('badge.day 日数を表示する', () => {

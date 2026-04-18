@@ -9,43 +9,43 @@ describe('orbConfig', () => {
       }
     });
 
-    it('chaosチャプターのアニメーション設定が正しい', () => {
-      const ch = ORB_CHAPTERS.chaos;
+    it('birthチャプターのアニメーション設定が正しい', () => {
+      const ch = ORB_CHAPTERS.birth;
       expect(ch.pulseDuration).toBe(4000);
       expect(ch.scaleMin).toBe(0.96);
       expect(ch.scaleMax).toBe(1.04);
       expect(ch.particleCount).toBe(4);
     });
 
-    it('ignitionチャプターはchaosより速いパルス', () => {
-      const ch = ORB_CHAPTERS.ignition;
+    it('innerPlanetsチャプターはbirthより速いパルス', () => {
+      const ch = ORB_CHAPTERS.innerPlanets;
       expect(ch.pulseDuration).toBe(3500);
-      expect(ch.pulseDuration).toBeLessThan(ORB_CHAPTERS.chaos.pulseDuration);
+      expect(ch.pulseDuration).toBeLessThan(ORB_CHAPTERS.birth.pulseDuration);
     });
 
-    it('formationチャプターのアニメーション設定が正しい', () => {
-      const ch = ORB_CHAPTERS.formation;
+    it('terrestrialチャプターのアニメーション設定が正しい', () => {
+      const ch = ORB_CHAPTERS.terrestrial;
       expect(ch.pulseDuration).toBe(3000);
     });
 
-    it('lifeチャプターはformationより速いパルス', () => {
-      const ch = ORB_CHAPTERS.life;
+    it('outerPlanetsチャプターはterrestrialより速いパルス', () => {
+      const ch = ORB_CHAPTERS.outerPlanets;
       expect(ch.pulseDuration).toBe(2600);
       expect(ch.pulseDuration).toBeLessThan(
-        ORB_CHAPTERS.formation.pulseDuration
+        ORB_CHAPTERS.terrestrial.pulseDuration
       );
     });
 
-    it('expansionチャプターのアニメーション設定が正しい', () => {
-      const ch = ORB_CHAPTERS.expansion;
+    it('stellarチャプターのアニメーション設定が正しい', () => {
+      const ch = ORB_CHAPTERS.stellar;
       expect(ch.pulseDuration).toBe(2200);
     });
 
-    it('transcendenceチャプターは最速パルス', () => {
-      const ch = ORB_CHAPTERS.transcendence;
+    it('cosmicチャプターは最速パルス', () => {
+      const ch = ORB_CHAPTERS.cosmic;
       expect(ch.pulseDuration).toBe(1800);
       expect(ch.pulseDuration).toBeLessThan(
-        ORB_CHAPTERS.expansion.pulseDuration
+        ORB_CHAPTERS.stellar.pulseDuration
       );
     });
 
@@ -79,8 +79,8 @@ describe('orbConfig', () => {
   });
 
   describe('getOrbConfig', () => {
-    it('chaosで正しい設定を返す', () => {
-      expect(getOrbConfig('chaos')).toBe(ORB_CHAPTERS.chaos);
+    it('birthで正しい設定を返す', () => {
+      expect(getOrbConfig('birth')).toBe(ORB_CHAPTERS.birth);
     });
 
     it('各チャプターIDで正しい設定を返す', () => {

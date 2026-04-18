@@ -28,15 +28,15 @@ jest.mock('@/hooks/useTheme', () => ({
 }));
 
 const MOCK_BADGE: NeuralBadgeDefinition = {
-  id: 'Nebula',
+  id: 'nebula',
   day: 1,
-  chapter: 'chaos',
+  chapter: 'birth',
   nameJa: '星雲',
   nameEn: 'Nebula',
   message: 'ガスと塵が集まり始めた。最初の一歩。',
   visual: '紫がかった雲が渦を巻く',
   neural: '最初の24時間 — ドーパミン受容体が回復を開始',
-  colors: { core: '#B8A9D4', glow: '#E8E0F0', accent: '#7B68AE' },
+  colors: { core: '#B8A9D4', mid: '#D0C4E4', outer: '#7B68AE', glow: '#E8E0F0' },
 };
 
 describe('BadgeUnlockModal', () => {

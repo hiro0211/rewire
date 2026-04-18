@@ -2,16 +2,16 @@ import { getOrbConfig } from '@/constants/orbConfig';
 import { BADGE_ANIMATION_OVERRIDES, getBadgeAnimConfig } from '../badgeAnimations';
 
 describe('BADGE_ANIMATION_OVERRIDES', () => {
-  it('overrideを持たないバッジ（Stardust）はundefinedである', () => {
-    expect(BADGE_ANIMATION_OVERRIDES['Stardust']).toBeUndefined();
+  it('overrideを持たないバッジ（stardust）はundefinedである', () => {
+    expect(BADGE_ANIMATION_OVERRIDES['stardust']).toBeUndefined();
   });
 
-  it('Cosmosはoverride定義を持つ', () => {
-    expect(BADGE_ANIMATION_OVERRIDES['Cosmos']).toBeDefined();
+  it('cosmosはoverride定義を持つ', () => {
+    expect(BADGE_ANIMATION_OVERRIDES['cosmos']).toBeDefined();
   });
 
-  it('Nebulaはpulsationのみのpartial override定義を持つ', () => {
-    const override = BADGE_ANIMATION_OVERRIDES['Nebula'];
+  it('nebulaはpulsationのみのpartial override定義を持つ', () => {
+    const override = BADGE_ANIMATION_OVERRIDES['nebula'];
     expect(override).toBeDefined();
     expect(override!.pulseDuration).toBeDefined();
     // particleCount は上書きされていない
@@ -24,55 +24,55 @@ describe('BADGE_ANIMATION_OVERRIDES', () => {
 
 describe('getBadgeAnimConfig', () => {
   describe('override なし → chapterデフォルトにフォールバック', () => {
-    it('StardustはchaosのデフォルトpulseDurationを返す', () => {
-      const result = getBadgeAnimConfig('Stardust', 'chaos');
-      const chapterDefault = getOrbConfig('chaos');
+    it('stardustはbirthのデフォルトpulseDurationを返す', () => {
+      const result = getBadgeAnimConfig('stardust', 'birth');
+      const chapterDefault = getOrbConfig('birth');
       expect(result.pulseDuration).toBe(chapterDefault.pulseDuration);
     });
 
-    it('StardustはchaosのデフォルトparticleCountを返す', () => {
-      const result = getBadgeAnimConfig('Stardust', 'chaos');
-      const chapterDefault = getOrbConfig('chaos');
+    it('stardustはbirthのデフォルトparticleCountを返す', () => {
+      const result = getBadgeAnimConfig('stardust', 'birth');
+      const chapterDefault = getOrbConfig('birth');
       expect(result.particleCount).toBe(chapterDefault.particleCount);
     });
 
-    it('StardustはchaosのデフォルトscaleMin/Maxを返す', () => {
-      const result = getBadgeAnimConfig('Stardust', 'chaos');
-      const chapterDefault = getOrbConfig('chaos');
+    it('stardustはbirthのデフォルトscaleMin/Maxを返す', () => {
+      const result = getBadgeAnimConfig('stardust', 'birth');
+      const chapterDefault = getOrbConfig('birth');
       expect(result.scaleMin).toBe(chapterDefault.scaleMin);
       expect(result.scaleMax).toBe(chapterDefault.scaleMax);
     });
   });
 
   describe('override あり → override値が反映される', () => {
-    it('CosmosのpulseDurationはchapterデフォルト（1800ms）より短い', () => {
-      const result = getBadgeAnimConfig('Cosmos', 'transcendence');
-      const chapterDefault = getOrbConfig('transcendence');
+    it('cosmosのpulseDurationはchapterデフォルト（1800ms）より短い', () => {
+      const result = getBadgeAnimConfig('cosmos', 'cosmic');
+      const chapterDefault = getOrbConfig('cosmic');
       expect(result.pulseDuration).toBeLessThan(chapterDefault.pulseDuration);
     });
 
-    it('CosmosのpulseDurationは1500msである', () => {
-      const result = getBadgeAnimConfig('Cosmos', 'transcendence');
+    it('cosmosのpulseDurationは1500msである', () => {
+      const result = getBadgeAnimConfig('cosmos', 'cosmic');
       expect(result.pulseDuration).toBe(1500);
     });
   });
 
   describe('Partial override — pulseDurationのみ上書き', () => {
-    it('NebulaのpulseDurationはchaosデフォルト（4000ms）と異なる', () => {
-      const result = getBadgeAnimConfig('Nebula', 'chaos');
-      const chapterDefault = getOrbConfig('chaos');
+    it('nebulaのpulseDurationはbirthデフォルト（4000ms）と異なる', () => {
+      const result = getBadgeAnimConfig('nebula', 'birth');
+      const chapterDefault = getOrbConfig('birth');
       expect(result.pulseDuration).not.toBe(chapterDefault.pulseDuration);
     });
 
-    it('NebulaのparticleCountはchaosデフォルトにフォールバックする', () => {
-      const result = getBadgeAnimConfig('Nebula', 'chaos');
-      const chapterDefault = getOrbConfig('chaos');
+    it('nebulaのparticleCountはbirthデフォルトにフォールバックする', () => {
+      const result = getBadgeAnimConfig('nebula', 'birth');
+      const chapterDefault = getOrbConfig('birth');
       expect(result.particleCount).toBe(chapterDefault.particleCount);
     });
 
-    it('NebulaのscaleMinはchaosデフォルトにフォールバックする', () => {
-      const result = getBadgeAnimConfig('Nebula', 'chaos');
-      const chapterDefault = getOrbConfig('chaos');
+    it('nebulaのscaleMinはbirthデフォルトにフォールバックする', () => {
+      const result = getBadgeAnimConfig('nebula', 'birth');
+      const chapterDefault = getOrbConfig('birth');
       expect(result.scaleMin).toBe(chapterDefault.scaleMin);
     });
   });
@@ -80,24 +80,24 @@ describe('getBadgeAnimConfig', () => {
   describe('全18バッジで型安全にconfigが取得できる', () => {
     it('全バッジのpulseDurationが正の数値である', () => {
       const allBadges: Array<{ id: import('../BadgeId').BadgeId; chapter: import('../BadgeChapter').ChapterId }> = [
-        { id: 'Stardust', chapter: 'chaos' },
-        { id: 'Nebula', chapter: 'chaos' },
-        { id: 'Protostar', chapter: 'chaos' },
-        { id: 'Ignition', chapter: 'ignition' },
-        { id: 'MainSequence', chapter: 'ignition' },
-        { id: 'Radiance', chapter: 'ignition' },
-        { id: 'AccretionDisk', chapter: 'formation' },
-        { id: 'Planetesimal', chapter: 'formation' },
-        { id: 'PlanetaryBirth', chapter: 'formation' },
-        { id: 'HabitableWorld', chapter: 'life' },
-        { id: 'Biogenesis', chapter: 'life' },
-        { id: 'Civilization', chapter: 'life' },
-        { id: 'SolarSystem', chapter: 'expansion' },
-        { id: 'BinaryStars', chapter: 'expansion' },
-        { id: 'StarCluster', chapter: 'expansion' },
-        { id: 'Galaxy', chapter: 'transcendence' },
-        { id: 'GalaxyCluster', chapter: 'transcendence' },
-        { id: 'Cosmos', chapter: 'transcendence' },
+        { id: 'stardust', chapter: 'birth' },
+        { id: 'nebula', chapter: 'birth' },
+        { id: 'protostar', chapter: 'birth' },
+        { id: 'moon', chapter: 'innerPlanets' },
+        { id: 'mercury', chapter: 'innerPlanets' },
+        { id: 'venus', chapter: 'innerPlanets' },
+        { id: 'earth', chapter: 'terrestrial' },
+        { id: 'mars', chapter: 'terrestrial' },
+        { id: 'jupiter', chapter: 'terrestrial' },
+        { id: 'saturn', chapter: 'outerPlanets' },
+        { id: 'uranus', chapter: 'outerPlanets' },
+        { id: 'neptune', chapter: 'outerPlanets' },
+        { id: 'sun', chapter: 'stellar' },
+        { id: 'whiteDwarf', chapter: 'stellar' },
+        { id: 'stellarSystem', chapter: 'stellar' },
+        { id: 'starCluster', chapter: 'cosmic' },
+        { id: 'galaxy', chapter: 'cosmic' },
+        { id: 'cosmos', chapter: 'cosmic' },
       ];
 
       for (const { id, chapter } of allBadges) {

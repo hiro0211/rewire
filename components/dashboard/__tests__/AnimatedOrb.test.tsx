@@ -13,13 +13,14 @@ jest.mock('@/hooks/useTheme', () => ({
 
 const testColors: BadgeColorTriad = {
   core: '#B8A9D4',
+  mid: '#D0C4E4',
+  outer: '#7B68AE',
   glow: '#E8E0F0',
-  accent: '#7B68AE',
 };
 
 describe('AnimatedOrb', () => {
   it('コンテナをレンダリングする', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="chaos" />);
+    render(<AnimatedOrb colors={testColors} chapterId="birth" />);
     expect(screen.getByTestId('animated-orb')).toBeTruthy();
   });
 
@@ -32,43 +33,43 @@ describe('AnimatedOrb', () => {
   });
 
   it('sizeプロパティを受け取れる', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="chaos" size={150} />);
+    render(<AnimatedOrb colors={testColors} chapterId="birth" size={150} />);
     expect(screen.getByTestId('animated-orb')).toBeTruthy();
   });
 
   it('3層のグローエフェクトを表示する', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="formation" />);
+    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" />);
     expect(screen.getByTestId('orb-glow-inner')).toBeTruthy();
     expect(screen.getByTestId('orb-glow-outer')).toBeTruthy();
     expect(screen.getByTestId('orb-pulse-ring')).toBeTruthy();
   });
 
   it('パーティクルエフェクトを表示する', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="life" />);
+    render(<AnimatedOrb colors={testColors} chapterId="outerPlanets" />);
     expect(screen.getByTestId('orb-particles')).toBeTruthy();
   });
 
   it('Pressableが存在する', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="chaos" />);
+    render(<AnimatedOrb colors={testColors} chapterId="birth" />);
     expect(screen.getByTestId('orb-pressable')).toBeTruthy();
   });
 
   it('onPress が発火する', () => {
     const onPress = jest.fn();
-    render(<AnimatedOrb colors={testColors} chapterId="chaos" onPress={onPress} />);
+    render(<AnimatedOrb colors={testColors} chapterId="birth" onPress={onPress} />);
     fireEvent.press(screen.getByTestId('orb-pressable'));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
   it('onLongPress が発火する', () => {
     const onLongPress = jest.fn();
-    render(<AnimatedOrb colors={testColors} chapterId="chaos" onLongPress={onLongPress} />);
+    render(<AnimatedOrb colors={testColors} chapterId="birth" onLongPress={onLongPress} />);
     fireEvent(screen.getByTestId('orb-pressable'), 'onLongPress');
     expect(onLongPress).toHaveBeenCalledTimes(1);
   });
 
   it('波紋エフェクト要素が存在する', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="chaos" />);
+    render(<AnimatedOrb colors={testColors} chapterId="birth" />);
     expect(screen.getByTestId('orb-tap-ripple')).toBeTruthy();
   });
 });

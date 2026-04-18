@@ -60,19 +60,20 @@ describe('BADGE_DEFINITIONS', () => {
     const hexPattern = /^#[0-9A-Fa-f]{6}$/;
     for (const badge of BADGE_DEFINITIONS) {
       expect(badge.colors.core).toMatch(hexPattern);
+      expect(badge.colors.mid).toMatch(hexPattern);
+      expect(badge.colors.outer).toMatch(hexPattern);
       expect(badge.colors.glow).toMatch(hexPattern);
-      expect(badge.colors.accent).toMatch(hexPattern);
     }
   });
 
-  it('先頭バッジはStardustでday=0', () => {
-    expect(BADGE_DEFINITIONS[0].id).toBe('Stardust');
+  it('先頭バッジはstardustでday=0', () => {
+    expect(BADGE_DEFINITIONS[0].id).toBe('stardust');
     expect(BADGE_DEFINITIONS[0].day).toBe(0);
   });
 
-  it('末尾バッジはCosmosでday=1095', () => {
+  it('末尾バッジはcosmosでday=1095', () => {
     const last = BADGE_DEFINITIONS[BADGE_DEFINITIONS.length - 1];
-    expect(last.id).toBe('Cosmos');
+    expect(last.id).toBe('cosmos');
     expect(last.day).toBe(1095);
   });
 
@@ -84,11 +85,11 @@ describe('BADGE_DEFINITIONS', () => {
       },
       {} as Record<string, number>
     );
-    expect(countByChapter['chaos']).toBe(3);
-    expect(countByChapter['ignition']).toBe(3);
-    expect(countByChapter['formation']).toBe(3);
-    expect(countByChapter['life']).toBe(3);
-    expect(countByChapter['expansion']).toBe(3);
-    expect(countByChapter['transcendence']).toBe(3);
+    expect(countByChapter['birth']).toBe(3);
+    expect(countByChapter['innerPlanets']).toBe(3);
+    expect(countByChapter['terrestrial']).toBe(3);
+    expect(countByChapter['outerPlanets']).toBe(3);
+    expect(countByChapter['stellar']).toBe(3);
+    expect(countByChapter['cosmic']).toBe(3);
   });
 });

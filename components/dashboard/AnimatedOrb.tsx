@@ -38,7 +38,7 @@ export function AnimatedOrb({ colors, chapterId, size = 200, onPress, onLongPres
   }));
 
   const glowColor = hexToRgba(colors.glow, 0.3);
-  const orbColors = [colors.core, colors.glow, colors.accent] as const;
+  const orbColors = [colors.core, colors.mid, colors.outer] as const;
 
   // Container expanded to accommodate glow + particles (size * 2.0)
   const containerSize = size * 2.0;

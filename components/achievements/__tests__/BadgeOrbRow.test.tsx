@@ -20,15 +20,15 @@ import { BadgeOrbRow } from '../BadgeOrbRow';
 import type { NeuralBadgeDefinition } from '@/constants/badges/BADGE_DEFINITIONS';
 
 const MOCK_BADGE: NeuralBadgeDefinition = {
-  id: 'Ignition',
+  id: 'moon',
   day: 7,
-  chapter: 'ignition',
-  nameJa: '点火',
-  nameEn: 'Ignition',
-  message: '核融合が始まった。あなたの中に恒星が誕生した。',
-  visual: 'オレンジの炎が噴き出す',
+  chapter: 'innerPlanets',
+  nameJa: '月',
+  nameEn: 'Moon',
+  message: '静かな光が闇を照らす。最初の1週間を越えた。',
+  visual: '銀白色のクレーター付き球体',
   neural: '1週間 — 前頭前皮質の灰白質密度が増加傾向',
-  colors: { core: '#FFB547', glow: '#FFE4A0', accent: '#FF7847' },
+  colors: { core: '#D4D4D8', mid: '#E8E8EC', outer: '#9CA3AF', glow: '#F4F4F5' },
 };
 
 describe('BadgeOrbRow', () => {
@@ -36,7 +36,7 @@ describe('BadgeOrbRow', () => {
     render(
       <BadgeOrbRow badge={MOCK_BADGE} isUnlocked alignment="left" />,
     );
-    expect(screen.getByText('点火')).toBeTruthy();
+    expect(screen.getByText('月')).toBeTruthy();
   });
 
   it('"Day {n}" ラベルを表示する', () => {

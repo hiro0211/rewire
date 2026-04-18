@@ -18,18 +18,18 @@ describe('achievementCalculator', () => {
       });
     });
 
-    it('day=0ではStardustのみアンロック', () => {
+    it('day=0ではstardustのみアンロック', () => {
       const result = computeAchievements(0);
       const unlocked = result.filter((a) => a.isUnlocked);
       expect(unlocked).toHaveLength(1);
-      expect(unlocked[0].badge.id).toBe('Stardust');
+      expect(unlocked[0].badge.id).toBe('stardust');
     });
 
     it('day=7では4つアンロック', () => {
       const result = computeAchievements(7);
       const unlocked = result.filter((a) => a.isUnlocked);
       const ids = unlocked.map((a) => a.badge.id);
-      expect(ids).toEqual(['Stardust', 'Nebula', 'Protostar', 'Ignition']);
+      expect(ids).toEqual(['stardust', 'nebula', 'protostar', 'moon']);
     });
 
     it('day=1095で全バッジアンロック', () => {
@@ -43,25 +43,25 @@ describe('achievementCalculator', () => {
     it('アンロック済みバッジのみ返す', () => {
       const result = getUnlockedBadges(3);
       expect(result).toHaveLength(3);
-      expect(result.map((b) => b.id)).toEqual(['Stardust', 'Nebula', 'Protostar']);
+      expect(result.map((b) => b.id)).toEqual(['stardust', 'nebula', 'protostar']);
     });
   });
 
   describe('getNextBadge', () => {
-    it('streak=0の次はNebula', () => {
-      expect(getNextBadge(0)?.id).toBe('Nebula');
+    it('streak=0の次はnebula', () => {
+      expect(getNextBadge(0)?.id).toBe('nebula');
     });
 
-    it('streak=1の次はProtostar', () => {
-      expect(getNextBadge(1)?.id).toBe('Protostar');
+    it('streak=1の次はprotostar', () => {
+      expect(getNextBadge(1)?.id).toBe('protostar');
     });
 
     it('全バッジアンロック済みならnull', () => {
       expect(getNextBadge(1095)).toBeNull();
     });
 
-    it('streak=89の次はHabitableWorld', () => {
-      expect(getNextBadge(89)?.id).toBe('HabitableWorld');
+    it('streak=89の次はsaturn', () => {
+      expect(getNextBadge(89)?.id).toBe('saturn');
     });
   });
 

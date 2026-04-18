@@ -29,36 +29,38 @@ import { BadgeOrb } from '../BadgeOrb';
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 
 const MOCK_COLORS: BadgeColorTriad = {
-  core: '#FFB547',
-  glow: '#FFE4A0',
-  accent: '#FF7847',
+  core: '#D4D4D8',
+  mid: '#E8E8EC',
+  outer: '#9CA3AF',
+  glow: '#F4F4F5',
 };
 
-// SolarSystem バッジの実際の colors
-const SOLAR_SYSTEM_COLORS: BadgeColorTriad = {
-  core: '#5CE1E6',
-  glow: '#B8F5F7',
-  accent: '#1E6B7F',
+// saturn バッジの実際の colors
+const SATURN_COLORS: BadgeColorTriad = {
+  core: '#E8C87A',
+  mid: '#F0DCA0',
+  outer: '#C4A050',
+  glow: '#FFF0C0',
 };
 
 describe('BadgeOrb', () => {
   it('unlocked のとき testID="badge-orb-unlocked" を持つコンテナを描画する', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
     );
     expect(screen.getByTestId('badge-orb-unlocked')).toBeTruthy();
   });
 
   it('locked のとき testID="badge-orb-locked" を持つコンテナを描画する', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked={false} chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked={false} chapterId="innerPlanets" />,
     );
     expect(screen.getByTestId('badge-orb-locked')).toBeTruthy();
   });
 
   it('locked のとき opacity 0.3 が適用される', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked={false} chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked={false} chapterId="innerPlanets" />,
     );
     const container = screen.getByTestId('badge-orb-locked');
     // Flatten style array into single object for inspection
@@ -70,49 +72,49 @@ describe('BadgeOrb', () => {
 
   it('locked のとき LinearGradient に colors が渡される', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked={false} chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked={false} chapterId="innerPlanets" />,
     );
     const gradient = screen.getByTestId('badge-orb-locked-gradient');
     expect(gradient.props.colors).toEqual([
       MOCK_COLORS.core,
-      MOCK_COLORS.glow,
-      MOCK_COLORS.accent,
+      MOCK_COLORS.mid,
+      MOCK_COLORS.outer,
     ]);
   });
 });
 
 describe('SaturnRing 特殊描画', () => {
-  it('badgeId="SolarSystem" のとき saturn-ring が描画される', () => {
+  it('badgeId="saturn" のとき saturn-ring が描画される', () => {
     render(
       <BadgeOrb
-        colors={SOLAR_SYSTEM_COLORS}
+        colors={SATURN_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="SolarSystem"
+        chapterId="outerPlanets"
+        badgeId="saturn"
       />,
     );
     expect(screen.getByTestId('saturn-ring')).toBeTruthy();
   });
 
-  it('badgeId="SolarSystem" かつ locked でも saturn-ring が描画される', () => {
+  it('badgeId="saturn" かつ locked でも saturn-ring が描画される', () => {
     render(
       <BadgeOrb
-        colors={SOLAR_SYSTEM_COLORS}
+        colors={SATURN_COLORS}
         isUnlocked={false}
-        chapterId="expansion"
-        badgeId="SolarSystem"
+        chapterId="outerPlanets"
+        badgeId="saturn"
       />,
     );
     expect(screen.getByTestId('saturn-ring')).toBeTruthy();
   });
 
-  it('badgeId="Ignition" のとき saturn-ring は描画されない', () => {
+  it('badgeId="moon" のとき saturn-ring は描画されない', () => {
     render(
       <BadgeOrb
         colors={MOCK_COLORS}
         isUnlocked
-        chapterId="ignition"
-        badgeId="Ignition"
+        chapterId="innerPlanets"
+        badgeId="moon"
       />,
     );
     expect(screen.queryByTestId('saturn-ring')).toBeNull();
@@ -120,72 +122,73 @@ describe('SaturnRing 特殊描画', () => {
 
   it('badgeId なしのとき saturn-ring は描画されない', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
     );
     expect(screen.queryByTestId('saturn-ring')).toBeNull();
   });
 
-  it('saturn-ring の stroke カラーは SolarSystem の glow カラーに基づく', () => {
+  it('saturn-ring の stroke カラーは saturn の glow カラーに基づく', () => {
     render(
       <BadgeOrb
-        colors={SOLAR_SYSTEM_COLORS}
+        colors={SATURN_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="SolarSystem"
+        chapterId="outerPlanets"
+        badgeId="saturn"
       />,
     );
     // svg-ellipse は SaturnRing 内の Ellipse モック
     const ellipses = screen.queryAllByTestId('svg-ellipse');
     // SaturnRing の Ellipse が存在する
     expect(ellipses.length).toBeGreaterThan(0);
-    // stroke カラーが SolarSystem.glow (#B8F5F7) を含む
+    // stroke カラーが saturn.glow (#FFF0C0) を含む
     const ringEllipse = ellipses.find(
-      (el) => el.props.stroke === SOLAR_SYSTEM_COLORS.glow,
+      (el) => el.props.stroke === SATURN_COLORS.glow,
     );
     expect(ringEllipse).toBeTruthy();
   });
 });
 
-// BinaryStars バッジの colors
-const BINARY_STARS_COLORS: BadgeColorTriad = {
-  core: '#00D4FF',
-  glow: '#80ECFF',
-  accent: '#0088AA',
+// stellarSystem バッジの colors
+const STELLAR_SYSTEM_COLORS: BadgeColorTriad = {
+  core: '#5CE1E6',
+  mid: '#80EAF0',
+  outer: '#1E6B7F',
+  glow: '#B8F5F7',
 };
 
 describe('StellarSystemOverlay 特殊描画', () => {
-  it('badgeId="BinaryStars" のとき stellar-system-overlay が描画される', () => {
+  it('badgeId="stellarSystem" のとき stellar-system-overlay が描画される', () => {
     render(
       <BadgeOrb
-        colors={BINARY_STARS_COLORS}
+        colors={STELLAR_SYSTEM_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="BinaryStars"
+        chapterId="stellar"
+        badgeId="stellarSystem"
       />,
     );
     expect(screen.getByTestId('stellar-system-overlay')).toBeTruthy();
   });
 
-  it('badgeId="BinaryStars" のとき軌道円（orbital-ring）が複数描画される', () => {
+  it('badgeId="stellarSystem" のとき軌道円（orbital-ring）が複数描画される', () => {
     render(
       <BadgeOrb
-        colors={BINARY_STARS_COLORS}
+        colors={STELLAR_SYSTEM_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="BinaryStars"
+        chapterId="stellar"
+        badgeId="stellarSystem"
       />,
     );
     const orbitalRings = screen.getAllByTestId('orbital-ring');
     expect(orbitalRings.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('badgeId="BinaryStars" のとき惑星ドット（planet-dot）が軌道数と同数描画される', () => {
+  it('badgeId="stellarSystem" のとき惑星ドット（planet-dot）が軌道数と同数描画される', () => {
     render(
       <BadgeOrb
-        colors={BINARY_STARS_COLORS}
+        colors={STELLAR_SYSTEM_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="BinaryStars"
+        chapterId="stellar"
+        badgeId="stellarSystem"
       />,
     );
     const rings = screen.getAllByTestId('orbital-ring');
@@ -193,13 +196,13 @@ describe('StellarSystemOverlay 特殊描画', () => {
     expect(dots.length).toBe(rings.length);
   });
 
-  it('badgeId="SolarSystem" のとき stellar-system-overlay は描画されない', () => {
+  it('badgeId="saturn" のとき stellar-system-overlay は描画されない', () => {
     render(
       <BadgeOrb
-        colors={SOLAR_SYSTEM_COLORS}
+        colors={SATURN_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="SolarSystem"
+        chapterId="outerPlanets"
+        badgeId="saturn"
       />,
     );
     expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
@@ -207,52 +210,53 @@ describe('StellarSystemOverlay 特殊描画', () => {
 
   it('badgeId なしのとき stellar-system-overlay は描画されない', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
     );
     expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
   });
 });
 
-// StarCluster バッジの colors
+// starCluster バッジの colors
 const STAR_CLUSTER_COLORS: BadgeColorTriad = {
   core: '#38BDF8',
+  mid: '#60CCF8',
+  outer: '#0284C7',
   glow: '#BAE6FD',
-  accent: '#0284C7',
 };
 
 describe('StarClusterOverlay 特殊描画', () => {
-  it('badgeId="StarCluster" のとき star-cluster-overlay が描画される', () => {
+  it('badgeId="starCluster" のとき star-cluster-overlay が描画される', () => {
     render(
       <BadgeOrb
         colors={STAR_CLUSTER_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="StarCluster"
+        chapterId="cosmic"
+        badgeId="starCluster"
       />,
     );
     expect(screen.getByTestId('star-cluster-overlay')).toBeTruthy();
   });
 
-  it('badgeId="StarCluster" のとき周辺小球（star-cluster-satellite）が5個以上描画される', () => {
+  it('badgeId="starCluster" のとき周辺小球（star-cluster-satellite）が5個以上描画される', () => {
     render(
       <BadgeOrb
         colors={STAR_CLUSTER_COLORS}
         isUnlocked
-        chapterId="expansion"
-        badgeId="StarCluster"
+        chapterId="cosmic"
+        badgeId="starCluster"
       />,
     );
     const satellites = screen.getAllByTestId('star-cluster-satellite');
     expect(satellites.length).toBeGreaterThanOrEqual(5);
   });
 
-  it('badgeId="Galaxy" のとき star-cluster-overlay は描画されない', () => {
+  it('badgeId="galaxy" のとき star-cluster-overlay は描画されない', () => {
     render(
       <BadgeOrb
         colors={GALAXY_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="Galaxy"
+        chapterId="cosmic"
+        badgeId="galaxy"
       />,
     );
     expect(screen.queryByTestId('star-cluster-overlay')).toBeNull();
@@ -260,52 +264,53 @@ describe('StarClusterOverlay 特殊描画', () => {
 
   it('badgeId なしのとき star-cluster-overlay は描画されない', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
     );
     expect(screen.queryByTestId('star-cluster-overlay')).toBeNull();
   });
 });
 
-// Cosmos バッジの colors
+// cosmos バッジの colors
 const COSMOS_COLORS: BadgeColorTriad = {
   core: '#F43F5E',
+  mid: '#FB7185',
+  outer: '#9F1239',
   glow: '#FFE4E8',
-  accent: '#9F1239',
 };
 
 describe('CosmosOverlay 特殊描画', () => {
-  it('badgeId="Cosmos" のとき cosmos-overlay が描画される', () => {
+  it('badgeId="cosmos" のとき cosmos-overlay が描画される', () => {
     render(
       <BadgeOrb
         colors={COSMOS_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="Cosmos"
+        chapterId="cosmic"
+        badgeId="cosmos"
       />,
     );
     expect(screen.getByTestId('cosmos-overlay')).toBeTruthy();
   });
 
-  it('badgeId="Cosmos" のとき光点（cosmos-particle）が20個以上描画される', () => {
+  it('badgeId="cosmos" のとき光点（cosmos-particle）が20個以上描画される', () => {
     render(
       <BadgeOrb
         colors={COSMOS_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="Cosmos"
+        chapterId="cosmic"
+        badgeId="cosmos"
       />,
     );
     const particles = screen.getAllByTestId('cosmos-particle');
     expect(particles.length).toBeGreaterThanOrEqual(20);
   });
 
-  it('badgeId="GalaxyCluster" のとき cosmos-overlay は描画されない', () => {
+  it('badgeId="galaxy" のとき cosmos-overlay は描画されない', () => {
     render(
       <BadgeOrb
         colors={COSMOS_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="GalaxyCluster"
+        chapterId="cosmic"
+        badgeId="galaxy"
       />,
     );
     expect(screen.queryByTestId('cosmos-overlay')).toBeNull();
@@ -313,52 +318,53 @@ describe('CosmosOverlay 特殊描画', () => {
 
   it('badgeId なしのとき cosmos-overlay は描画されない', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
     );
     expect(screen.queryByTestId('cosmos-overlay')).toBeNull();
   });
 });
 
-// Galaxy バッジの colors
+// galaxy バッジの colors
 const GALAXY_COLORS: BadgeColorTriad = {
-  core: '#EC4899',
-  glow: '#FBCFE8',
-  accent: '#831843',
+  core: '#A855F7',
+  mid: '#C084FC',
+  outer: '#6B21A8',
+  glow: '#E9D5FF',
 };
 
 describe('GalaxySpiral 特殊描画', () => {
-  it('badgeId="Galaxy" のとき galaxy-spiral が描画される', () => {
+  it('badgeId="galaxy" のとき galaxy-spiral が描画される', () => {
     render(
       <BadgeOrb
         colors={GALAXY_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="Galaxy"
+        chapterId="cosmic"
+        badgeId="galaxy"
       />,
     );
     expect(screen.getByTestId('galaxy-spiral')).toBeTruthy();
   });
 
-  it('badgeId="Galaxy" のとき渦巻きアーム（galaxy-spiral-arm）が2本描画される', () => {
+  it('badgeId="galaxy" のとき渦巻きアーム（galaxy-spiral-arm）が2本描画される', () => {
     render(
       <BadgeOrb
         colors={GALAXY_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="Galaxy"
+        chapterId="cosmic"
+        badgeId="galaxy"
       />,
     );
     const arms = screen.getAllByTestId('galaxy-spiral-arm');
     expect(arms.length).toBe(2);
   });
 
-  it('badgeId="GalaxyCluster" のとき galaxy-spiral は描画されない', () => {
+  it('badgeId="cosmos" のとき galaxy-spiral は描画されない', () => {
     render(
       <BadgeOrb
         colors={GALAXY_COLORS}
         isUnlocked
-        chapterId="transcendence"
-        badgeId="GalaxyCluster"
+        chapterId="cosmic"
+        badgeId="cosmos"
       />,
     );
     expect(screen.queryByTestId('galaxy-spiral')).toBeNull();
@@ -366,7 +372,7 @@ describe('GalaxySpiral 特殊描画', () => {
 
   it('badgeId なしのとき galaxy-spiral は描画されない', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
     );
     expect(screen.queryByTestId('galaxy-spiral')).toBeNull();
   });

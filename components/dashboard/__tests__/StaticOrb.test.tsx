@@ -42,8 +42,9 @@ import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 
 const testColors: BadgeColorTriad = {
   core: '#FF0000',
-  glow: '#FFAA00',
-  accent: '#FF6600',
+  mid: '#FFAA00',
+  outer: '#FF6600',
+  glow: '#FF8800',
 };
 
 describe('StaticOrb', () => {

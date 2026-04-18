@@ -21,23 +21,23 @@ describe('CHAPTERS', () => {
   it('章IDの順序が正しい', () => {
     const ids = CHAPTERS.map((c) => c.id);
     expect(ids).toEqual([
-      'chaos',
-      'ignition',
-      'formation',
-      'life',
-      'expansion',
-      'transcendence',
+      'birth',
+      'innerPlanets',
+      'terrestrial',
+      'outerPlanets',
+      'stellar',
+      'cosmic',
     ]);
   });
 
   it('ChapterId型が6つのリテラルを含む', () => {
     const validIds: ChapterId[] = [
-      'chaos',
-      'ignition',
-      'formation',
-      'life',
-      'expansion',
-      'transcendence',
+      'birth',
+      'innerPlanets',
+      'terrestrial',
+      'outerPlanets',
+      'stellar',
+      'cosmic',
     ];
     expect(validIds).toHaveLength(6);
   });

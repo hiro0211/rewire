@@ -1,24 +1,24 @@
 import { getNextBadge } from '../getNextBadge';
 
 describe('getNextBadge', () => {
-  it('day=0 → 次はNebula', () => {
+  it('day=0 → 次はnebula', () => {
     const next = getNextBadge(0);
-    expect(next?.id).toBe('Nebula');
+    expect(next?.id).toBe('nebula');
   });
 
-  it('day=1 → 次はProtostar', () => {
+  it('day=1 → 次はprotostar', () => {
     const next = getNextBadge(1);
-    expect(next?.id).toBe('Protostar');
+    expect(next?.id).toBe('protostar');
   });
 
-  it('day=2 → 次はProtostar（まだNebula区間）', () => {
+  it('day=2 → 次はprotostar（まだnebula区間）', () => {
     const next = getNextBadge(2);
-    expect(next?.id).toBe('Protostar');
+    expect(next?.id).toBe('protostar');
   });
 
-  it('day=1094 → 次はCosmos', () => {
+  it('day=1094 → 次はcosmos', () => {
     const next = getNextBadge(1094);
-    expect(next?.id).toBe('Cosmos');
+    expect(next?.id).toBe('cosmos');
   });
 
   it('day=1095 → null（最終バッジ達成済み）', () => {

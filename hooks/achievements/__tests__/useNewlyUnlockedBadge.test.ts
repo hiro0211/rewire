@@ -35,7 +35,7 @@ describe('useNewlyUnlockedBadge', () => {
     });
 
     expect(result.current.newBadge).not.toBeNull();
-    expect(result.current.newBadge?.id).toBe('Nebula');
+    expect(result.current.newBadge?.id).toBe('nebula');
   });
 
   it('一度表示済みのバッジは再トリガーされない', async () => {
@@ -68,7 +68,7 @@ describe('useNewlyUnlockedBadge', () => {
     // streak=-1 は RangeError なので、streak=0 のケースでは Stardust が取れるはず
     // 未達テスト: day=0 で Stardust は必ずアンロック済みにして、streak は十分小さい
     // ここでは seen に Stardust と Nebula を両方入れておき、streak=0 で null になることを確認
-    mockStore['seen_badge_ids'] = JSON.stringify(['Stardust']);
+    mockStore['seen_badge_ids'] = JSON.stringify(['stardust']);
     mockUseStreak.mockReturnValue({ streak: 0 });
 
     const { result } = renderHook(() => useNewlyUnlockedBadge());

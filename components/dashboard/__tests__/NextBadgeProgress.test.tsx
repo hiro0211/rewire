@@ -66,7 +66,7 @@ describe('NextBadgeProgress', () => {
   });
 
   it('progress 25% のとき進捗バー幅が 25% である', () => {
-    // Day 4 → Protostar(day=3), next=Ignition(day=7) → (4-3)/(7-3)=0.25
+    // Day 4 → protostar(day=3), next=moon(day=7) → (4-3)/(7-3)=0.25
     render(<NextBadgeProgress currentDay={4} />);
     const fill = screen.getByTestId('next-badge-progress-fill');
     const flat = Array.isArray(fill.props.style)

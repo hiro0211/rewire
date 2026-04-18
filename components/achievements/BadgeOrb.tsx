@@ -36,8 +36,8 @@ interface BadgeOrbProps {
  * バッジ 1 個分の Orb。unlocked はパルス・発光・粒子、locked は薄暗い静止ゴースト。
  * AnimatedOrb と構造を揃えつつ、色は props.colors を正として描く。
  * 特殊描画:
- *   SolarSystem  → SaturnRing（土星の環）
- *   BinaryStars  → StellarSystemOverlay（恒星系の軌道）
+ *   saturn          → SaturnRing（土星の環）
+ *   stellarSystem   → StellarSystemOverlay（恒星系の軌道）
  */
 export function BadgeOrb({
   colors,
@@ -55,15 +55,15 @@ export function BadgeOrb({
 
   const tripleColors: [string, string, string] = [
     colors.core,
-    colors.glow,
-    colors.accent,
+    colors.mid,
+    colors.outer,
   ];
 
-  const showSaturnRing = badgeId === 'SolarSystem';
-  const showStellarOverlay = badgeId === 'BinaryStars';
-  const showGalaxySpiral = badgeId === 'Galaxy';
-  const showStarCluster = badgeId === 'StarCluster';
-  const showCosmos = badgeId === 'Cosmos';
+  const showSaturnRing = badgeId === 'saturn';
+  const showStellarOverlay = badgeId === 'stellarSystem';
+  const showGalaxySpiral = badgeId === 'galaxy';
+  const showStarCluster = badgeId === 'starCluster';
+  const showCosmos = badgeId === 'cosmos';
 
   if (!isUnlocked) {
     // Locked: 静止ゴースト（アニメ・Skia・パーティクルなし）
@@ -131,7 +131,7 @@ interface SaturnRingProps {
 }
 
 /**
- * 土星の環を模した楕円オーバーレイ。SolarSystem バッジ専用。
+ * 土星の環を模した楕円オーバーレイ。saturn バッジ専用。
  * orb の手前レイヤーに配置し、-20° 傾けることで奥行き感を演出する。
  */
 function SaturnRing({ size, color, containerSize }: SaturnRingProps) {
@@ -377,7 +377,7 @@ function SatelliteStar({ cx, cy, size, color, angle, distFraction, phaseSeed }: 
 
 /**
  * 軌道の設定。radiusFraction は size/2 に対する割合。
- * BinaryStars バッジの「二重星が互いを周回する」視覚表現。
+ * stellarSystem バッジの「恒星系の惑星が周回する」視覚表現。
  */
 const STELLAR_ORBITS = [
   { key: 'inner', radiusFraction: 0.30, duration: 4000 },
@@ -391,7 +391,7 @@ interface StellarSystemOverlayProps {
 }
 
 /**
- * 恒星系の軌道オーバーレイ。BinaryStars バッジ専用。
+ * 恒星系の軌道オーバーレイ。stellarSystem バッジ専用。
  * 3本の楕円軌道 + 各軌道を周回する小さな惑星ドット。
  * 惑星ドットは Reanimated で軌道上を回転する。
  */
@@ -498,11 +498,11 @@ function PlanetDot({ size, radius, color, duration }: PlanetDotProps) {
 /** 全バッジのコアカラーから選ぶ宇宙光点カラーパレット */
 const COSMOS_PARTICLE_COLORS = [
   '#C9CBE0', '#B8A9D4', '#D4C5A0',
-  '#FFB547', '#FFD700', '#FFF0C0',
-  '#D17842', '#A0785A', '#C45030',
-  '#4A90E2', '#2ECC71', '#8B5CF6',
-  '#5CE1E6', '#00D4FF', '#38BDF8',
-  '#EC4899', '#A855F7', '#F43F5E',
+  '#D4D4D8', '#A8A29E', '#F5DEB3',
+  '#4A90E2', '#C1440E', '#D4A574',
+  '#E8C87A', '#7DD3E8', '#3B5CE6',
+  '#FFD700', '#E8E8F0', '#5CE1E6',
+  '#38BDF8', '#A855F7', '#F43F5E',
 ] as const;
 
 interface CosmosParticleConfig {

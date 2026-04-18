@@ -74,24 +74,24 @@ describe('OrbCarousel', () => {
     expect(list.props.data.length).toBe(18);
   });
 
-  it('currentDays=45のときPlanetesimalが初期アクティブ', () => {
+  it('currentDays=45のときmarsが初期アクティブ', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={45} />);
     expect(getByTestId('orb-carousel').props.initialScrollIndex).toBe(
-      BADGE_DEFINITIONS.findIndex((b) => b.id === 'Planetesimal')
+      BADGE_DEFINITIONS.findIndex((b) => b.id === 'mars')
     );
   });
 
-  it('currentDays=0のときStardustが初期アクティブ', () => {
+  it('currentDays=0のときstardustが初期アクティブ', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={0} />);
     expect(getByTestId('orb-carousel').props.initialScrollIndex).toBe(
-      BADGE_DEFINITIONS.findIndex((b) => b.id === 'Stardust')
+      BADGE_DEFINITIONS.findIndex((b) => b.id === 'stardust')
     );
   });
 
-  it('currentDays=9999のときCosmosが初期アクティブ（境界値）', () => {
+  it('currentDays=9999のときcosmosが初期アクティブ（境界値）', () => {
     const { getByTestId } = render(<OrbCarousel currentDays={9999} />);
     expect(getByTestId('orb-carousel').props.initialScrollIndex).toBe(
-      BADGE_DEFINITIONS.findIndex((b) => b.id === 'Cosmos')
+      BADGE_DEFINITIONS.findIndex((b) => b.id === 'cosmos')
     );
   });
 
