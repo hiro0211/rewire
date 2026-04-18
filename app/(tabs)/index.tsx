@@ -28,6 +28,8 @@ import { SurveyPromptModal } from '@/components/survey/SurveyPromptModal';
 import { useReviewEligibility } from '@/hooks/review/useReviewEligibility';
 import { useReviewPromptActions } from '@/hooks/review/useReviewPromptActions';
 import { ReviewPromptModal } from '@/components/review/ReviewPromptModal';
+import { BadgeUnlockModal } from '@/components/achievements/BadgeUnlockModal';
+import { useNewlyUnlockedBadge } from '@/hooks/achievements/useNewlyUnlockedBadge';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 let ViewShot: any = View;
@@ -63,6 +65,8 @@ export default function DashboardScreen() {
   const { handleAccept, handleDismiss } = useSurveyPromptActions(
     () => setSurveyModalVisible(false)
   );
+
+  const { newBadge, dismiss: dismissBadge } = useNewlyUnlockedBadge();
 
   const { shouldShowReview } = useReviewEligibility();
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
@@ -200,6 +204,8 @@ export default function DashboardScreen() {
         onFeedbackTap={handleFeedbackTap}
         onDismiss={handleReviewDismiss}
       />
+
+      <BadgeUnlockModal badge={newBadge} onDismiss={dismissBadge} />
     </SafeAreaWrapper>
   );
 }
