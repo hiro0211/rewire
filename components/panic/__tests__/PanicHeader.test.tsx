@@ -3,10 +3,11 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { PanicHeader } from '../PanicHeader';
 
 describe('PanicHeader', () => {
-  it('"Rewire" ロゴと "パニックボタン" ラベルを表示する', () => {
-    const { getByText } = render(<PanicHeader onClose={jest.fn()} />);
-    expect(getByText('Rewire')).toBeTruthy();
-    expect(getByText('パニックボタン')).toBeTruthy();
+  it('閉じるボタンのみ表示し、テキストは表示しない', () => {
+    const { getByTestId, queryByText } = render(<PanicHeader onClose={jest.fn()} />);
+    expect(getByTestId('panic-header-close')).toBeTruthy();
+    expect(queryByText('Rewire')).toBeNull();
+    expect(queryByText('パニックボタン')).toBeNull();
   });
 
   it('閉じるボタン押下で onClose が呼ばれる', () => {
