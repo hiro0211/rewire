@@ -2,6 +2,8 @@ import { CoreOrbRenderer } from '@/components/dashboard/CoreOrbRenderer';
 import { OrbGlowLayers } from '@/components/dashboard/OrbGlowLayers';
 import { OrbParticles } from '@/components/dashboard/OrbParticles';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
+import { getBadgeAnimConfig } from '@/constants/badges/badgeAnimations';
+import type { BadgeId } from '@/constants/badges/BadgeId';
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 import { getOrbConfig } from '@/constants/orbConfig';
 import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
@@ -19,6 +21,8 @@ interface BadgeOrbProps {
   isUnlocked: boolean;
   /** pulseDuration / scaleMin / scaleMax を取得するチャプター */
   chapterId: ChapterId;
+  /** バッジ固有アニメーション上書きを適用するバッジID（省略時はチャプターデフォルト） */
+  badgeId?: BadgeId;
 }
 
 /**
@@ -30,8 +34,11 @@ export function BadgeOrb({
   size = 80,
   isUnlocked,
   chapterId,
+  badgeId,
 }: BadgeOrbProps) {
-  const chapterConfig = getOrbConfig(chapterId);
+  const chapterConfig = badgeId
+    ? getBadgeAnimConfig(badgeId, chapterId)
+    : getOrbConfig(chapterId);
 
   const containerSize = size * 1.6;
   const offset = (containerSize - size) / 2;

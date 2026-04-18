@@ -5,3 +5,5 @@ export type { ChapterDefinition } from './BadgeChapter';
 export type { HexColor, BadgeColorTriad } from './BadgeColorTriad';
 export type { NeuralBadgeDefinition } from './BADGE_DEFINITIONS';
 export { BADGE_DEFINITIONS } from './BADGE_DEFINITIONS';
+export type { BadgeAnimationOverride } from './badgeAnimations';
+export { BADGE_ANIMATION_OVERRIDES, getBadgeAnimConfig } from './badgeAnimations';

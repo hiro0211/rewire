@@ -41,6 +41,7 @@ export function BadgeOrbRow({ badge, isUnlocked, alignment }: BadgeOrbRowProps) 
           colors={badge.colors}
           isUnlocked={isUnlocked}
           chapterId={badge.chapter}
+          badgeId={badge.id}
         />
       </View>
 
