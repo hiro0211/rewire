@@ -423,3 +423,96 @@ Skia shader の明暗差が LinearGradient よりコントラスト強いため 
 
 ### 未コミット状態
 hiro 側で iOS Simulator 目視確認（locked オーブの beam 見え方、active + locked の輝度感）後コミット予定。
+
+## 2026-04-18: 18バッジシステム Phase 0〜3 実装完了
+
+### 作業内容
+Kent Beck TDD (Red→Green→Refactor) で Phase 0〜3 を全て実装し、各フェーズ完了後に main にコミット＆プッシュ。
+
+### 完了した作業
+
+#### Phase 0: デッドコード削除
+- `components/profile/CosmosProgressTimeline.tsx` 削除（StellarPathTimeline に置換済み）
+- `components/profile/__tests__/CosmosProgressTimeline.test.tsx` 削除
+- コミット: `refactor: remove unused CosmosProgressTimeline`
+
+#### Phase 1: バッジ固有アニメーション設定
+- **新規**: `constants/badges/badgeAnimations.ts`
+  - `BadgeAnimationOverride = Partial<OrbTierConfig>` 型
+  - `BADGE_ANIMATION_OVERRIDES: Record<BadgeId, BadgeAnimationOverride | undefined>`（18バッジ分）
+  - `getBadgeAnimConfig(badgeId, chapterId): OrbTierConfig` — chapterConfigにoverrideをスプレッド
+  - Stardust: undefined（chaos デフォルト 4000ms のまま）、Cosmos: 1500ms（最速）
+- **新規**: `constants/badges/__tests__/badgeAnimations.test.ts`（12テスト）
+- **変更**: `constants/badges/index.ts`（エクスポート追加）
+- **変更**: `components/achievements/BadgeOrb.tsx`（`badgeId?: BadgeId` prop追加、getBadgeAnimConfig使用）
+- **変更**: `components/achievements/BadgeOrbRow.tsx`（`badgeId={badge.id}` を BadgeOrb に渡す）
+- コミット: `feat: add per-badge animation overrides`
+
+#### Phase 2: 土星の環（SaturnRing）描画
+- `BadgeOrb` に `SaturnRing` サブコンポーネント追加（react-native-svg Ellipse）
+- `badgeId === 'SolarSystem'` のとき locked/unlocked 両方で描画
+- 2層楕円（後ろ 0.45 opacity, 前 arc 0.7 opacity）、-20° 傾け
+- ring 色は badge.glow カラー
+- `StellarPathTimeline.test.tsx` の SVG モックに `Ellipse` 追加
+- コミット: `feat: add Saturn ring special visual for SolarSystem badge`
+
+#### Phase 3: 恒星系の軌道（StellarSystemOverlay）描画
+- `BadgeOrb` に `StellarSystemOverlay` + `PlanetDot` サブコンポーネント追加
+- `badgeId === 'BinaryStars'` のとき unlocked 状態で描画
+- 3本の orbital ring（SVG Circle, stroke-only, opacity 0.28）+ 3つの PlanetDot
+- PlanetDot: `Animated.View` 全体を回転（withRepeat + withTiming + Easing.linear）でドットが等速円運動
+- 周期: inner 4000ms / mid 7000ms / outer 11000ms
+- コミット: `feat: add stellar system orbital overlay for BinaryStars badge`
+
+### テスト状況
+- Phase 0 後: 248スイート / 1690テスト
+- Phase 1 後: 249スイート / 1702テスト（+12テスト）
+- Phase 2 後: 249スイート / 1707テスト（+5テスト）
+- Phase 3 後: 249スイート / 1712テスト（+5テスト）
+
+### 重要な注意事項
+- `jest テスト実行`: worktree から `npx jest --testPathIgnorePatterns "/node_modules/"` で実行（jest.config.js の `testPathIgnorePatterns` に `/\.claude/worktrees/` があるため `--passWithNoTests` ではなくこのフラグが必要）
+- `react-native-svg` モック: BadgeOrb を使うテストでは `Ellipse` と `Circle` の両方が必要。StellarPathTimeline.test.tsx 等は更新済み
+- `BadgeId 'stellarSystem'` は存在しない。Phase 3 の軌道描画は `'BinaryStars'` バッジに実装
+- `SaturnRing` は locked/unlocked 両方で表示、`StellarSystemOverlay` は unlocked のみ（アニメーションあり）
+- 各フェーズ完了後に main へ fast-forward merge & push 済み
+
+### 変更ファイル一覧
+- `components/profile/CosmosProgressTimeline.tsx`（削除）
+- `components/profile/__tests__/CosmosProgressTimeline.test.tsx`（削除）
+- `constants/badges/badgeAnimations.ts`（新規）
+- `constants/badges/__tests__/badgeAnimations.test.ts`（新規）
+- `constants/badges/index.ts`（変更）
+- `components/achievements/BadgeOrb.tsx`（変更: badgeId prop、SaturnRing、StellarSystemOverlay）
+- `components/achievements/BadgeOrbRow.tsx`（変更: badgeId 渡し）
+- `components/achievements/__tests__/BadgeOrb.test.tsx`（変更: Phase2/3テスト追加）
+- `components/achievements/__tests__/StellarPathTimeline.test.tsx`（変更: Ellipse モック追加）
+
+## 2026-04-18: バッジシステム Phase 4-9 完了
+
+### 作業内容
+hardcore-goodall worktreeに実装済みだったPhase 4-9をmainにff-mergeしてプッシュ
+
+### 完了した作業
+- **Phase 4 (Galaxy Spiral)**: `BadgeOrb.tsx`に`GalaxySpiral`サブコンポーネント追加。対数螺旋2本(r=a*e^(bθ))をSVG Pathで描画、Reanimated 8000msで回転
+- **Phase 5 (StarCluster)**: `StarClusterOverlay` + `SatelliteStar` — 中央コア+周辺6個小球、各小球に独立した透明度ゆらぎアニメーション
+- **Phase 6 (Cosmos)**: `CosmosOverlay` — 黄金角らせん配置で25個の多色光点、全18バッジカラーパレットから選択、各点に点滅アニメーション
+- **Phase 7 (BadgeUnlock)**: `hooks/achievements/useNewlyUnlockedBadge.ts`（AsyncStorage `seen_badge_ids`で既読管理）+ `components/achievements/BadgeUnlockModal.tsx`（BadgeOrb+名前+説明+閉じるボタン）
+- **Phase 8 (NextBadgeProgress)**: `components/dashboard/NextBadgeProgress.tsx`（BadgeOrb(size=32)+名前+LinearProgressバー）
+- **Phase 9 (最終検証)**: 252スイート / 1739テスト全パス、TypeScriptエラーは既存のもののみ（新規ファイルゼロ）
+
+### 変更ファイル
+- `components/achievements/BadgeOrb.tsx`（GalaxySpiral/StarClusterOverlay/CosmosOverlay追加）
+- `components/achievements/BadgeUnlockModal.tsx`（新規）
+- `components/achievements/__tests__/BadgeUnlockModal.test.tsx`（新規）
+- `components/achievements/__tests__/BadgeOrb.test.tsx`（Phase4-6テスト追加）
+- `components/dashboard/NextBadgeProgress.tsx`（新規）
+- `components/dashboard/__tests__/NextBadgeProgress.test.tsx`（新規）
+- `hooks/achievements/useNewlyUnlockedBadge.ts`（新規）
+- `hooks/achievements/__tests__/useNewlyUnlockedBadge.test.ts`（新規）
+- `lib/storage/asyncStorageClient.ts`（getItem/setItem追加）
+- `app/(tabs)/index.tsx`（NextBadgeProgress + BadgeUnlockModal 組み込み）
+
+### 未完了タスク・次回やるべきこと
+- 特になし。バッジシステム全フェーズ完了
+- 将来: BadgeOrb と AnimatedOrb の統合（SRP上は別コンポーネントが適切だが、コア描画ロジックの共通化余地あり）

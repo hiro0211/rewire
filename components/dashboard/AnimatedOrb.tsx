@@ -1,5 +1,7 @@
+import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 import { getOrbConfig } from '@/constants/orbConfig';
+import { hexToRgba } from '@/lib/color/hexToRgba';
 import { useOrbBreathing } from '@/hooks/dashboard/useOrbBreathing';
 import { useOrbTapAnimation } from '@/hooks/dashboard/useOrbTapAnimation';
 import React from 'react';
@@ -15,13 +17,14 @@ import { OrbSoftAura } from './OrbSoftAura';
 import { OrbTapRipple } from './OrbTapRipple';
 
 interface AnimatedOrbProps {
+  colors: BadgeColorTriad;
   chapterId: ChapterId;
   size?: number;
   onPress?: () => void;
   onLongPress?: () => void;
 }
 
-export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: AnimatedOrbProps) {
+export function AnimatedOrb({ colors, chapterId, size = 200, onPress, onLongPress }: AnimatedOrbProps) {
   const config = getOrbConfig(chapterId);
 
   const { time, breathingScale } = useOrbBreathing(config);
@@ -34,7 +37,8 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
     transform: [{ scale: finalScale.value }],
   }));
 
-  const [c1] = config.colors;
+  const glowColor = hexToRgba(colors.glow, 0.3);
+  const orbColors = [colors.core, colors.glow, colors.accent] as const;
 
   // Container expanded to accommodate glow + particles (size * 2.0)
   const containerSize = size * 2.0;
@@ -58,7 +62,7 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
           pointerEvents="none"
           style={[styles.overlay, { width: containerSize, height: containerSize }]}
         >
-          <OrbSoftAura size={size} glowColor={config.glowColor} />
+          <OrbSoftAura size={size} glowColor={glowColor} />
         </View>
 
         {/* Scattered star particles */}
@@ -76,7 +80,7 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
         >
           <OrbGlowLayers
             size={size}
-            glowColor={config.glowColor}
+            glowColor={glowColor}
             pulseDuration={config.pulseDuration}
           />
         </View>
@@ -86,7 +90,7 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
           pointerEvents="none"
           style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
         >
-          <OrbParticles size={size} count={config.particleCount} tintColor={c1} />
+          <OrbParticles size={size} count={config.particleCount} tintColor={colors.core} />
         </View>
 
         {/* Core orb with breathing + tap scale */}
@@ -97,7 +101,7 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
           ]}
         >
           <CoreOrbRenderer
-            colors={config.colors}
+            colors={orbColors}
             size={size}
             time={time}
             glowBoost={glowIntensity}
@@ -114,7 +118,7 @@ export function AnimatedOrb({ chapterId, size = 200, onPress, onLongPress }: Ani
             { width: containerSize, height: containerSize },
           ]}
         >
-          <OrbTapRipple size={size} color={c1} trigger={rippleTrigger} />
+          <OrbTapRipple size={size} color={colors.core} trigger={rippleTrigger} />
         </View>
       </View>
     </Pressable>

@@ -46,7 +46,7 @@ export function ProfileHeader() {
 
       <View style={styles.avatarSection}>
         <View style={styles.avatar}>
-          <AnimatedOrb chapterId={badge.chapter} size={120} />
+          <AnimatedOrb colors={badge.colors} chapterId={badge.chapter} size={120} />
         </View>
         <Text style={[styles.gradeName, { color: colors.primary }]}>
           {isJapanese ? badge.nameJa : badge.nameEn}

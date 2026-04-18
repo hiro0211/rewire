@@ -128,9 +128,9 @@ describe('DashboardScreen', () => {
     expect(getByTestId('segmented-streak-card')).toBeTruthy();
   });
 
-  it('BrainRewiringBarが表示される', () => {
-    const { getByTestId } = render(<DashboardScreen />);
-    expect(getByTestId('brain-rewiring-bar')).toBeTruthy();
+  it('BrainRewiringBarは表示されない（削除済み）', () => {
+    const { queryByTestId } = render(<DashboardScreen />);
+    expect(queryByTestId('brain-rewiring-bar')).toBeNull();
   });
 
   it('シェアボタンが表示される', () => {

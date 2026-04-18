@@ -58,12 +58,6 @@ jest.mock('@/components/dashboard/SegmentedStreakCard', () => {
   return { SegmentedStreakCard: () => <View><Text>SegmentedStreakCard</Text></View> };
 });
 
-jest.mock('@/components/dashboard/BrainRewiringBar', () => {
-  const { View, Text } = require('react-native');
-  return { BrainRewiringBar: () => <View><Text>BrainRewiringBar</Text></View> };
-});
-
-
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 
 jest.mock('@/hooks/dashboard/useShareWidget', () => ({

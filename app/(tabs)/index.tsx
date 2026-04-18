@@ -6,8 +6,6 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SegmentedStreakCard } from '@/components/dashboard/SegmentedStreakCard';
 import { ShareWidgetCard } from '@/components/dashboard/ShareWidgetCard';
-import { BrainRewiringBar } from '@/components/dashboard/BrainRewiringBar';
-import { NextBadgeProgress } from '@/components/dashboard/NextBadgeProgress';
 import { QuickActionGrid } from '@/components/dashboard/QuickActionGrid';
 import { SOSButton } from '@/components/dashboard/SOSButton';
 import { useUserStore } from '@/stores/userStore';
@@ -15,7 +13,6 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 import { useShareWidget } from '@/hooks/dashboard/useShareWidget';
 import { useEntranceAnimation } from '@/hooks/ui/useEntranceAnimation';
-import { calculateRewiringProgress } from '@/lib/dashboard/rewiringProgress';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
@@ -29,8 +26,6 @@ import { SurveyPromptModal } from '@/components/survey/SurveyPromptModal';
 import { useReviewEligibility } from '@/hooks/review/useReviewEligibility';
 import { useReviewPromptActions } from '@/hooks/review/useReviewPromptActions';
 import { ReviewPromptModal } from '@/components/review/ReviewPromptModal';
-import { BadgeUnlockModal } from '@/components/achievements/BadgeUnlockModal';
-import { useNewlyUnlockedBadge } from '@/hooks/achievements/useNewlyUnlockedBadge';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 let ViewShot: any = View;
@@ -67,8 +62,6 @@ export default function DashboardScreen() {
     () => setSurveyModalVisible(false)
   );
 
-  const { newBadge, dismiss: dismissBadge } = useNewlyUnlockedBadge();
-
   const { shouldShowReview } = useReviewEligibility();
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
   const {
@@ -101,9 +94,6 @@ export default function DashboardScreen() {
     setRefreshing(false);
   }, [loadCheckins, loadUser]);
 
-  const streakDays = stopwatch.days ?? 0;
-  const rewiringProgress = calculateRewiringProgress(streakDays, goalDays);
-
   const handleShare = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     share();
@@ -112,9 +102,8 @@ export default function DashboardScreen() {
   // Entrance animations with stagger
   const orbAnim = useEntranceAnimation({ delay: 0 });
   const streakCardAnim = useEntranceAnimation({ delay: 100 });
-  const rewiringBarAnim = useEntranceAnimation({ delay: 200 });
-  const quickActionAnim = useEntranceAnimation({ delay: 300 });
-  const sosAnim = useEntranceAnimation({ delay: 400 });
+  const quickActionAnim = useEntranceAnimation({ delay: 200 });
+  const sosAnim = useEntranceAnimation({ delay: 300 });
 
   return (
     <SafeAreaWrapper>
@@ -154,11 +143,6 @@ export default function DashboardScreen() {
             {t('dashboard.share')}
           </Text>
         </TouchableOpacity>
-
-        <Animated.View style={[rewiringBarAnim.animatedStyle, styles.section]}>
-          <BrainRewiringBar progress={rewiringProgress} />
-          <NextBadgeProgress currentDay={streakDays} />
-        </Animated.View>
 
         <Animated.View style={quickActionAnim.animatedStyle}>
           <QuickActionGrid />
@@ -207,7 +191,6 @@ export default function DashboardScreen() {
         onDismiss={handleReviewDismiss}
       />
 
-      <BadgeUnlockModal badge={newBadge} onDismiss={dismissBadge} />
     </SafeAreaWrapper>
   );
 }
@@ -216,9 +199,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: SPACING.lg,
     paddingBottom: SCROLL_BOTTOM_PADDING,
-  },
-  section: {
-    marginTop: SPACING.md,
   },
   sosFloatingContainer: {
     position: 'absolute',

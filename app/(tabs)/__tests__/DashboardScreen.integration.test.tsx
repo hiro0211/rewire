@@ -170,9 +170,9 @@ describe('DashboardScreen 結合テスト', () => {
       expect(getByTestId('segmented-streak-card')).toBeTruthy();
     });
 
-    it('BrainRewiringBar が表示される', () => {
-      const { getByTestId } = render(<DashboardScreen />);
-      expect(getByTestId('brain-rewiring-bar')).toBeTruthy();
+    it('BrainRewiringBar は表示されない（削除済み）', () => {
+      const { queryByTestId } = render(<DashboardScreen />);
+      expect(queryByTestId('brain-rewiring-bar')).toBeNull();
     });
 
     it('SOSボタンタップで/panicに遷移する', () => {

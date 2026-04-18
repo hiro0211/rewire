@@ -9,43 +9,40 @@ describe('orbConfig', () => {
       }
     });
 
-    it('chaosチャプターは海王星ブルー', () => {
+    it('chaosチャプターのアニメーション設定が正しい', () => {
       const ch = ORB_CHAPTERS.chaos;
-      expect(ch.colors).toEqual(['#4A7EC2', '#8CB4E0', '#1E3D6B']);
       expect(ch.pulseDuration).toBe(4000);
+      expect(ch.scaleMin).toBe(0.96);
+      expect(ch.scaleMax).toBe(1.04);
+      expect(ch.particleCount).toBe(4);
     });
 
-    it('ignitionチャプターはオレンジ系でchaosより速いパルス', () => {
+    it('ignitionチャプターはchaosより速いパルス', () => {
       const ch = ORB_CHAPTERS.ignition;
-      expect(ch.colors).toEqual(['#FFB547', '#FFE4A0', '#FF7847']);
       expect(ch.pulseDuration).toBe(3500);
       expect(ch.pulseDuration).toBeLessThan(ORB_CHAPTERS.chaos.pulseDuration);
     });
 
-    it('formationチャプターはブラウン系', () => {
+    it('formationチャプターのアニメーション設定が正しい', () => {
       const ch = ORB_CHAPTERS.formation;
-      expect(ch.colors).toEqual(['#D17842', '#F4C58A', '#8B3A0F']);
       expect(ch.pulseDuration).toBe(3000);
     });
 
-    it('lifeチャプターはブルー系でformationより速いパルス', () => {
+    it('lifeチャプターはformationより速いパルス', () => {
       const ch = ORB_CHAPTERS.life;
-      expect(ch.colors).toEqual(['#4A90E2', '#A8D8F0', '#2B5F9E']);
       expect(ch.pulseDuration).toBe(2600);
       expect(ch.pulseDuration).toBeLessThan(
         ORB_CHAPTERS.formation.pulseDuration
       );
     });
 
-    it('expansionチャプターはシアン系', () => {
+    it('expansionチャプターのアニメーション設定が正しい', () => {
       const ch = ORB_CHAPTERS.expansion;
-      expect(ch.colors).toEqual(['#5CE1E6', '#B8F5F7', '#1E6B7F']);
       expect(ch.pulseDuration).toBe(2200);
     });
 
-    it('transcendenceチャプターはピンク系で最速パルス', () => {
+    it('transcendenceチャプターは最速パルス', () => {
       const ch = ORB_CHAPTERS.transcendence;
-      expect(ch.colors).toEqual(['#EC4899', '#FBCFE8', '#831843']);
       expect(ch.pulseDuration).toBe(1800);
       expect(ch.pulseDuration).toBeLessThan(
         ORB_CHAPTERS.expansion.pulseDuration
@@ -70,12 +67,6 @@ describe('orbConfig', () => {
       for (const id of CHAPTER_IDS) {
         const ch = ORB_CHAPTERS[id];
         expect(ch.scaleMin).toBeLessThan(ch.scaleMax);
-      }
-    });
-
-    it('全チャプターがrgba形式のglowColorを持つ', () => {
-      for (const id of CHAPTER_IDS) {
-        expect(ORB_CHAPTERS[id].glowColor).toMatch(/^rgba\(/);
       }
     });
 

@@ -80,7 +80,7 @@ function OrbCarouselItemComponent({
             accessibilityLabel={a11yLabel}
             accessibilityState={{ selected: true, disabled: false }}
           >
-            <AnimatedOrb chapterId={badge.chapter} size={activeOrbSize} />
+            <AnimatedOrb colors={badge.colors} chapterId={badge.chapter} size={activeOrbSize} />
           </TouchableOpacity>
         ) : (
           <View

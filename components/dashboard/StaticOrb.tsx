@@ -31,7 +31,7 @@ export function StaticOrb({ colors, size }: StaticOrbProps) {
       ]}
     >
       <CoreOrbRenderer
-        colors={[colors.glow, colors.core, colors.accent]}
+        colors={[colors.core, colors.glow, colors.accent]}
         size={size}
         time={time}
         testID="static-orb-canvas"
