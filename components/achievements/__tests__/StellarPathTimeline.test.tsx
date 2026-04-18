@@ -31,6 +31,7 @@ jest.mock('react-native-svg', () => {
       </View>
     ),
     Path: (props: any) => <View testID="svg-path" {...props} />,
+    Ellipse: (props: any) => <View {...props} />,
     Defs: ({ children, ...props }: any) => <View {...props}>{children}</View>,
     RadialGradient: ({ children, ...props }: any) => <View {...props}>{children}</View>,
     Stop: (props: any) => <View {...props} />,

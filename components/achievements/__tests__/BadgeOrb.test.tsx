@@ -9,6 +9,21 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
+jest.mock('react-native-svg', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Svg: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Ellipse: (props: any) => <View testID="svg-ellipse" {...props} />,
+    Defs: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    RadialGradient: ({ children, ...props }: any) => <View {...props}>{children}</View>,
+    Stop: (props: any) => <View {...props} />,
+    Rect: (props: any) => <View {...props} />,
+    Circle: (props: any) => <View {...props} />,
+  };
+});
+
 import { BadgeOrb } from '../BadgeOrb';
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 
@@ -16,6 +31,13 @@ const MOCK_COLORS: BadgeColorTriad = {
   core: '#FFB547',
   glow: '#FFE4A0',
   accent: '#FF7847',
+};
+
+// SolarSystem バッジの実際の colors
+const SOLAR_SYSTEM_COLORS: BadgeColorTriad = {
+  core: '#5CE1E6',
+  glow: '#B8F5F7',
+  accent: '#1E6B7F',
 };
 
 describe('BadgeOrb', () => {
@@ -55,5 +77,70 @@ describe('BadgeOrb', () => {
       MOCK_COLORS.glow,
       MOCK_COLORS.accent,
     ]);
+  });
+});
+
+describe('SaturnRing 特殊描画', () => {
+  it('badgeId="SolarSystem" のとき saturn-ring が描画される', () => {
+    render(
+      <BadgeOrb
+        colors={SOLAR_SYSTEM_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="SolarSystem"
+      />,
+    );
+    expect(screen.getByTestId('saturn-ring')).toBeTruthy();
+  });
+
+  it('badgeId="SolarSystem" かつ locked でも saturn-ring が描画される', () => {
+    render(
+      <BadgeOrb
+        colors={SOLAR_SYSTEM_COLORS}
+        isUnlocked={false}
+        chapterId="expansion"
+        badgeId="SolarSystem"
+      />,
+    );
+    expect(screen.getByTestId('saturn-ring')).toBeTruthy();
+  });
+
+  it('badgeId="Ignition" のとき saturn-ring は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={MOCK_COLORS}
+        isUnlocked
+        chapterId="ignition"
+        badgeId="Ignition"
+      />,
+    );
+    expect(screen.queryByTestId('saturn-ring')).toBeNull();
+  });
+
+  it('badgeId なしのとき saturn-ring は描画されない', () => {
+    render(
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+    );
+    expect(screen.queryByTestId('saturn-ring')).toBeNull();
+  });
+
+  it('saturn-ring の stroke カラーは SolarSystem の glow カラーに基づく', () => {
+    render(
+      <BadgeOrb
+        colors={SOLAR_SYSTEM_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="SolarSystem"
+      />,
+    );
+    // svg-ellipse は SaturnRing 内の Ellipse モック
+    const ellipses = screen.queryAllByTestId('svg-ellipse');
+    // SaturnRing の Ellipse が存在する
+    expect(ellipses.length).toBeGreaterThan(0);
+    // stroke カラーが SolarSystem.glow (#B8F5F7) を含む
+    const ringEllipse = ellipses.find(
+      (el) => el.props.stroke === SOLAR_SYSTEM_COLORS.glow,
+    );
+    expect(ringEllipse).toBeTruthy();
   });
 });
