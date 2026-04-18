@@ -21,6 +21,7 @@ jest.mock('react-native-svg', () => {
     Stop: (props: any) => <View {...props} />,
     Rect: (props: any) => <View {...props} />,
     Circle: (props: any) => <View {...props} />,
+    Path: (props: any) => <View {...props} />,
   };
 });
 
@@ -209,5 +210,58 @@ describe('StellarSystemOverlay 特殊描画', () => {
       <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
     );
     expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
+  });
+});
+
+// Galaxy バッジの colors
+const GALAXY_COLORS: BadgeColorTriad = {
+  core: '#EC4899',
+  glow: '#FBCFE8',
+  accent: '#831843',
+};
+
+describe('GalaxySpiral 特殊描画', () => {
+  it('badgeId="Galaxy" のとき galaxy-spiral が描画される', () => {
+    render(
+      <BadgeOrb
+        colors={GALAXY_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="Galaxy"
+      />,
+    );
+    expect(screen.getByTestId('galaxy-spiral')).toBeTruthy();
+  });
+
+  it('badgeId="Galaxy" のとき渦巻きアーム（galaxy-spiral-arm）が2本描画される', () => {
+    render(
+      <BadgeOrb
+        colors={GALAXY_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="Galaxy"
+      />,
+    );
+    const arms = screen.getAllByTestId('galaxy-spiral-arm');
+    expect(arms.length).toBe(2);
+  });
+
+  it('badgeId="GalaxyCluster" のとき galaxy-spiral は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={GALAXY_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="GalaxyCluster"
+      />,
+    );
+    expect(screen.queryByTestId('galaxy-spiral')).toBeNull();
+  });
+
+  it('badgeId なしのとき galaxy-spiral は描画されない', () => {
+    render(
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+    );
+    expect(screen.queryByTestId('galaxy-spiral')).toBeNull();
   });
 });

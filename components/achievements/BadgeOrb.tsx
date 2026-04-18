@@ -17,7 +17,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { Circle, Ellipse, Svg } from 'react-native-svg';
+import { Circle, Ellipse, Path, Svg } from 'react-native-svg';
 
 interface BadgeOrbProps {
   /** バッジ固有の3色（BADGE_DEFINITIONS[i].colors） */
@@ -61,6 +61,7 @@ export function BadgeOrb({
 
   const showSaturnRing = badgeId === 'SolarSystem';
   const showStellarOverlay = badgeId === 'BinaryStars';
+  const showGalaxySpiral = badgeId === 'Galaxy';
 
   if (!isUnlocked) {
     // Locked: 静止ゴースト（アニメ・Skia・パーティクルなし）
@@ -112,6 +113,7 @@ export function BadgeOrb({
       chapterConfig={chapterConfig}
       showSaturnRing={showSaturnRing}
       showStellarOverlay={showStellarOverlay}
+      showGalaxySpiral={showGalaxySpiral}
     />
   );
 }
@@ -181,6 +183,92 @@ function SaturnRing({ size, color, containerSize }: SaturnRingProps) {
         />
       </Svg>
     </View>
+  );
+}
+
+// ── GalaxySpiral ───────────────────────────────────────────────────────────
+
+interface GalaxySpiralProps {
+  size: number;
+  color: string;
+}
+
+/**
+ * 対数螺旋を2本描画する銀河の渦巻きアーム。Galaxy バッジ専用。
+ * r = a * e^(b*θ) の近似をデカルト座標に変換してSVGパスを生成する。
+ * Reanimated でゆっくり回転（周期 8000ms）。
+ */
+function GalaxySpiral({ size, color }: GalaxySpiralProps) {
+  const rotation = useSharedValue(0);
+
+  useEffect(() => {
+    rotation.value = withRepeat(
+      withTiming(360, { duration: 8000, easing: Easing.linear }),
+      -1,
+      false,
+    );
+  }, [rotation]);
+
+  const rotateStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  const cx = size / 2;
+  const cy = size / 2;
+
+  /** 対数螺旋パスを生成（arm=0: 基準, arm=1: 180°位相差） */
+  function buildSpiralPath(phaseOffset: number): string {
+    const a = 0.08;
+    const b = 0.25;
+    const steps = 80;
+    const thetaMax = 4 * Math.PI;
+    const scale = size * 0.38;
+
+    const points: [number, number][] = [];
+    for (let i = 0; i <= steps; i++) {
+      const theta = (i / steps) * thetaMax + phaseOffset;
+      const r = a * Math.exp(b * theta) * scale;
+      const x = cx + r * Math.cos(theta);
+      const y = cy + r * Math.sin(theta);
+      points.push([x, y]);
+    }
+
+    const [first, ...rest] = points;
+    const d = [`M ${first[0].toFixed(2)} ${first[1].toFixed(2)}`];
+    for (const [px, py] of rest) {
+      d.push(`L ${px.toFixed(2)} ${py.toFixed(2)}`);
+    }
+    return d.join(' ');
+  }
+
+  const arm1Path = buildSpiralPath(0);
+  const arm2Path = buildSpiralPath(Math.PI);
+
+  return (
+    <Animated.View
+      testID="galaxy-spiral"
+      pointerEvents="none"
+      style={[{ position: 'absolute', width: size, height: size }, rotateStyle]}
+    >
+      <Svg width={size} height={size}>
+        <Path
+          testID="galaxy-spiral-arm"
+          d={arm1Path}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          opacity={0.4}
+        />
+        <Path
+          testID="galaxy-spiral-arm"
+          d={arm2Path}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          opacity={0.3}
+        />
+      </Svg>
+    </Animated.View>
   );
 }
 
@@ -313,6 +401,7 @@ interface UnlockedBadgeOrbProps {
   chapterConfig: ReturnType<typeof getOrbConfig>;
   showSaturnRing: boolean;
   showStellarOverlay: boolean;
+  showGalaxySpiral: boolean;
 }
 
 function UnlockedBadgeOrb({
@@ -322,6 +411,7 @@ function UnlockedBadgeOrb({
   chapterConfig,
   showSaturnRing,
   showStellarOverlay,
+  showGalaxySpiral,
 }: UnlockedBadgeOrbProps) {
   const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
@@ -383,6 +473,15 @@ function UnlockedBadgeOrb({
           style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
         >
           <StellarSystemOverlay size={size} color={glowColor} />
+        </View>
+      )}
+
+      {showGalaxySpiral && (
+        <View
+          pointerEvents="none"
+          style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
+        >
+          <GalaxySpiral size={size} color={glowColor} />
         </View>
       )}
     </View>
