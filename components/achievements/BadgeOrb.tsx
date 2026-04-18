@@ -62,6 +62,7 @@ export function BadgeOrb({
   const showSaturnRing = badgeId === 'SolarSystem';
   const showStellarOverlay = badgeId === 'BinaryStars';
   const showGalaxySpiral = badgeId === 'Galaxy';
+  const showStarCluster = badgeId === 'StarCluster';
 
   if (!isUnlocked) {
     // Locked: 静止ゴースト（アニメ・Skia・パーティクルなし）
@@ -114,6 +115,7 @@ export function BadgeOrb({
       showSaturnRing={showSaturnRing}
       showStellarOverlay={showStellarOverlay}
       showGalaxySpiral={showGalaxySpiral}
+      showStarCluster={showStarCluster}
     />
   );
 }
@@ -272,6 +274,103 @@ function GalaxySpiral({ size, color }: GalaxySpiralProps) {
   );
 }
 
+// ── StarClusterOverlay ────────────────────────────────────────────────────
+
+interface StarClusterOverlayProps {
+  size: number;
+  color: string;
+}
+
+/** 各衛星球の固定配置設定 */
+const SATELLITE_CONFIG = [
+  { angle: 0,   distFraction: 0.55 },
+  { angle: 60,  distFraction: 0.52 },
+  { angle: 120, distFraction: 0.58 },
+  { angle: 180, distFraction: 0.50 },
+  { angle: 240, distFraction: 0.56 },
+  { angle: 300, distFraction: 0.54 },
+] as const;
+
+/**
+ * 星団バッジ専用の複数コア描画。
+ * 中央コアは既存の CoreOrbRenderer が担当し、周辺に6個の小球を配置する。
+ * 各小球は Reanimated で独立した透明度ゆらぎアニメーションを持つ。
+ */
+function StarClusterOverlay({ size, color }: StarClusterOverlayProps) {
+  const cx = size / 2;
+  const cy = size / 2;
+
+  return (
+    <View
+      testID="star-cluster-overlay"
+      pointerEvents="none"
+      style={{ position: 'absolute', width: size, height: size }}
+    >
+      {SATELLITE_CONFIG.map((cfg, i) => (
+        <SatelliteStar
+          key={i}
+          cx={cx}
+          cy={cy}
+          size={size}
+          color={color}
+          angle={cfg.angle}
+          distFraction={cfg.distFraction}
+          phaseSeed={i * 300}
+        />
+      ))}
+    </View>
+  );
+}
+
+interface SatelliteStarProps {
+  cx: number;
+  cy: number;
+  size: number;
+  color: string;
+  angle: number;
+  distFraction: number;
+  phaseSeed: number;
+}
+
+function SatelliteStar({ cx, cy, size, color, angle, distFraction, phaseSeed }: SatelliteStarProps) {
+  const opacity = useSharedValue(0.4);
+
+  useEffect(() => {
+    const period = 1800 + phaseSeed;
+    opacity.value = withRepeat(
+      withTiming(0.9, { duration: period, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true,
+    );
+  }, [opacity, phaseSeed]);
+
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+
+  const rad = (angle * Math.PI) / 180;
+  const dist = distFraction * (size / 2);
+  const dotSize = size * 0.1;
+  const left = cx + dist * Math.cos(rad) - dotSize / 2;
+  const top = cy + dist * Math.sin(rad) - dotSize / 2;
+
+  return (
+    <Animated.View
+      testID="star-cluster-satellite"
+      style={[
+        {
+          position: 'absolute',
+          width: dotSize,
+          height: dotSize,
+          borderRadius: dotSize / 2,
+          backgroundColor: color,
+          left,
+          top,
+        },
+        animStyle,
+      ]}
+    />
+  );
+}
+
 // ── StellarSystemOverlay ───────────────────────────────────────────────────
 
 /**
@@ -402,6 +501,7 @@ interface UnlockedBadgeOrbProps {
   showSaturnRing: boolean;
   showStellarOverlay: boolean;
   showGalaxySpiral: boolean;
+  showStarCluster: boolean;
 }
 
 function UnlockedBadgeOrb({
@@ -412,6 +512,7 @@ function UnlockedBadgeOrb({
   showSaturnRing,
   showStellarOverlay,
   showGalaxySpiral,
+  showStarCluster,
 }: UnlockedBadgeOrbProps) {
   const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
@@ -482,6 +583,15 @@ function UnlockedBadgeOrb({
           style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
         >
           <GalaxySpiral size={size} color={glowColor} />
+        </View>
+      )}
+
+      {showStarCluster && (
+        <View
+          pointerEvents="none"
+          style={[styles.overlay, { width: size, height: size, left: offset, top: offset }]}
+        >
+          <StarClusterOverlay size={size} color={glowColor} />
         </View>
       )}
     </View>

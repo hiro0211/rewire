@@ -213,6 +213,59 @@ describe('StellarSystemOverlay 特殊描画', () => {
   });
 });
 
+// StarCluster バッジの colors
+const STAR_CLUSTER_COLORS: BadgeColorTriad = {
+  core: '#38BDF8',
+  glow: '#BAE6FD',
+  accent: '#0284C7',
+};
+
+describe('StarClusterOverlay 特殊描画', () => {
+  it('badgeId="StarCluster" のとき star-cluster-overlay が描画される', () => {
+    render(
+      <BadgeOrb
+        colors={STAR_CLUSTER_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="StarCluster"
+      />,
+    );
+    expect(screen.getByTestId('star-cluster-overlay')).toBeTruthy();
+  });
+
+  it('badgeId="StarCluster" のとき周辺小球（star-cluster-satellite）が5個以上描画される', () => {
+    render(
+      <BadgeOrb
+        colors={STAR_CLUSTER_COLORS}
+        isUnlocked
+        chapterId="expansion"
+        badgeId="StarCluster"
+      />,
+    );
+    const satellites = screen.getAllByTestId('star-cluster-satellite');
+    expect(satellites.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('badgeId="Galaxy" のとき star-cluster-overlay は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={GALAXY_COLORS}
+        isUnlocked
+        chapterId="transcendence"
+        badgeId="Galaxy"
+      />,
+    );
+    expect(screen.queryByTestId('star-cluster-overlay')).toBeNull();
+  });
+
+  it('badgeId なしのとき star-cluster-overlay は描画されない', () => {
+    render(
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="ignition" />,
+    );
+    expect(screen.queryByTestId('star-cluster-overlay')).toBeNull();
+  });
+});
+
 // Galaxy バッジの colors
 const GALAXY_COLORS: BadgeColorTriad = {
   core: '#EC4899',
