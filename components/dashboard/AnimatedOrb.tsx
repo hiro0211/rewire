@@ -1,4 +1,5 @@
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
+import type { BadgeId } from '@/constants/badges/BadgeId';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 import { getOrbConfig } from '@/constants/orbConfig';
 import { hexToRgba } from '@/lib/color/hexToRgba';
@@ -10,6 +11,7 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 import { CoreOrbRenderer } from './CoreOrbRenderer';
+import { EarthOrbRenderer } from './EarthOrbRenderer';
 import { OrbGlowLayers } from './OrbGlowLayers';
 import { OrbParticles } from './OrbParticles';
 import { OrbScatteredStars } from './OrbScatteredStars';
@@ -19,12 +21,13 @@ import { OrbTapRipple } from './OrbTapRipple';
 interface AnimatedOrbProps {
   colors: BadgeColorTriad;
   chapterId: ChapterId;
+  badgeId?: BadgeId;
   size?: number;
   onPress?: () => void;
   onLongPress?: () => void;
 }
 
-export function AnimatedOrb({ colors, chapterId, size = 200, onPress, onLongPress }: AnimatedOrbProps) {
+export function AnimatedOrb({ colors, chapterId, badgeId, size = 200, onPress, onLongPress }: AnimatedOrbProps) {
   const config = getOrbConfig(chapterId);
 
   const { time, breathingScale } = useOrbBreathing(config);
@@ -100,13 +103,22 @@ export function AnimatedOrb({ colors, chapterId, size = 200, onPress, onLongPres
             pulseStyle,
           ]}
         >
-          <CoreOrbRenderer
-            colors={orbColors}
-            size={size}
-            time={time}
-            glowBoost={glowIntensity}
-            testID="orb-canvas"
-          />
+          {badgeId === 'earth' ? (
+            <EarthOrbRenderer
+              size={size}
+              time={time}
+              glowBoost={glowIntensity}
+              orbColors={orbColors}
+            />
+          ) : (
+            <CoreOrbRenderer
+              colors={orbColors}
+              size={size}
+              time={time}
+              glowBoost={glowIntensity}
+              testID="orb-canvas"
+            />
+          )}
         </Animated.View>
 
         {/* Tap ripple ring */}

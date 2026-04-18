@@ -58,10 +58,20 @@ jest.mock('@/hooks/useLocale', () => ({
   useLocale: () => ({ isJapanese: true }),
 }));
 
+jest.mock('../EarthOrbRenderer', () => {
+  const { View } = require('react-native');
+  return {
+    EarthOrbRenderer: (props: any) => (
+      <View testID="earth-orb-fallback" {...props} />
+    ),
+  };
+});
+
 import { OrbCarouselItem } from '../OrbCarouselItem';
 import { BADGE_DEFINITIONS } from '@/constants/badges/BADGE_DEFINITIONS';
 
 const planetesimal = BADGE_DEFINITIONS.find((b) => b.id === 'mars')!;
+const earthBadge = BADGE_DEFINITIONS.find((b) => b.id === 'earth')!;
 
 function getFlatStyle(node: any) {
   return Array.isArray(node.props.style)
@@ -238,5 +248,33 @@ describe('OrbCarouselItem', () => {
       />
     );
     expect(queryByTestId('orb-carousel-item-active-touch')).toBeNull();
+  });
+
+  it('earthバッジのとき AnimatedOrb に badgeId="earth" が渡される', () => {
+    const { getByTestId } = render(
+      <OrbCarouselItem
+        badge={earthBadge}
+        itemWidth={280}
+        activeOrbSize={120}
+        isActive
+        currentDays={100}
+      />
+    );
+    // EarthOrbRenderer is mocked, so earth-orb-fallback should appear
+    expect(getByTestId('earth-orb-fallback')).toBeTruthy();
+  });
+
+  it('marsバッジのとき CoreOrbRenderer が描画される（orb-canvas）', () => {
+    const { getByTestId, queryByTestId } = render(
+      <OrbCarouselItem
+        badge={planetesimal}
+        itemWidth={280}
+        activeOrbSize={120}
+        isActive
+        currentDays={100}
+      />
+    );
+    expect(getByTestId('orb-canvas')).toBeTruthy();
+    expect(queryByTestId('earth-orb-fallback')).toBeNull();
   });
 });

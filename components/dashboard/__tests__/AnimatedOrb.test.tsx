@@ -11,6 +11,15 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
+jest.mock('../EarthOrbRenderer', () => {
+  const { View } = require('react-native');
+  return {
+    EarthOrbRenderer: (props: Record<string, unknown>) => (
+      <View testID="earth-orb-fallback" {...props} />
+    ),
+  };
+});
+
 const testColors: BadgeColorTriad = {
   core: '#B8A9D4',
   mid: '#D0C4E4',
@@ -71,5 +80,27 @@ describe('AnimatedOrb', () => {
   it('波紋エフェクト要素が存在する', () => {
     render(<AnimatedOrb colors={testColors} chapterId="birth" />);
     expect(screen.getByTestId('orb-tap-ripple')).toBeTruthy();
+  });
+
+  it('badgeIdなしの場合はCoreOrbRendererを描画する', () => {
+    render(<AnimatedOrb colors={testColors} chapterId="birth" />);
+    expect(screen.getByTestId('orb-canvas')).toBeTruthy();
+    expect(screen.queryByTestId('earth-orb-fallback')).toBeNull();
+    expect(screen.queryByTestId('earth-orb-canvas')).toBeNull();
+  });
+
+  it('badgeId="earth"の場合はEarthOrbRendererを描画する', () => {
+    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" badgeId="earth" />);
+    // EarthOrbRenderer renders with either earth-orb-canvas or earth-orb-fallback testID
+    const hasEarthOrb =
+      screen.queryByTestId('earth-orb-canvas') !== null ||
+      screen.queryByTestId('earth-orb-fallback') !== null;
+    expect(hasEarthOrb).toBe(true);
+    expect(screen.queryByTestId('orb-canvas')).toBeNull();
+  });
+
+  it('badgeId="mars"の場合はCoreOrbRendererを描画する', () => {
+    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" badgeId="mars" />);
+    expect(screen.getByTestId('orb-canvas')).toBeTruthy();
   });
 });
