@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { RADIUS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 
 interface DayChipProps {
   day: number;
@@ -38,6 +38,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

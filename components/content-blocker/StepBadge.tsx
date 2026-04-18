@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface StepBadgeProps {
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   text: {
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     fontSize: FONT_SIZE.xs,
   },
 });

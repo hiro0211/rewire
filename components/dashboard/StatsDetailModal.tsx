@@ -11,7 +11,7 @@ import {
 import Animated, { FadeIn, SlideInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
@@ -24,7 +24,7 @@ interface StatsDetailModalProps {
 }
 
 export function StatsDetailModal({ visible, onClose }: StatsDetailModalProps) {
-  const { colors, glow } = useTheme();
+  const { colors, glow, shadows } = useTheme();
   const { t } = useLocale();
   const insets = useSafeAreaInsets();
   const { relapseCount, stopwatch, goalDays, streakStartDate } = useDashboardStats();
@@ -53,6 +53,7 @@ export function StatsDetailModal({ visible, onClose }: StatsDetailModalProps) {
         entering={SlideInUp.springify().damping(18).stiffness(200)}
         style={[
           styles.sheet,
+          shadows.sheet,
           {
             backgroundColor: colors.surface,
             paddingBottom: insets.bottom + SPACING.lg,
@@ -140,10 +141,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.sm,
     maxHeight: '85%',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 16,
   },
   handle: {
     width: 36,
@@ -160,7 +157,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   heroSection: {
     alignItems: 'center',
@@ -168,7 +165,7 @@ const styles = StyleSheet.create({
   },
   heroValue: {
     fontSize: FONT_SIZE.xxxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   heroSub: {
     fontSize: FONT_SIZE.xs,
@@ -191,7 +188,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   sparkSection: {
     borderRadius: RADIUS.md,

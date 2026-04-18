@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { ArticleListItem } from '@/components/articles/ArticleListItem';
 import { ARTICLES } from '@/constants/articles';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   listContent: {
     padding: SPACING.lg,

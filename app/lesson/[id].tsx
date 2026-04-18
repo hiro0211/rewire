@@ -10,7 +10,7 @@ import { useLearnStore } from '@/stores/learnStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { LESSONS } from '@/constants/lessons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 
 export default function LessonDetailScreen() {
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   headerLabel: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   scrollContent: {
     padding: SPACING.screenPadding,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     marginBottom: SPACING.sm,
   },
   meta: {

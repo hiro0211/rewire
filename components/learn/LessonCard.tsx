@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, RADIUS, FONT_SIZE } from '@/constants/theme';
+import { SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import type { Lesson } from '@/constants/lessons';
 
 type LessonStatus = 'active' | 'locked' | 'completed';
@@ -101,14 +101,14 @@ const styles = StyleSheet.create({
   },
   lessonLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   readTime: {
     fontSize: FONT_SIZE.xs,
   },
   title: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   footer: {
     marginTop: SPACING.xs,
@@ -120,10 +120,10 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   completedText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

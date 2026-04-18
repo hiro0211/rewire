@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ToolCardProps {
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   description: {
     fontSize: FONT_SIZE.sm,

@@ -6,6 +6,7 @@ import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import * as SplashScreen from 'expo-splash-screen';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,7 +37,7 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.background },
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.primary,
-            headerTitleStyle: { color: colors.text, fontSize: 17, fontWeight: '600' },
+            headerTitleStyle: { color: colors.text, fontSize: 17, fontWeight: FONT_WEIGHT.semibold },
             headerShadowVisible: false,
             headerBackTitleVisible: false,
             headerBackButtonDisplayMode: 'minimal' as const,

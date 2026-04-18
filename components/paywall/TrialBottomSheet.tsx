@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from './paywallUtils';
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },

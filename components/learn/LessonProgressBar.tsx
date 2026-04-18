@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useTheme } from '@/hooks/useTheme';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 
 interface LessonProgressBarProps {
   completed: number;
@@ -45,6 +45,6 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

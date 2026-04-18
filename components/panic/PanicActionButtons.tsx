@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SPACING, FONT_SIZE, RADIUS, LAYOUT } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, LAYOUT, FONT_WEIGHT, } from '@/constants/theme';
 import { useLocale } from '@/hooks/useLocale';
 
 interface PanicActionButtonsProps {
@@ -77,6 +77,6 @@ const styles = StyleSheet.create({
   label: {
     color: '#FFFFFF',
     fontSize: FONT_SIZE.md,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
   },
 });

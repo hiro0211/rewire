@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 
 const TRIGGER_KEYS = [
   'recovery.triggers.stress',
@@ -43,7 +43,7 @@ export function TriggerSelector({ selected, onSelect }: TriggerSelectorProps) {
               style={[
                 styles.chipText,
                 { color: colors.textSecondary },
-                selected === trigger && { color: colors.contrastText, fontWeight: 'bold' },
+                selected === trigger && { color: colors.contrastText, fontWeight: FONT_WEIGHT.bold },
               ]}
             >
               {trigger}
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },

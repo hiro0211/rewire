@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { CAMERA_ASPECT_RATIO } from '@/constants/panic';
 import { useCameraPermission } from '@/hooks/panic/useCameraPermission';
 import { useLocale } from '@/hooks/useLocale';
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
   permissionText: {
     color: '#FFFFFF',
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

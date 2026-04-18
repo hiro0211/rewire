@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -81,13 +81,13 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: FONT_SIZE.display,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginRight: SPACING.xs,
     lineHeight: FONT_SIZE.display * 1.1,
   },
   unit: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   trendRow: {
     flexDirection: 'row',

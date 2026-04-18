@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, interpolateColor } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { RADIUS, SPACING, FONT_SIZE } from '@/constants/theme';
+import { RADIUS, SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ToggleButtonProps {
@@ -75,6 +75,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

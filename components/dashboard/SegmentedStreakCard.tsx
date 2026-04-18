@@ -3,7 +3,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 
 interface SegmentedStreakCardProps {
   elapsed: string;
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
   },
 });

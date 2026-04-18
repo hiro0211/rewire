@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { FONT_SIZE, SPACING } from '@/constants/theme';
+import { FONT_SIZE, SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { BREATHING_CONFIG } from '@/constants/breathing';
 import type { BreathPhase } from '@/hooks/breathing/useBreathingEngine';
 
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     fontVariant: ['tabular-nums'],
   },
   cycle: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
     letterSpacing: 1,
   },
 });

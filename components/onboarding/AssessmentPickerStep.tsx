@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import type { AssessmentQuestion } from '@/constants/assessment';
@@ -70,13 +70,13 @@ const styles = StyleSheet.create({
   },
   counter: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
   question: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.xxl,
   },

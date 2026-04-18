@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SPACING } from '@/constants/theme';
+import { SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import {
   format,
@@ -96,8 +96,8 @@ export const HistoryCalendar = () => {
                 <Text style={[
                   styles.dayText,
                   { color: colors.text },
-                  isToday && { color: colors.primary, fontWeight: 'bold' },
-                  (status === 'clean' || status === 'relapse') && { color: colors.surface, fontWeight: 'bold' },
+                  isToday && { color: colors.primary, fontWeight: FONT_WEIGHT.bold },
+                  (status === 'clean' || status === 'relapse') && { color: colors.surface, fontWeight: FONT_WEIGHT.bold },
                 ]}>
                   {format(date, 'd')}
                 </Text>
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   monthTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   arrowButton: {
     padding: SPACING.xs,

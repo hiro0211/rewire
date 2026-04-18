@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   legalText: {
     fontSize: FONT_SIZE.xs,
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: LINE_HEIGHT.xs,
   },
   legalLinks: {
     flexDirection: 'row',

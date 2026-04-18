@@ -10,7 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 
 interface BrainRewiringBarProps {
   progress: number; // 0-1
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   percent: {
     fontSize: FONT_SIZE.sm,

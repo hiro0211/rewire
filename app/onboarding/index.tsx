@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated, Text, TouchableOpacity } from 'react-native
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   stepCounter: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   content: {
     flex: 1,

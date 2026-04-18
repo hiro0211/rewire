@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
@@ -67,19 +67,19 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.xxxl,
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
   description: {
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
     marginBottom: SPACING.xl,
   },
   starRow: {

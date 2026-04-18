@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 
 interface LessonContentProps {
   content: string;
@@ -75,12 +75,12 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginTop: SPACING.sm,
   },
   bold: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginTop: SPACING.xs,
   },
   paragraph: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text } from 'react-native';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -56,12 +56,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginTop: SPACING.xl,
     marginBottom: SPACING.sm,
   },
   paragraph: {
     fontSize: FONT_SIZE.md,
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
   },
 });

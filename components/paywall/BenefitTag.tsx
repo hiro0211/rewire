@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 
 interface BenefitTagProps {
   label: string;
@@ -34,6 +34,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

@@ -8,7 +8,7 @@ import { BreathingTimer } from '@/components/breathing/BreathingTimer';
 
 import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
 import { useTheme } from '@/hooks/useTheme';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, LINE_HEIGHT, } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 export default function BreathingScreen() {
@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
   },
   closeText: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 24,
-    lineHeight: 28,
+    fontSize: FONT_SIZE.xxl,
+    lineHeight: LINE_HEIGHT.lg,
   },
   center: {
     flex: 1,

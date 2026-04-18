@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.xxl,
     lineHeight: 42,
   },
@@ -113,6 +113,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.lg,
     textAlign: 'center',
     marginTop: SPACING.xxxl,
-    lineHeight: 28,
+    lineHeight: LINE_HEIGHT.lg,
   },
 });

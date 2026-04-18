@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 interface ShareWidgetCardProps {
   elapsed: string;
@@ -53,12 +54,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
     color: 'rgba(255,255,255,0.6)',
   },
   elapsedTime: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     fontFamily: MONO_FONT,
     color: '#FFFFFF',
   },
@@ -74,12 +75,12 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
     color: 'rgba(255,255,255,0.8)',
   },
   goalText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
     color: '#8B5CF6',
   },
 });

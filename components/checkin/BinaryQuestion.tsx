@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { ToggleButton } from '@/components/ui/ToggleButton';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 
 interface BinaryQuestionProps {
   label: string;
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FONT_SIZE.lg,
     marginBottom: SPACING.md,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   buttons: {
     flexDirection: 'row',

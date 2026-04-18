@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -33,14 +33,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
   description: {
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
     marginBottom: SPACING.xl,
   },
 });

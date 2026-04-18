@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { BlurTabBar } from '@/components/ui/BlurTabBar';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 export default function TabLayout() {
   const { colors } = useTheme();
@@ -17,7 +18,7 @@ export default function TabLayout() {
         headerStyle: { backgroundColor: colors.background },
         headerTitleStyle: {
           fontSize: 28,
-          fontWeight: 'bold',
+          fontWeight: FONT_WEIGHT.bold,
           color: colors.text,
         },
         headerTitleAlign: 'left',

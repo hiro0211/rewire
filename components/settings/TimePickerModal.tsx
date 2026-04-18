@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -56,7 +56,7 @@ export const TimePickerModal = ({
                 <Text style={[
                   styles.itemText,
                   { color: colors.text },
-                  time === currentTime && { color: colors.primary, fontWeight: 'bold' },
+                  time === currentTime && { color: colors.primary, fontWeight: FONT_WEIGHT.bold },
                 ]}>
                   {time}
                 </Text>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },

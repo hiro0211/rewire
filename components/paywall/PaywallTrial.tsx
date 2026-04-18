@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   trialTitle: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   trialHighlight: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },

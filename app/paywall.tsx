@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { PaywallDefault } from '@/components/paywall/PaywallDefault';
@@ -136,14 +136,14 @@ const styles = StyleSheet.create({
   },
   unavailableTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.md,
   },
   fallbackText: {
     fontSize: FONT_SIZE.md,
     marginBottom: SPACING.lg,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: LINE_HEIGHT.md,
   },
   retryButton: {
     paddingVertical: SPACING.sm,
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   backButton: {
     paddingVertical: SPACING.sm,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, Pressable } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
@@ -48,12 +48,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.sm,
   },
   body: {
     fontSize: FONT_SIZE.sm,
-    lineHeight: 22,
+    lineHeight: LINE_HEIGHT.md,
     marginBottom: SPACING.xl,
   },
   buttons: {

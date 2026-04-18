@@ -7,6 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/hooks/useTheme';
+import { FONT_WEIGHT, SPACING } from '@/constants/theme';
 
 interface SegmentedControlProps {
   segments: string[];
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 8,
     height: 32,
-    marginHorizontal: 16,
+    marginHorizontal: SPACING.lg,
     padding: PADDING,
     position: 'relative',
   },
@@ -107,9 +108,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   textSelectedWeight: {
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   textUnselectedWeight: {
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
   },
 });

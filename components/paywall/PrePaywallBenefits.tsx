@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -143,9 +143,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     textAlign: 'center',
-    lineHeight: 36,
+    lineHeight: LINE_HEIGHT.xxl,
     marginBottom: SPACING.lg,
   },
   headerSub: {
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
 
   // ── ベネフィットタグ ──
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   sectionSubheadline: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },

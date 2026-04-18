@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Animated, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useAnalyzingProgress, ANALYSIS_ITEMS } from '@/hooks/onboarding/useAnalyzingProgress';
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.xxl,
   },
   ringContainer: {
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   percentText: {
     position: 'absolute',
     fontSize: FONT_SIZE.xxxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   checklist: {
     width: '100%',

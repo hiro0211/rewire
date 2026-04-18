@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { FEATURES } from '@/constants/onboarding';
@@ -42,14 +42,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
   description: {
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
     marginBottom: SPACING.xl,
   },
   featuresContainer: {
@@ -78,10 +78,10 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '600' as const,
+    fontWeight: FONT_WEIGHT.semibold as const,
   },
   featureDescription: {
     fontSize: FONT_SIZE.sm,
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
 });

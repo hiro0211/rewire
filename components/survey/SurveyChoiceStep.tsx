@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import type { SurveyQuestion } from '@/types/survey';
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'left',
     marginBottom: 40,
   },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   optionText: {
     fontSize: FONT_SIZE.md,

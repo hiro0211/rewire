@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { SPACING } from '@/constants/theme';
+import { SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useCheckinStore } from '@/stores/checkinStore';
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   badge: {
     paddingHorizontal: 8,
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   tagsRow: {
     flexDirection: 'row',

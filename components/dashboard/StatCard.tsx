@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useTheme } from '@/hooks/useTheme';
-import { FONT_SIZE, SPACING } from '@/constants/theme';
+import { FONT_SIZE, SPACING, FONT_WEIGHT, } from '@/constants/theme';
 
 interface StatCardProps {
   label: string;
@@ -44,13 +44,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     letterSpacing: 0.5,
     marginBottom: SPACING.xs,
     textTransform: 'uppercase',
   },
   value: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { FONT_SIZE, SPACING } from '@/constants/theme';
+import { FONT_SIZE, SPACING, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { BadgeOrb } from './BadgeOrb';
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
   },
   day: {
@@ -89,6 +89,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
     marginTop: SPACING.xs,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
 });

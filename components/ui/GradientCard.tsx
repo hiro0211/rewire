@@ -19,7 +19,7 @@ export function GradientCard({
   variant = 'default',
   testID,
 }: GradientCardProps) {
-  const { gradients, glow } = useTheme();
+  const { gradients, glow, shadows } = useTheme();
 
   const variantConfig = {
     default: {
@@ -46,6 +46,7 @@ export function GradientCard({
       testID={testID}
       style={[
         styles.outer,
+        shadows.glowCard,
         {
           borderColor: config.borderColor,
           shadowColor: config.shadowColor,
@@ -70,10 +71,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 6,
   },
   gradient: {
     padding: SPACING.lg,

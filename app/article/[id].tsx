@@ -3,7 +3,7 @@ import { Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { ARTICLES } from '@/constants/articles';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -39,16 +39,16 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.sm,
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.xl,
   },
   body: {
     fontSize: FONT_SIZE.md,
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
   },
 });

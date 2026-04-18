@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import type { LocalePreference } from '@/types/i18n';
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.md,
     marginTop: SPACING.sm,
   },

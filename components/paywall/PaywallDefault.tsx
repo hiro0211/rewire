@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     textAlign: 'center',
     marginBottom: SPACING.xl,
   },
@@ -157,17 +157,17 @@ const styles = StyleSheet.create({
   },
   headline: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     textAlign: 'center',
     marginTop: SPACING.lg,
-    lineHeight: 28,
+    lineHeight: LINE_HEIGHT.lg,
   },
   subHeadline: {
     fontSize: FONT_SIZE.sm,
     textAlign: 'center',
     marginTop: SPACING.sm,
     marginBottom: SPACING.xl,
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
   featuresWrap: {
     marginTop: SPACING.sm,

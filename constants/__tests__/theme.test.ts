@@ -1,4 +1,4 @@
-import { SPACING, RADIUS, FONT_SIZE, LAYOUT } from '../theme';
+import { SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, LAYOUT } from '../theme';
 
 describe('テーマ定数', () => {
   describe('SPACING', () => {
@@ -54,6 +54,43 @@ describe('テーマ定数', () => {
       expect(FONT_SIZE.xl).toBeLessThan(FONT_SIZE.xxl);
       expect(FONT_SIZE.xxl).toBeLessThan(FONT_SIZE.xxxl);
       expect(FONT_SIZE.xxxl).toBeLessThan(FONT_SIZE.display);
+    });
+  });
+
+  describe('FONT_WEIGHT', () => {
+    it('regular が 400 である', () => {
+      expect(FONT_WEIGHT.regular).toBe('400');
+    });
+
+    it('medium が 500 である', () => {
+      expect(FONT_WEIGHT.medium).toBe('500');
+    });
+
+    it('semibold が 600 である', () => {
+      expect(FONT_WEIGHT.semibold).toBe('600');
+    });
+
+    it('bold が 700 である', () => {
+      expect(FONT_WEIGHT.bold).toBe('700');
+    });
+
+    it('extrabold が 800 である', () => {
+      expect(FONT_WEIGHT.extrabold).toBe('800');
+    });
+  });
+
+  describe('LINE_HEIGHT', () => {
+    it('body が 24 である（最頻出の本文用lineHeight）', () => {
+      expect(LINE_HEIGHT.body).toBe(24);
+    });
+
+    it('サイズ順が xs < sm < md < body < lg < xl < xxl', () => {
+      expect(LINE_HEIGHT.xs).toBeLessThan(LINE_HEIGHT.sm);
+      expect(LINE_HEIGHT.sm).toBeLessThan(LINE_HEIGHT.md);
+      expect(LINE_HEIGHT.md).toBeLessThan(LINE_HEIGHT.body);
+      expect(LINE_HEIGHT.body).toBeLessThan(LINE_HEIGHT.lg);
+      expect(LINE_HEIGHT.lg).toBeLessThan(LINE_HEIGHT.xl);
+      expect(LINE_HEIGHT.xl).toBeLessThan(LINE_HEIGHT.xxl);
     });
   });
 

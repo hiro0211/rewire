@@ -118,6 +118,26 @@ describe('colorPalettes', () => {
       expect(DARK_SHADOWS.medium.shadowColor).toBe('#000');
       expect(DARK_SHADOWS.medium.elevation).toBe(4);
     });
+
+    it('glowCard shadow が定義されている', () => {
+      expect(DARK_SHADOWS.glowCard).toEqual({
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 6,
+      });
+    });
+
+    it('sheet shadow が定義されている', () => {
+      expect(DARK_SHADOWS.sheet).toEqual({
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 16,
+      });
+    });
   });
 
   describe('LIGHT_SHADOWS', () => {

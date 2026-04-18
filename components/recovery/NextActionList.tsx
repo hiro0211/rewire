@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { Card } from '@/components/ui/Card';
 
 export function NextActionList() {
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.md,
     textAlign: 'center',
   },
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   icon: {
-    fontSize: 24,
+    fontSize: FONT_SIZE.xxl,
     marginRight: SPACING.md,
   },
   text: {

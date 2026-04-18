@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 
 interface BadgeUnlockModalProps {
   badge: NeuralBadgeDefinition | null;
@@ -76,12 +77,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
-    lineHeight: 22,
+    lineHeight: LINE_HEIGHT.md,
     textAlign: 'center',
   },
   button: {
@@ -93,6 +94,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

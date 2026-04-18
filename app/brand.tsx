@@ -5,7 +5,7 @@ import {
   BRAND_TIMING_CONFIG,
   calculateBrandTimings,
 } from '@/constants/brandConfig';
-import { FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
 import { useLocale } from '@/hooks/useLocale';
 import * as Haptics from 'expo-haptics';
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 42,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     color: '#E8E8ED',
     letterSpacing: 2,
     marginBottom: 32,
@@ -156,6 +156,6 @@ const styles = StyleSheet.create({
   catchphrase: {
     fontSize: FONT_SIZE.lg,
     color: 'rgba(232, 232, 237, 0.85)',
-    lineHeight: 28,
+    lineHeight: LINE_HEIGHT.lg,
   },
 });

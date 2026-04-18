@@ -104,6 +104,20 @@ export const DARK_SHADOWS: ShadowPalette = {
     shadowRadius: 4.65,
     elevation: 4,
   },
+  glowCard: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  sheet: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 16,
+  },
 };
 
 export const LIGHT_SHADOWS: ShadowPalette = {
@@ -120,5 +134,19 @@ export const LIGHT_SHADOWS: ShadowPalette = {
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
+  },
+  glowCard: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  sheet: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 16,
   },
 };

@@ -9,6 +9,7 @@ import { GradientCard } from '@/components/ui/GradientCard';
 import { HistoryCalendar } from '@/components/history/HistoryCalendar';
 import { useStreak } from '@/hooks/dashboard/useStreak';
 import { useTheme } from '@/hooks/useTheme';
+import { FONT_WEIGHT, FONT_SIZE, SPACING } from '@/constants/theme';
 
 export default function StreakCalendarScreen() {
   const router = useRouter();
@@ -59,8 +60,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   backButton: {
     width: 44,
@@ -69,32 +70,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
   },
   streakSection: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: SPACING.xxxl,
   },
   streakLabel: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1.5,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   streakNumber: {
     fontSize: 64,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     lineHeight: 72,
   },
   streakUnit: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1.5,
     marginTop: 4,
   },
   calendarContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.lg,
   },
 });

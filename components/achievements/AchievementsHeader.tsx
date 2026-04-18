@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { FONT_SIZE, SPACING } from '@/constants/theme';
+import { FONT_SIZE, SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface AchievementsHeaderProps {
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     flex: 1,
     textAlign: 'center',
   },

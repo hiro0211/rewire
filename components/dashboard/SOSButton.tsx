@@ -14,7 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
@@ -23,7 +23,7 @@ const SPRING_CONFIG = { damping: 15, stiffness: 300 };
 
 export function SOSButton() {
   const router = useRouter();
-  const { colors, gradients, glow } = useTheme();
+  const { colors, gradients, glow, shadows } = useTheme();
   const { t } = useLocale();
 
   const scale = useSharedValue(1);
@@ -88,7 +88,7 @@ export function SOSButton() {
       />
       <Pressable
         testID="panic-button"
-        style={[styles.container, { shadowColor: glow.cyan, borderColor: 'rgba(0, 212, 255, 0.3)' }]}
+        style={[styles.container, shadows.glowCard, { shadowColor: glow.cyan, borderColor: 'rgba(0, 212, 255, 0.3)' }]}
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -127,10 +127,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 6,
   },
   gradient: {
     height: 56,
@@ -149,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     fontSize: FONT_SIZE.md,
   },
 });

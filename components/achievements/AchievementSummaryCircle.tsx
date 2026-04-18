@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface AchievementSummaryCircleProps {
@@ -66,6 +66,6 @@ const styles = StyleSheet.create({
   },
   percentage: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

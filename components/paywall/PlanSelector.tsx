@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { calcMonthlyPrice, formatPrice } from './paywallUtils';
@@ -22,7 +22,7 @@ export function PlanSelector({
   currencyCode = 'JPY',
   showMonthly = true,
 }: PlanSelectorProps) {
-  const { colors, glow } = useTheme();
+  const { colors, glow, shadows } = useTheme();
   const { t } = useLocale();
   const annualPrice = annualPackage?.product?.price ?? 5400;
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
@@ -39,7 +39,7 @@ export function PlanSelector({
         style={[
           styles.card,
           selectedPlan === 'annual'
-            ? { borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 }
+            ? { ...shadows.glowCard, borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple }
             : { borderColor: colors.border, backgroundColor: colors.surface },
         ]}
         onPress={() => onSelectPlan('annual')}
@@ -57,7 +57,7 @@ export function PlanSelector({
           style={[
             styles.card,
             selectedPlan === 'monthly'
-              ? { borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 }
+              ? { ...shadows.glowCard, borderColor: glow.purple, backgroundColor: 'rgba(139, 92, 246, 0.08)', shadowColor: glow.purple }
               : { borderColor: colors.border, backgroundColor: colors.surface },
           ]}
           onPress={() => onSelectPlan('monthly')}
@@ -86,12 +86,12 @@ const styles = StyleSheet.create({
   },
   planLabel: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.xs,
   },
   priceMain: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
   },
   priceSub: {
     fontSize: FONT_SIZE.sm,

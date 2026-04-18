@@ -8,7 +8,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -72,10 +72,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.xxl,
-    lineHeight: 36,
+    lineHeight: LINE_HEIGHT.xxl,
   },
   divider: {
     height: 1,
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
   },
   messageText: {
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: LINE_HEIGHT.md,
   },
 });

@@ -3,6 +3,7 @@ import { TextInput, StyleSheet } from 'react-native';
 import Animated, { useAnimatedProps, useAnimatedStyle } from 'react-native-reanimated';
 import { useTheme } from '@/hooks/useTheme';
 import { useCountUpAnimation } from '@/hooks/streak/useCountUpAnimation';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
   },
   number: {
     fontSize: 96,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     textAlign: 'center',
     padding: 0,
     lineHeight: 110,

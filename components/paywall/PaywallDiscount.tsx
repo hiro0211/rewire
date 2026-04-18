@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   timerDisplay: {
     fontSize: FONT_SIZE.xxxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     marginBottom: SPACING.xl,
   },
   priceCard: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   priceBadgeText: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     letterSpacing: 1,
   },
   priceRow: {
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   priceLabel: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   priceDetail: {
     fontSize: FONT_SIZE.sm,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   priceAmount: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
   },
   ctaButton: {
     width: '100%',

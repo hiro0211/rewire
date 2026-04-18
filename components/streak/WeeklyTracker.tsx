@@ -1,4 +1,4 @@
-import { FONT_SIZE, RADIUS, SPACING } from '@/constants/theme';
+import { FONT_SIZE, RADIUS, SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { getWeeklyProgress, type DayStatus } from '@/hooks/streak/useWeeklyProgress';
 import { useTheme } from '@/hooks/useTheme';
 import type { ColorPalette } from '@/types/theme';
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   dayLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   dot: {
     width: 28,
@@ -107,6 +107,6 @@ const styles = StyleSheet.create({
   checkmark: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

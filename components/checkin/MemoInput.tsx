@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 
 interface MemoInputProps {
   value: string;
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FONT_SIZE.lg,
     marginBottom: SPACING.md,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   input: {
     borderRadius: RADIUS.md,

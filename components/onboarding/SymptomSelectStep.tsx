@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SYMPTOM_CATEGORIES } from '@/constants/symptoms';
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
   subtitle: {
     fontSize: FONT_SIZE.md,
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.sm,
   },
   itemsContainer: {

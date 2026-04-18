@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { GOAL_OPTIONS } from '@/constants/goals';
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.xl,
     textAlign: 'center',
   },
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pickerItem: {
-    fontSize: 20,
+    fontSize: FONT_SIZE.xl,
   },
   buttonRow: {
     flexDirection: 'row',

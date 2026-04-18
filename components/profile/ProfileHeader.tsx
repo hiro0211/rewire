@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useRouter } from 'expo-router';
@@ -91,14 +91,14 @@ const styles = StyleSheet.create({
   },
   gradeName: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
   nickname: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: 4,
   },
   joinDate: {

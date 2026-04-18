@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { GradientCard } from '@/components/ui/GradientCard';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface FeatureCardProps {
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emoji: {
-    fontSize: 32,
+    fontSize: FONT_SIZE.xxxl,
     marginRight: SPACING.lg,
   },
   textContainer: {
@@ -43,11 +43,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: 2,
   },
   description: {
     fontSize: FONT_SIZE.sm,
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
 });

@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
+import { SPACING } from '@/constants/theme';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
@@ -83,8 +84,8 @@ export function BlurTabBar({ state, descriptors, navigation }: BottomTabBarProps
 const styles = StyleSheet.create({
   outerContainer: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: SPACING.lg,
+    right: SPACING.lg,
     alignItems: 'stretch',
   },
   pill: {
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   },
   tabRow: {
     flexDirection: 'row',
-    paddingVertical: 8,
+    paddingVertical: SPACING.sm,
     paddingHorizontal: 4,
   },
   tab: {

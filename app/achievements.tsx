@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { StarryOverlay } from '@/components/ui/StarryOverlay';
@@ -69,6 +69,6 @@ const styles = StyleSheet.create({
   },
   summaryCount: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

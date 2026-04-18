@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/hooks/useTheme';
-import { FONT_SIZE, RADIUS } from '@/constants/theme';
+import { FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 
 interface DiscountBadgeProps {
   percentage: number;
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   off: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     letterSpacing: 4,
   },
 });

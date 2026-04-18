@@ -3,7 +3,7 @@ import { Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import type { BreathPhase } from '@/hooks/breathing/useBreathingEngine';
 
 interface BreathingTextProps {
@@ -41,7 +41,7 @@ export function BreathingText({ phase }: BreathingTextProps) {
 const styles = StyleSheet.create({
   text: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
     textAlign: 'center',
     position: 'absolute',
     top: '30%', // Position above circle

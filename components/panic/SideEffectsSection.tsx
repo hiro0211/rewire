@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { SIDE_EFFECTS } from '@/constants/panic';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   heading: {
     color: '#FFFFFF',
     fontSize: FONT_SIZE.lg,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
   },
   cards: {
     gap: SPACING.md,
@@ -76,11 +76,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: '#FFFFFF',
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   cardDescription: {
     color: 'rgba(255, 255, 255, 0.72)',
     fontSize: FONT_SIZE.sm,
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
 });

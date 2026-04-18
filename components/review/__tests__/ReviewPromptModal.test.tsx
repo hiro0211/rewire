@@ -15,6 +15,10 @@ jest.mock('@/hooks/useTheme', () => ({
     },
     gradients: { button: ['#7c3aed', '#a855f7'] },
     glow: { purple: '#7c3aed' },
+    shadows: {
+      glowCard: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 },
+      sheet: { shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 16 },
+    },
   }),
 }));
 

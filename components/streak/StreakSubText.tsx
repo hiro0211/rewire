@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withDelay, withTiming } from 'react-native-reanimated';
 import { useTheme } from '@/hooks/useTheme';
-import { FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 
 interface StreakSubTextProps {
   text: string;
@@ -37,7 +37,7 @@ export function StreakSubText({ text, delay = 500 }: StreakSubTextProps) {
 const styles = StyleSheet.create({
   text: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     textAlign: 'center',
     marginTop: 4,
   },

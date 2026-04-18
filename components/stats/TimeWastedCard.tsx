@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '@/components/ui/Card';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   mainAmount: {
     flexDirection: 'row',
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   arrow: {
     fontSize: FONT_SIZE.md,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   yen: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   divider: {
     height: 1,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   comparisons: {
     flexDirection: 'row',

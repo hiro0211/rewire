@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card } from '@/components/ui/Card';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import type { Article } from '@/constants/articles';
@@ -39,11 +39,11 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   title: {
     fontSize: FONT_SIZE.md,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.sm,
   },
   meta: {

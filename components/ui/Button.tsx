@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextS
 import Animated from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { RADIUS, SPACING, FONT_SIZE, LAYOUT } from '@/constants/theme';
+import { RADIUS, SPACING, FONT_SIZE, LAYOUT, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { usePressAnimation } from '@/hooks/ui/usePressAnimation';
 
@@ -28,7 +28,7 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
-  const { colors, gradients, glow } = useTheme();
+  const { colors, gradients, glow, shadows } = useTheme();
   const { onPressIn, onPressOut, animatedStyle } = usePressAnimation();
   const height = size === 'lg' ? 58 : LAYOUT.buttonHeight;
 
@@ -63,7 +63,7 @@ export function Button({
     return (
       <Animated.View style={[animatedStyle, style]}>
         <TouchableOpacity
-          style={[styles.gradientOuter, { height, shadowColor: glow.purple }]}
+          style={[styles.gradientOuter, shadows.glowCard, { height, shadowColor: glow.purple }]}
           onPress={handlePress}
           onPressIn={onPressIn}
           onPressOut={onPressOut}
@@ -130,15 +130,11 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: FONT_SIZE.md,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   gradientOuter: {
     borderRadius: RADIUS.md,
     overflow: 'hidden',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 6,
   },
   gradientInner: {
     borderRadius: RADIUS.md,

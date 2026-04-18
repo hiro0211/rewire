@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { FONT_SIZE, RADIUS, SPACING } from '@/constants/theme';
+import { FONT_SIZE, RADIUS, SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface AchievementsLinkCardProps {
@@ -16,7 +16,7 @@ interface AchievementsLinkCardProps {
  * solid surface + cyan アクセントボーダー + cyan glow で「押せる」ことを伝える。
  */
 export function AchievementsLinkCard({ unlocked, total, onPress }: AchievementsLinkCardProps) {
-  const { colors } = useTheme();
+  const { colors, shadows } = useTheme();
 
   return (
     <TouchableOpacity
@@ -25,6 +25,7 @@ export function AchievementsLinkCard({ unlocked, total, onPress }: AchievementsL
       activeOpacity={0.7}
       style={[
         styles.card,
+        shadows.glowCard,
         {
           backgroundColor: colors.surface,
           borderColor: 'rgba(0, 212, 255, 0.45)',
@@ -56,17 +57,13 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1.5,
     padding: SPACING.lg,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
   },
   textContainer: {
     flex: 1,
   },
   label: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   count: {
     fontSize: FONT_SIZE.sm,

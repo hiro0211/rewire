@@ -5,7 +5,7 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useBreathStore } from '@/stores/breathStore';
 import { useUserStore } from '@/stores/userStore';
 import * as Crypto from 'expo-crypto';
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.xl,
     textAlign: 'center',
     marginBottom: SPACING.xxxl,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   buttonGroup: {
     width: '100%',

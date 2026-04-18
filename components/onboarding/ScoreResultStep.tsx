@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { getScoreLevel } from '@/lib/assessment/scoreCalculator';
@@ -76,17 +76,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.lg,
   },
   score: {
     fontSize: FONT_SIZE.xxxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.xxl,
   },
   levelLabel: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.md,
   },
   chartContainer: {
@@ -111,6 +111,6 @@ const styles = StyleSheet.create({
   message: {
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
   },
 });

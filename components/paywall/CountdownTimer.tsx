@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, TextStyle } from 'react-native';
-import { FONT_SIZE } from '@/constants/theme';
+import { FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 
 interface CountdownTimerProps {
@@ -57,7 +57,7 @@ export function CountdownTimer({ initialSeconds, style, onExpire }: CountdownTim
         {
           color: colors.text,
           fontSize: FONT_SIZE.lg,
-          fontWeight: '700',
+          fontWeight: FONT_WEIGHT.bold,
           fontVariant: ['tabular-nums'],
         },
         style,

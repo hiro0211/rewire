@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
@@ -112,13 +112,13 @@ const styles = StyleSheet.create({
   container: { padding: SPACING.lg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 44 },
   headerButton: { flexDirection: 'row', alignItems: 'center', minWidth: 44, minHeight: 44 },
-  headerButtonText: { fontSize: FONT_SIZE.md, fontWeight: '500' },
+  headerButtonText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium },
   headerSkipText: { fontSize: FONT_SIZE.sm },
   content: { flex: 1, justifyContent: 'flex-start', alignItems: 'center' },
   stepIndicator: { flexDirection: 'row', marginTop: SPACING.xxl, marginBottom: SPACING.xxl },
   stepDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
-  stepTitle: { fontSize: FONT_SIZE.xxl, fontWeight: 'bold', textAlign: 'center', marginTop: SPACING.lg, marginBottom: SPACING.sm },
-  stepDescription: { fontSize: FONT_SIZE.md, textAlign: 'center', lineHeight: 24, marginBottom: SPACING.lg },
+  stepTitle: { fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold, textAlign: 'center', marginTop: SPACING.lg, marginBottom: SPACING.sm },
+  stepDescription: { fontSize: FONT_SIZE.md, textAlign: 'center', lineHeight: LINE_HEIGHT.body, marginBottom: SPACING.lg },
   footer: { marginBottom: SPACING.xl },
   secondaryButton: { marginTop: SPACING.sm },
 });

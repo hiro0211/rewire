@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/hooks/useTheme';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 
 export interface LevelOption {
   value: number;
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.md,
   },
   buttons: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     textAlign: 'center',
   },
 });

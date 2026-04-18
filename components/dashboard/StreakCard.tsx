@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useStreak } from '@/hooks/dashboard/useStreak';
@@ -92,13 +92,13 @@ const styles = StyleSheet.create({
   },
   count: {
     fontSize: FONT_SIZE.display,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginRight: SPACING.xs,
     lineHeight: FONT_SIZE.display * 1.1,
   },
   unit: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   editButton: {
     marginLeft: SPACING.sm,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   statLabel: {
     fontSize: FONT_SIZE.xs,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.sm,
   },
   percentText: {
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     fontSize: FONT_SIZE.sm,
   },
 });

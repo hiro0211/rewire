@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { GradientCard } from '@/components/ui/GradientCard';
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.extrabold,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
@@ -60,11 +60,11 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: 2,
   },
   featureDesc: {
     fontSize: FONT_SIZE.sm,
-    lineHeight: 20,
+    lineHeight: LINE_HEIGHT.sm,
   },
 });

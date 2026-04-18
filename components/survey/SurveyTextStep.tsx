@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, Text } from 'react-native';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import type { SurveyQuestion } from '@/types/survey';
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'left',
     marginBottom: SPACING.sm,
   },

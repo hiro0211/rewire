@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet, Text, View } from 'react-native';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 export default function ModalScreen() {
   return (
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
   },
   separator: {
     marginVertical: 30,

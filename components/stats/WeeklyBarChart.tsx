@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '@/components/ui/Card';
-import { SPACING, FONT_SIZE, RADIUS } from '@/constants/theme';
+import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import type { DailyUsage } from '@/types/usage';
@@ -60,7 +60,7 @@ export function WeeklyBarChart({ data }: WeeklyBarChartProps) {
                   ]}
                 />
               </View>
-              <Text style={[styles.dayLabel, { color: colors.textSecondary }, isToday && { color: colors.primary, fontWeight: '600' }]}>
+              <Text style={[styles.dayLabel, { color: colors.textSecondary }, isToday && { color: colors.primary, fontWeight: FONT_WEIGHT.semibold }]}>
                 {getDayLabel(day.date)}
               </Text>
             </View>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.lg,
   },
   chartArea: {

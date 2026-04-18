@@ -56,6 +56,8 @@ export interface ShadowDef {
 export interface ShadowPalette {
   small: ShadowDef;
   medium: ShadowDef;
+  glowCard: ShadowDef;
+  sheet: ShadowDef;
 }
 
 export interface ThemeColors {

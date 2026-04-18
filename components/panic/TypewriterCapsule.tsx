@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { TYPEWRITER_CONFIG } from '@/constants/panic';
 import type { TypewriterPhase } from '@/hooks/panic/useTypewriterMessage';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 interface TypewriterCapsuleProps {
   displayedText: string;
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
   text: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
   },
 });

@@ -4,6 +4,7 @@ import { getNextBadge } from '@/lib/badges/getNextBadge';
 import { useTheme } from '@/hooks/useTheme';
 import React from 'react';
 import { type DimensionValue, StyleSheet, Text, View } from 'react-native';
+import { FONT_WEIGHT } from '@/constants/theme';
 
 interface NextBadgeProgressProps {
   currentDay: number;
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
   bar: {
     height: 4,
@@ -96,6 +97,6 @@ const styles = StyleSheet.create({
   },
   allAchieved: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

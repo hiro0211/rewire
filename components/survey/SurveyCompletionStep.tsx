@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SPACING, FONT_SIZE, LAYOUT } from '@/constants/theme';
+import { SPACING, FONT_SIZE, LAYOUT, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     textAlign: 'center',
     marginBottom: SPACING.md,
   },
@@ -77,6 +77,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: '600',
+    fontWeight: FONT_WEIGHT.semibold,
   },
 });

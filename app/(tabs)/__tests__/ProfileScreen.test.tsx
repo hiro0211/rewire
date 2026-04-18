@@ -21,6 +21,12 @@ jest.mock('@/hooks/useTheme', () => ({
       surface: '#111',
     },
     gradients: { background: ['#0A0A0F', '#1a1a3e', '#2d1b4e'] },
+    shadows: {
+      small: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 2 },
+      medium: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4.65, elevation: 4 },
+      glowCard: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6 },
+      sheet: { shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.3, shadowRadius: 16, elevation: 16 },
+    },
     isDark: true,
   }),
 }));

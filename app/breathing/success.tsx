@@ -5,7 +5,7 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
 
 export default function BreathingSuccessScreen() {
@@ -46,14 +46,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: 'bold',
+    fontWeight: FONT_WEIGHT.bold,
     marginBottom: SPACING.lg,
     textAlign: 'center',
   },
   message: {
     fontSize: FONT_SIZE.md,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: LINE_HEIGHT.body,
     marginBottom: SPACING.xxl,
   },
   button: {
