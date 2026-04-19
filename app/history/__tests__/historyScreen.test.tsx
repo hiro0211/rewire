@@ -88,9 +88,7 @@ jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(),
 }));
 
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: 'Ionicons',
-}));
+jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 
 import HistoryScreen from '../index';
 

@@ -50,9 +50,7 @@ jest.mock('@/components/history/HistoryCalendar', () => {
   return { HistoryCalendar: () => <View testID="history-calendar" /> };
 });
 
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: 'Ionicons',
-}));
+jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 
 import StreakCalendarScreen from '../streak-calendar';
 

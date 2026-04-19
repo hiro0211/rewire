@@ -22,9 +22,9 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 34, left: 0, right: 0 }),
 }));
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
-  return { Ionicons: ({ name, testID }: any) => <Text testID={testID}>{name}</Text> };
+  return ({ name, testID }: any) => <Text testID={testID}>{name}</Text>;
 });
 
 jest.mock('@/hooks/useTheme', () => ({

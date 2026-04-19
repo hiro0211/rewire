@@ -50,9 +50,9 @@ jest.mock('@/hooks/dashboard/useShareWidget', () => ({
   }),
 }));
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
-  return { Ionicons: ({ name }: any) => <Text>{name}</Text> };
+  return ({ name }: any) => <Text>{name}</Text>;
 });
 
 jest.mock('@/hooks/survey/useSurveyEligibility', () => ({

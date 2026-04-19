@@ -35,12 +35,10 @@ jest.mock('expo-linear-gradient', () => {
   };
 });
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
-  return {
-    Ionicons: ({ name, testID, ...props }: any) =>
-      require('react').createElement(Text, { testID, ...props }, name),
-  };
+  return ({ name, testID, ...props }: any) =>
+    require('react').createElement(Text, { testID, ...props }, name);
 });
 
 import { ReviewPromptModal } from '../ReviewPromptModal';

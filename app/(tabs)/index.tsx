@@ -13,7 +13,7 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
 import { useShareWidget } from '@/hooks/dashboard/useShareWidget';
 import { useEntranceAnimation } from '@/hooks/ui/useEntranceAnimation';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { SPACING, FONT_SIZE } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';

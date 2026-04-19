@@ -16,7 +16,7 @@ import {
 import { ja, enUS } from 'date-fns/locale';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useLocale } from '@/hooks/useLocale';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export const HistoryCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());

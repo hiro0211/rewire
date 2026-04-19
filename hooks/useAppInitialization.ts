@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { logger } from '@/lib/logger';
-import { useFonts } from 'expo-font';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useLocaleStore } from '@/stores/localeStore';
@@ -14,8 +13,6 @@ export function useAppInitialization() {
   const { loadUser, hasHydrated, user } = useUserStore();
 
   useScreenTracking();
-
-  useFonts({});
 
   useEffect(() => {
     loadUser();

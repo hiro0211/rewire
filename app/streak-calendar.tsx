@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { GradientCard } from '@/components/ui/GradientCard';

@@ -52,10 +52,6 @@ jest.mock('@/lib/subscription/purchasesModule', () => ({
   },
 }));
 
-jest.mock('expo-font', () => ({
-  useFonts: () => [true],
-}));
-
 jest.mock('@/lib/tracking/useScreenTracking', () => ({
   useScreenTracking: jest.fn(),
 }));

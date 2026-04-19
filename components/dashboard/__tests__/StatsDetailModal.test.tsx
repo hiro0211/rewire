@@ -48,11 +48,9 @@ jest.mock('@/components/ui/Sparkline', () => ({
   },
 }));
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
-  return {
-    Ionicons: ({ name }: any) => <Text testID={`icon-${name}`}>{name}</Text>,
-  };
+  return ({ name }: any) => <Text testID={`icon-${name}`}>{name}</Text>;
 });
 
 jest.mock('@/hooks/dashboard/useDashboardStats', () => ({

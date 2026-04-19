@@ -6,7 +6,7 @@ import { useLocale } from '@/hooks/useLocale';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { format } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { DailyCheckin } from '@/types/models';
 
 export const HistoryList = () => {

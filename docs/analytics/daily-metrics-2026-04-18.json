@@ -1,0 +1,60 @@
+{
+  "date": "2026-04-18",
+  "pipeline_status": {
+    "target_date": "2026-04-18",
+    "fetch_attempted": true,
+    "fetch_success": false,
+    "initial_post_error": "409 Conflict on /v1/analyticsReportRequests (ONGOING request already exists)",
+    "recovered_with_request_id": "394c257b-c76e-4779-9257-30c74024383a",
+    "segment_download_error": "HTTP 400 on S3 presigned URL for APP_STORE_ENGAGEMENT",
+    "app_usage_rows_returned": 0,
+    "local_cache_written": false,
+    "newest_cached_date": "2026-04-13",
+    "missing_dates": [
+      "2026-04-14",
+      "2026-04-15",
+      "2026-04-16",
+      "2026-04-17",
+      "2026-04-18"
+    ]
+  },
+  "metrics_from_10day_cache": {
+    "source_date_range": "2026-04-03 to 2026-04-12",
+    "impressions": 62,
+    "page_views": 13,
+    "taps": 7,
+    "impression_to_pageview_rate": 0.2097,
+    "pageview_to_tap_rate": 0.5385,
+    "downloads": null,
+    "trial_starts": null,
+    "paid_conversions": null,
+    "monthly_churn_rate": null
+  },
+  "benchmark_comparison": {
+    "page_view_rate": {
+      "actual": 0.2097,
+      "benchmark_low": 0.25,
+      "benchmark_high": 0.35,
+      "status": "below"
+    },
+    "download_rate": null,
+    "trial_start_rate": null,
+    "trial_to_paid_rate": null,
+    "monthly_churn_rate": null
+  },
+  "bottleneck": "Data pipeline: S3 segment download returning HTTP 400; funnel below download stage is not measurable for 2026-04-18.",
+  "sources_10day_cache": {
+    "App Store Search": {"impressions": 59, "page_views": 12, "taps": 2},
+    "App Store Browse": {"impressions": 3, "page_views": 0, "taps": 5},
+    "App Referrer": {"impressions": 0, "page_views": 1, "taps": 0}
+  },
+  "territory_top": {
+    "JP": {"impressions": 48, "page_views": 13, "taps": 7}
+  },
+  "recommended_actions": [
+    "Fix ASCClient.download_segment: stop sending the JWT Authorization header on the S3 presigned URL request (the presigned URL is self-authenticated).",
+    "Teach scripts.analytics.main to list existing analyticsReportRequests and reuse the ONGOING one instead of always POSTing (which currently 409s).",
+    "Run a JP-focused A/B test on the App Store subtitle and first two screenshots to lift the 21% impression->page-view rate into the 25-35% benchmark band."
+  ],
+  "generated_at": "2026-04-19T09:25:00+09:00"
+}

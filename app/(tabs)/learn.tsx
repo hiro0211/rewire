@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { LessonProgressBar } from '@/components/learn/LessonProgressBar';
 import { LessonTimeline } from '@/components/learn/LessonTimeline';

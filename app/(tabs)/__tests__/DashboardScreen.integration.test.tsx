@@ -94,9 +94,9 @@ jest.mock('@/components/review/ReviewPromptModal', () => {
 });
 
 // --- Native module mocks ---
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
-  return { Ionicons: ({ name }: any) => <Text>{name}</Text> };
+  return ({ name }: any) => <Text>{name}</Text>;
 });
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));

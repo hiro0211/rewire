@@ -40,9 +40,7 @@ jest.mock('expo-router', () => {
   };
 });
 
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: () => null,
-}));
+jest.mock('@expo/vector-icons/Ionicons', () => () => null);
 
 jest.mock('@/components/ui/BlurTabBar', () => ({
   BlurTabBar: () => null,
