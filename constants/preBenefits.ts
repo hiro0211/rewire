@@ -86,7 +86,7 @@ export const BENEFIT_SECTIONS: BenefitSection[] = [
 
 export const FEATURE_ITEMS: FeatureItem[] = [
   { emoji: '🔥', titleKey: 'preBenefits.features.streakTracking.title', descriptionKey: 'preBenefits.features.streakTracking.description' },
-  { emoji: '🔒', titleKey: 'preBenefits.features.contentBlocker.title', descriptionKey: 'preBenefits.features.contentBlocker.description' },
+  { emoji: '🔒', titleKey: 'preBenefits.features.screenTime.title', descriptionKey: 'preBenefits.features.screenTime.description' },
   { emoji: '🌬️', titleKey: 'preBenefits.features.sosBreathing.title', descriptionKey: 'preBenefits.features.sosBreathing.description' },
   { emoji: '📊', titleKey: 'preBenefits.features.dailyCheckin.title', descriptionKey: 'preBenefits.features.dailyCheckin.description' },
   { emoji: '⏱️', titleKey: 'preBenefits.features.widget.title', descriptionKey: 'preBenefits.features.widget.description' },

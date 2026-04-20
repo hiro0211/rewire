@@ -3,11 +3,13 @@ import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { GlassCircle } from '@/components/ui/GlassCircle';
 import { useLocale } from '@/hooks/useLocale';
+import { useReflectionSheet } from '@/hooks/reflection/useReflectionSheet';
 import { SPACING } from '@/constants/theme';
 
 export function QuickActionGrid() {
   const router = useRouter();
   const { t } = useLocale();
+  const openReflection = useReflectionSheet((s) => s.open);
 
   return (
     <View style={styles.grid} testID="quick-action-grid">
@@ -21,7 +23,7 @@ export function QuickActionGrid() {
         <GlassCircle
           iconName="pulse-outline"
           label={t('quickAction.checkin')}
-          onPress={() => router.push('/checkin')}
+          onPress={openReflection}
           testID="qa-checkin"
         />
         <GlassCircle

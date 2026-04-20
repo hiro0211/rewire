@@ -8,6 +8,11 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+const mockOpenReflection = jest.fn();
+jest.mock('@/hooks/reflection/useReflectionSheet', () => ({
+  useReflectionSheet: (selector: any) => selector({ open: mockOpenReflection }),
+}));
+
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
     colors: {
@@ -36,6 +41,7 @@ jest.mock('@/hooks/useLocale', () => ({
 describe('QuickActionGrid', () => {
   beforeEach(() => {
     mockPush.mockClear();
+    mockOpenReflection.mockClear();
   });
 
   it('3ボタンがレンダリングされる', () => {
@@ -52,10 +58,11 @@ describe('QuickActionGrid', () => {
     expect(mockPush).toHaveBeenCalledWith('/breathing');
   });
 
-  it('振り返りボタンタップで /checkin に遷移する', () => {
+  it('振り返りボタンタップで ReflectionSheet を開く', () => {
     render(<QuickActionGrid />);
     fireEvent.press(screen.getByTestId('qa-checkin'));
-    expect(mockPush).toHaveBeenCalledWith('/checkin');
+    expect(mockOpenReflection).toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalledWith('/checkin');
   });
 
   it('カレンダーボタンタップで /history に遷移する', () => {

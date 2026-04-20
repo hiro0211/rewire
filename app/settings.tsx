@@ -15,8 +15,8 @@ import { useLocaleStore } from '@/stores/localeStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
-import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
+import { useScreenTimeStatus } from '@/hooks/settings/useScreenTimeStatus';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
 import type { ThemePreference } from '@/types/theme';
@@ -35,7 +35,7 @@ export default function SettingsScreen() {
   const [isThemePickerVisible, setThemePickerVisible] = useState(false);
   const [isLocalePickerVisible, setLocalePickerVisible] = useState(false);
 
-  const { blockerStatus } = useBlockerStatus();
+  const { screenTimeStatus } = useScreenTimeStatus();
   const { isSurveyCompleted } = useSurveyCompleted();
   const {
     handleNotificationToggle,
@@ -64,25 +64,12 @@ export default function SettingsScreen() {
         </SettingSection>
 
         {Platform.OS === 'ios' && (
-          <SettingSection title={t('settings.sections.blocker')}>
+          <SettingSection title={t('screenTime.settingsStatus')}>
             <SettingItem
-              label={t('settings.labels.blockerStatus')}
-              value={
-                blockerStatus === 'checking' ? t('settings.labels.checking') :
-                blockerStatus === 'enabled' ? t('settings.labels.enabled') : t('settings.labels.disabled')
-              }
-              icon={blockerStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
-              onPress={blockerStatus !== 'enabled' ? () => Linking.openURL('App-Prefs:SAFARI') : undefined}
-            />
-            <SettingItem
-              label={t('settings.labels.openSafari')}
-              icon="open-outline"
-              onPress={() => Linking.openURL('App-Prefs:SAFARI')}
-            />
-            <SettingItem
-              label={t('settings.labels.setupGuide')}
-              icon="book-outline"
-              onPress={() => router.push(ROUTES.contentBlockerSetup)}
+              label={t('screenTime.settingsStatus')}
+              value={screenTimeStatus === 'approved' ? t('screenTime.enabled') : t('screenTime.disabled')}
+              icon={screenTimeStatus === 'approved' ? 'shield-checkmark' : 'shield-outline'}
+              onPress={screenTimeStatus !== 'approved' ? () => router.push(ROUTES.screenTimeSetup) : undefined}
               isLast
             />
           </SettingSection>

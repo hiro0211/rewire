@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppInitialization } from '@/hooks/useAppInitialization';
 import * as SplashScreen from 'expo-splash-screen';
 import { FONT_WEIGHT } from '@/constants/theme';
+import { useNotificationDeepLink } from '@/hooks/useNotificationDeepLink';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,6 +15,7 @@ export default function RootLayout() {
   const { hasHydrated } = useAppInitialization();
   const { colors, isDark } = useTheme();
   const { t } = useLocale();
+  useNotificationDeepLink();
 
   if (!hasHydrated) {
     return null;
@@ -52,8 +54,6 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding/benefits" options={{ headerShown: false }} />
           <Stack.Screen name="paywall" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
           <Stack.Screen name="article/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="checkin/index" options={{ headerShown: true, title: t('nav.checkin') }} />
-          <Stack.Screen name="checkin/complete" options={{ headerShown: false }} />
           <Stack.Screen name="panic/index" options={{ headerShown: false, animation: 'fade' }} />
           <Stack.Screen name="breathing/index" options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />

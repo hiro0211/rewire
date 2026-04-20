@@ -36,6 +36,10 @@ jest.mock('@/stores/themeStore', () => ({
 }));
 
 // Mock expo dependencies
+jest.mock('expo-notifications', () => ({
+  addNotificationResponseReceivedListener: () => ({ remove: jest.fn() }),
+  getLastNotificationResponseAsync: jest.fn().mockResolvedValue(null),
+}));
 jest.mock('expo-font', () => ({
   useFonts: () => [true],
 }));
@@ -106,6 +110,7 @@ const mockStackScreenOptions = jest.fn();
 jest.mock('expo-router', () => {
   const { View } = require('react-native');
   return {
+    useRouter: () => ({ push: jest.fn() }),
     Stack: Object.assign(
       ({ screenOptions, children }: any) => {
         mockStackScreenOptions(screenOptions);

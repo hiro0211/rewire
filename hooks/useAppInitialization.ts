@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useLocaleStore } from '@/stores/localeStore';
+import { useReflectionStore } from '@/stores/reflectionStore';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
@@ -18,6 +19,7 @@ export function useAppInitialization() {
     loadUser();
     useThemeStore.getState().loadThemePreference();
     useLocaleStore.getState().loadLocalePreference();
+    useReflectionStore.getState().loadReflectionState();
   }, []);
 
   useEffect(() => {

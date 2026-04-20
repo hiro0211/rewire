@@ -10,9 +10,9 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 
-jest.mock('@/lib/contentBlocker/contentBlockerBridge', () => ({
-  contentBlockerBridge: {
-    getBlockerStatus: jest.fn().mockResolvedValue({ isEnabled: false }),
+jest.mock('@/lib/screenTime/screenTimeBridge', () => ({
+  screenTimeBridge: {
+    getAuthorizationStatus: jest.fn().mockResolvedValue('notDetermined'),
   },
 }));
 

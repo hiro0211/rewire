@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { InteractionManager } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { PrePaywallBenefits } from '@/components/paywall/PrePaywallBenefits';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
@@ -22,9 +23,11 @@ export default function BenefitsScreen() {
 
   const handleContinue = () => {
     analyticsClient.logEvent('benefits_cta_tapped');
-    router.replace({
-      pathname: '/paywall',
-      params: { source: 'onboarding' },
+    InteractionManager.runAfterInteractions(() => {
+      router.replace({
+        pathname: '/paywall',
+        params: { source: 'onboarding' },
+      });
     });
   };
 

@@ -34,6 +34,7 @@ export const notificationClient = {
       content: {
         title: t('notification.reminderTitle'),
         body: t('notification.reminderBody'),
+        data: { action: 'open_reflection' },
       },
       trigger: {
         type: 'calendar',

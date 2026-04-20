@@ -36,6 +36,7 @@ export const ja = {
     elapsed: '経過時間',
     goalAchievement: '目標達成率',
     relapses: 'リセット',
+    reflectionPending: '今日の振り返りを完了しよう',
   },
   quickAction: {
     breathe: '呼吸',
@@ -338,7 +339,7 @@ export const ja = {
     },
     features: {
       streakTracking: { title: 'ストリーク記録', description: '継続日数を可視化してモチベーションを維持' },
-      contentBlocker: { title: 'コンテンツブロッカー', description: 'Safariのアダルトコンテンツを自動ブロック' },
+      screenTime: { title: 'ウェブ保護', description: '全ブラウザのアダルトコンテンツを自動ブロック' },
       sosBreathing: { title: 'SOS呼吸法', description: '衝動が来たら深呼吸でピークをやり過ごす' },
       dailyCheckin: { title: 'デイリーチェックイン', description: '毎日の振り返りで行動パターンを自覚する' },
       widget: { title: 'ウィジェット対応', description: 'アプリを開かずホーム画面で経過時間をチェック' },
@@ -417,7 +418,6 @@ export const ja = {
     },
     sections: {
       profile: 'プロフィール',
-      blocker: 'ポルノブロッカー',
       notifications: '通知',
       appearance: '外観',
       subscription: 'サブスクリプション',
@@ -428,12 +428,6 @@ export const ja = {
     labels: {
       nickname: 'ニックネーム',
       goalDays: '目標日数',
-      blockerStatus: 'ブロック状態',
-      checking: '確認中...',
-      enabled: '有効',
-      disabled: '無効',
-      openSafari: 'Safari設定を開く',
-      setupGuide: '設定ガイド',
       dailyReminder: 'デイリーリマインダー',
       notifyTime: '通知時間',
       theme: 'テーマ',
@@ -465,23 +459,19 @@ export const ja = {
       description: 'アプリ導入前から継続している場合、開始日を変更できます',
     },
   },
-  contentBlocker: {
-    title: 'ポルノブロッカー',
-    intro: 'Safariでアダルトサイトを自動ブロック。\n3ステップで設定できます。',
+  screenTime: {
+    title: 'ウェブ保護',
+    intro: 'Screen Timeを使って全ブラウザのアダルトコンテンツをブロックします。',
+    enableButton: 'スクリーンタイムを有効にする',
+    skip: 'あとで設定する',
     completionTitle: '設定完了！',
-    completionDescription: 'Safariでアダルトサイトが\n自動的にブロックされます',
-    step1Title: '「設定」→「アプリ」→「Safari」',
-    step1Desc: '設定アプリを開いて「アプリ」から「Safari」を選択してください',
-    step2Title: '「機能拡張」をタップ',
-    step2Desc: 'Safari設定の中にある「機能拡張」を選択してください',
-    step3Title: 'Rewireをオンにする',
-    step3Desc: '「Rewire」を選んで「機能拡張を許可」をオンにしてください',
-    startSetup: 'セットアップを開始',
-    openSettings: '設定アプリを開く',
-    openSettingsShort: '設定を開く',
-    skipSetup: 'あとで設定する',
-    prev: '前へ',
-    blockSites: 'ポルノサイトをブロック',
+    completionDescription: '全ブラウザでアダルトサイトが\n自動的にブロックされます',
+    deniedTitle: '許可が必要です',
+    deniedDescription: '設定アプリの「スクリーンタイム」から\nRewireにアクセスを許可してください',
+    settingsStatus: 'ウェブ保護',
+    enabled: '有効',
+    disabled: '無効',
+    setupGuide: '設定する',
   },
   breathingSuccess: {
     title: '素晴らしい、{{nickname}}！',
@@ -552,6 +542,31 @@ export const ja = {
     title: '記録完了',
     message: '今日も一日お疲れ様でした。\n着実に前に進んでいます。',
     goHome: 'ホームに戻る',
+  },
+  reflection: {
+    step1: {
+      title: 'ポルノを見ましたか？',
+      subtitle: '正直に答えることが、変化の第一歩です。',
+      noButton: '見ていない',
+      yesButton: '見てしまった',
+    },
+    step2: {
+      title: '今日はどれくらい\n見たくなりましたか？',
+      subtitle: '衝動の強さを記録しましょう。',
+      levels: {
+        none: 'まったくなし',
+        low: '少しだけ',
+        moderate: 'そこそこ',
+        high: 'かなり強い',
+        max: '抑えられないほど',
+      },
+    },
+    step3: {
+      title: 'Rewire はあなたを\n信じています',
+      subtitle: '毎日の振り返りが、確かな変化を作る。',
+      finishButton: '完了',
+    },
+    errorPrefix: 'エラー',
   },
   goal: {
     title: '目標を設定',
@@ -771,5 +786,7 @@ export const ja = {
   notification: {
     reminderTitle: '今日はどうでしたか？',
     reminderBody: '1日の振り返りをしましょう。記録を続けることが、あなたの成長につながります。',
+    blockedSiteTitle: 'Rewire',
+    blockedSiteBody: '衝動に気づきました。今の気持ちを振り返りましょう。',
   },
 } as const;

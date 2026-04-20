@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { InteractionManager } from 'react-native';
 
 // Mock dependencies
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
@@ -34,11 +35,21 @@ describe('BenefitsScreen', () => {
   });
 
   it('CTAボタンを押すとペイウォールに遷移する', () => {
+    const runAfterSpy = jest.spyOn(InteractionManager, 'runAfterInteractions');
+
     const { getByText } = render(<BenefitsScreen />);
     fireEvent.press(getByText('Rewireを始める'));
+
+    expect(runAfterSpy).toHaveBeenCalledTimes(1);
+    // コールバックを実行
+    const callback = runAfterSpy.mock.calls[0][0] as () => void;
+    callback();
+
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/paywall',
       params: { source: 'onboarding' },
     });
+
+    runAfterSpy.mockRestore();
   });
 });

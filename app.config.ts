@@ -66,7 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     './plugins/withFirebaseAnalyticsNoAdId',
     '@react-native-firebase/app',
-    './plugins/withContentBlocker',
+    './plugins/withScreenTime',
     './plugins/withWidget',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',
@@ -80,9 +80,30 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           ios: {
             appExtensions: [
               {
-                targetName: 'ContentBlockerExtension',
-                bundleIdentifier: 'rewire.app.com.ContentBlockerExtension',
+                targetName: 'ShieldConfigurationExtension',
+                bundleIdentifier: 'rewire.app.com.ShieldConfiguration',
                 entitlements: {
+                  'com.apple.developer.family-controls': true,
+                  'com.apple.security.application-groups': [
+                    'group.rewire.app.com',
+                  ],
+                },
+              },
+              {
+                targetName: 'ShieldActionExtension',
+                bundleIdentifier: 'rewire.app.com.ShieldAction',
+                entitlements: {
+                  'com.apple.developer.family-controls': true,
+                  'com.apple.security.application-groups': [
+                    'group.rewire.app.com',
+                  ],
+                },
+              },
+              {
+                targetName: 'DeviceActivityMonitorExtension',
+                bundleIdentifier: 'rewire.app.com.DeviceActivityMonitor',
+                entitlements: {
+                  'com.apple.developer.family-controls': true,
                   'com.apple.security.application-groups': [
                     'group.rewire.app.com',
                   ],

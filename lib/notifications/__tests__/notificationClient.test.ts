@@ -123,6 +123,16 @@ describe('notificationClient', () => {
       expect(typeof callArg.content.body).toBe('string');
     });
 
+    it('data payload に action=open_reflection を含む', async () => {
+      mockNotifications.cancelAllScheduledNotificationsAsync.mockResolvedValue(undefined);
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue('notification-id');
+
+      await notificationClient.scheduleDailyReminder('22:00');
+
+      const callArg = mockNotifications.scheduleNotificationAsync.mock.calls[0][0];
+      expect(callArg.content.data).toEqual({ action: 'open_reflection' });
+    });
+
     it('00:00のエッジケース: hour=0, minute=0 でスケジュールされる', async () => {
       mockNotifications.cancelAllScheduledNotificationsAsync.mockResolvedValue(undefined);
       mockNotifications.scheduleNotificationAsync.mockResolvedValue('notification-id');

@@ -516,3 +516,60 @@ hardcore-goodall worktreeに実装済みだったPhase 4-9をmainにff-mergeし�
 ### 未完了タスク・次回やるべきこと
 - 特になし。バッジシステム全フェーズ完了
 - 将来: BadgeOrb と AnimatedOrb の統合（SRP上は別コンポーネントが適切だが、コア描画ロジックの共通化余地あり）
+
+---
+
+## 2026-04-19: Daily Reflection Sheet 実装
+
+### 作業内容
+orbrefactor.md の仕様 + QUITTR 風スクリーンショットを基に、`/checkin` 画面を Bottom Sheet ベースの Daily Reflection Sheet に刷新。オンボーディングで指定した時刻にローカル通知が飛び、タップで下からせり上がる2ステップ(+完了画面)のシートが表示される。完了時にダッシュボードのストリーク演出（Haptics Success + 未完了バッジ消失）が発火。
+
+### 完了した作業
+- **reflectionStore 新規** (stores/reflectionStore.ts) — lastReflectionDate を settings AsyncStorage キーにマージ保存
+- **useReflectionSheet フック** (hooks/reflection/useReflectionSheet.ts) — zustand store で visible/step/formState/isSubmitting を一元管理。submit 時に checkinService.processCheckin → addCheckin → loadUser → markCompleted
+- **useReflectionTrigger フック** (hooks/reflection/useReflectionTrigger.ts) — 通知タップで sheet を open（warm/cold start 両対応）
+- **ReflectionSheet** + ReflectionStepContainer + Relapse/Urge/Complete の5コンポーネント — reanimated で translateY + overlay opacity、BlurView、Fade+Slide step transition
+- **旧 /checkin 削除** — app/checkin/, components/checkin/, hooks/checkin/, ROUTES.checkin(Complete), Stack.Screen checkin
+- **SegmentedStreakCard に todayReflectionCompleted prop 追加** — 未完了時 '✨ 今日の振り返りを完了しよう' バッジ表示、false→true transition で Haptics Success
+- **notificationClient に data payload {action:'open_reflection'} 追加**
+- **jest.setup.js に expo-notifications 共通 safe mock 追加**（Dashboard 系テストが useReflectionTrigger 経由でクラッシュ回避）
+- **locales/ja,en に reflection ブロック + dashboard.reflectionPending 追加**
+
+### テスト結果
+- 263スイート / 1836テスト全通過（+11スイート / +80テスト程度追加）
+- lint: 21 errors（全て pre-existing display-name / unescaped-entities、新規 reflection ファイルからのエラーは 0）
+
+### 未完了タスク・次回やるべきこと
+- オンボーディング完了時に `scheduleDailyReminder(notifyTime)` が呼ばれているか未確認（現在は settings 変更時のみ）→ 要調査
+- elapsed テキストの「据え置き」表示は未実装（celebration 演出に集中）
+- ReflectionStepComplete に QUITTR 風「他の人の気分統計」は未実装（コミュニティ API 無）
+- 実機で通知→シート起動→ストリーク演出の end-to-end 検証を推奨
+- 未コミット状態
+
+### 注意事項
+- **jest.setup.js の global expo-notifications mock**: 新規テストで response を返したい場合は `jest.mock('expo-notifications', ...)` で上書き
+- **checkinForm.* locale ブロックは削除しない**: checkinValidator.ts / usePurchase.ts がまだ参照
+- **DailyCheckin スキーマ互換**: 新フローは stressLevel=3 / qualityOfLife=3 / memo='' を埋める
+- **ホーム画面の背景色は変更していない**（ルール遵守）
+
+### 変更したファイル一覧（主要）
+新規:
+- `components/reflection/ReflectionSheet.tsx`, `ReflectionStepContainer.tsx`, `ReflectionStepRelapse.tsx`, `ReflectionStepUrge.tsx`, `ReflectionStepComplete.tsx` + 各テスト
+- `hooks/reflection/useReflectionSheet.ts`, `useReflectionTrigger.ts` + 各テスト
+- `stores/reflectionStore.ts` + テスト
+
+変更:
+- `app/(tabs)/index.tsx` — ReflectionSheet マウント + useReflectionTrigger + todayReflectionCompleted
+- `components/dashboard/QuickActionGrid.tsx` — qa-checkin → openReflection
+- `components/dashboard/SegmentedStreakCard.tsx` — todayReflectionCompleted prop + celebration haptic
+- `hooks/useAppInitialization.ts` — loadReflectionState
+- `lib/notifications/notificationClient.ts` — data payload
+- `app/_layout.tsx` — Stack.Screen checkin 削除
+- `lib/routing/routes.ts` — ROUTES.checkin(Complete) 削除
+- `jest.setup.js` — expo-notifications global mock
+- `locales/ja.ts`, `locales/en.ts` — reflection + reflectionPending
+
+削除:
+- `app/checkin/index.tsx`, `complete.tsx`, __tests__/*
+- `components/checkin/BinaryQuestion.tsx`, `LevelSelector.tsx`, `MemoInput.tsx`, LevelSelector.test
+- `hooks/checkin/useCheckinForm.ts`, `useCheckinSubmit.ts`

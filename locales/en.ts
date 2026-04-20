@@ -44,6 +44,7 @@ export const en: Translations = {
     elapsed: 'Elapsed',
     goalAchievement: 'Goal Achievement',
     relapses: 'Relapses',
+    reflectionPending: "Complete today's reflection",
   },
   quickAction: {
     breathe: 'Breathe',
@@ -352,7 +353,7 @@ export const en: Translations = {
     },
     features: {
       streakTracking: { title: 'Streak Tracking', description: 'Visualize your progress to stay motivated' },
-      contentBlocker: { title: 'Content Blocker', description: 'Automatically block adult content in Safari' },
+      screenTime: { title: 'Web Protection', description: 'Block adult content across all browsers' },
       sosBreathing: { title: 'SOS Breathing', description: 'Ride out urge peaks with deep breathing' },
       dailyCheckin: { title: 'Daily Check-in', description: 'Reflect daily to understand your behavior patterns' },
       widget: { title: 'Widget Support', description: 'Check your streak from the home screen' },
@@ -431,7 +432,6 @@ export const en: Translations = {
     },
     sections: {
       profile: 'Profile',
-      blocker: 'Porn Blocker',
       notifications: 'Notifications',
       appearance: 'Appearance',
       subscription: 'Subscription',
@@ -442,12 +442,6 @@ export const en: Translations = {
     labels: {
       nickname: 'Nickname',
       goalDays: 'Goal Days',
-      blockerStatus: 'Status',
-      checking: 'Checking...',
-      enabled: 'Active',
-      disabled: 'Inactive',
-      openSafari: 'Open Safari Settings',
-      setupGuide: 'Setup Guide',
       dailyReminder: 'Daily Reminder',
       notifyTime: 'Notification Time',
       theme: 'Theme',
@@ -479,23 +473,19 @@ export const en: Translations = {
       description: 'If you started before installing the app, you can change the start date',
     },
   },
-  contentBlocker: {
-    title: 'Porn Blocker',
-    intro: 'Automatically block adult sites in Safari.\nSet up in 3 easy steps.',
+  screenTime: {
+    title: 'Web Protection',
+    intro: 'Use Screen Time to block adult content across all browsers.',
+    enableButton: 'Enable Screen Time',
+    skip: 'Set up later',
     completionTitle: 'Setup Complete!',
-    completionDescription: 'Adult sites will now be\nautomatically blocked in Safari',
-    step1Title: 'Settings → Apps → Safari',
-    step1Desc: 'Open Settings and navigate to Apps, then select Safari',
-    step2Title: 'Tap "Extensions"',
-    step2Desc: 'Find and select "Extensions" in Safari settings',
-    step3Title: 'Enable Rewire',
-    step3Desc: 'Select "Rewire" and turn on "Allow Extension"',
-    startSetup: 'Start Setup',
-    openSettings: 'Open Settings App',
-    openSettingsShort: 'Open Settings',
-    skipSetup: 'Set up later',
-    prev: 'Back',
-    blockSites: 'Block porn sites',
+    completionDescription: 'Adult sites will now be\nautomatically blocked across all browsers',
+    deniedTitle: 'Permission Required',
+    deniedDescription: 'Please allow Rewire access in\nSettings → Screen Time',
+    settingsStatus: 'Web Protection',
+    enabled: 'Active',
+    disabled: 'Inactive',
+    setupGuide: 'Set up',
   },
   breathingSuccess: {
     title: 'Amazing, {{nickname}}!',
@@ -566,6 +556,31 @@ export const en: Translations = {
     title: 'Entry Logged',
     message: "Great job today.\nYou're making steady progress.",
     goHome: 'Back to Home',
+  },
+  reflection: {
+    step1: {
+      title: 'Did you watch porn?',
+      subtitle: 'Being honest is the first step toward change.',
+      noButton: "No, I didn't",
+      yesButton: 'Yes, I did',
+    },
+    step2: {
+      title: 'How much did you\nwant to watch today?',
+      subtitle: 'Log the strength of your urge.',
+      levels: {
+        none: 'Not at all',
+        low: 'A little',
+        moderate: 'Somewhat',
+        high: 'Pretty strong',
+        max: 'Overwhelming',
+      },
+    },
+    step3: {
+      title: 'Rewire believes\nin you',
+      subtitle: 'Daily reflection creates real change.',
+      finishButton: 'Finish',
+    },
+    errorPrefix: 'Error',
   },
   goal: {
     title: 'Set Your Goal',
@@ -785,5 +800,7 @@ export const en: Translations = {
   notification: {
     reminderTitle: 'How was your day?',
     reminderBody: "Let's reflect on today. Keeping a record is the key to your growth.",
+    blockedSiteTitle: 'Rewire',
+    blockedSiteBody: 'You noticed an urge. Take a moment to reflect on how you feel.',
   },
 } as const;

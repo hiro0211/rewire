@@ -27,6 +27,10 @@ import { useReviewEligibility } from '@/hooks/review/useReviewEligibility';
 import { useReviewPromptActions } from '@/hooks/review/useReviewPromptActions';
 import { ReviewPromptModal } from '@/components/review/ReviewPromptModal';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { ReflectionSheet } from '@/components/reflection/ReflectionSheet';
+import { useReflectionTrigger } from '@/hooks/reflection/useReflectionTrigger';
+import { useReflectionStore } from '@/stores/reflectionStore';
+import { format } from 'date-fns';
 
 let ViewShot: any = View;
 if (!isExpoGo) {
@@ -64,6 +68,16 @@ export default function DashboardScreen() {
 
   const { shouldShowReview } = useReviewEligibility();
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
+
+  useReflectionTrigger();
+  const lastReflectionDate = useReflectionStore((s) => s.lastReflectionDate);
+  const loadReflectionState = useReflectionStore((s) => s.loadReflectionState);
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const todayReflectionCompleted = lastReflectionDate === todayKey;
+
+  useEffect(() => {
+    loadReflectionState();
+  }, [loadReflectionState]);
   const {
     selectedRating,
     showFeedback,
@@ -129,6 +143,7 @@ export default function DashboardScreen() {
             elapsed={stopwatch.formatted}
             relapseCount={relapseCount}
             goalDays={goalDays}
+            todayReflectionCompleted={todayReflectionCompleted}
           />
         </Animated.View>
 
@@ -190,6 +205,8 @@ export default function DashboardScreen() {
         onFeedbackTap={handleFeedbackTap}
         onDismiss={handleReviewDismiss}
       />
+
+      <ReflectionSheet />
 
     </SafeAreaWrapper>
   );
