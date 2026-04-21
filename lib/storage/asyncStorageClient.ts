@@ -17,7 +17,8 @@ export type StorageKey =
   | 'survey_completed'
   | 'survey_prompt_state'
   | 'review_prompt_state'
-  | 'seen_badge_ids';
+  | 'seen_badge_ids'
+  | 'screenTime';
 
 const SENSITIVE_KEYS: StorageKey[] = ['checkins', 'recoveries', 'breath_sessions'];
 

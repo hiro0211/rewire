@@ -131,6 +131,53 @@ describe('useReflectionSheet', () => {
     });
   });
 
+  describe('confessRelapseAndClose', () => {
+    beforeEach(() => {
+      useReflectionSheet.getState().open();
+    });
+
+    it('watchedPorn=true, urgeLevel=0 で checkinService.processCheckin を呼ぶ', async () => {
+      await useReflectionSheet.getState().confessRelapseAndClose();
+
+      expect(mockProcessCheckin).toHaveBeenCalledWith({
+        watchedPorn: true,
+        urgeLevel: 0,
+        stressLevel: 3,
+        qualityOfLife: 3,
+        memo: '',
+      });
+    });
+
+    it('成功時に addCheckin, loadUser, markCompleted(today) を呼び visible=false にする', async () => {
+      await useReflectionSheet.getState().confessRelapseAndClose();
+
+      expect(mockAddCheckin).toHaveBeenCalled();
+      expect(mockLoadUser).toHaveBeenCalled();
+      expect(mockMarkCompleted).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
+      expect(useReflectionSheet.getState().visible).toBe(false);
+      expect(useReflectionSheet.getState().isSubmitting).toBe(false);
+    });
+
+    it('成功時は true を返す', async () => {
+      const result = await useReflectionSheet.getState().confessRelapseAndClose();
+
+      expect(result).toBe(true);
+    });
+
+    it('失敗時は submitError を格納し visible は true のまま、false を返す', async () => {
+      mockProcessCheckin.mockRejectedValueOnce(new Error('network down'));
+
+      const result = await useReflectionSheet.getState().confessRelapseAndClose();
+
+      const state = useReflectionSheet.getState();
+      expect(state.visible).toBe(true);
+      expect(state.submitError).toBe('network down');
+      expect(state.isSubmitting).toBe(false);
+      expect(mockMarkCompleted).not.toHaveBeenCalled();
+      expect(result).toBe(false);
+    });
+  });
+
   describe('finish', () => {
     it('visible=false にして close する', () => {
       useReflectionSheet.setState({ visible: true, step: 3 });

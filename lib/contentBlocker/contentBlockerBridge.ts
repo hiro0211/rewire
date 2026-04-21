@@ -1,0 +1,80 @@
+import { Platform } from 'react-native';
+import type {
+  ContentBlockerBridge,
+  ContentBlockerStatus,
+} from './contentBlockerTypes';
+import { logger } from '@/lib/logger';
+
+const STUB_STATUS: ContentBlockerStatus = {
+  isEnabled: false,
+  extensionBundleId: '',
+};
+
+function getNativeModule(): {
+  enableBlocker: () => Promise<boolean>;
+  disableBlocker: () => Promise<boolean>;
+  getBlockerStatus: () => Promise<ContentBlockerStatus>;
+  reloadBlockerRules: () => Promise<boolean>;
+} | null {
+  try {
+    const mod = require('../../modules/expo-content-blocker/src').default;
+    return mod ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export const contentBlockerBridge: ContentBlockerBridge = {
+  async enableBlocker(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    try {
+      const mod = getNativeModule();
+      if (!mod) return false;
+      return await mod.enableBlocker();
+    } catch (error) {
+      logger.error('ContentBlocker', 'enableBlocker failed:', error);
+      return false;
+    }
+  },
+
+  async disableBlocker(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    try {
+      const mod = getNativeModule();
+      if (!mod) return false;
+      return await mod.disableBlocker();
+    } catch (error) {
+      logger.error('ContentBlocker', 'disableBlocker failed:', error);
+      return false;
+    }
+  },
+
+  async getBlockerStatus(): Promise<ContentBlockerStatus> {
+    if (Platform.OS !== 'ios') return STUB_STATUS;
+    try {
+      const mod = getNativeModule();
+      if (!mod) {
+        logger.warn('ContentBlocker', 'Native module not available');
+        return STUB_STATUS;
+      }
+      const status = await mod.getBlockerStatus();
+      logger.debug('ContentBlocker', 'Status:', JSON.stringify(status));
+      return status;
+    } catch (error) {
+      logger.error('ContentBlocker', 'getBlockerStatus failed:', error);
+      return { ...STUB_STATUS, error: String(error) };
+    }
+  },
+
+  async reloadBlockerRules(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    try {
+      const mod = getNativeModule();
+      if (!mod) return false;
+      return await mod.reloadBlockerRules();
+    } catch (error) {
+      logger.error('ContentBlocker', 'reloadBlockerRules failed:', error);
+      return false;
+    }
+  },
+};

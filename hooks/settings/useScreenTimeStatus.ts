@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppState } from 'react-native';
-import { screenTimeBridge } from '@/lib/screenTime/screenTimeBridge';
-import type { AuthorizationStatus } from '@/lib/screenTime/screenTimeTypes';
+import { screenTimeBridge, type AuthorizationStatusString } from '@/lib/screenTime/screenTimeBridge';
 
 export function useScreenTimeStatus() {
-  const [status, setStatus] = useState<AuthorizationStatus>('notDetermined');
+  const [status, setStatus] = useState<AuthorizationStatusString>('notDetermined');
 
-  const check = useCallback(async () => {
-    const s = await screenTimeBridge.getAuthorizationStatus();
-    setStatus(s);
+  const check = useCallback(() => {
+    setStatus(screenTimeBridge.getAuthorizationStatus());
   }, []);
 
   useEffect(() => {

@@ -1,3 +1,3 @@
 import { requireOptionalNativeModule } from 'expo-modules-core';
 
-export default requireOptionalNativeModule('ExpoScreenTime');
+export default requireOptionalNativeModule('ExpoContentBlocker');

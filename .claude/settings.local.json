@@ -104,7 +104,9 @@
       "WebFetch(domain:www.wayline.io)",
       "WebFetch(domain:www.smashingmagazine.com)",
       "WebFetch(domain:designerup.co)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
     ]
   }
 }

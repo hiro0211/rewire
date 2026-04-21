@@ -21,7 +21,7 @@ export function ScreenTimeSetupIntro({ onEnable, onSkip, isLoading }: Props) {
         <Ionicons name="shield-checkmark" size={64} color="#8B5CF6" />
       </View>
 
-      <Text style={[styles.title, { color: colors.textPrimary }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
         {t('screenTime.title')}
       </Text>
 

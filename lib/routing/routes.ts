@@ -27,6 +27,7 @@ export const ROUTES = {
   streak: route('/streak'),
   brand: route('/brand'),
   screenTimeSetup: route('/screen-time-setup'),
+  contentBlockerSetup: route('/content-blocker-setup'),
   settings: route('/settings'),
   terms: route('/terms'),
   privacyPolicy: route('/privacy-policy'),

@@ -56,7 +56,13 @@ const mockOpen = jest.fn();
 const mockClose = jest.fn();
 const mockSelectWatchedPorn = jest.fn();
 const mockSelectUrgeLevelAndSubmit = jest.fn().mockResolvedValue(undefined);
+const mockConfessRelapseAndClose = jest.fn().mockResolvedValue(true);
 const mockFinish = jest.fn();
+const mockRouterPush = jest.fn();
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockRouterPush, back: jest.fn(), replace: jest.fn() }),
+}));
 
 let mockState = {
   visible: false,
@@ -74,6 +80,7 @@ jest.mock('@/hooks/reflection/useReflectionSheet', () => ({
       close: mockClose,
       selectWatchedPorn: mockSelectWatchedPorn,
       selectUrgeLevelAndSubmit: mockSelectUrgeLevelAndSubmit,
+      confessRelapseAndClose: mockConfessRelapseAndClose,
       finish: mockFinish,
     }),
     {
@@ -83,6 +90,7 @@ jest.mock('@/hooks/reflection/useReflectionSheet', () => ({
         close: mockClose,
         selectWatchedPorn: mockSelectWatchedPorn,
         selectUrgeLevelAndSubmit: mockSelectUrgeLevelAndSubmit,
+        confessRelapseAndClose: mockConfessRelapseAndClose,
         finish: mockFinish,
       }),
     }
@@ -133,6 +141,37 @@ describe('ReflectionSheet', () => {
     fireEvent.press(getByTestId('reflection-step1-no'));
 
     expect(mockSelectWatchedPorn).toHaveBeenCalledWith(false);
+    expect(mockConfessRelapseAndClose).not.toHaveBeenCalled();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it('step1 で「見てしまった」をタップすると confessRelapseAndClose と /recovery への push が呼ばれる', async () => {
+    mockState.step = 1;
+    mockConfessRelapseAndClose.mockResolvedValueOnce(true);
+    const { getByTestId } = render(<ReflectionSheet />);
+
+    fireEvent.press(getByTestId('reflection-step1-yes'));
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockConfessRelapseAndClose).toHaveBeenCalled();
+    expect(mockSelectWatchedPorn).not.toHaveBeenCalled();
+    expect(mockRouterPush).toHaveBeenCalledWith('/recovery');
+  });
+
+  it('step1 で「見てしまった」を押した後、confess が失敗した場合は router.push を呼ばない', async () => {
+    mockState.step = 1;
+    mockConfessRelapseAndClose.mockResolvedValueOnce(false);
+    const { getByTestId } = render(<ReflectionSheet />);
+
+    fireEvent.press(getByTestId('reflection-step1-yes'));
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockConfessRelapseAndClose).toHaveBeenCalled();
+    expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
   it('step2 で level をタップすると selectUrgeLevelAndSubmit(level) が呼ばれる', () => {

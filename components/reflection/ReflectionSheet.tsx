@@ -15,6 +15,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import { useReflectionSheet } from '@/hooks/reflection/useReflectionSheet';
 import { RADIUS, SPACING } from '@/constants/theme';
@@ -30,13 +31,26 @@ const EASING = Easing.bezier(0.25, 1, 0.5, 1);
 
 export function ReflectionSheet() {
   const { colors, isDark } = useTheme();
+  const router = useRouter();
   const visible = useReflectionSheet((s) => s.visible);
   const step = useReflectionSheet((s) => s.step);
   const isSubmitting = useReflectionSheet((s) => s.isSubmitting);
   const close = useReflectionSheet((s) => s.close);
   const selectWatchedPorn = useReflectionSheet((s) => s.selectWatchedPorn);
   const selectUrgeLevelAndSubmit = useReflectionSheet((s) => s.selectUrgeLevelAndSubmit);
+  const confessRelapseAndClose = useReflectionSheet((s) => s.confessRelapseAndClose);
   const finish = useReflectionSheet((s) => s.finish);
+
+  const handleRelapseSelect = async (watchedPorn: boolean) => {
+    if (!watchedPorn) {
+      selectWatchedPorn(false);
+      return;
+    }
+    const ok = await confessRelapseAndClose();
+    if (ok) {
+      router.push('/recovery');
+    }
+  };
 
   const progress = useSharedValue(0);
   const [mounted, setMounted] = React.useState(false);
@@ -74,7 +88,7 @@ export function ReflectionSheet() {
 
   const renderStep = () => {
     if (step === 1) {
-      return <ReflectionStepRelapse onSelect={selectWatchedPorn} />;
+      return <ReflectionStepRelapse onSelect={handleRelapseSelect} />;
     }
     if (step === 2) {
       return (

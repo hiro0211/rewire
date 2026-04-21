@@ -20,10 +20,10 @@ jest.mock('expo-notifications', () => ({
 
 import { useNotificationDeepLink } from '../useNotificationDeepLink';
 
-const makeResponse = (data: Record<string, unknown>) => ({
+const makeResponse = (data: Record<string, unknown>, categoryIdentifier?: string) => ({
   notification: {
     request: {
-      content: { data },
+      content: { data, categoryIdentifier },
     },
   },
 });
@@ -73,5 +73,26 @@ describe('useNotificationDeepLink', () => {
     unmount();
 
     expect(mockRemoveSubscription).toHaveBeenCalled();
+  });
+
+  test('Shield起源通知（categoryIdentifier=rewire-shield-panic）は/panicにフォールバック遷移', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    act(() => {
+      listenerCallback!(makeResponse({}, 'rewire-shield-panic'));
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/panic');
+  });
+
+  test('routeとcategoryIdentifier両方ある場合はrouteを優先', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    act(() => {
+      listenerCallback!(makeResponse({ route: '/other' }, 'rewire-shield-panic'));
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/other');
+    expect(mockPush).not.toHaveBeenCalledWith('/panic');
   });
 });

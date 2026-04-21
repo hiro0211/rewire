@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import { useScreenTimeStatus } from '@/hooks/settings/useScreenTimeStatus';
+import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
 import type { ThemePreference } from '@/types/theme';
@@ -36,6 +37,7 @@ export default function SettingsScreen() {
   const [isLocalePickerVisible, setLocalePickerVisible] = useState(false);
 
   const { screenTimeStatus } = useScreenTimeStatus();
+  const { blockerStatus } = useBlockerStatus();
   const { isSurveyCompleted } = useSurveyCompleted();
   const {
     handleNotificationToggle,
@@ -70,6 +72,12 @@ export default function SettingsScreen() {
               value={screenTimeStatus === 'approved' ? t('screenTime.enabled') : t('screenTime.disabled')}
               icon={screenTimeStatus === 'approved' ? 'shield-checkmark' : 'shield-outline'}
               onPress={screenTimeStatus !== 'approved' ? () => router.push(ROUTES.screenTimeSetup) : undefined}
+            />
+            <SettingItem
+              label={t('contentBlocker.settingsStatus')}
+              value={blockerStatus === 'enabled' ? t('screenTime.enabled') : t('screenTime.disabled')}
+              icon={blockerStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
+              onPress={blockerStatus !== 'enabled' ? () => router.push(ROUTES.contentBlockerSetup) : undefined}
               isLast
             />
           </SettingSection>

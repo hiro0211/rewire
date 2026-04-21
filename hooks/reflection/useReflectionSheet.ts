@@ -25,6 +25,7 @@ interface ReflectionSheetActions {
   close: () => void;
   selectWatchedPorn: (value: boolean) => void;
   selectUrgeLevelAndSubmit: (level: number) => Promise<void>;
+  confessRelapseAndClose: () => Promise<boolean>;
   finish: () => void;
   reset: () => void;
 }
@@ -84,6 +85,38 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
         isSubmitting: false,
         submitError: e?.message || 'submit failed',
       });
+    }
+  },
+
+  confessRelapseAndClose: async () => {
+    set({
+      formState: { watchedPorn: true, urgeLevel: 0 },
+      isSubmitting: true,
+      submitError: null,
+    });
+
+    try {
+      const checkin = await checkinService.processCheckin({
+        watchedPorn: true,
+        urgeLevel: 0,
+        stressLevel: 3,
+        qualityOfLife: 3,
+        memo: '',
+      });
+
+      await useCheckinStore.getState().addCheckin(checkin);
+      await useUserStore.getState().loadUser();
+      const today = format(new Date(), 'yyyy-MM-dd');
+      await useReflectionStore.getState().markCompleted(today);
+
+      set({ visible: false, isSubmitting: false });
+      return true;
+    } catch (e: any) {
+      set({
+        isSubmitting: false,
+        submitError: e?.message || 'submit failed',
+      });
+      return false;
     }
   },
 

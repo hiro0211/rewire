@@ -1,75 +1,45 @@
 {
-  "report_date": "2026-04-20",
-  "target_date": "2026-04-19",
-  "pipeline_status": {
-    "asc_fetch_success": false,
-    "create_report_request_status": "409 Conflict (ONGOING already exists)",
-    "reused_request_id": "394c257b-c76e-4779-9257-30c74024383a",
-    "app_store_engagement_download_status": "400 Bad Request (S3 presigned)",
-    "app_usage_status": "no matching DAILY instance for target date",
-    "cache_written_today": false,
-    "newest_cached_date": "2026-04-13",
-    "missing_dates": [
-      "2026-04-14",
-      "2026-04-15",
-      "2026-04-16",
-      "2026-04-17",
-      "2026-04-18",
-      "2026-04-19"
-    ],
-    "consecutive_failed_days": 5
+  "date": "2026-04-20",
+  "note": "ASC ongoing report dated 2026-04-20 contained event rows for 2026-04-17..19 (1-2 day ASC delay). Aggregates below span those three days.",
+  "metrics": {
+    "impressions": 38,
+    "product_page_views": 10,
+    "downloads_get_taps": 1,
+    "trial_starts": null,
+    "paid_conversions": null,
+    "cancellations": null,
+    "active_subscriptions": null
   },
-  "engagement_10day_cache": {
-    "date_range": ["2026-04-03", "2026-04-12"],
-    "impressions": 111,
-    "page_views": 26,
-    "taps": 14,
-    "page_view_rate": 0.234,
-    "tap_from_pv_rate": 0.538,
-    "benchmarks": {
-      "page_view_rate_low": 0.25,
-      "page_view_rate_high": 0.35
-    },
-    "by_source": {
-      "App Store search": {"Impression": 105, "Page view": 24, "Tap": 4},
-      "App Store browse": {"Impression": 6, "Tap": 10},
-      "App referrer":     {"Page view": 2}
-    },
-    "top_territories": {
-      "JP": {"Impression": 82, "Page view": 26, "Tap": 14}
-    }
-  },
-  "reference_2026_04_03_full_funnel": {
-    "total": {
-      "impressions": 14000,
-      "product_page_views": 4310,
-      "downloads": 1450,
-      "trials": 293,
-      "paid": 136,
-      "cancellations": 14,
-      "active_subscriptions": 440,
-      "page_view_rate": 0.308,
-      "download_rate": 0.336,
-      "trial_start_rate": 0.202,
-      "trial_to_paid_rate": 0.464,
-      "monthly_churn_rate": 0.032
-    },
-    "by_source": {
-      "App Store Search":          {"pv": 0.329, "dl": 0.339, "trial": 0.200, "t2p": 0.500, "churn": 0.025},
-      "App Store Browse":          {"pv": 0.200, "dl": 0.281, "trial": 0.139, "t2p": 0.400, "churn": 0.067},
-      "Web Referrer (tiktok.com)": {"pv": 0.400, "dl": 0.389, "trial": 0.250, "t2p": 0.400, "churn": 0.033},
-      "Web Referrer (other)":      {"pv": 0.300, "dl": 0.267, "trial": 0.200, "t2p": 0.375, "churn": 0.067}
-    }
+  "funnel": {
+    "page_view_rate": 0.2632,
+    "download_rate": 0.1,
+    "trial_start_rate": null,
+    "trial_to_paid_rate": null,
+    "monthly_churn_rate": null
   },
   "bottleneck": {
-    "primary": "data_pipeline",
-    "detail": "APS S3 segment download returning HTTP 400 for 5 consecutive days; create_report_request lacks reuse logic and 409s every run.",
-    "secondary": "impression_to_page_view",
-    "secondary_detail": "23.4% over cached 10 days, just below 25-35% benchmark band; sample size 111 impressions is small."
+    "stage": "download_rate",
+    "value": 0.1,
+    "benchmark_low": 0.3,
+    "gap": 0.2
   },
-  "top_recommendations": [
-    "Fix download_segment to call presigned S3 URL without the ASC JWT header; backfill 2026-04-14..2026-04-19.",
-    "Teach scripts.analytics.main to list+reuse the existing ONGOING analyticsReportRequest instead of POSTing a new one every day.",
-    "Prepare a TikTok Trial-to-Paid paywall experiment to close the ~10-point gap vs App Store Search (do not launch until pipeline is healthy)."
+  "sources": {
+    "App Store Search": {"impressions": 33, "product_page_views": 6, "get_taps": 0, "page_view_rate": 0.1818},
+    "App Store Browse": {"impressions": 5, "product_page_views": 2, "get_taps": 1, "page_view_rate": 0.4},
+    "Web Referral": {"impressions": 0, "product_page_views": 1, "get_taps": 0},
+    "Unavailable": {"impressions": 0, "product_page_views": 1, "get_taps": 0},
+    "TikTok": null
+  },
+  "most_recent_day": {
+    "date": "2026-04-19",
+    "impressions": 9,
+    "product_page_views": 1,
+    "get_taps": 1
+  },
+  "known_issues": [
+    "analyze_funnel.py expects wide-format ASC columns and produces zero output against current long/event-format TSVs",
+    "APP_USAGE category returned no data for this window",
+    "SUBSCRIPTION category is not in REPORT_CATEGORIES; trial/paid/churn metrics unavailable",
+    "No TikTok-tagged source rows — attribution may not be wired up"
   ]
 }

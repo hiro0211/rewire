@@ -573,3 +573,85 @@ orbrefactor.md の仕様 + QUITTR 風スクリーンショットを基に、`/ch
 - `app/checkin/index.tsx`, `complete.tsx`, __tests__/*
 - `components/checkin/BinaryQuestion.tsx`, `LevelSelector.tsx`, `MemoInput.tsx`, LevelSelector.test
 - `hooks/checkin/useCheckinForm.ts`, `useCheckinSubmit.ts`
+
+## 2026-04-20: Screen Time自作実装 → react-native-device-activity ライブラリへ移行
+- **目的**: 自作の modules/expo-screen-time/ + plugins/withScreenTime.js (424行) を kingstinct 製ライブラリに置換し、one sec 風の「アダルトサイト→Shield→通知→/panic」フローを確立
+- **削除ファイル**: modules/expo-screen-time/, plugins/withScreenTime.js + tests, lib/screenTime/screenTimeTypes.ts（型はライブラリのを使用）
+- **新規ファイル**: constants/screenTime/blockedDomains.ts (590 domains + PRIORITY_BLOCKED_DOMAINS 50 件、commit 0d3fff9^:constants/blocklist.ts から復元), constants/screenTime/screenTimeConfig.ts (SHIELD_ID, PANIC_NOTIFICATION_IDENTIFIER, PANIC_ROUTE), lib/screenTime/shieldConfig.ts (Shield UI + Action builder), stores/screenTimeStore.ts (enabled フラグの AsyncStorage 永続化)
+- **書き直し**: lib/screenTime/screenTimeBridge.ts (ライブラリラッパー: requestAuthorization('individual') / getAuthorizationStatus / enableAdultSiteBlocking / disableAdultSiteBlocking)
+- **変更**: app.config.ts (./plugins/withScreenTime 削除, react-native-device-activity プラグイン追加 appleTeamId='KV6CYPA7JK' appGroup='group.rewire.app.com', experimental.ios.appExtensions から自作3Extension削除＝ライブラリが自動生成), hooks/screenTime/useScreenTimeSetup.ts (新API・screenTimeStore連携), hooks/settings/useScreenTimeStatus.ts (同期APIに変更), hooks/useNotificationDeepLink.ts (categoryIdentifier フォールバック追加), lib/storage/asyncStorageClient.ts (StorageKey に 'screenTime' 追加), locales/ja.ts + en.ts (shieldPrimaryButton/shieldSecondaryButton 追加)
+- **アダルト判定ロジック**: setWebContentFilterPolicy({ type: 'auto', domains: PRIORITY_BLOCKED_DOMAINS }) — Appleのクラシファイア + 50件優先リスト。Apple の `.auto()` domains/exceptDomains は各最大50件制限のため、日本ニッチ + 主要 tube + JAV + doujin をバランスよく選定
+- **Shield UI**: DARKパレット背景(#0A0A0F) + 紫ボタン(#8B5CF6)。Primary="Rewireを開く"→behavior:"defer"+sendNotification(userInfo:{route:"/panic"},categoryIdentifier:"rewire-shield-panic")。Secondary="閉じる"→behavior:"close"
+- **通知→DeepLink フロー**: ライブラリのNotificationPayload.userInfoに{route:"/panic"}が入るので既存の useNotificationDeepLink がそのまま動作。categoryIdentifier フォールバックも追加済み
+- **テスト**: 264スイート / 1841テスト全通過（+3スイート +19テスト）
+- **lint**: 新規ファイルにエラーなし（既存の display-name/unescaped-entities のみ）
+- **残タスク**: (1) `npx expo prebuild --clean --platform ios` で ios/ 再生成 → 旧 ContentBlockerExtension/SafariWebExtension ディレクトリも自動削除、ライブラリのShield/ShieldAction/DeviceActivityMonitor Extension 自動生成 (2) `eas build --profile development --platform ios` で実機 dev build (3) 実機でゴールデンパス検証 (4) Family Controls Distribution エンタイトルメント申請（App Store 配布時）
+- **未コミット状態**
+
+## 2026-04-18: 18バッジシステム Phase 4〜9 完了（worktree `claude/hardcore-goodall` より復元）
+
+> 2026-04-21 に worktree 整理時、hardcore-goodall ワークツリーの未コミット MEMORY.md 追記をここへ退避。元作業は既に main にマージ済み。
+
+### 作業内容
+BadgeOrb の特殊視覚描画 Phase 4〜6 と、バッジアンロック演出（Phase 7）、ダッシュボード次バッジ進捗（Phase 8）をTDDで実装し、mainへプッシュ。
+
+### 完了した作業（TDDサイクル）
+
+#### Phase 4: GalaxySpiral（銀河の渦巻き描画）
+- `BadgeOrb` に `showGalaxySpiral = badgeId === 'Galaxy'` フラグ追加
+- `GalaxySpiral` コンポーネント新規: 対数螺旋 r=a*e^(b*θ) を2本のSVG Path で描画
+- Reanimated withRepeat + withTiming（周期 8000ms）でゆっくり回転
+- `Path` を react-native-svg mockに追加
+- コミット: `feat: add galaxy spiral arms visual`
+
+#### Phase 5: StarClusterOverlay（星団の複数コア描画）
+- `StarClusterOverlay` コンポーネント新規: 黄金角でらせん配置した6個の周辺小球
+- 各小球（`SatelliteStar`）が独立して opacity ゆらぎアニメーション
+- `showStarCluster = badgeId === 'StarCluster'`
+- コミット: `feat: add star cluster multi-core visual`
+
+#### Phase 6: CosmosOverlay（宇宙モード描画）
+- `CosmosOverlay` コンポーネント新規: 全18バッジのコアカラーから25個の光点を黄金角スパイラル配置
+- 各光点（`CosmosParticle`）が独立して点滅アニメーション（opacity 0.2〜1.0）
+- `showCosmos = badgeId === 'Cosmos'`
+- コミット: `feat: add cosmos multi-color particle visual`
+
+#### Phase 7: useNewlyUnlockedBadge + BadgeUnlockModal
+- `hooks/achievements/useNewlyUnlockedBadge.ts` 新規: AsyncStorage `seen_badge_ids` で既読管理、dismiss() で既読化
+- `lib/storage/asyncStorageClient.ts` の StorageKey に `'seen_badge_ids'` 追加
+- `components/achievements/BadgeUnlockModal.tsx` 新規: Modal + BadgeOrb + バッジ名 + 説明文 + 「素晴らしい！」ボタン
+- `app/(tabs)/index.tsx` に `useNewlyUnlockedBadge` + `<BadgeUnlockModal>` 組込
+- コミット: `feat: add badge unlock detection and celebration modal`
+
+#### Phase 8: NextBadgeProgress（ダッシュボード「次バッジ進捗」）
+- `components/dashboard/NextBadgeProgress.tsx` 新規: `getNextBadge` + `getBadgeProgress` を使用
+- BadgeOrb（size=32, isUnlocked=false）+ バッジ名 + LinearProgressBar
+- `width` を `DimensionValue` キャストで TypeScript エラー回避
+- `app/(tabs)/index.tsx` の BrainRewiringBar 直下に追加
+- コミット: `feat: add next badge progress display on dashboard`
+
+#### Phase 9: 最終検証
+- 252スイート / 1739テスト全通過
+- `npx tsc --noEmit`: 今回の変更ファイルに新規エラーなし（既存エラーは pre-existing）
+- プッシュ先: `origin claude/hardcore-goodall`
+
+### 注意事項
+- worktreeでのjest実行は `--testPathIgnorePatterns='[]'` を付けないとテストがすべて無視される（`.claude/worktrees/` が testPathIgnorePatterns に含まれているため）
+- 正しい実行コマンド: `npx jest --no-coverage --testPathIgnorePatterns='[]'`
+- GalaxySpiral の対数螺旋は `a=0.08, b=0.25, θ=0〜4π, steps=80, scale=size*0.38`
+- CosmosOverlay の25個光点は決定論的配置（黄金角 ≈ 2.399963 rad）でテスト安定性確保
+- `NextBadgeProgress` の `width: progressPercent` は `DimensionValue` キャストが必要
+
+### 新規ファイル
+- `hooks/achievements/useNewlyUnlockedBadge.ts`
+- `hooks/achievements/__tests__/useNewlyUnlockedBadge.test.ts`
+- `components/achievements/BadgeUnlockModal.tsx`
+- `components/achievements/__tests__/BadgeUnlockModal.test.tsx`
+- `components/dashboard/NextBadgeProgress.tsx`
+- `components/dashboard/__tests__/NextBadgeProgress.test.tsx`
+
+### 変更ファイル
+- `components/achievements/BadgeOrb.tsx` — GalaxySpiral/StarClusterOverlay/CosmosOverlay 追加
+- `components/achievements/__tests__/BadgeOrb.test.tsx` — Phase 4-6 テスト追加、Path mock追加
+- `lib/storage/asyncStorageClient.ts` — StorageKey に 'seen_badge_ids' 追加
+- `app/(tabs)/index.tsx` — BadgeUnlockModal + NextBadgeProgress 組込

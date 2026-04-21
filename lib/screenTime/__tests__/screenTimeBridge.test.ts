@@ -1,123 +1,129 @@
-/**
- * screenTimeBridge のテスト
- *
- * ネイティブモジュールが存在する場合と存在しない場合の両方をカバー。
- * Platform guard (iOS only) と try/catch のフォールバックを検証。
- */
-
-import { Platform } from 'react-native';
-
 const mockRequestAuthorization = jest.fn();
 const mockGetAuthorizationStatus = jest.fn();
-const mockEnableWebContentFilter = jest.fn();
-const mockDisableWebContentFilter = jest.fn();
+const mockSetWebContentFilterPolicy = jest.fn();
+const mockClearWebContentFilterPolicy = jest.fn();
+const mockUpdateShieldWithId = jest.fn();
 
-jest.mock('../../../modules/expo-screen-time/src', () => ({
-  default: {
-    requestAuthorization: (...args: any[]) => mockRequestAuthorization(...args),
-    getAuthorizationStatus: (...args: any[]) => mockGetAuthorizationStatus(...args),
-    enableWebContentFilter: (...args: any[]) => mockEnableWebContentFilter(...args),
-    disableWebContentFilter: (...args: any[]) => mockDisableWebContentFilter(...args),
-  },
+jest.mock('react-native-device-activity', () => ({
+  requestAuthorization: (...args: unknown[]) => mockRequestAuthorization(...args),
+  getAuthorizationStatus: (...args: unknown[]) => mockGetAuthorizationStatus(...args),
+  setWebContentFilterPolicy: (...args: unknown[]) => mockSetWebContentFilterPolicy(...args),
+  clearWebContentFilterPolicy: (...args: unknown[]) => mockClearWebContentFilterPolicy(...args),
+  updateShieldWithId: (...args: unknown[]) => mockUpdateShieldWithId(...args),
+  AuthorizationStatus: { notDetermined: 0, denied: 1, approved: 2 },
 }));
 
-jest.mock('../../logger', () => ({
-  logger: { error: jest.fn() },
+jest.mock('react-native', () => ({
+  Platform: { OS: 'ios' },
+}));
+
+jest.mock('@/lib/screenTime/shieldConfig', () => ({
+  buildRewireShieldConfig: jest.fn(() => ({ title: 'Rewire' })),
+  buildShieldActions: jest.fn(() => ({ primary: { behavior: 'defer' } })),
 }));
 
 import { screenTimeBridge } from '../screenTimeBridge';
+import { PRIORITY_BLOCKED_DOMAINS } from '@/constants/screenTime/blockedDomains';
+import { SHIELD_ID } from '@/constants/screenTime/screenTimeConfig';
+
+const identityT = (k: string) => k;
 
 describe('screenTimeBridge', () => {
-  const originalOS = Platform.OS;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    Platform.OS = 'ios';
-  });
-
-  afterEach(() => {
-    Platform.OS = originalOS;
   });
 
   describe('requestAuthorization', () => {
-    it('iOS でネイティブモジュールを呼び出す', async () => {
-      mockRequestAuthorization.mockResolvedValue({ status: 'approved' });
+    it('individualとしてlibraryのrequestAuthorizationを呼ぶ', async () => {
+      mockRequestAuthorization.mockResolvedValue(undefined);
+      mockGetAuthorizationStatus.mockReturnValue(2);
+
       const result = await screenTimeBridge.requestAuthorization();
-      expect(result).toEqual({ status: 'approved' });
-      expect(mockRequestAuthorization).toHaveBeenCalledTimes(1);
+
+      expect(mockRequestAuthorization).toHaveBeenCalledWith('individual');
+      expect(result.status).toBe('approved');
     });
 
-    it('Android では notDetermined を返す', async () => {
-      Platform.OS = 'android';
+    it('deniedの場合deniedステータスを返す', async () => {
+      mockRequestAuthorization.mockResolvedValue(undefined);
+      mockGetAuthorizationStatus.mockReturnValue(1);
+
       const result = await screenTimeBridge.requestAuthorization();
-      expect(result).toEqual({ status: 'notDetermined', error: 'Screen Time is only available on iOS' });
-      expect(mockRequestAuthorization).not.toHaveBeenCalled();
+
+      expect(result.status).toBe('denied');
     });
 
-    it('ネイティブモジュールがエラーを投げた場合は notDetermined を返す', async () => {
-      mockRequestAuthorization.mockRejectedValue(new Error('Native error'));
+    it('例外が起きた場合deniedで返す', async () => {
+      mockRequestAuthorization.mockRejectedValue(new Error('User denied'));
+
       const result = await screenTimeBridge.requestAuthorization();
-      expect(result).toEqual({ status: 'notDetermined', error: 'Native error' });
+
+      expect(result.status).toBe('denied');
+      expect(result.error).toBe('User denied');
     });
   });
 
   describe('getAuthorizationStatus', () => {
-    it('iOS でステータスを返す', async () => {
-      mockGetAuthorizationStatus.mockResolvedValue('approved');
-      const status = await screenTimeBridge.getAuthorizationStatus();
-      expect(status).toBe('approved');
+    it('approvedを返す', () => {
+      mockGetAuthorizationStatus.mockReturnValue(2);
+      expect(screenTimeBridge.getAuthorizationStatus()).toBe('approved');
     });
 
-    it('Android では notDetermined を返す', async () => {
-      Platform.OS = 'android';
-      const status = await screenTimeBridge.getAuthorizationStatus();
-      expect(status).toBe('notDetermined');
+    it('deniedを返す', () => {
+      mockGetAuthorizationStatus.mockReturnValue(1);
+      expect(screenTimeBridge.getAuthorizationStatus()).toBe('denied');
     });
 
-    it('エラー時は notDetermined を返す', async () => {
-      mockGetAuthorizationStatus.mockRejectedValue(new Error('fail'));
-      const status = await screenTimeBridge.getAuthorizationStatus();
-      expect(status).toBe('notDetermined');
+    it('notDeterminedを返す', () => {
+      mockGetAuthorizationStatus.mockReturnValue(0);
+      expect(screenTimeBridge.getAuthorizationStatus()).toBe('notDetermined');
     });
   });
 
-  describe('enableWebContentFilter', () => {
-    it('iOS で有効化に成功すると true を返す', async () => {
-      mockEnableWebContentFilter.mockResolvedValue(true);
-      const result = await screenTimeBridge.enableWebContentFilter();
-      expect(result).toBe(true);
+  describe('enableAdultSiteBlocking', () => {
+    it('setWebContentFilterPolicyをauto+PRIORITYドメインで呼ぶ', async () => {
+      await screenTimeBridge.enableAdultSiteBlocking(identityT);
+
+      expect(mockSetWebContentFilterPolicy).toHaveBeenCalledWith({
+        type: 'auto',
+        domains: PRIORITY_BLOCKED_DOMAINS,
+      });
     });
 
-    it('Android では false を返す', async () => {
-      Platform.OS = 'android';
-      const result = await screenTimeBridge.enableWebContentFilter();
-      expect(result).toBe(false);
+    it('updateShieldWithIdでShield設定とSHIELD_IDを登録する', async () => {
+      await screenTimeBridge.enableAdultSiteBlocking(identityT);
+
+      expect(mockUpdateShieldWithId).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+        SHIELD_ID,
+      );
     });
 
-    it('エラー時は false を返す', async () => {
-      mockEnableWebContentFilter.mockRejectedValue(new Error('fail'));
-      const result = await screenTimeBridge.enableWebContentFilter();
-      expect(result).toBe(false);
+    it('成功時trueを返す', async () => {
+      expect(await screenTimeBridge.enableAdultSiteBlocking(identityT)).toBe(true);
+    });
+
+    it('例外時falseを返す', async () => {
+      mockSetWebContentFilterPolicy.mockImplementationOnce(() => {
+        throw new Error('failed');
+      });
+      expect(await screenTimeBridge.enableAdultSiteBlocking(identityT)).toBe(false);
     });
   });
 
-  describe('disableWebContentFilter', () => {
-    it('iOS で無効化に成功すると true を返す', async () => {
-      mockDisableWebContentFilter.mockResolvedValue(true);
-      const result = await screenTimeBridge.disableWebContentFilter();
-      expect(result).toBe(true);
+  describe('disableAdultSiteBlocking', () => {
+    it('clearWebContentFilterPolicyを呼ぶ', async () => {
+      expect(await screenTimeBridge.disableAdultSiteBlocking()).toBe(true);
+      expect(mockClearWebContentFilterPolicy).toHaveBeenCalled();
     });
 
-    it('Android では false を返す', async () => {
-      Platform.OS = 'android';
-      const result = await screenTimeBridge.disableWebContentFilter();
-      expect(result).toBe(false);
-    });
-
-    it('エラー時は false を返す', async () => {
-      mockDisableWebContentFilter.mockRejectedValue(new Error('fail'));
-      const result = await screenTimeBridge.disableWebContentFilter();
-      expect(result).toBe(false);
+    it('例外時falseを返す', async () => {
+      mockClearWebContentFilterPolicy.mockImplementationOnce(() => {
+        throw new Error('failed');
+      });
+      expect(await screenTimeBridge.disableAdultSiteBlocking()).toBe(false);
     });
   });
 });
+

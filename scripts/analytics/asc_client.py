@@ -127,13 +127,16 @@ class ASCClient:
     def download_segment(self, url: str) -> str:
         """Download and decompress a report segment.
 
+        The URL returned by ASC is a pre-signed S3 link, so we must not
+        send the Authorization bearer token — doing so causes a 400.
+
         Args:
             url: The download URL for the gzipped TSV file.
 
         Returns:
             Decompressed TSV content as string.
         """
-        resp = requests.get(url, headers=self.headers)
+        resp = requests.get(url)
         resp.raise_for_status()
         decompressed = gzip.decompress(resp.content)
         return decompressed.decode("utf-8")

@@ -114,6 +114,30 @@ class TestASCClient:
         assert "impressions" in result
         assert "1000" in result
 
+    def test_download_segment_does_not_send_auth_headers(self):
+        """Pre-signed S3 URLs reject requests that include the ASC bearer token.
+
+        The download URL is a pre-signed S3 link — sending Authorization headers
+        causes a 400 Bad Request. Ensure `download_segment` requests without them.
+        """
+        client = self._make_client()
+        tsv_content = "date\tmetric\n2026-04-20\t1\n"
+        compressed = gzip.compress(tsv_content.encode("utf-8"))
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = compressed
+
+        with patch("requests.get", return_value=mock_response) as mock_get:
+            client.download_segment("https://asp-us-west-2.s3.amazonaws.com/signed")
+
+        # Ensure the call did not forward the ASC bearer token
+        called_headers = mock_get.call_args.kwargs.get("headers") or (
+            mock_get.call_args.args[1] if len(mock_get.call_args.args) > 1 else None
+        )
+        if called_headers:
+            assert "Authorization" not in called_headers
+
 
 class TestFetchDailyData:
     """Tests for the high-level daily data fetch function."""
