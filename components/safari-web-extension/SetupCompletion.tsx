@@ -5,18 +5,18 @@ import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT } from '@/constants/theme'
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 
-export function SetupIntro() {
+export function SetupCompletion() {
   const { colors } = useTheme();
   const { t } = useLocale();
 
   return (
     <>
       <View style={[styles.iconContainer, { backgroundColor: colors.surfaceHighlight }]}>
-        <Ionicons name="shield-checkmark-outline" size={80} color={colors.primary} />
+        <Ionicons name="checkmark-circle" size={80} color={colors.success} />
       </View>
-      <Text style={[styles.title, { color: colors.text }]}>{t('contentBlocker.title')}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('safariWebExtension.completionTitle')}</Text>
       <Text style={[styles.description, { color: colors.textSecondary }]}>
-        {t('contentBlocker.intro')}
+        {t('safariWebExtension.completionDescription')}
       </Text>
     </>
   );
@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xxl,
+    alignSelf: 'center',
   },
   title: {
     fontSize: FONT_SIZE.xxl,

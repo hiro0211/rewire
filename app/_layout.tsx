@@ -65,7 +65,7 @@ export default function RootLayout() {
           <Stack.Screen name="terms" options={{ headerShown: true, title: t('nav.terms') }} />
           <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: t('nav.privacyPolicy') }} />
           <Stack.Screen name="survey" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-          <Stack.Screen name="content-blocker-setup" options={{ headerShown: false }} />
+          <Stack.Screen name="safari-web-extension-setup" options={{ headerShown: false }} />
         </Stack>
       </ThemeProvider>
     </SafeAreaProvider>

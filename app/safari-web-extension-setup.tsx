@@ -5,11 +5,11 @@ import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT } from '@/constants/theme'
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { StepBadge } from '@/components/content-blocker/StepBadge';
-import { ScreenshotStep } from '@/components/content-blocker/ScreenshotStep';
-import { SetupIntro } from '@/components/content-blocker/SetupIntro';
-import { SetupCompletion } from '@/components/content-blocker/SetupCompletion';
-import { useContentBlockerSetup } from '@/hooks/contentBlocker/useContentBlockerSetup';
+import { StepBadge } from '@/components/safari-web-extension/StepBadge';
+import { ScreenshotStep } from '@/components/safari-web-extension/ScreenshotStep';
+import { SetupIntro } from '@/components/safari-web-extension/SetupIntro';
+import { SetupCompletion } from '@/components/safari-web-extension/SetupCompletion';
+import { useSafariWebExtensionSetup } from '@/hooks/safariWebExtension/useSafariWebExtensionSetup';
 import { useLocale } from '@/hooks/useLocale';
 
 const TOTAL_STEPS = 5;
@@ -27,14 +27,14 @@ const STEP_HIGHLIGHTS = {
 } as const;
 
 const SCREENSHOT_STEP_KEYS = [
-  { step: 1, titleKey: 'contentBlocker.step1Title', descKey: 'contentBlocker.step1Desc' },
-  { step: 2, titleKey: 'contentBlocker.step2Title', descKey: 'contentBlocker.step2Desc' },
-  { step: 3, titleKey: 'contentBlocker.step3Title', descKey: 'contentBlocker.step3Desc' },
+  { step: 1, titleKey: 'safariWebExtension.step1Title', descKey: 'safariWebExtension.step1Desc' },
+  { step: 2, titleKey: 'safariWebExtension.step2Title', descKey: 'safariWebExtension.step2Desc' },
+  { step: 3, titleKey: 'safariWebExtension.step3Title', descKey: 'safariWebExtension.step3Desc' },
 ] as const;
 
-export default function ContentBlockerSetupScreen() {
-  const { step, isLoading, handleNext, handlePrev, handleBack, handleOpenSettings } =
-    useContentBlockerSetup();
+export default function SafariWebExtensionSetupScreen() {
+  const { step, handleNext, handlePrev, handleBack, handleOpenSettings } =
+    useSafariWebExtensionSetup();
   const { colors } = useTheme();
   const { t } = useLocale();
 
@@ -42,18 +42,22 @@ export default function ContentBlockerSetupScreen() {
     <SafeAreaWrapper style={styles.container}>
       <View style={styles.header}>
         {step > 0 ? (
-          <TouchableOpacity onPress={handlePrev} style={styles.headerButton} testID="content-blocker-prev">
+          <TouchableOpacity onPress={handlePrev} style={styles.headerButton} testID="swe-setup-prev">
             <Ionicons name="chevron-back" size={20} color={colors.primary} />
-            <Text style={[styles.headerButtonText, { color: colors.primary }]}>{t('contentBlocker.prev')}</Text>
+            <Text style={[styles.headerButtonText, { color: colors.primary }]}>
+              {t('safariWebExtension.prev')}
+            </Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={handleBack} style={styles.headerButton} testID="content-blocker-close">
+          <TouchableOpacity onPress={handleBack} style={styles.headerButton} testID="swe-setup-close">
             <Ionicons name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
         {step >= 1 && step <= 3 && (
-          <TouchableOpacity onPress={handleBack} style={styles.headerButton} testID="content-blocker-skip">
-            <Text style={[styles.headerSkipText, { color: colors.textSecondary }]}>{t('contentBlocker.skipSetup')}</Text>
+          <TouchableOpacity onPress={handleBack} style={styles.headerButton} testID="swe-setup-skip">
+            <Text style={[styles.headerSkipText, { color: colors.textSecondary }]}>
+              {t('safariWebExtension.skipSetup')}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -81,7 +85,9 @@ export default function ContentBlockerSetupScreen() {
             <>
               <StepBadge step={config.step} />
               <Text style={[styles.stepTitle, { color: colors.text }]}>{t(config.titleKey)}</Text>
-              <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>{t(config.descKey)}</Text>
+              <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>
+                {t(config.descKey)}
+              </Text>
               <ScreenshotStep
                 image={STEP_IMAGES[config.step]}
                 highlight={STEP_HIGHLIGHTS[config.step]}
@@ -94,15 +100,18 @@ export default function ContentBlockerSetupScreen() {
       </View>
 
       <View style={styles.footer}>
-        {step === 0 && <Button title={t('contentBlocker.startSetup')} onPress={handleNext} />}
+        {step === 0 && <Button title={t('safariWebExtension.startSetup')} onPress={handleNext} />}
         {(step === 1 || step === 3) && (
           <>
-            <Button title={step === 1 ? t('contentBlocker.openSettings') : t('contentBlocker.openSettingsShort')} onPress={handleOpenSettings} />
+            <Button
+              title={step === 1 ? t('safariWebExtension.openSettings') : t('safariWebExtension.openSettingsShort')}
+              onPress={handleOpenSettings}
+            />
             <Button title={t('common.next')} variant="secondary" onPress={handleNext} style={styles.secondaryButton} />
           </>
         )}
         {step === 2 && <Button title={t('common.next')} onPress={handleNext} />}
-        {step === 4 && <Button title={t('common.done')} onPress={handleNext} loading={isLoading} />}
+        {step === 4 && <Button title={t('common.done')} onPress={handleNext} />}
       </View>
     </SafeAreaWrapper>
   );

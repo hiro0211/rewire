@@ -75,7 +75,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
-      './plugins/withContentBlocker',
+      './plugins/withSafariWebExtension',
       {
         appleTeamId: 'KV6CYPA7JK',
         appGroup: 'group.rewire.app.com',
@@ -103,8 +103,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
                 },
               },
               {
-                targetName: 'ContentBlockerExtension',
-                bundleIdentifier: 'rewire.app.com.ContentBlockerExtension',
+                targetName: 'SafariWebExtension',
+                bundleIdentifier: 'rewire.app.com.SafariWebExtension',
                 entitlements: {
                   'com.apple.security.application-groups': [
                     'group.rewire.app.com',

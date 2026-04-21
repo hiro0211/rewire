@@ -17,7 +17,7 @@ import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import { useScreenTimeStatus } from '@/hooks/settings/useScreenTimeStatus';
-import { useBlockerStatus } from '@/hooks/settings/useBlockerStatus';
+import { useWebExtensionStatus } from '@/hooks/settings/useWebExtensionStatus';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
 import type { ThemePreference } from '@/types/theme';
@@ -37,7 +37,7 @@ export default function SettingsScreen() {
   const [isLocalePickerVisible, setLocalePickerVisible] = useState(false);
 
   const { screenTimeStatus } = useScreenTimeStatus();
-  const { blockerStatus } = useBlockerStatus();
+  const { webExtensionStatus } = useWebExtensionStatus();
   const { isSurveyCompleted } = useSurveyCompleted();
   const {
     handleNotificationToggle,
@@ -74,10 +74,10 @@ export default function SettingsScreen() {
               onPress={screenTimeStatus !== 'approved' ? () => router.push(ROUTES.screenTimeSetup) : undefined}
             />
             <SettingItem
-              label={t('contentBlocker.settingsStatus')}
-              value={blockerStatus === 'enabled' ? t('screenTime.enabled') : t('screenTime.disabled')}
-              icon={blockerStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
-              onPress={blockerStatus !== 'enabled' ? () => router.push(ROUTES.contentBlockerSetup) : undefined}
+              label={t('safariWebExtension.settingsStatus')}
+              value={webExtensionStatus === 'enabled' ? t('screenTime.enabled') : t('safariWebExtension.unknown')}
+              icon={webExtensionStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
+              onPress={() => router.push(ROUTES.safariWebExtensionSetup)}
               isLast
             />
           </SettingSection>
