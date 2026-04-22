@@ -38,7 +38,7 @@ describe('BenefitsScreen', () => {
     const runAfterSpy = jest.spyOn(InteractionManager, 'runAfterInteractions');
 
     const { getByText } = render(<BenefitsScreen />);
-    fireEvent.press(getByText('Rewireを始める'));
+    fireEvent.press(getByText('Rewire を始める'));
 
     expect(runAfterSpy).toHaveBeenCalledTimes(1);
     // コールバックを実行

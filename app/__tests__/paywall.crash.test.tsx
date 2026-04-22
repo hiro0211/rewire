@@ -53,7 +53,7 @@ describe('PaywallScreen crash prevention', () => {
   it('Purchases=null → unavailable表示、クラッシュしない', async () => {
     // isExpoGo=trueなのでPurchases=null
     const { findByText } = render(<PaywallScreen />);
-    expect(await findByText('現在ご利用いただけません')).toBeTruthy();
+    expect(await findByText('いま、つながりません')).toBeTruthy();
   });
 
   it('source=undefined → クラッシュしない', () => {
@@ -87,13 +87,13 @@ describe('PaywallScreen crash prevention', () => {
     const retryButton = await findByText('再試行');
     fireEvent.press(retryButton);
     // 再試行後もunavailableのまま（Purchases=null）
-    expect(await findByText('現在ご利用いただけません')).toBeTruthy();
+    expect(await findByText('いま、つながりません')).toBeTruthy();
   });
 
   it('Purchases=null + source=onboarding → unavailableにfallback', async () => {
     mockSource = 'onboarding';
     const { findByText, queryByText } = render(<PaywallScreen />);
-    await findByText('現在ご利用いただけません');
+    await findByText('いま、つながりません');
     // 「戻る」ではなく「あとで試す」が表示される
     expect(queryByText('戻る')).toBeNull();
     expect(await findByText('あとで試す')).toBeTruthy();
@@ -104,7 +104,7 @@ describe('PaywallScreen crash prevention', () => {
     for (let i = 0; i < 3; i++) {
       const retryButton = await findByText('再試行');
       fireEvent.press(retryButton);
-      await findByText('現在ご利用いただけません');
+      await findByText('いま、つながりません');
     }
   });
 });

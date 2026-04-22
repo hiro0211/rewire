@@ -1,48 +1,284 @@
-## 🎨 18バッジのカラーパレット（確定版）
+  │     │ 絵  │                │                         │                 │
+  │  #  │ 文  │   新タイトル   │          説明           │   根拠コード    │
+  │     │ 字  │                │                         │                 │
+  ├─────┼─────┼────────────────┼─────────────────────────┼─────────────────┤
+  │     │     │                │                         │ lib/screenTime/ │
+  │ 1   │ 🛡️   │ 全ブラウザで、 │ Safari も Chrome も、見 │  +              │
+  │     │     │ 自動ブロック   │ ないと決めた日から。    │ react-native-de │
+  │     │     │                │                         │ vice-activity   │
+  ├─────┼─────┼────────────────┼─────────────────────────┼─────────────────┤
+  │ 2   │ ⏱️   │ ホームで、経過 │ アプリを開かなくても、  │ iOS widget +    │
+  │     │     │ 時間を見守る   │ 続いた時間が目に入る。  │ widgetDataSync  │
+  ├─────┼─────┼────────────────┼─────────────────────────┼─────────────────┤
+  │ 3   │ 🌬️   │ 衝動がきたら、 │ タップひとつで、波を乗  │ app/panic/ +    │
+  │     │     │ 3分だけ呼吸    │ り越える。              │ app/breathing/  │
+  ├─────┼─────┼────────────────┼─────────────────────────┼─────────────────┤
+  │ 4   │ 🌙  │ 毎日の振り返り │ 決めた時刻に通知、タッ  │ ReflectionSheet │
+  │     │     │ 、1分で        │ プで完了。              │  + 通知         │
+  ├─────┼─────┼────────────────┼─────────────────────────┼─────────────────┤
+  │ 5   │ ⭐  │ 18のバッジ、宇 │ 月から惑星、恒星、そし  │ 18 badge system │
+  │     │     │ 宙へ続く旅     │ て宇宙へ。              │                 │
+  └─────┴─────┴────────────────┴─────────────────────────┴─────────────────┘
 
-天文学的な実色（NASA/Hubble観測データ準拠）+ 既存Rewire UIの美学を融合した4層グラデーション構造。
+  キー命名案：
+  features: {
+    blocker:    { title: '全ブラウザで、自動ブロック', description: 'Safari も
+   Chrome も、見ないと決めた日から。' },
+    widget:     { title: 'ホームで、経過時間を見守る', description:
+  'アプリを開かなくても、続いた時間が目に入る。' },
+    sos:        { title: '衝動がきたら、3分だけ呼吸', description:
+  'タップひとつで、波を乗り越える。' },
+    reflection: { title: '毎日の振り返り、1分で',     description:
+  '決めた時刻に通知、タップで完了。' },
+    badges:     { title: '18のバッジ、宇宙へ続く旅', description:
+  '月から惑星、恒星、そして宇宙へ。' },
+  },
 
-各バッジは中心から外へ `core` → `mid` → `outer` → `glow` の4色で放射状グラデーションを形成する。
+  旧キー（streakTracking, sosBreathing, dailyCheckin, badges,
+  widget）は削除。参照箇所は PaywallDefault.tsx の FEATURE_KEYS のみ（grep
+  確認済み）。
 
-| # | Day | JP | ID | Core (中心) | Mid (中間) | Outer (外縁) | Glow (発光) | 特徴 |
-|---|-----|-----|-----|------|-----|-------|------|------|
-| 1 | 0 | 星屑 | `stardust` | `#FFFFFF` | `#E8E8F0` | `#B8A8D9` | `#9B8DC9` | 純白コア＋淡紫ハロー（既存維持） |
-| 2 | 1 | 星雲 | `nebula` | `#D4C5F9` | `#B8A8D9` | `#8B7AB8` | `#6A5A9E` | ラベンダー拡散光（既存維持） |
-| 3 | 3 | 原始星 | `protostar` | `#5CE1E6` | `#4A90E2` | `#2B5FA8` | `#1E3A8A` | シアン→深青グロー（既存維持） |
-| 4 | 7 | 月 | `moon` | `#F5F3E8` | `#D8D8D8` | `#9B9B9B` | `#6B6B6B` | 銀灰クレーター質感 |
-| 5 | 10 | 水星 | `mercury` | `#B8A88C` | `#8C7853` | `#5D4E37` | `#3E3426` | 褐色メタル／スレートグレー |
-| 6 | 14 | 金星 | `venus` | `#FFF4D6` | `#E8C547` | `#C19B2E` | `#8B6F1F` | 真珠白→黄金（硫酸雲） |
-| 7 | 21 | 地球 | `earth` | `#4A90E2` | `#2B6CB0` | `#1E4D8B` | `#0A2E5C` | 青×深青マーブル |
-| 8 | 30 | 火星 | `mars` | `#E8735C` | `#C1440E` | `#8B2E0A` | `#5C1E05` | 赤茶ダスト(酸化鉄) |
-| 9 | 45 | 木星 | `jupiter` | `#E8D5B7` | `#D8A47F` | `#A67B5B` | `#6B4E3D` | ベージュ縞＋赤茶帯 |
-| 10 | 60 | 土星 | `saturn` | `#F5DEB3` | `#E4C896` | `#B8935E` | `#7A5F3A` | クリーム色＋環(特殊描画) |
-| 11 | 90 | 天王星 | `uranus` | `#C8F0F0` | `#7DD3D8` | `#4A9BA8` | `#2E6B7A` | 淡シアン(メタン氷) |
-| 12 | 120 | 海王星 | `neptune` | `#5B8FD9` | `#2B4FD9` | `#1A2F8B` | `#0D1A5C` | 深群青 |
-| 13 | 180 | 太陽 | `sun` | `#FFF5B8` | `#FFB547` | `#E8830F` | `#B85A00` | オレンジ強発光(プロミネンス) |
-| 14 | 270 | 白色矮星 | `whiteDwarf` | `#FFFFFF` | `#F0F8FF` | `#B8D0E8` | `#6B8FB5` | 純白＋青白コア |
-| 15 | 365 | 恒星系 | `stellarSystem` | `#FFE55C` | `#FFD700` | `#C9A400` | `#8B7000` | 金色＋軌道リング(特殊描画) |
-| 16 | 500 | 星団 | `starCluster` | `#FFB8E0` | `#EC4899` | `#A8306B` | `#6B1F45` | ピンク散光(複数コア) |
-| 17 | 700 | 銀河 | `galaxy` | `#D4A8E8` | `#9B59B6` | `#6B3A82` | `#3E1F52` | 紫×金の渦巻き(特殊描画) |
-| 18 | 1000 | 宇宙 | `cosmos` | `#1A0F3E` | `#000033` | `#000019` | `#FFFFFF` | 深淵黒＋全色粒子(特殊描画) |
+  3.4 音読チェック（一部抜粋）
 
+  - subHeadline: '科学ベースの習慣で、回復を後押し。'
+    - 13 文字: 14 字（許容範囲）
+    - 体言止め「後押し」でリズム
+    - 読点 1 つで呼吸
+  - cancelAnytime: 'いつでも解約できる'
+    - 9 字、過剰丁寧排除
+  - features 各タイトル: 全て 13 字以内
 
-## 📝 各バッジの説明文
+  ---
+  4. ReviewCarousel 設計
 
-- **星屑**: 宇宙に漂う塵。すべてはここから始まる。
-- **星雲**: ガスと塵が集まり始めた。最初の一歩。
-- **原始星**: 重力が意志となり、核が形を成した。
-- **月**: 最も近くで見守る存在。満ち欠けを超えてなお、在り続ける。
-- **水星**: 灼熱と極寒の間で、確かに軌道を刻む。
-- **金星**: 厚い雲を抜けて、明けの明星となった。
-- **地球**: 生命を宿す星。お前の中にも確かな芯ができた。
-- **火星**: 赤く燃える意志。未踏の地を目指す者の色。
-- **木星**: 太陽系最大の守護者。嵐さえも自らの一部とする。
-- **土星**: 美しき環を持つ者。積み重ねが輪となり、お前を囲む。
-- **天王星**: 横たわる軸で回り続ける異端。我が道を貫く者の証。
-- **海王星**: 太陽系の果て。遠く、深く、静かに強い。
-- **太陽**: もはや惑う側ではない。自ら光を放ち、周囲を照らす存在へ。
-- **白色矮星**: 燃え尽きぬ核の結晶。凝縮された年月が、お前の密度となる。
-- **恒星系**: 一年。お前を中心に、世界が回り始めた。
-- **星団**: 志を同じくする光が集う。お前はもう一人ではない。
-- **銀河**: 無数の星々を束ねる渦。700日の重力が、ここに銀河を生んだ。
-- **宇宙**: もはや階層の外側。お前自身が、誰かの始まりの光となる。
+  4.1 スタイル指定（参考画像 IMG_4476〜4478 準拠）
+
+  参考画像で確認したレイアウト：
+  - 黒い角丸カード（surface 背景）
+  - 上部：★×5（ゴールド／オレンジ黄色）
+  - 中央：本文（白系、左寄せ、複数行）
+  - 下部：author（小さく薄いグレー、左寄せ）
+  - カード下：ドットインジケータ（現在位置ハイライト）
+  - 横スワイプでページング
+
+  4.2 新規ファイル
+
+  constants/paywall/reviews.ts（作成済）
+
+  export interface AppStoreReview {
+    id: string;
+    stars: number;
+    body: string;
+    author: string;
+  }
+  export const APP_STORE_REVIEWS: readonly AppStoreReview[] = [
+    { id: 'suzumoto',  stars: 5, body:
+  '自分を高めるための泥臭い努力に、彩りを加えてくれます。', author:
+  'すずもと@禁欲' },
+    { id: 'lagoonman', stars: 5, body: 'ホーム画面に時間が出せるのが良い。',
+                    author: 'ラグーンマン' },
+  ];
+
+  ※ レビュー内容は IMG_4475 / IMG_4474
+  から。タイトル・日付は参考スタイル画像に無いため省略。
+
+  components/paywall/ReviewCard.tsx（新規）
+
+  Props:
+  interface ReviewCardProps {
+    review: AppStoreReview;
+    width: number;
+  }
+  描画:
+  <View testID="review-card" style={[card, { width }]}>
+    <Text testID="review-stars">★★★★★</Text>         // gold
+    <Text>{review.body}</Text>                         // FONT_SIZE.sm
+    <Text>{review.author}</Text>                       // FONT_SIZE.xs,
+  tertiary
+  </View>
+
+  スタイル：
+  - backgroundColor: colors.surface
+  - borderRadius: RADIUS.lg
+  - padding: SPACING.lg
+  - 星色: #FFB800 等ゴールド（theme に追加 or ローカル定数）
+  - marginRight: SPACING.md（カード間の隙間）
+
+  components/paywall/ReviewCarousel.tsx（新規）
+
+  function ReviewCarousel() {
+    const { width } = useWindowDimensions();
+    const cardWidth = width - SPACING.screenPadding * 2;
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    return (
+      <View testID="review-carousel">
+        <Text>{t('paywall.reviews.sectionTitle')}</Text>
+        <FlatList
+          data={APP_STORE_REVIEWS}
+          horizontal
+          pagingEnabled
+          snapToInterval={cardWidth + SPACING.md}
+          decelerationRate="fast"
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          onScroll={(e) => {
+            const idx = Math.round(e.nativeEvent.contentOffset.x / (cardWidth
+  + SPACING.md));
+            if (idx !== activeIndex) setActiveIndex(idx);
+          }}
+          scrollEventThrottle={16}
+          renderItem={({ item }) => <ReviewCard review={item} 
+  width={cardWidth} />}
+        />
+        <DotIndicator count={APP_STORE_REVIEWS.length} 
+  activeIndex={activeIndex} />
+      </View>
+    );
+  }
+
+  DotIndicator：count個の点を横並びで描画、activeIndex の点だけ幅・色変更。
+
+  4.3 配置場所（PaywallDefault.tsx 差分）
+
+  {/* Feature Cards */}
+  <View style={styles.featuresWrap}>
+    {FEATURE_KEYS.map((f) => (
+      <FeatureCard key={f.titleKey} emoji={f.emoji} title={t(f.titleKey)} 
+  description={t(f.descriptionKey)} />
+    ))}
+  </View>
+
+  {/* ← ここに追加 */}
+  <ReviewCarousel />
+
+  ---
+  5. 変更ファイル一覧
+
+  新規（4 ファイル）
+
+  ┌─────────────────────────────────────────────────┬─────────────────────┐
+  │                      パス                       │        役割         │
+  ├─────────────────────────────────────────────────┼─────────────────────┤
+  │                                                 │ 2 件のレビューデー  │
+  │ constants/paywall/reviews.ts                    │ タ（✅              │
+  │                                                 │ 作成済、未削除）    │
+  ├─────────────────────────────────────────────────┼─────────────────────┤
+  │ components/paywall/ReviewCard.tsx               │ 単カードコンポーネ  │
+  │                                                 │ ント                │
+  ├─────────────────────────────────────────────────┼─────────────────────┤
+  │ components/paywall/ReviewCarousel.tsx           │ 横スワイプ + ドット │
+  ├─────────────────────────────────────────────────┼─────────────────────┤
+  │ components/paywall/__tests__/ReviewCard.test.ts │ 6 ケース（✅        │
+  │ x                                               │ 作成済、未削除）    │
+  ├─────────────────────────────────────────────────┼─────────────────────┤
+  │ components/paywall/__tests__/ReviewCarousel.tes │ 4〜5 ケース         │
+  │ t.tsx                                           │                     │
+  └─────────────────────────────────────────────────┴─────────────────────┘
+
+  変更（3 ファイル）
+
+  ┌─────────────────────────────────────┬─────────────────────────────────┐
+  │                パス                 │              内容               │
+  ├─────────────────────────────────────┼─────────────────────────────────┤
+  │                                     │ paywall.*                       │
+  │ locales/ja.ts                       │ 全キー刷新、features.*          │
+  │                                     │ 差し替え、reviews.sectionTitle  │
+  │                                     │ 追加                            │
+  ├─────────────────────────────────────┼─────────────────────────────────┤
+  │ locales/en.ts                       │ features.* の英訳更新、reviews. │
+  │                                     │ sectionTitle 追加               │
+  ├─────────────────────────────────────┼─────────────────────────────────┤
+  │ components/paywall/PaywallDefault.t │ FEATURE_KEYS                    │
+  │ sx                                  │ 差し替え、<ReviewCarousel />    │
+  │                                     │ 挿入                            │
+  └─────────────────────────────────────┴─────────────────────────────────┘
+
+  ---
+  6. TDD テストケース
+
+  6.1 ReviewCard (6 ケース — ✅ 既にテストファイル作成済)
+
+  1. クラッシュせずレンダー
+  2. 本文表示
+  3. author 表示
+  4. stars=5 で ★★★★★ 描画
+  5. stars=3 で ★★★ 描画
+  6. width prop がカード style に反映
+
+  6.2 ReviewCarousel (5 ケース — 未着手)
+
+  1. クラッシュせずレンダー
+  2. セクションタイトル表示
+  3. レビュー 2 件それぞれの本文が描画される
+  4. review-carousel testID が存在
+  5. ドットインジケータが APP_STORE_REVIEWS.length 個描画される
+
+  6.3 PaywallDefault 既存テスト互換
+
+  - PaywallDefault.test.tsx / PaywallDefault.crash.test.tsx /
+  app/__tests__/paywall.test.tsx が通ることを確認
+  -
+  機能キー変更に伴い、旧キーをハードコード参照しているテストがあれば更新（grep
+   で事前確認必要）
+
+  ---
+  7. 実装フェーズ（承認後の順序）
+
+  ┌─────┬────────────────────────────────────────┬────────────────────────┐
+  │ Pha │                  内容                  │       影響テスト       │
+  │ se  │                                        │                        │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ①   │ constants/paywall/reviews.ts（既に配置 │ なし                   │
+  │     │ 済、確認のみ）                         │                        │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ②   │ ReviewCard: Red → Green → Refactor     │ 新規 6 ケース          │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ③   │ ReviewCarousel: Red → Green → Refactor │ 新規 5 ケース          │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ④   │ locales/ja.ts 刷新（自然日本語 +       │ 既存 paywall テストで  │
+  │     │ 機能キー差替）                         │ 旧キー参照があれば修正 │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ⑤   │ locales/en.ts 同期                     │ 同上                   │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ⑥   │ PaywallDefault.tsx 差し替え +          │ 既存 PaywallDefault    │
+  │     │ ReviewCarousel 組込                    │ テスト再確認           │
+  ├─────┼────────────────────────────────────────┼────────────────────────┤
+  │ ⑦   │ npm test 全体（263 → 265               │ リグレッション 0 確認  │
+  │     │ 前後スイート） + npm run lint          │                        │
+  └─────┴────────────────────────────────────────┴────────────────────────┘
+
+  ---
+  8. 決め打ちしている前提（確認ポイント）
+
+  以下はユーザーの明示承認なしに決めているので、違和感があれば指摘してほしい：
+
+  1. レビュー本文は画像どおりコピー（末尾句点は原文に合わせ軽く整形）：
+    - 「自分を高めるための泥臭い努力に**、彩りを加えてくれます。**」
+    - 「ホーム画面に時間が出せるのが良い**。**」
+  2. タイトル・日付は省略（参考スタイル画像 IMG_4476〜4478 に無いため）
+  3. 機能リストは 5 件維持（増減しない）
+  4. 旧機能キー（streakTracking / sosBreathing / dailyCheckin）は削除、badges
+  / widget はキー名を残すか刷新するか → 上記案では badges / widget
+  キー名も変更（blocker / widget / sos / reflection / badges の 5
+  つ）。旧キー参照を完全削除したい。
+  5. 星の色は #FFB800 前後のゴールドでハードコード（他の theme
+  トークンと競合しない）
+  6. カルーセルセクションタイトル: 'ユーザーの声'（「App Store
+  レビュー」と明示しない方が UX 的に馴染む判断）
+  7. 自動再生は無し、ユーザー操作でのみ進む
+
+  ---
+  9. このまま実装に入る場合のコマンド
+
+  # ②-③ コンポーネント実装
+  npx jest components/paywall/__tests__/ReviewCard.test.tsx --no-coverage
+  npx jest components/paywall/__tests__/ReviewCarousel.test.tsx --no-coverage
+
+  # ⑦ 全体検証
+  npm test -- --no-coverage
+  npm run lint
+
+  ---
+  **この計画で進めて良いか、変更すべき点（特に §8
+  の前提）があるかを教えてほしい。**承認後、①→⑦ の順に TDD で実装する。

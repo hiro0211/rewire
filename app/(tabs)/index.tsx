@@ -29,8 +29,7 @@ import { ReviewPromptModal } from '@/components/review/ReviewPromptModal';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { ReflectionSheet } from '@/components/reflection/ReflectionSheet';
 import { useReflectionTrigger } from '@/hooks/reflection/useReflectionTrigger';
-import { useReflectionStore } from '@/stores/reflectionStore';
-import { format } from 'date-fns';
+import { useAutoOpenReflectionSheet } from '@/hooks/reflection/useAutoOpenReflectionSheet';
 
 let ViewShot: any = View;
 if (!isExpoGo) {
@@ -70,14 +69,8 @@ export default function DashboardScreen() {
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
 
   useReflectionTrigger();
-  const lastReflectionDate = useReflectionStore((s) => s.lastReflectionDate);
-  const loadReflectionState = useReflectionStore((s) => s.loadReflectionState);
-  const todayKey = format(new Date(), 'yyyy-MM-dd');
-  const todayReflectionCompleted = lastReflectionDate === todayKey;
+  useAutoOpenReflectionSheet();
 
-  useEffect(() => {
-    loadReflectionState();
-  }, [loadReflectionState]);
   const {
     selectedRating,
     showFeedback,
@@ -143,11 +136,10 @@ export default function DashboardScreen() {
             elapsed={stopwatch.formatted}
             relapseCount={relapseCount}
             goalDays={goalDays}
-            todayReflectionCompleted={todayReflectionCompleted}
           />
         </Animated.View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           testID="share-button"
           onPress={handleShare}
           style={styles.shareButton}
@@ -157,7 +149,7 @@ export default function DashboardScreen() {
           <Text style={[styles.shareText, { color: colors.textSecondary }]}>
             {t('dashboard.share')}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <Animated.View style={quickActionAnim.animatedStyle}>
           <QuickActionGrid />

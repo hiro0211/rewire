@@ -1,0 +1,64 @@
+{
+  "date": "2026-04-21",
+  "data_coverage_dates": [
+    "2026-04-18",
+    "2026-04-19",
+    "2026-04-20"
+  ],
+  "stock_script_produced_zeros": true,
+  "totals": {
+    "impressions": 26,
+    "page_views": 3,
+    "get_taps": 1
+  },
+  "funnel": {
+    "page_view_rate": 0.11538461538461539,
+    "download_rate": 0.3333333333333333
+  },
+  "by_date": {
+    "2026-04-18": {
+      "Impression": 5,
+      "Page view": 2
+    },
+    "2026-04-19": {
+      "Impression": 9,
+      "Tap": 1,
+      "Page view": 1
+    },
+    "2026-04-20": {
+      "Impression": 12
+    }
+  },
+  "by_source": {
+    "App Store Browse": {
+      "Impression": 3,
+      "Tap": 1
+    },
+    "App Store Search": {
+      "Impression": 23,
+      "Page view": 2
+    },
+    "Web Referral": {
+      "Page view": 1
+    }
+  },
+  "top_territories": [
+    [
+      "JP",
+      22
+    ],
+    [
+      "MX",
+      2
+    ],
+    [
+      "AE",
+      1
+    ],
+    [
+      "IN",
+      1
+    ]
+  ],
+  "bottleneck": "Page-View Rate (Impression → Page View)"
+}

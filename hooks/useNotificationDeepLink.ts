@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { PANIC_NOTIFICATION_IDENTIFIER, PANIC_ROUTE } from '@/constants/screenTime/screenTimeConfig';
 
 function handleResponse(
   response: Notifications.NotificationResponse,
@@ -10,11 +9,6 @@ function handleResponse(
   const route = response.notification.request.content.data?.route;
   if (typeof route === 'string') {
     push(route);
-    return;
-  }
-  const categoryId = response.notification.request.content.categoryIdentifier;
-  if (categoryId === PANIC_NOTIFICATION_IDENTIFIER) {
-    push(PANIC_ROUTE);
   }
 }
 

@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 import { PaywallFooter } from '../PaywallFooter';
 
 jest.mock('@/hooks/useTheme', () => ({
@@ -13,11 +13,11 @@ jest.mock('../SubscriptionTerms', () => ({
 }));
 
 describe('PaywallFooter', () => {
-  it('「購入の復元」テキストが表示される', () => {
+  it('「購入を復元」テキストが表示される', () => {
     const { getByText } = render(
       <PaywallFooter onRestore={jest.fn()} purchasing={false} />
     );
-    expect(getByText('購入の復元')).toBeTruthy();
+    expect(getByText('購入を復元')).toBeTruthy();
   });
 
   it('復元ボタンタップで onRestore が呼ばれる', () => {
@@ -25,7 +25,7 @@ describe('PaywallFooter', () => {
     const { getByText } = render(
       <PaywallFooter onRestore={onRestore} purchasing={false} />
     );
-    fireEvent.press(getByText('購入の復元'));
+    fireEvent.press(getByText('購入を復元'));
     expect(onRestore).toHaveBeenCalledTimes(1);
   });
 
@@ -34,7 +34,7 @@ describe('PaywallFooter', () => {
     const { getByText } = render(
       <PaywallFooter onRestore={onRestore} purchasing={true} />
     );
-    fireEvent.press(getByText('購入の復元'));
+    fireEvent.press(getByText('購入を復元'));
     expect(onRestore).not.toHaveBeenCalled();
   });
 

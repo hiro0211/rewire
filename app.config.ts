@@ -68,13 +68,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     './plugins/withFirebaseAnalyticsNoAdId',
     '@react-native-firebase/app',
     [
-      'react-native-device-activity',
-      {
-        appleTeamId: 'KV6CYPA7JK',
-        appGroup: 'group.rewire.app.com',
-      },
-    ],
-    [
       './plugins/withSafariWebExtension',
       {
         appleTeamId: 'KV6CYPA7JK',

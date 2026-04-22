@@ -65,13 +65,13 @@ describe('PaywallScreen', () => {
 
   it('RevenueCat未接続時にフォールバックUIが表示される', async () => {
     const { findByText } = render(<PaywallScreen />);
-    expect(await findByText('現在ご利用いただけません')).toBeTruthy();
+    expect(await findByText('いま、つながりません')).toBeTruthy();
   });
 
   it('オンボーディングからの場合、フォールバックに「戻る」ボタンがない', async () => {
     mockSource = 'onboarding';
     const { findByText, queryByText } = render(<PaywallScreen />);
-    await findByText('現在ご利用いただけません');
+    await findByText('いま、つながりません');
     expect(queryByText('戻る')).toBeNull();
   });
 

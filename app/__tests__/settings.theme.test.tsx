@@ -58,12 +58,6 @@ jest.mock('@/lib/notifications/notificationClient', () => ({
   },
 }));
 
-jest.mock('@/lib/screenTime/screenTimeBridge', () => ({
-  screenTimeBridge: {
-    getAuthorizationStatus: jest.fn().mockResolvedValue('notDetermined'),
-  },
-}));
-
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 
 jest.mock('@/lib/subscription/subscriptionClient', () => ({

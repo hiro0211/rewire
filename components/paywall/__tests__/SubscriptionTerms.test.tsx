@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(),
@@ -15,20 +15,20 @@ describe('SubscriptionTerms', () => {
 
   it('自動更新テキストが表示される', () => {
     const { getByText } = render(<SubscriptionTerms />);
-    expect(getByText(/サブスクリプションは期間終了の24時間前までにキャンセルしない限り自動更新されます/)).toBeTruthy();
-    expect(getByText(/お支払いはApple IDに請求されます/)).toBeTruthy();
+    expect(getByText(/期間終了の24時間前までに解約しない場合、自動で更新/)).toBeTruthy();
+    expect(getByText(/お支払いは Apple ID に請求されます/)).toBeTruthy();
   });
 
   it('trialText が渡された場合にトライアル固有文言が表示される', () => {
     const { getByText } = render(
-      <SubscriptionTerms trialText="無料トライアル終了後、サブスクリプション料金が自動で課金されます。" />
+      <SubscriptionTerms trialText="トライアル終了後、自動で課金されます。" />
     );
-    expect(getByText(/無料トライアル終了後、サブスクリプション料金が自動で課金されます/)).toBeTruthy();
+    expect(getByText(/トライアル終了後、自動で課金されます/)).toBeTruthy();
   });
 
   it('trialText が無い場合にトライアル文言が表示されない', () => {
     const { queryByText } = render(<SubscriptionTerms />);
-    expect(queryByText(/無料トライアル終了後/)).toBeNull();
+    expect(queryByText(/トライアル終了後/)).toBeNull();
   });
 
   it('利用規約リンクが表示される', () => {

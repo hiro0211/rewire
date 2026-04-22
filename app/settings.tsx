@@ -16,7 +16,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
-import { useScreenTimeStatus } from '@/hooks/settings/useScreenTimeStatus';
 import { useWebExtensionStatus } from '@/hooks/settings/useWebExtensionStatus';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
@@ -36,7 +35,6 @@ export default function SettingsScreen() {
   const [isThemePickerVisible, setThemePickerVisible] = useState(false);
   const [isLocalePickerVisible, setLocalePickerVisible] = useState(false);
 
-  const { screenTimeStatus } = useScreenTimeStatus();
   const { webExtensionStatus } = useWebExtensionStatus();
   const { isSurveyCompleted } = useSurveyCompleted();
   const {
@@ -66,16 +64,10 @@ export default function SettingsScreen() {
         </SettingSection>
 
         {Platform.OS === 'ios' && (
-          <SettingSection title={t('screenTime.settingsStatus')}>
-            <SettingItem
-              label={t('screenTime.settingsStatus')}
-              value={screenTimeStatus === 'approved' ? t('screenTime.enabled') : t('screenTime.disabled')}
-              icon={screenTimeStatus === 'approved' ? 'shield-checkmark' : 'shield-outline'}
-              onPress={screenTimeStatus !== 'approved' ? () => router.push(ROUTES.screenTimeSetup) : undefined}
-            />
+          <SettingSection title={t('safariWebExtension.settingsStatus')}>
             <SettingItem
               label={t('safariWebExtension.settingsStatus')}
-              value={webExtensionStatus === 'enabled' ? t('screenTime.enabled') : t('safariWebExtension.unknown')}
+              value={webExtensionStatus === 'enabled' ? t('safariWebExtension.enabled') : t('safariWebExtension.unknown')}
               icon={webExtensionStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
               onPress={() => router.push(ROUTES.safariWebExtensionSetup)}
               isLast

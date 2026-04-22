@@ -1,8 +1,8 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { PrePaywallBenefits } from '../PrePaywallBenefits';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
-import { PrePaywallBenefits } from '../PrePaywallBenefits';
 
 describe('PrePaywallBenefits', () => {
   const defaultProps = {
@@ -32,7 +32,7 @@ describe('PrePaywallBenefits', () => {
 
   it('ベネフィットタグが表示される', () => {
     const { getByText } = render(<PrePaywallBenefits {...defaultProps} />);
-    expect(getByText(/Rewireで/)).toBeTruthy();
+    expect(getByText(/Rewire で/)).toBeTruthy();
     expect(getByText(/集中力回復/)).toBeTruthy();
     expect(getByText(/脳のリセット/)).toBeTruthy();
   });
@@ -47,24 +47,24 @@ describe('PrePaywallBenefits', () => {
 
   it('機能紹介が表示される（実在機能のみ）', () => {
     const { getByText, queryByText } = render(<PrePaywallBenefits {...defaultProps} />);
-    expect(getByText(/Rewireの仕組み/)).toBeTruthy();
+    expect(getByText(/Rewire の仕組み/)).toBeTruthy();
     expect(getByText('ストリーク記録')).toBeTruthy();
     expect(queryByText('SNSフリクション介入')).toBeNull();
   });
 
   it('セクション見出しが日本語で表示される', () => {
     const { getByText } = render(<PrePaywallBenefits {...defaultProps} />);
-    expect(getByText(/ポルノを見て後悔するの/)).toBeTruthy();
+    expect(getByText(/後悔するのは/)).toBeTruthy();
   });
 
   it('固定CTAボタンが表示される', () => {
     const { getByText } = render(<PrePaywallBenefits {...defaultProps} />);
-    expect(getByText('Rewireを始める')).toBeTruthy();
+    expect(getByText('Rewire を始める')).toBeTruthy();
   });
 
   it('CTAボタンを押すとonContinueが呼ばれる', () => {
     const { getByText } = render(<PrePaywallBenefits {...defaultProps} />);
-    fireEvent.press(getByText('Rewireを始める'));
+    fireEvent.press(getByText('Rewire を始める'));
     expect(defaultProps.onContinue).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('@/hooks/paywall/useDiscountExpiryTracker', () => ({
@@ -48,13 +48,13 @@ describe('PaywallDiscount crash prevention', () => {
   it('Purchases=null → 購入ボタン押下でクラッシュしない', () => {
     const offering = { annual: { product: { price: 2500 } } };
     const { getByText } = render(<PaywallDiscount {...baseProps} offering={offering} />);
-    expect(() => fireEvent.press(getByText('今すぐオファーを受け取る'))).not.toThrow();
+    expect(() => fireEvent.press(getByText('このオファーで始める'))).not.toThrow();
   });
 
   it('Purchases=null → 復元ボタン押下でクラッシュしない', () => {
     const offering = { annual: { product: { price: 2500 } } };
     const { getByText } = render(<PaywallDiscount {...baseProps} offering={offering} />);
-    expect(() => fireEvent.press(getByText('購入の復元'))).not.toThrow();
+    expect(() => fireEvent.press(getByText('購入を復元'))).not.toThrow();
   });
 
   it('offering=null → 閉じるボタン押下でonDismiss呼ばれクラッシュしない', () => {

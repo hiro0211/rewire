@@ -133,9 +133,9 @@ describe('DashboardScreen', () => {
     expect(queryByTestId('brain-rewiring-bar')).toBeNull();
   });
 
-  it('シェアボタンが表示される', () => {
-    const { getByTestId } = render(<DashboardScreen />);
-    expect(getByTestId('share-button')).toBeTruthy();
+  it('シェアボタンは非表示（コメントアウト済み）', () => {
+    const { queryByTestId } = render(<DashboardScreen />);
+    expect(queryByTestId('share-button')).toBeNull();
   });
 
   it('share-capture-area が存在する', () => {

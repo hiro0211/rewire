@@ -26,7 +26,6 @@ export const ROUTES = {
   paywall: route('/paywall'),
   streak: route('/streak'),
   brand: route('/brand'),
-  screenTimeSetup: route('/screen-time-setup'),
   safariWebExtensionSetup: route('/safari-web-extension-setup'),
   settings: route('/settings'),
   terms: route('/terms'),

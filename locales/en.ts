@@ -44,7 +44,6 @@ export const en: Translations = {
     elapsed: 'Elapsed',
     goalAchievement: 'Goal Achievement',
     relapses: 'Relapses',
-    reflectionPending: "Complete today's reflection",
   },
   quickAction: {
     breathe: 'Breathe',
@@ -353,7 +352,7 @@ export const en: Translations = {
     },
     features: {
       streakTracking: { title: 'Streak Tracking', description: 'Visualize your progress to stay motivated' },
-      screenTime: { title: 'Web Protection', description: 'Block adult content across all browsers' },
+      screenTime: { title: 'Safari Custom Protection', description: 'Rewire intercepts when you open adult sites in Safari' },
       sosBreathing: { title: 'SOS Breathing', description: 'Ride out urge peaks with deep breathing' },
       dailyCheckin: { title: 'Daily Check-in', description: 'Reflect daily to understand your behavior patterns' },
       widget: { title: 'Widget Support', description: 'Check your streak from the home screen' },
@@ -473,22 +472,6 @@ export const en: Translations = {
       description: 'If you started before installing the app, you can change the start date',
     },
   },
-  screenTime: {
-    title: 'Web Protection',
-    intro: 'Use Screen Time to block adult content across all browsers.',
-    enableButton: 'Enable Screen Time',
-    skip: 'Set up later',
-    completionTitle: 'Setup Complete!',
-    completionDescription: 'Adult sites will now be\nautomatically blocked across all browsers',
-    deniedTitle: 'Permission Required',
-    deniedDescription: 'Please allow Rewire access in\nSettings → Screen Time',
-    settingsStatus: 'Web Protection',
-    enabled: 'Active',
-    disabled: 'Inactive',
-    setupGuide: 'Set up',
-    shieldPrimaryButton: 'Open Rewire',
-    shieldSecondaryButton: 'Close',
-  },
   safariWebExtension: {
     title: 'Safari Custom Protection',
     intro: 'When you access an adult site in Safari, Rewire intercepts with a custom page and notification.\nSet up in 4 steps.',
@@ -507,6 +490,7 @@ export const en: Translations = {
     prev: 'Back',
     settingsStatus: 'Safari Custom Protection',
     setupGuide: 'Set up',
+    enabled: 'Active',
     unknown: 'Not detected',
   },
   breathingSuccess: {
@@ -660,11 +644,14 @@ export const en: Translations = {
     startFreeTrial: 'Start Free Trial',
     trialAutoRenew: 'After the free trial ends, subscription charges will be automatically applied.',
     features: {
-      streakTracking: { title: 'Streak Tracking', description: 'Visualize your daily progress' },
-      sosBreathing: { title: 'SOS Breathing', description: 'Control urges with calm breathing' },
-      dailyCheckin: { title: 'Daily Check-in', description: 'Track your changes' },
-      badges: { title: 'Achievement Badges', description: 'Stay motivated with milestones' },
-      widget: { title: 'Widget Support', description: 'Check your streak from the home screen' },
+      blocker: { title: 'Auto-block across all browsers', description: 'Safari, Chrome — blocked from the day you decide.' },
+      widget: { title: 'Track your streak on Home Screen', description: 'See your progress without opening the app.' },
+      sos: { title: 'Urge hits? Breathe for 3 minutes', description: 'One tap to ride the wave.' },
+      reflection: { title: 'Daily reflection in 1 minute', description: 'A notification, a tap, done.' },
+      badges: { title: '18 badges, a journey to the cosmos', description: 'Moon, planets, stars, and beyond.' },
+    },
+    reviews: {
+      sectionTitle: 'What Users Say',
     },
   },
   purchaseAlerts: {

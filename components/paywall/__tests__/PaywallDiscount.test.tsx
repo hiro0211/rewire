@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('@/hooks/paywall/useDiscountExpiryTracker', () => ({
@@ -44,7 +44,7 @@ describe('PaywallDiscount', () => {
 
   it('今だけの特別割引が表示される', () => {
     const { getByText } = render(<PaywallDiscount {...defaultProps} />);
-    expect(getByText('今だけの特別割引')).toBeTruthy();
+    expect(getByText('今だけの特別価格')).toBeTruthy();
   });
 
   it('69% OFFが表示される', () => {
@@ -60,7 +60,7 @@ describe('PaywallDiscount', () => {
 
   it('月額換算価格が表示される', () => {
     const { getByText } = render(<PaywallDiscount {...defaultProps} />);
-    expect(getByText('¥208/月')).toBeTruthy();
+    expect(getByText('¥208／月')).toBeTruthy();
   });
 
   it('閉じるボタンでonDismissが呼ばれる', () => {
@@ -71,12 +71,12 @@ describe('PaywallDiscount', () => {
 
   it('CTAボタンが表示される', () => {
     const { getByText } = render(<PaywallDiscount {...defaultProps} />);
-    expect(getByText('今すぐオファーを受け取る')).toBeTruthy();
+    expect(getByText('このオファーで始める')).toBeTruthy();
   });
 
   it('購入復元リンクが表示される', () => {
     const { getByText } = render(<PaywallDiscount {...defaultProps} />);
-    expect(getByText('購入の復元')).toBeTruthy();
+    expect(getByText('購入を復元')).toBeTruthy();
   });
 
   it('カウントダウンタイマーが表示される', () => {
@@ -86,7 +86,7 @@ describe('PaywallDiscount', () => {
 
   it('自動更新に関する説明テキストが表示される', () => {
     const { getByText } = render(<PaywallDiscount {...defaultProps} />);
-    expect(getByText(/サブスクリプションは期間終了の24時間前までにキャンセルしない限り自動更新されます/)).toBeTruthy();
+    expect(getByText(/期間終了の24時間前までに解約しない場合、自動で更新/)).toBeTruthy();
   });
 
   it('利用規約リンクが表示される', () => {

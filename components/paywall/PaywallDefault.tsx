@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
-import { useTheme } from '@/hooks/useTheme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { GlowDivider } from '@/components/ui/GlowDivider';
-import { PlanSelector } from './PlanSelector';
+import { FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, SPACING } from '@/constants/theme';
+import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
+import { usePurchase } from '@/hooks/paywall/usePurchase';
+import { useLocale } from '@/hooks/useLocale';
+import { useTheme } from '@/hooks/useTheme';
+import React, { useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FeatureCard } from './FeatureCard';
-import { formatPrice } from './paywallUtils';
 import { PaywallCloseButton } from './PaywallCloseButton';
 import { PaywallFooter } from './PaywallFooter';
-import { useLocale } from '@/hooks/useLocale';
-import { usePurchase } from '@/hooks/paywall/usePurchase';
-import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
+import { PlanSelector } from './PlanSelector';
+import { ReviewCarousel } from './ReviewCarousel';
+import { formatPrice } from './paywallUtils';
 
 interface PaywallDefaultProps {
   offering: any;
@@ -23,11 +24,11 @@ interface PaywallDefaultProps {
 }
 
 const FEATURE_KEYS = [
-  { emoji: '🎯', titleKey: 'paywall.features.streakTracking.title', descriptionKey: 'paywall.features.streakTracking.description' },
-  { emoji: '🔥', titleKey: 'paywall.features.sosBreathing.title', descriptionKey: 'paywall.features.sosBreathing.description' },
-  { emoji: '📊', titleKey: 'paywall.features.dailyCheckin.title', descriptionKey: 'paywall.features.dailyCheckin.description' },
-  { emoji: '🏆', titleKey: 'paywall.features.badges.title', descriptionKey: 'paywall.features.badges.description' },
+  { emoji: '🛡️', titleKey: 'paywall.features.blocker.title', descriptionKey: 'paywall.features.blocker.description' },
   { emoji: '⏱️', titleKey: 'paywall.features.widget.title', descriptionKey: 'paywall.features.widget.description' },
+  { emoji: '🌬️', titleKey: 'paywall.features.sos.title', descriptionKey: 'paywall.features.sos.description' },
+  { emoji: '🌙', titleKey: 'paywall.features.reflection.title', descriptionKey: 'paywall.features.reflection.description' },
+  { emoji: '⭐', titleKey: 'paywall.features.badges.title', descriptionKey: 'paywall.features.badges.description' },
 ];
 
 export function PaywallDefault({
@@ -105,6 +106,9 @@ export function PaywallDefault({
               <FeatureCard key={f.titleKey} emoji={f.emoji} title={t(f.titleKey)} description={t(f.descriptionKey)} />
             ))}
           </View>
+
+          {/* Review Carousel */}
+          <ReviewCarousel />
         </ScrollView>
 
         {/* Fixed Footer */}
@@ -119,7 +123,6 @@ export function PaywallDefault({
             style={styles.ctaButton}
           />
           <Text style={[styles.billingNote, { color: colors.textSecondary }]}>{billingText}</Text>
-          <Text style={[styles.cancelNote, { color: colors.textSecondary }]}>{t('paywall.cancelAnytime')}</Text>
           <PaywallFooter onRestore={handleRestore} purchasing={purchasing} />
         </View>
       </View>
@@ -178,10 +181,6 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.sm,
     borderTopWidth: 1,
     alignItems: 'center',
-  },
-  cancelNote: {
-    fontSize: FONT_SIZE.xs,
-    marginTop: SPACING.xs,
   },
   ctaButton: {
     width: '100%',

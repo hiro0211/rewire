@@ -1,13 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 
-jest.mock('expo-haptics', () => ({
-  notificationAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  NotificationFeedbackType: { Success: 'success' },
-  ImpactFeedbackStyle: { Light: 'light' },
-}));
-
 import { SegmentedStreakCard } from '../SegmentedStreakCard';
 
 jest.mock('@/hooks/useTheme', () => ({
@@ -94,68 +87,5 @@ describe('SegmentedStreakCard', () => {
       />
     );
     expect(screen.getByText('0')).toBeTruthy();
-  });
-
-  describe('振り返り完了ゲート', () => {
-    it('todayReflectionCompleted=false のとき 未完了バッジが表示される', () => {
-      render(
-        <SegmentedStreakCard
-          elapsed="1日0時間0分"
-          relapseCount={0}
-          goalDays={30}
-          todayReflectionCompleted={false}
-        />
-      );
-      expect(screen.getByTestId('reflection-pending-badge')).toBeTruthy();
-    });
-
-    it('todayReflectionCompleted=true のとき 未完了バッジは表示されない', () => {
-      render(
-        <SegmentedStreakCard
-          elapsed="1日0時間0分"
-          relapseCount={0}
-          goalDays={30}
-          todayReflectionCompleted={true}
-        />
-      );
-      expect(screen.queryByTestId('reflection-pending-badge')).toBeNull();
-    });
-
-    it('todayReflectionCompleted=true で初回マウント時は haptic が発火しない（transition 判定）', () => {
-      const Haptics = require('expo-haptics');
-      render(
-        <SegmentedStreakCard
-          elapsed="1日0時間0分"
-          relapseCount={0}
-          goalDays={30}
-          todayReflectionCompleted={true}
-        />
-      );
-      expect(Haptics.notificationAsync).not.toHaveBeenCalled();
-    });
-
-    it('false → true の transition で haptic が発火する', () => {
-      const Haptics = require('expo-haptics');
-      const { rerender } = render(
-        <SegmentedStreakCard
-          elapsed="1日0時間0分"
-          relapseCount={0}
-          goalDays={30}
-          todayReflectionCompleted={false}
-        />
-      );
-      expect(Haptics.notificationAsync).not.toHaveBeenCalled();
-
-      rerender(
-        <SegmentedStreakCard
-          elapsed="1日0時間0分"
-          relapseCount={0}
-          goalDays={30}
-          todayReflectionCompleted={true}
-        />
-      );
-
-      expect(Haptics.notificationAsync).toHaveBeenCalled();
-    });
   });
 });

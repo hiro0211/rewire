@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('expo-web-browser', () => ({
@@ -30,7 +30,7 @@ describe('PaywallDefault crash prevention', () => {
   it('offering.annual=undefined, offering.monthly=undefined → デフォルト値表示', () => {
     const { getByText } = render(<PaywallDefault {...baseProps} offering={{}} />);
     // デフォルト値（¥2,500）でフォールバック
-    expect(getByText('はじめての方は3日間無料、その後 ¥2,500 /年')).toBeTruthy();
+    expect(getByText('3日間無料、そのあと ¥2,500／年')).toBeTruthy();
   });
 
   it('offering.annual=null → デフォルト値でレンダリング', () => {
@@ -59,7 +59,7 @@ describe('PaywallDefault crash prevention', () => {
       monthly: { product: { price: 680 } },
     };
     const { getByText } = render(<PaywallDefault {...baseProps} offering={offering} />);
-    expect(() => fireEvent.press(getByText('購入の復元'))).not.toThrow();
+    expect(() => fireEvent.press(getByText('購入を復元'))).not.toThrow();
   });
 
   it('offering=null → 閉じるボタン押下でonDismiss呼ばれクラッシュしない', () => {

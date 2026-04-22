@@ -199,20 +199,14 @@ describe('DashboardScreen 結合テスト', () => {
       expect(container.props.pointerEvents).toBe('box-none');
     });
 
-    it('シェアボタンが表示される', () => {
-      const { getByTestId } = render(<DashboardScreen />);
-      expect(getByTestId('share-button')).toBeTruthy();
+    it('シェアボタンは非表示（コメントアウト済み）', () => {
+      const { queryByTestId } = render(<DashboardScreen />);
+      expect(queryByTestId('share-button')).toBeNull();
     });
 
     it('share-capture-area が存在する', () => {
       const { getByTestId } = render(<DashboardScreen />);
       expect(getByTestId('share-capture-area')).toBeTruthy();
-    });
-
-    it('シェアボタンタップで share が呼ばれる', () => {
-      const { getByTestId } = render(<DashboardScreen />);
-      fireEvent.press(getByTestId('share-button'));
-      expect(mockShare).toHaveBeenCalledTimes(1);
     });
   });
 

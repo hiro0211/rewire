@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('expo-web-browser', () => ({
@@ -45,11 +45,11 @@ describe('PaywallDefault', () => {
 
   it('機能カードが表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('ストリーク記録')).toBeTruthy();
-    expect(getByText('SOS呼吸法')).toBeTruthy();
-    expect(getByText('デイリーチェックイン')).toBeTruthy();
-    expect(getByText('実績バッジ')).toBeTruthy();
-    expect(getByText('ウィジェット対応')).toBeTruthy();
+    expect(getByText('全ブラウザで、自動ブロック')).toBeTruthy();
+    expect(getByText('ホームで、経過時間を見守る')).toBeTruthy();
+    expect(getByText('衝動がきたら、3分だけ呼吸')).toBeTruthy();
+    expect(getByText('毎日の振り返り、1分で')).toBeTruthy();
+    expect(getByText('18のバッジ、宇宙へ続く旅')).toBeTruthy();
   });
 
   it('CTAボタンに「無料で始める」と表示される', () => {
@@ -63,30 +63,25 @@ describe('PaywallDefault', () => {
     expect(defaultProps.onDismiss).toHaveBeenCalled();
   });
 
-  it('いつでもキャンセル可能の案内が表示される', () => {
-    const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('いつでもキャンセル可能')).toBeTruthy();
-  });
-
   it('年額プランの課金表示に無料体験が含まれる', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('はじめての方は3日間無料、その後 ¥5,400 /年')).toBeTruthy();
+    expect(getByText('3日間無料、そのあと ¥5,400／年')).toBeTruthy();
   });
 
   it('月額プラン選択時に課金表示に無料体験が含まれる', () => {
     const { getByTestId, getByText } = render(<PaywallDefault {...defaultProps} />);
     fireEvent.press(getByTestId('plan-monthly'));
-    expect(getByText('はじめての方は3日間無料、その後 ¥680 /月')).toBeTruthy();
+    expect(getByText('3日間無料、そのあと ¥680／月')).toBeTruthy();
   });
 
   it('購入復元リンクが表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('購入の復元')).toBeTruthy();
+    expect(getByText('購入を復元')).toBeTruthy();
   });
 
   it('自動更新に関する説明テキストが表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText(/サブスクリプションは期間終了の24時間前までにキャンセルしない限り自動更新されます/)).toBeTruthy();
+    expect(getByText(/期間終了の24時間前までに解約しない場合、自動で更新/)).toBeTruthy();
   });
 
   it('利用規約リンクが表示される', () => {
@@ -130,7 +125,7 @@ describe('PaywallDefault', () => {
       );
 
       fireEvent.press(getByTestId('plan-monthly'));
-      expect(getByText('はじめての方は3日間無料、その後 ¥680 /月')).toBeTruthy();
+      expect(getByText('3日間無料、そのあと ¥680／月')).toBeTruthy();
     });
 
     it('monthlyPackage が完全に存在しない場合 Monthly プランカードが非表示', () => {

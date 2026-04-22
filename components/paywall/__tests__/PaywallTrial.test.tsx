@@ -1,5 +1,5 @@
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 jest.mock('expo-web-browser', () => ({
@@ -36,7 +36,7 @@ describe('PaywallTrial', () => {
 
   it('あなたへの特別オファーが表示される', () => {
     const { getByText } = render(<PaywallTrial {...defaultProps} />);
-    expect(getByText('あなたへの特別オファー')).toBeTruthy();
+    expect(getByText('あなただけに、特別オファー')).toBeTruthy();
   });
 
   it('69% OFFが表示される', () => {
@@ -52,9 +52,9 @@ describe('PaywallTrial', () => {
 
   it('3日間無料のテキストが表示される', () => {
     const { getByText } = render(<PaywallTrial {...defaultProps} />);
-    expect(getByText('Rewireを3日間無料でお試し')).toBeTruthy();
-    expect(getByText('3日間無料、その後 ¥2,500/年')).toBeTruthy();
-    expect(getByText('今すぐ支払いなし')).toBeTruthy();
+    expect(getByText('Rewire を3日間、無料で。')).toBeTruthy();
+    expect(getByText('3日間無料、そのあと ¥2,500／年')).toBeTruthy();
+    expect(getByText('支払いは、3日後から。')).toBeTruthy();
   });
 
   it('閉じるボタンが表示される', () => {
@@ -75,13 +75,13 @@ describe('PaywallTrial', () => {
 
   it('購入復元リンクが表示される', () => {
     const { getByText } = render(<PaywallTrial {...defaultProps} />);
-    expect(getByText('購入の復元')).toBeTruthy();
+    expect(getByText('購入を復元')).toBeTruthy();
   });
 
   it('自動更新に関する説明テキストが表示される（トライアル固有文言を含む）', () => {
     const { getByText } = render(<PaywallTrial {...defaultProps} />);
-    expect(getByText(/無料トライアル終了後、サブスクリプション料金が自動で課金されます/)).toBeTruthy();
-    expect(getByText(/サブスクリプションは期間終了の24時間前までにキャンセルしない限り自動更新されます/)).toBeTruthy();
+    expect(getByText(/トライアル終了後、自動で課金されます/)).toBeTruthy();
+    expect(getByText(/期間終了の24時間前までに解約しない場合、自動で更新/)).toBeTruthy();
   });
 
   it('利用規約リンクが表示される', () => {
