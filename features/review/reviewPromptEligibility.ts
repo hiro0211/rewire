@@ -1,12 +1,13 @@
 const MIN_ACCOUNT_AGE_DAYS = 7;
 const MIN_CHECKIN_COUNT = 5;
-const COOLDOWN_DAYS = 90;
+const COOLDOWN_DAYS = 10;
 const MAX_DISMISSALS = 3;
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 interface ReviewPromptInput {
   hasLeftPositiveReview: boolean;
+  hasSentFeedback: boolean;
   accountCreatedAt: string | null;
   checkinCount: number;
   lastPromptedAt: string | null;
@@ -16,9 +17,11 @@ interface ReviewPromptInput {
 }
 
 export function shouldShowReviewPrompt(input: ReviewPromptInput): boolean {
-  const { hasLeftPositiveReview, accountCreatedAt, checkinCount, lastPromptedAt, dismissCount, isIOS, now } = input;
+  const { hasLeftPositiveReview, hasSentFeedback, accountCreatedAt, checkinCount, lastPromptedAt, dismissCount, isIOS, now } = input;
 
   if (hasLeftPositiveReview) return false;
+
+  if (hasSentFeedback) return false;
 
   if (!isIOS) return false;
 

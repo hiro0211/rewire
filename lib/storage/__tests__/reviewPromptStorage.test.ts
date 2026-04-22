@@ -28,6 +28,7 @@ describe('reviewPromptStorage', () => {
         lastPromptedAt: null,
         dismissCount: 0,
         hasLeftPositiveReview: false,
+        hasSentFeedback: false,
       });
       expect(mockGet).toHaveBeenCalledWith('review_prompt_state');
     });
@@ -37,6 +38,7 @@ describe('reviewPromptStorage', () => {
         lastPromptedAt: '2026-01-01T00:00:00Z',
         dismissCount: 2,
         hasLeftPositiveReview: false,
+        hasSentFeedback: false,
       };
       mockGet.mockResolvedValue(saved);
 
@@ -48,7 +50,7 @@ describe('reviewPromptStorage', () => {
 
   describe('recordPromptShown', () => {
     it('lastPromptedAtを現在時刻で更新する', async () => {
-      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false });
+      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false, hasSentFeedback: false });
       mockSet.mockResolvedValue(undefined);
 
       const before = new Date().toISOString();
@@ -66,7 +68,7 @@ describe('reviewPromptStorage', () => {
 
   describe('recordDismissal', () => {
     it('dismissCountをインクリメントしlastPromptedAtを更新する', async () => {
-      mockGet.mockResolvedValue({ lastPromptedAt: '2026-01-01T00:00:00Z', dismissCount: 1, hasLeftPositiveReview: false });
+      mockGet.mockResolvedValue({ lastPromptedAt: '2026-01-01T00:00:00Z', dismissCount: 1, hasLeftPositiveReview: false, hasSentFeedback: false });
       mockSet.mockResolvedValue(undefined);
 
       await reviewPromptStorage.recordDismissal();
@@ -78,7 +80,7 @@ describe('reviewPromptStorage', () => {
     });
 
     it('初回dismissでdismissCountが1になる', async () => {
-      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false });
+      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false, hasSentFeedback: false });
       mockSet.mockResolvedValue(undefined);
 
       await reviewPromptStorage.recordDismissal();
@@ -90,7 +92,7 @@ describe('reviewPromptStorage', () => {
 
   describe('recordPositiveReview', () => {
     it('hasLeftPositiveReviewをtrueに設定する', async () => {
-      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false });
+      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false, hasSentFeedback: false });
       mockSet.mockResolvedValue(undefined);
 
       await reviewPromptStorage.recordPositiveReview();
@@ -99,6 +101,30 @@ describe('reviewPromptStorage', () => {
       expect(key).toBe('review_prompt_state');
       expect(value.hasLeftPositiveReview).toBe(true);
       expect(value.lastPromptedAt).not.toBeNull();
+    });
+  });
+
+  describe('recordFeedbackSent', () => {
+    it('hasSentFeedbackをtrueに設定する', async () => {
+      mockGet.mockResolvedValue({ lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false, hasSentFeedback: false });
+      mockSet.mockResolvedValue(undefined);
+
+      await reviewPromptStorage.recordFeedbackSent();
+
+      const [key, value] = mockSet.mock.calls[0];
+      expect(key).toBe('review_prompt_state');
+      expect(value.hasSentFeedback).toBe(true);
+      expect(value.lastPromptedAt).not.toBeNull();
+    });
+
+    it('既存のdismissCountは保持する', async () => {
+      mockGet.mockResolvedValue({ lastPromptedAt: '2026-01-01T00:00:00Z', dismissCount: 2, hasLeftPositiveReview: false, hasSentFeedback: false });
+      mockSet.mockResolvedValue(undefined);
+
+      await reviewPromptStorage.recordFeedbackSent();
+
+      const [, value] = mockSet.mock.calls[0];
+      expect(value.dismissCount).toBe(2);
     });
   });
 

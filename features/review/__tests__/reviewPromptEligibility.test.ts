@@ -5,6 +5,7 @@ describe('shouldShowReviewPrompt', () => {
 
   const baseInput = {
     hasLeftPositiveReview: false,
+    hasSentFeedback: false,
     accountCreatedAt: '2026-01-01T00:00:00Z',
     checkinCount: 10,
     lastPromptedAt: null,
@@ -16,6 +17,12 @@ describe('shouldShowReviewPrompt', () => {
   describe('レビュー済み → 永久非表示', () => {
     it('hasLeftPositiveReview=true → false', () => {
       expect(shouldShowReviewPrompt({ ...baseInput, hasLeftPositiveReview: true })).toBe(false);
+    });
+  });
+
+  describe('フィードバック送信済み → 永久非表示', () => {
+    it('hasSentFeedback=true → false', () => {
+      expect(shouldShowReviewPrompt({ ...baseInput, hasSentFeedback: true })).toBe(false);
     });
   });
 
@@ -73,18 +80,25 @@ describe('shouldShowReviewPrompt', () => {
     });
   });
 
-  describe('クールダウン90日', () => {
-    it('前回から60日 → false', () => {
+  describe('クールダウン10日', () => {
+    it('前回から5日 → false', () => {
       expect(shouldShowReviewPrompt({
         ...baseInput,
-        lastPromptedAt: '2026-01-17T12:00:00Z',
+        lastPromptedAt: '2026-03-13T12:00:00Z',
       })).toBe(false);
     });
 
-    it('前回から90日 → true', () => {
+    it('前回から9日 → false', () => {
       expect(shouldShowReviewPrompt({
         ...baseInput,
-        lastPromptedAt: '2025-12-18T12:00:00Z',
+        lastPromptedAt: '2026-03-09T12:00:00Z',
+      })).toBe(false);
+    });
+
+    it('前回からちょうど10日 → true', () => {
+      expect(shouldShowReviewPrompt({
+        ...baseInput,
+        lastPromptedAt: '2026-03-08T12:00:00Z',
       })).toBe(true);
     });
   });

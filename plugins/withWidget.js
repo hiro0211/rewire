@@ -276,7 +276,7 @@ function generateInfoPlist() {
 \t<key>CFBundlePackageType</key>
 \t<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 \t<key>CFBundleShortVersionString</key>
-\t<string>1.0</string>
+\t<string>2.0.0</string>
 \t<key>CFBundleVersion</key>
 \t<string>1</string>
 \t<key>NSExtension</key>
@@ -405,7 +405,7 @@ function withWidgetExtensionTarget(config) {
             DEVELOPMENT_TEAM: "KV6CYPA7JK",
             TARGETED_DEVICE_FAMILY: `"1,2"`,
             GENERATE_INFOPLIST_FILE: "NO",
-            MARKETING_VERSION: "1.0",
+            MARKETING_VERSION: "2.0.0",
             CURRENT_PROJECT_VERSION: "1",
             SWIFT_EMIT_LOC_STRINGS: "YES",
             CODE_SIGN_ENTITLEMENTS: `"${WIDGET_EXTENSION_NAME}/${WIDGET_EXTENSION_NAME}.entitlements"`,

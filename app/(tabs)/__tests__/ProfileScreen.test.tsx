@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { render } from '@testing-library/react-native';
 
 jest.mock('@/components/common/SafeAreaWrapper', () => {
@@ -43,8 +44,13 @@ jest.mock('@/hooks/achievements/useAchievements', () => ({
   }),
 }));
 
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
+}));
+
+jest.mock('@/hooks/settings/useWebExtensionStatus', () => ({
+  useWebExtensionStatus: () => ({ webExtensionStatus: 'unknown' }),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -79,5 +85,17 @@ describe('ProfileScreen', () => {
     expect(queryByTestId('aurora-background')).toBeNull();
     expect(queryByTestId('aurora-container')).toBeNull();
     expect(queryByTestId('starry-overlay')).toBeNull();
+  });
+
+  it('iOS で Safari カスタム保護の ToolCard が表示される', () => {
+    Platform.OS = 'ios';
+    const { getByTestId } = render(<ProfileScreen />);
+    expect(getByTestId('tool-card')).toBeTruthy();
+  });
+
+  it('Android では ToolCard は表示されない', () => {
+    Platform.OS = 'android';
+    const { queryByTestId } = render(<ProfileScreen />);
+    expect(queryByTestId('tool-card')).toBeNull();
   });
 });

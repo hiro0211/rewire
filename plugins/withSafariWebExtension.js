@@ -52,8 +52,8 @@ function generateManifest() {
   return {
     manifest_version: 3,
     name: 'Rewire Safari Extension',
-    version: '1.0',
-    description: 'Rewire が衝動に気づかせるカスタムブロック拡張',
+    version: '2.0.0',
+    description: 'アダルトサイトを、開く前に止める。Rewire の Safari 拡張。',
     default_locale: 'ja',
     permissions: ['nativeMessaging'],
     host_permissions: ['<all_urls>'],
@@ -155,8 +155,8 @@ function generateBlockedHtml() {
 <body>
   <div class="container">
     <img src="icons/app-icon.png" alt="Rewire" class="app-icon" />
-    <h1>衝動に気づきました</h1>
-    <p>Rewire はあなたを守るためにこのサイトをブロックしました。<br/>今の気持ちを振り返ってみませんか？</p>
+    <h1>止めるって、決めたはず。</h1>
+    <p><span id="blocked-domain"></span> をブロックしました。<br/>あのときの自分を、信じて。</p>
     <button id="rewire-open" type="button">Rewire を開く</button>
     <p class="subtext">通知からも Rewire を開けます</p>
   </div>
@@ -245,6 +245,10 @@ function generateBlockedJs() {
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    var domainEl = document.getElementById('blocked-domain');
+    if (domainEl) {
+      domainEl.textContent = domain;
+    }
     var btn = document.getElementById('rewire-open');
     if (btn) {
       btn.addEventListener('click', function () {
@@ -411,7 +415,7 @@ function withExtensionFiles(config, { appGroup }) {
 \t<key>CFBundlePackageType</key>
 \t<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 \t<key>CFBundleShortVersionString</key>
-\t<string>1.0</string>
+\t<string>2.0.0</string>
 \t<key>CFBundleVersion</key>
 \t<string>1</string>
 \t<key>NSExtension</key>
@@ -488,7 +492,7 @@ function withExtensionTarget(config, { appleTeamId }) {
             DEVELOPMENT_TEAM: appleTeamId,
             TARGETED_DEVICE_FAMILY: `"1,2"`,
             GENERATE_INFOPLIST_FILE: 'NO',
-            MARKETING_VERSION: '1.0',
+            MARKETING_VERSION: '2.0.0',
             CURRENT_PROJECT_VERSION: '1',
             SWIFT_EMIT_LOC_STRINGS: 'YES',
             CODE_SIGN_ENTITLEMENTS: `"${EXTENSION_NAME}/${EXTENSION_NAME}.entitlements"`,

@@ -1,6 +1,7 @@
 const mockRecordPromptShown = jest.fn();
 const mockRecordDismissal = jest.fn();
 const mockRecordPositiveReview = jest.fn();
+const mockRecordFeedbackSent = jest.fn();
 const mockLogEvent = jest.fn();
 const mockOpenURL = jest.fn();
 
@@ -9,6 +10,7 @@ jest.mock('@/lib/storage/reviewPromptStorage', () => ({
     recordPromptShown: (...args: any[]) => mockRecordPromptShown(...args),
     recordDismissal: (...args: any[]) => mockRecordDismissal(...args),
     recordPositiveReview: (...args: any[]) => mockRecordPositiveReview(...args),
+    recordFeedbackSent: (...args: any[]) => mockRecordFeedbackSent(...args),
   },
 }));
 
@@ -35,6 +37,7 @@ describe('useReviewPromptActions', () => {
     mockRecordPromptShown.mockResolvedValue(undefined);
     mockRecordDismissal.mockResolvedValue(undefined);
     mockRecordPositiveReview.mockResolvedValue(undefined);
+    mockRecordFeedbackSent.mockResolvedValue(undefined);
     mockLogEvent.mockResolvedValue(undefined);
     mockOpenURL.mockResolvedValue(undefined);
   });
@@ -154,6 +157,17 @@ describe('useReviewPromptActions', () => {
       });
 
       expect(onHide).toHaveBeenCalledTimes(1);
+    });
+
+    it('recordFeedbackSentを呼ぶ（以降モーダル非表示にするため）', async () => {
+      const onHide = jest.fn();
+      const { result } = renderHook(() => useReviewPromptActions(onHide));
+
+      await act(async () => {
+        await result.current.handleFeedbackTap();
+      });
+
+      expect(mockRecordFeedbackSent).toHaveBeenCalledTimes(1);
     });
   });
 

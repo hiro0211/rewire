@@ -38,6 +38,7 @@ export function useReviewPromptActions(onHide: () => void) {
 
   const handleFeedbackTap = useCallback(async () => {
     await analyticsClient.logEvent('review_prompt_feedback_tapped');
+    await reviewPromptStorage.recordFeedbackSent();
     const subject = encodeURIComponent(t('review.feedbackSubject'));
     await Linking.openURL(`mailto:${FEEDBACK_EMAIL}?subject=${subject}`);
     onHide();

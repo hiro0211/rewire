@@ -86,7 +86,22 @@ describe('generateBlockedHtml', () => {
     expect(html).toContain('blocked.css');
     expect(html).toContain('blocked.js');
     expect(html).toContain('rewire-open');
-    expect(html).toContain('衝動に気づきました');
+  });
+
+  test('uses the updated natural Japanese copy', () => {
+    const html = plugin.generateBlockedHtml();
+
+    expect(html).toContain('止めるって、決めたはず。');
+    expect(html).toContain('をブロックしました');
+    expect(html).toContain('あのときの自分を、信じて。');
+    expect(html).not.toContain('衝動に気づきました');
+    expect(html).not.toContain('あなたを守るために');
+  });
+
+  test('has a placeholder span for the dynamic domain name', () => {
+    const html = plugin.generateBlockedHtml();
+
+    expect(html).toContain('id="blocked-domain"');
   });
 });
 
@@ -110,6 +125,14 @@ describe('generateBlockedJs', () => {
     expect(js).toContain("type: 'blockedAccess'");
     expect(js).toContain('rewire-open');
     expect(js).toContain('rewire://panic');
+  });
+
+  test('injects the domain into #blocked-domain via textContent (XSS safe)', () => {
+    const js = plugin.generateBlockedJs();
+
+    expect(js).toContain('blocked-domain');
+    expect(js).toContain('textContent');
+    expect(js).not.toContain('innerHTML');
   });
 });
 

@@ -20,11 +20,13 @@ const STEP_IMAGES = {
   3: require('@/assets/images/content-blocker/step3-enable-rewire.jpg'),
 } as const;
 
-const STEP_HIGHLIGHTS = {
+const STEP_HIGHLIGHTS: Record<1 | 2 | 3, { top: number; left: number; width: number; height: number } | undefined> = {
   1: { top: 80, left: 3, width: 90, height: 8 },
   2: { top: 45, left: 5, width: 90, height: 7 },
-  3: { top: 27, left: 5, width: 90, height: 7 },
-} as const;
+  // Step 3 image (step3-enable-rewire.jpg) already has 3 built-in highlights.
+  // No overlay needed.
+  3: undefined,
+};
 
 const SCREENSHOT_STEP_KEYS = [
   { step: 1, titleKey: 'safariWebExtension.step1Title', descKey: 'safariWebExtension.step1Desc' },

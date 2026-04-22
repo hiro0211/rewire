@@ -20,6 +20,7 @@ export function useReviewEligibility() {
 
       const result = shouldShowReviewPrompt({
         hasLeftPositiveReview: promptState.hasLeftPositiveReview,
+        hasSentFeedback: promptState.hasSentFeedback,
         accountCreatedAt: user?.createdAt ?? null,
         checkinCount: checkins.length,
         lastPromptedAt: promptState.lastPromptedAt,

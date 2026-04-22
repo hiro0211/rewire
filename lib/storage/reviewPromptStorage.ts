@@ -7,6 +7,7 @@ const DEFAULT_STATE: ReviewPromptState = {
   lastPromptedAt: null,
   dismissCount: 0,
   hasLeftPositiveReview: false,
+  hasSentFeedback: false,
 };
 
 export const reviewPromptStorage = {
@@ -38,6 +39,15 @@ export const reviewPromptStorage = {
       ...current,
       lastPromptedAt: new Date().toISOString(),
       hasLeftPositiveReview: true,
+    });
+  },
+
+  async recordFeedbackSent(): Promise<void> {
+    const current = await this.getState();
+    await asyncStorageClient.set(STORAGE_KEY, {
+      ...current,
+      lastPromptedAt: new Date().toISOString(),
+      hasSentFeedback: true,
     });
   },
 

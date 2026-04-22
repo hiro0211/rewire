@@ -34,7 +34,7 @@ describe('useReviewEligibility', () => {
     jest.clearAllMocks();
   });
 
-  const defaultPromptState = { lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false };
+  const defaultPromptState = { lastPromptedAt: null, dismissCount: 0, hasLeftPositiveReview: false, hasSentFeedback: false };
   const oldUser = { id: 'user-1', createdAt: '2026-01-01T00:00:00Z' };
   const fiveCheckins = Array.from({ length: 5 }, (_, i) => ({ id: String(i), date: `2026-03-${10 + i}` }));
 
@@ -103,7 +103,20 @@ describe('useReviewEligibility', () => {
       lastPromptedAt: '2026-01-01T00:00:00Z',
       dismissCount: 3,
       hasLeftPositiveReview: false,
+      hasSentFeedback: false,
     });
+    mockGetUser.mockResolvedValue(oldUser);
+    mockGetAllCheckins.mockResolvedValue(fiveCheckins);
+
+    const { result } = renderHook(() => useReviewEligibility());
+
+    await waitFor(() => {
+      expect(result.current.shouldShowReview).toBe(false);
+    });
+  });
+
+  it('フィードバック送信済み → false', async () => {
+    mockGetPromptState.mockResolvedValue({ ...defaultPromptState, hasSentFeedback: true });
     mockGetUser.mockResolvedValue(oldUser);
     mockGetAllCheckins.mockResolvedValue(fiveCheckins);
 

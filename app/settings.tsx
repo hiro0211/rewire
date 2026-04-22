@@ -16,7 +16,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
-import { useWebExtensionStatus } from '@/hooks/settings/useWebExtensionStatus';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
 import type { ThemePreference } from '@/types/theme';
@@ -35,7 +34,6 @@ export default function SettingsScreen() {
   const [isThemePickerVisible, setThemePickerVisible] = useState(false);
   const [isLocalePickerVisible, setLocalePickerVisible] = useState(false);
 
-  const { webExtensionStatus } = useWebExtensionStatus();
   const { isSurveyCompleted } = useSurveyCompleted();
   const {
     handleNotificationToggle,
@@ -62,18 +60,6 @@ export default function SettingsScreen() {
             isLast
           />
         </SettingSection>
-
-        {Platform.OS === 'ios' && (
-          <SettingSection title={t('safariWebExtension.settingsStatus')}>
-            <SettingItem
-              label={t('safariWebExtension.settingsStatus')}
-              value={webExtensionStatus === 'enabled' ? t('safariWebExtension.enabled') : t('safariWebExtension.unknown')}
-              icon={webExtensionStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
-              onPress={() => router.push(ROUTES.safariWebExtensionSetup)}
-              isLast
-            />
-          </SettingSection>
-        )}
 
         <SettingSection title={t('settings.sections.notifications')}>
           <SettingItem

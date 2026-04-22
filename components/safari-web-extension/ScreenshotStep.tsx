@@ -12,7 +12,7 @@ interface HighlightPosition {
 
 interface ScreenshotStepProps {
   image: ImageSourcePropType;
-  highlight: HighlightPosition;
+  highlight?: HighlightPosition;
 }
 
 export function ScreenshotStep({ image, highlight }: ScreenshotStepProps) {
@@ -21,19 +21,21 @@ export function ScreenshotStep({ image, highlight }: ScreenshotStepProps) {
   return (
     <View style={[styles.container, { borderColor: colors.border }]}>
       <Image source={image} style={[styles.image, { backgroundColor: colors.surface }]} resizeMode="contain" />
-      <View
-        style={[
-          styles.highlight,
-          {
-            top: `${highlight.top}%` as any,
-            left: `${highlight.left}%` as any,
-            width: `${highlight.width}%` as any,
-            height: `${highlight.height}%` as any,
-            borderColor: colors.primary,
-            backgroundColor: `${colors.primary}26`,
-          },
-        ]}
-      />
+      {highlight && (
+        <View
+          style={[
+            styles.highlight,
+            {
+              top: `${highlight.top}%` as any,
+              left: `${highlight.left}%` as any,
+              width: `${highlight.width}%` as any,
+              height: `${highlight.height}%` as any,
+              borderColor: colors.primary,
+              backgroundColor: `${colors.primary}26`,
+            },
+          ]}
+        />
+      )}
     </View>
   );
 }
