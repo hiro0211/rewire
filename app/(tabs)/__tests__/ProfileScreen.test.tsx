@@ -87,7 +87,7 @@ describe('ProfileScreen', () => {
     expect(queryByTestId('starry-overlay')).toBeNull();
   });
 
-  it('iOS で Safari カスタム保護の ToolCard が表示される', () => {
+  it('iOS で Safariカスタムブロックの ToolCard が表示される', () => {
     Platform.OS = 'ios';
     const { getByTestId } = render(<ProfileScreen />);
     expect(getByTestId('tool-card')).toBeTruthy();

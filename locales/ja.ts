@@ -120,7 +120,7 @@ export const ja = {
     features: {
       sectionTitle: 'Rewireでできること',
       safariBlocker: 'Safariポルノブロッカー',
-      safariBlockerDesc: 'アダルトサイトへのアクセスを自動ブロック',
+      safariBlockerDesc: 'Safariでアダルトサイトを開く前に、Rewireの画面に切り替えて踏みとどまらせます',
       dailyReview: '毎日の振り返り',
       dailyReviewDesc: '衝動やストレスを記録して自分を客観視',
       breathingExercise: '呼吸エクササイズ',
@@ -459,7 +459,7 @@ export const ja = {
     },
   },
   safariWebExtension: {
-    title: 'Safari カスタム保護',
+    title: 'Safariで、見る前に',
     intro: 'Safariでアダルトサイトにアクセスしたら Rewire のカスタム画面と通知で止めます。\n4ステップで設定できます。',
     completionTitle: '設定完了！',
     completionDescription: 'Safariでアダルトサイトを開くと\nRewireが止めてくれます',
@@ -478,7 +478,26 @@ export const ja = {
     setupGuide: '設定する',
     enabled: '有効',
     unknown: '未検出',
-    toolCardDescription: 'アダルトサイトを自動でブロック',
+    toolCardDescription: 'アダルトサイトを開くと、Rewireの画面が出る',
+  },
+  postPurchaseOnboarding: {
+    thankYou: {
+      title: 'プランを購入いただき\nありがとうございます！',
+      description: 'Rewireのメイン機能をご紹介します。\n一緒に、見る前に止める仕組みを整えましょう。',
+      cta: 'はじめる',
+    },
+    safariSetup: {
+      title: 'Safariブロッカーを設定',
+      description: 'Safariでアダルトサイトを開こうとした瞬間、Rewireが止めます。',
+    },
+    demo: {
+      title: '試してみましょう',
+      description: 'ボタンをタップするとSafariが開きます。\nアダルトサイトを開こうとした瞬間、\nRewireが止めるのを体験してください。',
+      notice: 'これはテストです。コンテンツは一切表示されません。',
+      testButton: 'ブロックをテスト',
+      skipButton: 'あとで試す',
+      retryHint: 'ブロックが作動しなかったようです。もう一度試してみましょう。',
+    },
   },
   breathingSuccess: {
     title: '素晴らしい、{{nickname}}！',

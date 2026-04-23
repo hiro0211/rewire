@@ -134,7 +134,7 @@ export const en: Translations = {
     features: {
       sectionTitle: 'What Rewire Can Do',
       safariBlocker: 'Safari Porn Blocker',
-      safariBlockerDesc: 'Automatically blocks access to adult sites',
+      safariBlockerDesc: 'The moment you open an adult site in Safari, Rewire takes over the screen to stop you in your tracks',
       dailyReview: 'Daily Check-in',
       dailyReviewDesc: 'Track urges and stress to understand your patterns',
       breathingExercise: 'Breathing Exercise',
@@ -493,6 +493,25 @@ export const en: Translations = {
     enabled: 'Active',
     unknown: 'Not detected',
     toolCardDescription: 'Automatically block adult sites',
+  },
+  postPurchaseOnboarding: {
+    thankYou: {
+      title: 'Thank you for\nupgrading to Pro!',
+      description: 'Let us introduce your main Rewire features.\nTogether, we will set up the system that stops you before you see it.',
+      cta: 'Get Started',
+    },
+    safariSetup: {
+      title: 'Set up Safari Blocker',
+      description: 'The moment you open an adult site in Safari, Rewire will stop it.',
+    },
+    demo: {
+      title: "Let's try it",
+      description: 'Tapping the button will open Safari.\nThe moment you try to open an adult site,\nexperience Rewire stepping in.',
+      notice: 'This is a test. No content will be displayed.',
+      testButton: 'Test the Block',
+      skipButton: 'Try later',
+      retryHint: 'Looks like the block did not fire. Try once more.',
+    },
   },
   breathingSuccess: {
     title: 'Amazing, {{nickname}}!',

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
@@ -49,7 +50,12 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
     } catch (e) {
       logger.error('Paywall', 'updateUser failed after purchase:', e);
     }
-    router.replace(ROUTES.tabs);
+    const hasCompleted = useUserStore.getState().user?.hasCompletedPostPurchaseOnboarding ?? false;
+    if (Platform.OS === 'ios' && !hasCompleted) {
+      router.replace('/post-purchase-onboarding');
+    } else {
+      router.replace(ROUTES.tabs);
+    }
   }, [offeringType, updateUser, router]);
 
   const handleRestoreCompleted = useCallback(async () => {

@@ -1,0 +1,146 @@
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/ui/Button';
+import { StepBadge } from '@/components/safari-web-extension/StepBadge';
+import { ScreenshotStep } from '@/components/safari-web-extension/ScreenshotStep';
+import { SetupIntro } from '@/components/safari-web-extension/SetupIntro';
+import { SetupCompletion } from '@/components/safari-web-extension/SetupCompletion';
+import { useSafariWebExtensionSetup } from '@/hooks/safariWebExtension/useSafariWebExtensionSetup';
+import { useLocale } from '@/hooks/useLocale';
+
+export const SAFARI_SETUP_TOTAL_STEPS = 5;
+
+const STEP_IMAGES = {
+  1: require('@/assets/images/content-blocker/step1-settings-apps.jpg'),
+  2: require('@/assets/images/content-blocker/step2-safari-extensions.jpg'),
+  3: require('@/assets/images/content-blocker/step3-enable-rewire.jpg'),
+} as const;
+
+const STEP_HIGHLIGHTS: Record<1 | 2 | 3, { top: number; left: number; width: number; height: number } | undefined> = {
+  1: { top: 80, left: 3, width: 90, height: 8 },
+  2: { top: 45, left: 5, width: 90, height: 7 },
+  3: undefined,
+};
+
+const SCREENSHOT_STEP_KEYS = [
+  { step: 1, titleKey: 'safariWebExtension.step1Title', descKey: 'safariWebExtension.step1Desc' },
+  { step: 2, titleKey: 'safariWebExtension.step2Title', descKey: 'safariWebExtension.step2Desc' },
+  { step: 3, titleKey: 'safariWebExtension.step3Title', descKey: 'safariWebExtension.step3Desc' },
+] as const;
+
+interface SafariSetupContentProps {
+  showHeader?: boolean;
+  onComplete?: () => void;
+}
+
+export function SafariSetupContent({ showHeader = true, onComplete }: SafariSetupContentProps) {
+  const { step, handleNext, handlePrev, handleBack, handleOpenSettings } =
+    useSafariWebExtensionSetup();
+  const { colors } = useTheme();
+  const { t } = useLocale();
+
+  const handleFooterAction = () => {
+    if (step === 4 && onComplete) {
+      onComplete();
+      return;
+    }
+    handleNext();
+  };
+
+  return (
+    <>
+      {showHeader && (
+        <View style={styles.header}>
+          {step > 0 ? (
+            <TouchableOpacity onPress={handlePrev} style={styles.headerButton} testID="swe-setup-prev">
+              <Ionicons name="chevron-back" size={20} color={colors.primary} />
+              <Text style={[styles.headerButtonText, { color: colors.primary }]}>
+                {t('safariWebExtension.prev')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleBack} style={styles.headerButton} testID="swe-setup-close">
+              <Ionicons name="close" size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+          {step >= 1 && step <= 3 && (
+            <TouchableOpacity onPress={handleBack} style={styles.headerButton} testID="swe-setup-skip">
+              <Text style={[styles.headerSkipText, { color: colors.textSecondary }]}>
+                {t('safariWebExtension.skipSetup')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      <View style={styles.content}>
+        <View style={styles.stepIndicator}>
+          {Array.from({ length: SAFARI_SETUP_TOTAL_STEPS }).map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.stepDot,
+                { backgroundColor: colors.surfaceHighlight },
+                i === step && { backgroundColor: colors.primary, width: 24 },
+                i < step && { backgroundColor: colors.primary },
+              ]}
+            />
+          ))}
+        </View>
+
+        {step === 0 && <SetupIntro />}
+
+        {step >= 1 && step <= 3 && (() => {
+          const config = SCREENSHOT_STEP_KEYS[step - 1];
+          return (
+            <>
+              <StepBadge step={config.step} />
+              <Text style={[styles.stepTitle, { color: colors.text }]}>{t(config.titleKey)}</Text>
+              <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>
+                {t(config.descKey)}
+              </Text>
+              <ScreenshotStep
+                image={STEP_IMAGES[config.step]}
+                highlight={STEP_HIGHLIGHTS[config.step]}
+              />
+            </>
+          );
+        })()}
+
+        {step === 4 && <SetupCompletion />}
+      </View>
+
+      <View style={styles.footer}>
+        {step === 0 && <Button title={t('safariWebExtension.startSetup')} onPress={handleNext} />}
+        {(step === 1 || step === 3) && (
+          <>
+            <Button
+              title={step === 1 ? t('safariWebExtension.openSettings') : t('safariWebExtension.openSettingsShort')}
+              onPress={handleOpenSettings}
+            />
+            <Button title={t('common.next')} variant="secondary" onPress={handleNext} style={styles.secondaryButton} />
+          </>
+        )}
+        {step === 2 && <Button title={t('common.next')} onPress={handleNext} />}
+        {step === 4 && <Button title={t('common.done')} onPress={handleFooterAction} />}
+      </View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 44 },
+  headerButton: { flexDirection: 'row', alignItems: 'center', minWidth: 44, minHeight: 44 },
+  headerButtonText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium },
+  headerSkipText: { fontSize: FONT_SIZE.sm },
+  content: { flex: 1, justifyContent: 'flex-start', alignItems: 'center' },
+  stepIndicator: { flexDirection: 'row', marginTop: SPACING.xxl, marginBottom: SPACING.xxl },
+  stepDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
+  stepTitle: { fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold, textAlign: 'center', marginTop: SPACING.lg, marginBottom: SPACING.sm },
+  stepDescription: { fontSize: FONT_SIZE.md, textAlign: 'center', lineHeight: LINE_HEIGHT.body, marginBottom: SPACING.lg },
+  footer: { marginBottom: SPACING.xl },
+  secondaryButton: { marginTop: SPACING.sm },
+});

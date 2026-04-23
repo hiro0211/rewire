@@ -102,6 +102,17 @@ describe('userStore', () => {
 
       expect(useUserStore.getState().user?.isPro).toBe(true);
     });
+
+    it('hasCompletedPostPurchaseOnboarding の更新が永続化される', async () => {
+      useUserStore.setState({ user: TEST_USER });
+
+      await useUserStore.getState().updateUser({ hasCompletedPostPurchaseOnboarding: true });
+
+      expect(useUserStore.getState().user?.hasCompletedPostPurchaseOnboarding).toBe(true);
+      expect(mockSave).toHaveBeenCalledWith(
+        expect.objectContaining({ hasCompletedPostPurchaseOnboarding: true })
+      );
+    });
   });
 
   describe('loadUser', () => {

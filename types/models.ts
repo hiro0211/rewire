@@ -15,6 +15,7 @@ export interface User {
   assessmentScore?: number;
   subscriptionPlan?: SubscriptionPlan;
   subscriptionExpiresAt?: string | null;
+  hasCompletedPostPurchaseOnboarding?: boolean;
 }
 
 export interface DailyCheckin {
