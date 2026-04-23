@@ -4,8 +4,9 @@ import { SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { format } from 'date-fns';
-import { ja, enUS } from 'date-fns/locale';
+import { format } from 'date-fns/format';
+import { ja } from 'date-fns/locale/ja';
+import { enUS } from 'date-fns/locale/en-US';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { DailyCheckin } from '@/types/models';
 

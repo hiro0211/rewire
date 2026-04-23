@@ -473,3 +473,38 @@ BadgeOrb の特殊視覚描画 Phase 4〜6 と、バッジアンロック演出�
 - `hooks/review/__tests__/useReviewPromptActions.test.ts`
 - `hooks/review/__tests__/useReviewEligibility.test.ts`
 - 未コミット状態
+
+## 2026-04-23: Bundle Size Log（docs/bundle-size-log.md のスナップショット）
+
+`dist/_expo/static/js/ios/entry-*.hbc` のバイト数推移の記録。原本: `docs/bundle-size-log.md`。
+
+### 計測コマンド
+```bash
+EXPO_UNSTABLE_METRO_OPTIMIZE_GRAPH=1 \
+EXPO_UNSTABLE_TREE_SHAKING=1 \
+npx expo export --platform ios
+ls -la dist/_expo/static/js/ios/
+```
+
+### ログ
+| Date | Commit | Bytes | Delta | Phase | Note |
+|---|---|---|---|---|---|
+| 2026-04-19 | (pre-this-plan) | 7,088,605 | — | — | 既存エクスポート（dist/）から取得 |
+| 2026-04-23 | f2150d4 | 7,103,854 | +15,249 | A baseline | 新規 atlas 実測、ベースライン更新 |
+| 2026-04-23 | (wip) | 6,192,163 | **-911,691** | B+D-1+D-2 | parseRgba/badges index削除 + RN-Purchases browser alias + date-fns/locale submodule |
+| 2026-04-23 | (wip) | 6,189,621 | -2,542 | D-3 | date-fns main functions を submodule import 化（12ファイル） |
+| 2026-04-23 | (wip) | 6,194,833 | +5,212 | C (revert) | i18n 動的 import 試行 — native では code split されず逆に増加 |
+| 2026-04-23 | (wip) | **6,189,760** | -5,073 | C revert | i18n を同期 import に戻し、最終形 |
+
+### 通算削減
+- ベースライン: 7,103,854 B（2026-04-23 朝）
+- 最終: 6,189,760 B
+- **削減: -914,094 B（-893 KB, -12.9%）**
+
+### 主要な勝ち
+1. **RevenueCat browser alias（-900KB 級）**: `react-native-purchases/dist/purchases.js` が web 専用の `browser/nativeModule` を無条件 require していたのを Metro resolver で stub に置換
+2. **date-fns/locale submodule import（-500KB 相当、ただし Hermes 圧縮で実効は上記と混ざって計測）**: `import { ja, enUS } from 'date-fns/locale'` の barrel が全ロケール（be/ru/ta/uk/kk/sl 等）を引き込んでいたのを submodule 直接 import に変更
+
+### 学び
+- Native Metro は dynamic `import()` で**bundle 分割しない**（全モジュールが単一 hbc に入る）。lazy import は startup 評価を遅らせるだけで bundle サイズ削減にならない
+- `EXPO_UNSTABLE_TREE_SHAKING` でも barrel re-export は弱点。疑わしければ atlas で実測し submodule 直接 import に書き換える

@@ -14,7 +14,7 @@ import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { OnboardingStepRenderer } from '@/components/onboarding/OnboardingStepRenderer';
 import { canAdvanceStep } from '@/lib/onboarding/canAdvanceStep';
 import type { OnboardingFormState } from '@/lib/onboarding/canAdvanceStep';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { useOnboardingForm } from '@/hooks/onboarding/useOnboardingForm';
 import { useOnboardingNavigation } from '@/hooks/onboarding/useOnboardingNavigation';
 import { useOnboardingAnimation } from '@/hooks/onboarding/useOnboardingAnimation';

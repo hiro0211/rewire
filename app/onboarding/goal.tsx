@@ -11,7 +11,7 @@ import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { StarryBackground } from '@/components/onboarding/StarryBackground';
 import { useUserStore } from '@/stores/userStore';
 import { notificationClient } from '@/lib/notifications/notificationClient';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import * as Crypto from 'expo-crypto';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { logger } from '@/lib/logger';

@@ -4,7 +4,7 @@ import { checkinStorage } from '@/lib/storage/checkinStorage';
 import type { CheckinFormInput } from '@/types/checkin';
 import type { DailyCheckin } from '@/types/models';
 import * as Crypto from 'expo-crypto';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 
 export const checkinService = {
   async processCheckin(input: CheckinFormInput): Promise<DailyCheckin> {

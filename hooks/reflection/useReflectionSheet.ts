@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { checkinService } from '@/features/checkin/checkinService';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useUserStore } from '@/stores/userStore';

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { subDays, format } from 'date-fns';
+import { subDays } from 'date-fns/subDays';
+import { format } from 'date-fns/format';
 import { useCheckinStore } from '@/stores/checkinStore';
 
 export interface CheckinTrends {

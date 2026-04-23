@@ -1,4 +1,5 @@
-import { parseISO, differenceInMilliseconds } from 'date-fns';
+import { parseISO } from 'date-fns/parseISO';
+import { differenceInMilliseconds } from 'date-fns/differenceInMilliseconds';
 import type { DailyCheckin } from '@/types/models';
 
 export interface StopwatchTime {

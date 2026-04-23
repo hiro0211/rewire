@@ -1,4 +1,9 @@
-import { startOfWeek, startOfDay, addDays, differenceInDays, isSameDay, isBefore } from 'date-fns';
+import { startOfWeek } from 'date-fns/startOfWeek';
+import { startOfDay } from 'date-fns/startOfDay';
+import { addDays } from 'date-fns/addDays';
+import { differenceInDays } from 'date-fns/differenceInDays';
+import { isSameDay } from 'date-fns/isSameDay';
+import { isBefore } from 'date-fns/isBefore';
 import { t } from '@/locales/i18n';
 
 export type DayStatusType = 'completed' | 'today' | 'future';

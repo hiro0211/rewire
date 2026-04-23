@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { useUserStore } from '@/stores/userStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
 import { useReflectionSheet } from './useReflectionSheet';

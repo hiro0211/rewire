@@ -1,4 +1,6 @@
-import { differenceInDays, parseISO, startOfDay } from 'date-fns';
+import { differenceInDays } from 'date-fns/differenceInDays';
+import { parseISO } from 'date-fns/parseISO';
+import { startOfDay } from 'date-fns/startOfDay';
 import type { DailyCheckin } from '@/types/models';
 
 /**

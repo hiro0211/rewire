@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { checkinStorage } from '@/lib/storage/checkinStorage';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { logger } from '@/lib/logger';
 import type { DailyCheckin } from '@/types/models';
 import { syncWidgetData } from '@/lib/widget/widgetDataSync';

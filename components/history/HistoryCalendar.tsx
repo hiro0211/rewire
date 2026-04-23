@@ -2,18 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SPACING, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
-import {
-  format,
-  addMonths,
-  subMonths,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameMonth,
-  isSameDay,
-  getDay
-} from 'date-fns';
-import { ja, enUS } from 'date-fns/locale';
+import { format } from 'date-fns/format';
+import { addMonths } from 'date-fns/addMonths';
+import { subMonths } from 'date-fns/subMonths';
+import { startOfMonth } from 'date-fns/startOfMonth';
+import { endOfMonth } from 'date-fns/endOfMonth';
+import { eachDayOfInterval } from 'date-fns/eachDayOfInterval';
+import { isSameMonth } from 'date-fns/isSameMonth';
+import { isSameDay } from 'date-fns/isSameDay';
+import { getDay } from 'date-fns/getDay';
+import { ja } from 'date-fns/locale/ja';
+import { enUS } from 'date-fns/locale/en-US';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useLocale } from '@/hooks/useLocale';
 import Ionicons from '@expo/vector-icons/Ionicons';
