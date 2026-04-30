@@ -32,6 +32,7 @@ jest.mock('@/stores/userStore', () => ({
 
 import { BrandScreen } from '../brand';
 import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
+import { useSubscriptionStore } from '@/stores/subscriptionStore';
 
 const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 
@@ -43,11 +44,14 @@ describe('BrandScreen routing', () => {
     jest.useFakeTimers();
     mockUser = null;
     (global as any).__DEV__ = false;
+    // 既存テストは「サブスク同期済み」の前提で paywall/tabs を期待している
+    useSubscriptionStore.getState().markSynced();
   });
 
   afterEach(() => {
     jest.useRealTimers();
     (global as any).__DEV__ = originalDev;
+    useSubscriptionStore.getState().reset();
   });
 
   it('user=nullの場合/onboardingに遷移する', () => {

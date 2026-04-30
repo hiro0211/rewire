@@ -49,8 +49,14 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+const mockUseWebExtensionStatus = jest.fn();
 jest.mock('@/hooks/settings/useWebExtensionStatus', () => ({
-  useWebExtensionStatus: () => ({ webExtensionStatus: 'unknown' }),
+  useWebExtensionStatus: () => mockUseWebExtensionStatus(),
+}));
+
+const mockOpenSafariSettings = jest.fn();
+jest.mock('@/hooks/safariWebExtension/useSafariSettingsDeepLink', () => ({
+  useSafariSettingsDeepLink: () => mockOpenSafariSettings,
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -67,6 +73,15 @@ jest.mock('@/components/profile/ToolCard', () => {
   return { ToolCard: () => <View testID="tool-card" /> };
 });
 
+jest.mock('@/components/profile/SafariExtensionAlertCard', () => {
+  const { View } = require('react-native');
+  return {
+    SafariExtensionAlertCard: (props: any) => (
+      <View testID="safari-extension-alert-card" {...props} />
+    ),
+  };
+});
+
 jest.mock('@/components/ui/GradientCard', () => {
   const { View } = require('react-native');
   return { GradientCard: ({ children }: any) => <View>{children}</View> };
@@ -75,6 +90,18 @@ jest.mock('@/components/ui/GradientCard', () => {
 import ProfileScreen from '../profile';
 
 describe('ProfileScreen', () => {
+  const mockRecheck = jest.fn();
+
+  beforeEach(() => {
+    mockUseWebExtensionStatus.mockReset();
+    mockRecheck.mockReset();
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'active',
+      recheck: mockRecheck,
+    });
+    Platform.OS = 'ios';
+  });
+
   it('SafeAreaWrapperでラップされている', () => {
     const { getByTestId } = render(<ProfileScreen />);
     expect(getByTestId('safe-area-wrapper')).toBeTruthy();
@@ -87,15 +114,89 @@ describe('ProfileScreen', () => {
     expect(queryByTestId('starry-overlay')).toBeNull();
   });
 
-  it('iOS で Safariカスタムブロックの ToolCard が表示される', () => {
-    Platform.OS = 'ios';
-    const { getByTestId } = render(<ProfileScreen />);
+  it('status=active のとき ToolCard が表示され、警告カードは表示されない', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'active',
+      recheck: mockRecheck,
+    });
+    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
     expect(getByTestId('tool-card')).toBeTruthy();
+    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
   });
 
-  it('Android では ToolCard は表示されない', () => {
+  it('status=never のとき SafariExtensionAlertCard（警告）が表示される', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'never',
+      recheck: mockRecheck,
+    });
+    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
+    expect(getByTestId('safari-extension-alert-card')).toBeTruthy();
+    expect(queryByTestId('tool-card')).toBeNull();
+  });
+
+  it('status=needsAllUrls のときも SafariExtensionAlertCard が表示される', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'needsAllUrls',
+      recheck: mockRecheck,
+    });
+    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
+    expect(getByTestId('safari-extension-alert-card')).toBeTruthy();
+    expect(queryByTestId('tool-card')).toBeNull();
+  });
+
+  it('status=stale のときは警告ではなく info プロンプトを表示する', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'stale',
+      recheck: mockRecheck,
+    });
+    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
+    const card = getByTestId('safari-extension-alert-card');
+    expect(card.props.variant).toBe('info');
+    expect(queryByTestId('tool-card')).toBeNull();
+  });
+
+  it('status=stale のとき再確認ボタンを押すと recheck() が呼ばれる', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'stale',
+      recheck: mockRecheck,
+    });
+    const { getByTestId } = render(<ProfileScreen />);
+    const card = getByTestId('safari-extension-alert-card');
+    card.props.onPress();
+    expect(mockRecheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('status=checking のとき警告は出さない（フラッシュ防止）', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'checking',
+      recheck: mockRecheck,
+    });
+    const { queryByTestId } = render(<ProfileScreen />);
+    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
+  });
+
+  it('Android では ToolCard も警告カードも表示されない', () => {
     Platform.OS = 'android';
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'never',
+      recheck: mockRecheck,
+    });
     const { queryByTestId } = render(<ProfileScreen />);
     expect(queryByTestId('tool-card')).toBeNull();
+    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
+  });
+
+  it('status=never のとき、警告カードは Achievements より後ろに表示される', () => {
+    mockUseWebExtensionStatus.mockReturnValue({
+      webExtensionStatus: 'never',
+      recheck: mockRecheck,
+    });
+    const { toJSON } = render(<ProfileScreen />);
+    const tree = JSON.stringify(toJSON());
+    const achievementsIdx = tree.indexOf('"achievements-link-card"');
+    const alertIdx = tree.indexOf('"safari-extension-alert-card"');
+    expect(achievementsIdx).toBeGreaterThan(-1);
+    expect(alertIdx).toBeGreaterThan(-1);
+    expect(achievementsIdx).toBeLessThan(alertIdx);
   });
 });

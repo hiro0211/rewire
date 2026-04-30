@@ -52,12 +52,16 @@ function generateManifest() {
   return {
     manifest_version: 3,
     name: 'Rewire Safari Extension',
-    version: '2.0.0',
+    version: '2.1.0',
     description: 'アダルトサイトを、開く前に止める。Rewire の Safari 拡張。',
     default_locale: 'ja',
-    permissions: ['nativeMessaging'],
+    permissions: ['nativeMessaging', 'webNavigation', 'alarms'],
     host_permissions: ['<all_urls>'],
-    background: { service_worker: 'background.js' },
+    // iOS Safari kills MV3 service_worker permanently after ~30-45s (known issue
+    // since iOS 17.4, see Apple Dev Forums thread 758346). Use non-persistent
+    // scripts as the recommended workaround — Safari accepts MV2 background
+    // syntax inside an MV3 manifest.
+    background: { scripts: ['background.js'], persistent: false },
     content_scripts: [
       {
         matches: ['<all_urls>'],
@@ -97,24 +101,46 @@ function generateRules(domains) {
 function generateSwiftHandler() {
   return `import SafariServices
 import UserNotifications
+import os.log
 
 class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
     private static let appGroup = "group.rewire.app.com"
     private static let lastActiveKey = "rewire.webExtension.lastActiveAt"
+    private static let hasAllUrlsKey = "rewire.webExtension.hasAllUrls"
     private static let panicCategoryId = "rewire-shield-panic"
+    private static let log = OSLog(subsystem: "rewire.app.com", category: "safari-ext-handler")
 
     func beginRequest(with context: NSExtensionContext) {
         guard let item = context.inputItems.first as? NSExtensionItem,
               let msg = item.userInfo?[SFExtensionMessageKey] as? [String: Any]
         else {
+            os_log("recv: malformed message", log: Self.log, type: .error)
             context.completeRequest(returningItems: [], completionHandler: nil)
             return
         }
 
-        UserDefaults(suiteName: Self.appGroup)?
-            .set(Date().timeIntervalSince1970, forKey: Self.lastActiveKey)
+        let msgType = msg["type"] as? String ?? "unknown"
+        let defaults = UserDefaults(suiteName: Self.appGroup)
+        let now = Date().timeIntervalSince1970
+        defaults?.set(now, forKey: Self.lastActiveKey)
 
-        if msg["type"] as? String == "blockedAccess" {
+        var hasAllUrlsLogged = "n/a"
+        if let hasAllUrls = msg["hasAllUrls"] as? Bool {
+            defaults?.set(hasAllUrls, forKey: Self.hasAllUrlsKey)
+            hasAllUrlsLogged = hasAllUrls ? "true" : "false"
+        }
+
+        os_log(
+            "recv type=%{public}@ ts=%{public}f hasAllUrls=%{public}@ groupOK=%{public}@",
+            log: Self.log,
+            type: .info,
+            msgType,
+            now,
+            hasAllUrlsLogged,
+            defaults != nil ? "true" : "false"
+        )
+
+        if msgType == "blockedAccess" {
             scheduleNotification(domain: msg["domain"] as? String ?? "unknown")
         }
 
@@ -261,9 +287,31 @@ function generateBlockedJs() {
 }
 
 function generateBackgroundJs() {
-  return `var runtime = (typeof browser !== 'undefined' && browser.runtime)
-  ? browser.runtime
-  : chrome.runtime;
+  return `var api = (typeof browser !== 'undefined') ? browser : chrome;
+var runtime = api.runtime;
+
+var HEARTBEAT_DEBOUNCE_MS = 30 * 1000;
+var lastHeartbeatAt = 0;
+
+// hasAllUrls is hardcoded true: <all_urls> is in manifest.host_permissions
+// (required), so the install gate already enforces it. We avoid the runtime
+// permission check API because it returns false unreliably on Safari iOS.
+function sendHeartbeat() {
+  try {
+    runtime.sendNativeMessage(
+      'rewire.app.com.SafariWebExtension',
+      { type: 'heartbeat', hasAllUrls: true, ts: Date.now() },
+      function () {}
+    );
+  } catch (e) { /* noop */ }
+}
+
+function maybeHeartbeat() {
+  var now = Date.now();
+  if (now - lastHeartbeatAt < HEARTBEAT_DEBOUNCE_MS) return;
+  lastHeartbeatAt = now;
+  sendHeartbeat();
+}
 
 runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if (msg && msg.type === 'blockedAccess') {
@@ -276,13 +324,53 @@ runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     }
     return true; // async
   }
+  // contentHeartbeat: content_scripts wake the background page on every
+  // navigation. Critical fallback for iOS Safari where the background may
+  // be paged out aggressively.
+  if (msg && msg.type === 'contentHeartbeat') {
+    maybeHeartbeat();
+    return false;
+  }
   return false;
 });
+
+if (runtime.onStartup && runtime.onStartup.addListener) {
+  runtime.onStartup.addListener(function () { sendHeartbeat(); });
+}
+if (runtime.onInstalled && runtime.onInstalled.addListener) {
+  runtime.onInstalled.addListener(function () { sendHeartbeat(); });
+}
+if (api.webNavigation && api.webNavigation.onCommitted) {
+  api.webNavigation.onCommitted.addListener(function (details) {
+    if (details && details.frameId === 0) maybeHeartbeat();
+  });
+}
+if (api.alarms && api.alarms.create) {
+  try {
+    api.alarms.create('rewire-heartbeat', { periodInMinutes: 15 });
+    api.alarms.onAlarm.addListener(function (alarm) {
+      if (alarm && alarm.name === 'rewire-heartbeat') sendHeartbeat();
+    });
+  } catch (e) { /* noop */ }
+}
 `;
 }
 
 function generateContentJs() {
   return `(function () {
+  var runtime = (typeof browser !== 'undefined' && browser.runtime)
+    ? browser.runtime
+    : (typeof chrome !== 'undefined' ? chrome.runtime : null);
+
+  // Fire heartbeat on every page load. Runs before block check so we always
+  // signal "extension alive" even on safe pages. Critical fallback when the
+  // MV3 background gets paged out on iOS Safari.
+  try {
+    if (runtime && runtime.sendMessage) {
+      runtime.sendMessage({ type: 'contentHeartbeat' });
+    }
+  } catch (e) { /* noop */ }
+
   try {
     var host = location.hostname.replace(/^www\\./, '');
     if (!BLOCKED_DOMAINS.some(function (d) {
@@ -292,9 +380,7 @@ function generateContentJs() {
     }
     // Fallback for iOS < 18.5 where declarativeNetRequest redirect may fail.
     window.stop();
-    var runtime = (typeof browser !== 'undefined' && browser.runtime)
-      ? browser.runtime
-      : chrome.runtime;
+    if (!runtime) return;
     var extUrl = runtime.getURL('blocked.html') + '?domain=' + encodeURIComponent(host);
     window.location.replace(extUrl);
   } catch (e) { /* noop */ }
@@ -415,7 +501,7 @@ function withExtensionFiles(config, { appGroup }) {
 \t<key>CFBundlePackageType</key>
 \t<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 \t<key>CFBundleShortVersionString</key>
-\t<string>2.0.0</string>
+\t<string>2.1.0</string>
 \t<key>CFBundleVersion</key>
 \t<string>1</string>
 \t<key>NSExtension</key>
@@ -492,7 +578,7 @@ function withExtensionTarget(config, { appleTeamId }) {
             DEVELOPMENT_TEAM: appleTeamId,
             TARGETED_DEVICE_FAMILY: `"1,2"`,
             GENERATE_INFOPLIST_FILE: 'NO',
-            MARKETING_VERSION: '2.0.0',
+            MARKETING_VERSION: '2.1.0',
             CURRENT_PROJECT_VERSION: '1',
             SWIFT_EMIT_LOC_STRINGS: 'YES',
             CODE_SIGN_ENTITLEMENTS: `"${EXTENSION_NAME}/${EXTENSION_NAME}.entitlements"`,

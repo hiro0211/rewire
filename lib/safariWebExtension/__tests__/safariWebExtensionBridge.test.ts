@@ -20,9 +20,10 @@ describe('safariWebExtensionBridge', () => {
   });
 
   describe('getExtensionStatus', () => {
-    it('ネイティブが isEnabled: true を返した場合そのまま返す', async () => {
+    it('ネイティブが isEnabled: true かつ hasAllUrls: true を返した場合そのまま返す', async () => {
       mockGetExtensionStatus.mockResolvedValue({
         isEnabled: true,
+        hasAllUrls: true,
         extensionBundleId: 'rewire.app.com.SafariWebExtension',
         lastActiveAt: 1700000000,
       });
@@ -30,12 +31,28 @@ describe('safariWebExtensionBridge', () => {
       const status = await safariWebExtensionBridge.getExtensionStatus();
 
       expect(status.isEnabled).toBe(true);
+      expect(status.hasAllUrls).toBe(true);
       expect(status.extensionBundleId).toBe('rewire.app.com.SafariWebExtension');
+    });
+
+    it('ネイティブが isEnabled: true かつ hasAllUrls: false を返した場合そのまま返す', async () => {
+      mockGetExtensionStatus.mockResolvedValue({
+        isEnabled: true,
+        hasAllUrls: false,
+        extensionBundleId: 'rewire.app.com.SafariWebExtension',
+        lastActiveAt: 1700000000,
+      });
+
+      const status = await safariWebExtensionBridge.getExtensionStatus();
+
+      expect(status.isEnabled).toBe(true);
+      expect(status.hasAllUrls).toBe(false);
     });
 
     it('ネイティブが isEnabled: false を返した場合そのまま返す', async () => {
       mockGetExtensionStatus.mockResolvedValue({
         isEnabled: false,
+        hasAllUrls: false,
         extensionBundleId: 'rewire.app.com.SafariWebExtension',
         lastActiveAt: 0,
       });
@@ -43,14 +60,16 @@ describe('safariWebExtensionBridge', () => {
       const status = await safariWebExtensionBridge.getExtensionStatus();
 
       expect(status.isEnabled).toBe(false);
+      expect(status.hasAllUrls).toBe(false);
     });
 
-    it('エラー時は isEnabled: false で安全にフォールバックする', async () => {
+    it('エラー時は isEnabled: false, hasAllUrls: false で安全にフォールバックする', async () => {
       mockGetExtensionStatus.mockRejectedValue(new Error('bridge failed'));
 
       const status = await safariWebExtensionBridge.getExtensionStatus();
 
       expect(status.isEnabled).toBe(false);
+      expect(status.hasAllUrls).toBe(false);
       expect(status.error).toBeDefined();
     });
   });

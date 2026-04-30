@@ -23,8 +23,9 @@ jest.mock('@/stores/userStore', () => ({
   ),
 }));
 
-import { BrandScreen } from '../brand';
+import { BrandScreen, BRAND_HARD_TIMEOUT_MS } from '../brand';
 import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
+import { useSubscriptionStore } from '@/stores/subscriptionStore';
 
 const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 
@@ -35,11 +36,14 @@ describe('BrandScreen ルーティング分岐', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     (global as any).__DEV__ = false;
+    // デフォルトで subscriptionSynced=true にして既存テストの期待値を維持
+    useSubscriptionStore.getState().markSynced();
   });
 
   afterEach(() => {
     jest.useRealTimers();
     (global as any).__DEV__ = originalDev;
+    useSubscriptionStore.getState().reset();
   });
 
   it('ユーザーがnull → /onboarding', () => {
@@ -91,5 +95,68 @@ describe('BrandScreen ルーティング分岐', () => {
     mockUser = { nickname: 'Test', isPro: true };
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+  });
+
+  describe('subscriptionSynced 待機ロジック', () => {
+    it('未 synced で isPro=false の場合、アニメーション終了時点では遷移しない', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = { nickname: 'Test', isPro: false };
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('未 synced で isPro=true の場合、アニメーション終了で即 /(tabs) へ遷移する', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = { nickname: 'Test', isPro: true };
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
+
+    it('未 synced で nickname なしの場合、アニメーション終了で /onboarding に遷移する', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = null;
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).toHaveBeenCalledWith('/onboarding');
+    });
+
+    it('アニメーション終了後、subscriptionSynced=true に切り替わったら /paywall に遷移する', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = { nickname: 'Test', isPro: false };
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).not.toHaveBeenCalled();
+      act(() => { useSubscriptionStore.getState().markSynced(); });
+      expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
+    });
+
+    it('subscriptionSynced=true 前に isPro=true に更新されたら /paywall ではなく /(tabs) に遷移する', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = { nickname: 'Test', isPro: false };
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      mockUser = { nickname: 'Test', isPro: true };
+      act(() => { useSubscriptionStore.getState().markSynced(); });
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
+
+    it('ハードタイムアウトまでに synced にならない場合、/(tabs) にフォールバックする（ペイウォールではない）', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = { nickname: 'Test', isPro: false };
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(BRAND_HARD_TIMEOUT_MS); });
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+      expect(mockReplace).not.toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
+    });
+
+    it('ハードタイムアウト後に nickname なしなら /onboarding にフォールバック', () => {
+      useSubscriptionStore.getState().reset();
+      mockUser = null;
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(BRAND_HARD_TIMEOUT_MS); });
+      expect(mockReplace).toHaveBeenCalledWith('/onboarding');
+    });
   });
 });

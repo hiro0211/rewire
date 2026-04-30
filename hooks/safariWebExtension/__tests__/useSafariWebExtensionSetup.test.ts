@@ -12,6 +12,12 @@ jest.mock('@/lib/safariWebExtension/safariWebExtensionBridge', () => ({
   },
 }));
 
+const mockSetSetupCompletedAt = jest.fn();
+jest.mock('@/lib/safariWebExtension/setupCompletion', () => ({
+  setSetupCompletedAt: (...args: unknown[]) => mockSetSetupCompletedAt(...args),
+  getSetupCompletedAt: jest.fn().mockResolvedValue(0),
+}));
+
 describe('useSafariWebExtensionSetup', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -61,5 +67,18 @@ describe('useSafariWebExtensionSetup', () => {
     const { result } = renderHook(() => useSafariWebExtensionSetup());
     act(() => { result.current.handleBack(); });
     expect(mockBack).toHaveBeenCalled();
+  });
+
+  it('ステップ4 へ遷移したとき setSetupCompletedAt が呼ばれる（grace period 用）', () => {
+    const { result } = renderHook(() => useSafariWebExtensionSetup());
+    act(() => { result.current.handleNext(); });
+    act(() => { result.current.handleNext(); });
+    act(() => { result.current.handleNext(); });
+    act(() => { result.current.handleNext(); });
+    expect(result.current.step).toBe(4);
+    expect(mockSetSetupCompletedAt).toHaveBeenCalledTimes(1);
+    const arg = mockSetSetupCompletedAt.mock.calls[0][0];
+    expect(typeof arg).toBe('number');
+    expect(arg).toBeGreaterThan(0);
   });
 });

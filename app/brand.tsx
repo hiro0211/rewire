@@ -7,19 +7,22 @@ import {
 } from '@/constants/brandConfig';
 import { FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
+import { useSubscriptionStore } from '@/stores/subscriptionStore';
 import { useLocale } from '@/hooks/useLocale';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { ROUTES, routeWithParams } from '@/lib/routing/routes';
 import { Animated, StyleSheet, View } from 'react-native';
 
 const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 const CHAR_INTERVAL = BRAND_TIMING_CONFIG.charInterval;
+export const BRAND_HARD_TIMEOUT_MS = 7000;
 
 export function BrandScreen() {
   const router = useRouter();
   const { user } = useUserStore();
+  const subscriptionSynced = useSubscriptionStore((s) => s.subscriptionSynced);
   const { t } = useLocale();
 
   const catchphrases = BRAND_CATCHPHRASE_KEYS.map((key) => t(key));
@@ -32,6 +35,31 @@ export function BrandScreen() {
       [...phrase].map(() => new Animated.Value(0)),
     ),
   ).current;
+
+  const navigatedRef = useRef(false);
+  const animationDoneRef = useRef(false);
+
+  const tryNavigate = useCallback(() => {
+    if (navigatedRef.current) return;
+    const freshUser = useUserStore.getState().user;
+    const synced = useSubscriptionStore.getState().subscriptionSynced;
+    if (!freshUser || !freshUser.nickname) {
+      navigatedRef.current = true;
+      router.replace(ROUTES.onboarding);
+      return;
+    }
+    if (freshUser.isPro) {
+      navigatedRef.current = true;
+      router.replace(ROUTES.tabs);
+      return;
+    }
+    if (synced) {
+      navigatedRef.current = true;
+      router.replace(routeWithParams('/paywall', { source: 'returning' }));
+      return;
+    }
+    // 未同期 → 待機
+  }, [router]);
 
   useEffect(() => {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -68,20 +96,33 @@ export function BrandScreen() {
       });
     });
 
-    // Navigate
+    // Animation end: attempt navigate; if subscription unsynced + user pending, wait.
     timeouts.push(setTimeout(() => {
+      animationDoneRef.current = true;
+      tryNavigate();
+    }, TIMINGS.navigate));
+
+    // Hard timeout fallback: never pin on paywall if sub sync never completes.
+    timeouts.push(setTimeout(() => {
+      if (navigatedRef.current) return;
+      navigatedRef.current = true;
       const freshUser = useUserStore.getState().user;
       if (!freshUser || !freshUser.nickname) {
         router.replace(ROUTES.onboarding);
-      } else if (!freshUser.isPro) {
-        router.replace(routeWithParams('/paywall', { source: 'returning' }));
       } else {
         router.replace(ROUTES.tabs);
       }
-    }, TIMINGS.navigate));
+    }, BRAND_HARD_TIMEOUT_MS));
 
     return () => timeouts.forEach(clearTimeout);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // sub sync / user.isPro 変化でアニメーション終了後に再判定
+  useEffect(() => {
+    if (animationDoneRef.current) {
+      tryNavigate();
+    }
+  }, [subscriptionSynced, user?.isPro, tryNavigate]);
 
   return (
     <StarryBackground twinkle={true} gradientColors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}>

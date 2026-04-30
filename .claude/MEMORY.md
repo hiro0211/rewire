@@ -508,3 +508,298 @@ ls -la dist/_expo/static/js/ios/
 ### 学び
 - Native Metro は dynamic `import()` で**bundle 分割しない**（全モジュールが単一 hbc に入る）。lazy import は startup 評価を遅らせるだけで bundle サイズ削減にならない
 - `EXPO_UNSTABLE_TREE_SHAKING` でも barrel re-export は弱点。疑わしければ atlas で実測し submodule 直接 import に書き換える
+
+## 2026-04-24: Safari Web Extension 未設定検知 & 赤い警告カード実装
+
+### 作業内容
+Safari Web Extension が「有効化」「全 Web サイト許可」の両方を満たしていない時に、プロフィール画面の ProfileHeader 直下にスクリーンタイム警告と同じデザインの赤枠カードを表示する機能を TDD サイクルで実装。iOS 17/18 には Safari Web Extension 状態を直接取得する公開 API がないため、拡張側 heartbeat に `browser.permissions.contains({origins:['<all_urls>']})` を同梱して間接検知する方式。
+
+### 状態モデル
+`useWebExtensionStatus` が返す enum を `'checking'|'enabled'|'unknown'` → `'checking'|'healthy'|'needsAllUrls'|'disabled'` に拡張。`lib/safariWebExtension/deriveStatus.ts` で純粋関数化（SRP: 導出ロジックを UI/フックから分離）。
+
+### 主要な変更
+- **Swift Handler（withSafariWebExtension.js::generateSwiftHandler）**: `type: 'heartbeat'` メッセージ受信時に `msg["hasAllUrls"]` を App Group UserDefaults の `rewire.webExtension.hasAllUrls` に保存
+- **Swift Module（SafariWebExtensionStatusModule.swift）**: `activeWindowSeconds` を 24h → **6h** に短縮、返却 dict に `hasAllUrls` 追加
+- **background.js（generateBackgroundJs）**: `runtime.onStartup` / `onInstalled` / `webNavigation.onCommitted` (30s debounce) / `alarms.create('rewire-heartbeat', {periodInMinutes:15})` の 4 トリガーで heartbeat 送信。`permissions.contains({origins:['<all_urls>']})` の結果を payload に同梱
+- **manifest permissions 追加**: `webNavigation`, `alarms`
+- **新規コンポーネント**: `components/profile/SafariExtensionAlertCard.tsx` — 赤枠 + shield-outline icon + `colors.danger` ボタン。props: `title/description/actionLabel/onPress` のみ（表示専用）
+- **新規フック**: `hooks/safariWebExtension/useSafariSettingsDeepLink.ts` — `App-Prefs:com.apple.mobilesafari` を試行 → 失敗時 `Linking.openSettings()` フォールバック
+- **profile.tsx 統合**: `disabled`/`needsAllUrls` 時のみ警告カード表示、`healthy`/`checking` 時のみ ToolCard 表示（重複回避）
+- **i18n**: `safariWebExtension.alert.{title, descriptionDisabled, descriptionNeedsAllUrls, openSettingsAction}` を ja.ts/en.ts に追加
+
+### 実装不可能な部分
+- **「プライベートブラウズで許可」**: iOS 17/18 ではアプリからも Extension JS からも検知不可能。description で「プライベートブラウズでの許可も忘れずに」と教育する方針
+- iOS 26.2+ で native API 追加（Jeff Johnson ブログ情報）だが deployment target 15.0 のためスコープ外
+
+### 変更ファイル
+- 新規: `components/profile/SafariExtensionAlertCard.tsx` + test、`hooks/safariWebExtension/useSafariSettingsDeepLink.ts` + test、`lib/safariWebExtension/deriveStatus.ts` + test
+- 既存: `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`, `plugins/withSafariWebExtension.js`, `lib/safariWebExtension/{types.ts, safariWebExtensionBridge.ts, __tests__/safariWebExtensionBridge.test.ts}`, `hooks/settings/{useWebExtensionStatus.ts, __tests__/useWebExtensionStatus.test.ts}`, `app/(tabs)/{profile.tsx, __tests__/ProfileScreen.test.tsx}`, `locales/{ja.ts, en.ts}`
+
+### テスト
+- 269/270 スイート通過、1888/1889 テスト通過
+- 唯一の失敗 `app/__tests__/indexRouting.test.tsx` は本変更と無関係の既存失敗（memory 記録済み）
+- lint 新規エラーゼロ（既存 display-name 警告のみ）
+
+### Step 0 実機検証（未実施・要ユーザー確認）
+計画では Step 0 として以下を実機で事前確認する前提だったが、コーディング環境のため skip。hiro が実機ビルドで検証が必要:
+1. `browser.permissions.contains({origins:['<all_urls>']})` が Safari iOS で promise を返すか
+2. `browser.webNavigation.onCommitted` が発火するか
+3. `browser.alarms.create/onAlarm` が使えるか
+
+動かない場合は `hasAllUrls` 検知を諦めて `disabled` のみ警告する縮退版に修正が必要。コード側は API 不在時 `hasAllUrls=false` にフォールバックするガード付きなので、最悪でも `disabled` 検知は機能する。
+
+### App Store 審査注意
+- manifest permissions に `webNavigation` と `alarms` を追加したため、App Store Connect の拡張機能使用理由を更新する必要がある可能性
+  - `webNavigation`: 「拡張機能が正しく有効化されているかを定期的に確認してユーザーに案内するため」
+  - `alarms`: 「拡張機能の稼働状況を低頻度で確認するため」
+- `App-Prefs:com.apple.mobilesafari` URL scheme 使用（過去 reject 事例あり）— `canOpenURL` 事前チェック + `Linking.openSettings()` フォールバックで担保
+
+### 未コミット状態
+
+## 2026-04-24: 起動時ペイウォール誤表示の修正（レース条件対策 + 多層防御）
+
+### 症状
+- 契約済みユーザーが起動後ブランド画面（スタートアップ）を経由してペイウォールに到達してしまう
+- 原因: `app/brand.tsx` がアニメーション終了(4,200ms固定)時点で `userStore.user.isPro` を参照するが、RevenueCat の `initialize()` + `getCustomerInfo()` が間に合わない + listener が空値で isPro=false を上書き persist してしまう
+
+### 対応（プラン `~/.claude/plans/rewire-joyful-cerf.md` に準拠、TDD で実装）
+**PR1 — paywall 二重ガード**:
+- `hooks/paywall/usePaywallSubscriptionGuard.ts` 新規: マウント時 `getSubscriptionStatus` 再取得 + `userStore.user.isPro` 変化監視、active 検知で `onActive()` 発火（一度だけ）
+- `hooks/paywall/usePaywallOrchestration.ts` で guard を呼び、active 検知 → `router.replace(ROUTES.tabs)`
+
+**PR2 — 主対策（subscriptionSynced ベースのナビゲーション）**:
+- `stores/subscriptionStore.ts` 新規: `subscriptionSynced: boolean` と `markSynced()` / `reset()`
+- `hooks/useAppInitialization.ts`: 
+  - initialize + getSubscriptionStatus 完了（または失敗、Purchases=null時）で必ず `markSynced()`
+  - listener を `isPro=true` 昇格のみ反映に変更（空 active による `isPro:false` 上書きを抑止）
+- `app/brand.tsx`:
+  - アニメーション終了で `tryNavigate()` を呼び、`synced && nickname && !isPro` なら paywall、`isPro=true` なら tabs、それ以外は待機
+  - subscriptionSynced / user.isPro の変化で再試行
+  - `BRAND_HARD_TIMEOUT_MS = 7000ms` のハードタイムアウト。到達時は paywall ではなく `(tabs)` にフォールバック
+
+**PR3 — AppState active 再取得 + configure 先行**:
+- mount 直後に `subscriptionClient.initialize()` を loadUser と並列開始（_initPromise で集約されるため重複実行は安全）
+- `AppState.addEventListener('change', ...)` で active 遷移時に `getSubscriptionStatus` 再取得 + 必要に応じて `updateUser({isPro: true})`
+
+### 変更ファイル
+- 新規: `stores/subscriptionStore.ts`, `hooks/paywall/usePaywallSubscriptionGuard.ts`
+- 新規テスト: `stores/__tests__/subscriptionStore.test.ts`, `hooks/paywall/__tests__/usePaywallSubscriptionGuard.test.ts`
+- 変更: `hooks/useAppInitialization.ts`, `app/brand.tsx`, `hooks/paywall/usePaywallOrchestration.ts`
+- テスト更新: `hooks/__tests__/useAppInitialization.test.ts` (+7), `app/__tests__/brandRouting.test.tsx` (+7), `app/__tests__/BrandScreen.routing.test.tsx` (beforeEach で markSynced), `hooks/paywall/__tests__/usePaywallOrchestration.test.ts` (+subscription guard describe), `.retry.test.ts` (mock 拡張)
+
+### テスト結果
+- **272 スイート / 1918 テスト全通過**（前回比 +60 テスト）
+- lint: 21 errors（全て既存の display-name / unescaped-entities。変更ファイル起因のエラーなし）
+
+### 実機検証推奨シナリオ（未実施）
+1. 購入済みアプリをキル → 再起動: ブランド画面後に直接 `/(tabs)` へ（ペイウォール非表示）
+2. 未購入で同操作: ペイウォール表示（現行挙動維持）
+3. オフライン起動: 7秒後に `/(tabs)` フォールバック（ペイウォール非表示）
+4. バックグラウンド 30h 経過後 foreground: getCustomerInfo 再取得で isPro 維持
+5. TestFlight での1〜4 再現確認（Sandbox レシート遅延対策）
+
+### 注意
+- brandRouting.test.tsx で react-test-renderer の act() warning が発生（afterEach の store.reset() が unmount 前に呼ばれる）が、テストは全通過。必要なら act() ラップで抑止可能
+- 変更は Breaking: 既存の brand.tsx は `subscriptionSynced=false` 未 sync の間は paywall にも飛ばない仕様（意図的）。オフライン等で 7秒フォールバック後 tabs に入るため、tabs 側でも free ユーザーに対しては既存の paywall 誘導動線が機能すること前提
+
+### 未コミット状態
+ユーザー側レビュー後にコミット予定。PR 分割案: PR1(guard のみ) → PR2(store + brand + listener) → PR3(AppState + early configure) の3段階を推奨（計画書記載）。
+
+---
+
+## 2026-04-24: プロダクトコンセプトシート v1.1 改訂
+
+### 作業内容
+`documents/Rewire_プロダクトコンセプトシート.md` を現状実装に合わせて全面改訂。「SNSフリクション」「3層防御」「3段階ペイウォール」など未実装機能の記述を削除し、Safari Web Extension・SOSボタン・Reflection Sheet・Neural Cosmos バッジなど現行機能を正確に反映した。natural-japanese skill を用いて文体も整えた。
+
+### 主な変更点
+- **ヘッダー**: 最終更新 `2026-04-24`、Document Version `1.1` に更新
+- **§1 プロダクトビジョン**: 「SNS → ポルノ」チェーン前提の記述を削除。プロダクト原則5項目のうち「上流で止める」「理性スイッチング」を「衝動を呼吸で受け流す」「見える化で自覚させる」に差し替え
+- **§2 ペルソナ**: one sec 使用履歴と「SNSでポルノスター投稿」トリガーを削除
+- **§3 VPC**: Products & Services を S1=Safari Web Extension / S2=SOSボタン→呼吸 / S3=リカバリー / S4=Reflection Sheet / S5=ストリーク＆ダッシュボード / S6=Neural Cosmos バッジ / S7=学ぶタブ に書き換え。Pain Relievers / Gain Creators も現行機能ベースに再構成
+- **§4 ドーパミンチェーン**: 6段階のSNS→ポルノチェーンを5段階（SNS非前提）に変更。§4.3「3層防御」を「2層防御+リカバリー」に書き換え
+- **§5 利用シーン**: SNSフリクション前提のシーンを Safari Web Extension → /panic → 呼吸セッション / SOSボタン / Reflection Sheet の現行動線に再構成
+- **§7 科学的根拠**: §7.1 one sec / PNAS 論文を削除し「刺激制御（Stimulus Control）」に差し替え。§7.2 Urge Surfing / Implementation Intention を現行 SOS→呼吸 の実装に具体紐付け。§7.3 セルフモニタリング効果を新規追加（Reflection Sheet の根拠）
+- **§8 競合比較**: one sec 列を削除し Brainbuddy / iOS スクリーンタイム との3者比較に整理。差別化軸を「アダルトドメイン自動ブロック」「ブロック→呼吸への連続導線」「Neural Cosmos 18バッジ」に再構成
+- **§9 ユーザーストーリー**: US-01（SNSフリクション）・US-06（ブロック解除時目標表示）を削除し、現行機能ベースの US-01〜US-07 に全面書き換え。サポートストーリーも学ぶタブ・履歴画面・環境音プレーヤー等の実装に対応させた
+- **§10 課金設計**: 3段階ペイウォール（¥680/¥5,400 → 割引¥2,500 → 無料トライアル）の記述を削除。現行単一構成（Monthly ¥680 / Yearly ¥5,400）のみに書き換え。Free/Pro 差別化表も削除。Guideline 5.6 対応で割引/トライアルが休止中である旨を補足
+- **付録用語集**: 「3層防御」「フリクション（one sec）」「理性スイッチング」を削除。「Safari Web Extension」「SOSボタン」「Reflection Sheet」「リカバリーフロー」「Neural Cosmos バッジ」「2層防御」を追加
+- **末尾の音声入力痕跡**（444行目以降のAV/ドーパミン解説文）を削除
+
+### natural-japanese 適用
+- 「〜することができる」→「〜できる」
+- 受動態過剰（「〜されている」）→能動態
+- 「〜のために」の多用を削除
+- 英語直訳調の長文を読点で区切り or 分割
+
+### 変更ファイル
+- `documents/Rewire_プロダクトコンセプトシート.md` のみ（他ファイル変更なし）
+
+### ユーザー確認済み事項
+1. SNSフリクション → 完全削除
+2. 末尾の音声入力痕跡 → 削除
+3. 3段階ペイウォール → 現行単一構成に完全書き換え
+
+### 未コミット状態
+コンセプトシート修正のみ。ユーザーレビュー後にコミット予定。
+
+## 2026-04-26: Safari 拡張「設定が必要です」誤表示の修正 + アラート位置変更
+
+### 作業内容
+ユーザーが iOS 設定で Safari 拡張の3トグル（機能拡張ON / プライベート ON / 全Webサイト=許可）を全て確認しているにもかかわらず、Profile タブで「Safari 拡張の設定が必要です」アラートが出続ける問題を調査・部分修正。さらにアラートの表示位置を Achievements カードの下に移動。
+
+### 根本原因（リサーチ + コード読み）
+1. **stale な ios/ ファイル**: `plugins/withSafariWebExtension.js` には heartbeat 実装が含まれているが、実際の `ios/SafariWebExtension/{background.js, SafariWebExtensionHandler.swift}` は古い版（heartbeat 未実装、`hasAllUrls` 書き込み欠落）。`npx expo prebuild --clean -p ios` で再生成が必要。
+2. **iOS Safari Service Worker 死亡問題（既知）**: iOS 17.4 以降、MV3 service_worker が 30-45s で permanently killed され、`webNavigation`/`alarms` も二度と発火しない（Apple Dev Forums 多数報告）。
+3. **`permissions.contains` の Safari 実装が不安定**: `<all_urls>` を host_permissions(required) で要求しているのに API が一貫せず。
+
+### 今回の修正範囲（Step 1+2+window のみ。Step 3/4 は再発時に着手）
+- `app/(tabs)/profile.tsx`: `SafariExtensionAlertCard` を `AchievementsLinkCard` の下に移動
+- `app/(tabs)/__tests__/ProfileScreen.test.tsx`: 表示順序検証テスト1件追加（Red→Green 確認済み）
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`: active window 6h → 24h
+- memory `safari-extension-detection.md`: 24h 化と stale ios files 落とし穴を記録
+
+### hiro が実機で実行する作業
+1. `npx expo prebuild --clean -p ios` を実行して `ios/SafariWebExtension/{background.js,SafariWebExtensionHandler.swift}` を再生成
+2. `npm run ios` または EAS Build internal で実機ビルド
+3. Safari で任意ページに遷移 → アプリ復帰 → アラートが消えることを確認
+4. もし消えない場合は Service Worker 死亡対策（plan の Step 3）に進む
+
+### テスト
+- 272スイート / 1919テスト 全パス
+- 新規テスト: 「status=disabled のとき、警告カードは Achievements より後ろに表示される」（toJSON 文字列順比較）
+- lint: 既存 21 errors（display-name/unescaped-entities）のみ。新規エラーなし
+
+### 変更ファイル
+- `app/(tabs)/profile.tsx`
+- `app/(tabs)/__tests__/ProfileScreen.test.tsx`
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`
+- `.claude/projects/-Users-arimurahiroaki-rewire/memory/safari-extension-detection.md`
+- `.claude/MEMORY.md`（このファイル）
+
+### 注意事項・未完了タスク
+- Service Worker 30-45s 死亡問題は将来 PR 候補。`background: { scripts: [...], persistent: false }` 化 + content_script からの heartbeat fallback + `hasAllUrls: true` ハードコードを検討
+- 24h ウィンドウは仮置き。実機運用で「拡張オフ→24h healthy 維持」が UX 上問題になるなら 12h などに調整
+- 計画書: `~/.claude/plans/users-arimurahiroaki-downloads-2026-04-prancy-spring.md`
+
+### 未コミット状態
+ユーザー（hiro）レビュー後にコミット予定。プリビルドは hiro 自身が実行する。
+
+## 2026-04-26（追補）: Step 3 実装 — Service Worker 死亡対策フル投入
+
+### 経緯
+Step 1+2+window 24h 化を実機で検証 → prebuild 後も誤『Safari 拡張の設定が必要です』が再現。
+ユーザーが拡張をオフ→オン全部し直しても変化なし。Service Worker 死亡 + `permissions.contains` 不安定の両方が顕在化したと判断し、計画書 Step 3 を即時着手。
+
+### 修正内容
+
+#### `plugins/withSafariWebExtension.js`
+1. **manifest 変更**: `background: { service_worker }` → `background: { scripts: ['background.js'], persistent: false }`
+   - Apple Forums で広く使われている iOS Safari MV3 SW 死亡の暫定回避策
+2. **`generateBackgroundJs`**:
+   - `readHasAllUrls` 関数（`permissions.contains` 経由）を完全削除
+   - `sendHeartbeat` 内の hasAllUrls を **`true` ハードコード**（manifest.host_permissions に `<all_urls>` を required で書いている以上、インストール時点で必ず許可済み）
+   - `runtime.onMessage` リスナーに `contentHeartbeat` 分岐を追加 → `maybeHeartbeat()` を呼んで native message 化
+3. **`generateContentJs`**:
+   - 全ページロード時（ブロック判定の有無に関わらず）に `runtime.sendMessage({ type: 'contentHeartbeat' })` を発火 → background script を起動して heartbeat を送らせる保険
+4. **`generateSwiftHandler`**:
+   - `import os.log` 追加。`OSLog(subsystem: "rewire.app.com", category: "safari-ext-handler")` で診断ログ
+   - 受信メッセージの type / ts / hasAllUrls / App Group accessibility を `os_log` で出力。Console.app で `subsystem == rewire.app.com` フィルタで観察可能
+
+#### `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`
+- `import os.log` + `OSLog(subsystem: "rewire.app.com", category: "safari-ext")` 追加
+- `getExtensionStatus` 内で lastActive / delta / window / isEnabled / hasAllUrls を `os_log` で出力
+
+### テスト
+- `plugins/__tests__/withSafariWebExtension.test.js` を 4 件追加 + 既存 2 件を改修（TDD: Red→Green 確認）
+  - manifest.background.scripts/persistent の検証
+  - `hasAllUrls: true` ハードコードの検証
+  - `contentHeartbeat` 分岐の検証
+  - content.js が `contentHeartbeat` を送ることの検証
+  - Swift handler に `os_log` が含まれることの検証
+- 全体: 272スイート / 1922テスト 全パス（+3テスト, +0スイート）
+- lint: 既存 21 errors のみ。新規エラー・警告なし
+
+### hiro 側で次にやる作業
+1. `npx expo prebuild --clean -p ios` — 古い `ios/SafariWebExtension/{background.js, content.js, manifest.json, SafariWebExtensionHandler.swift}` を全部上書き
+2. `cd ios && pod install && cd ..`
+3. `npx expo run:ios --device` — 実機にインストール
+4. アプリ起動 → Safari で example.com など任意ページに遷移 → アプリ復帰 → アラートが消えれば成功
+5. Console.app で `subsystem == rewire.app.com` をフィルタしてログ観察:
+   - `safari-ext-handler` カテゴリ: `recv type=heartbeat ts=... hasAllUrls=true groupOK=true` が出れば heartbeat が届いている
+   - `safari-ext` カテゴリ: アプリ前面化のたびに `status: lastActive=... isEnabled=true hasAllUrls=true` が出れば正常
+
+### もし再発した場合のデバッグ手順
+- Console.app で `subsystem == rewire.app.com` をフィルタ
+- `recv type=...` が一切出ない → 拡張の background が完全に死んでいる（さらに非常手段が必要）
+- `recv` は出るが `groupOK=false` → App Group 設定が破綻している（entitlements 再確認）
+- `recv` は出るが Profile タブで `isEnabled=false` → App Group の lastActiveAt 読みで suite が作れていない（同上）
+
+### 変更ファイル
+- `plugins/withSafariWebExtension.js`（manifest / background.js / content.js / Swift handler の生成全般）
+- `plugins/__tests__/withSafariWebExtension.test.js`
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`
+- `.claude/MEMORY.md`（このファイル）
+
+### 注意事項
+- `background: { scripts, persistent: false }` は厳密には MV2 syntax だが、Safari は MV3 manifest 内でも受け入れる。Chrome/Firefox での動作は未検証（Safari 専用）
+- content_script からの `runtime.sendMessage` は SW を wake する。完全に死んだ SW を蘇生できないという報告もあるので、`scripts` (non-persistent) と組み合わせることが重要
+- iOS 26.2+ で `SFSafariExtensionManager` に近い native API が出る予定だが、deployment target 15.0 では使えない
+
+### 未コミット状態
+ユーザーレビュー後にコミット予定。
+
+
+---
+
+## 2026-04-27 (自動: 日次アナリティクスパイプライン)
+
+### 作業内容の要約
+- スケジュールタスク `rewire-daily-analytics` を実行
+- ASC API からのデータ取得を試行：`POST /v1/analyticsReportRequests` が **409 Conflict**（ONGOING リクエスト既存）
+- 既存 `request_id = 394c257b-c76e-4779-9257-30c74024383a` を使って再フェッチ → 成功
+  - `data/analytics/2026-04-26/` に Standard / Detailed の TSV を保存
+- `analyze_funnel.py` を `--date 2026-04-26` で実行 → ASC の 2 日処理ラグにより 04-26 の行が TSV に存在せず、全項目 0 のレポートが生成された
+- Python で TSV を直接集計し、最新データ日付（2026-04-25）と過去 10 日窓のメトリクスでレポート/JSON を上書き再生成
+
+### 結果サマリー
+- 10 日間（04-16 → 04-25）合計: Impressions=71, PageViews=25, Taps=4
+- 平均 PVR=35.21%（RevenueCat ベンチマーク 25–35% の上限）
+- 04-25 単日: Impressions=7, PageViews=9, Taps=0 → PVR が >100% になっているのは ASC のソース帰属モデルによるもの（PV は impression 起点以外からも発生）
+- 次のボトルネック候補: **Page View → Tap**（10 日で 25 PV から 4 Tap = 約 16%）
+- TikTok / Web Referral からの流入はゼロ（オーガニック検索のみ）
+
+### 未完了タスク・次回やるべきこと
+- `scripts/analytics/main.py` を改善し、409 が返ったら自動的に既存 request_id を `GET /v1/analyticsReportRequests?filter[app]=...` で取得して再試行するロジックを追加（毎日手作業で `--request-id` を渡さなくて済むように）
+- `analyze_funnel.py` を「指定日付に行が無かったら最新の利用可能な日付にフォールバック」する挙動に改修（現状は全 0 の空レポートを書き出してしまう）
+- 04-26 当日のデータは ~04-28 以降に TSV へ反映される見込み。次回実行で再集計されること
+
+### 発見した問題点・注意事項
+- `daily-report-2026-04-24.md` / `daily-report-2026-04-25.md` も同じラグ問題で全 0 のまま残っている（過去ログとして保持）
+- `request_id` をローカルにキャッシュしていないため、毎回 409 → 手動で ID 指定が必要
+
+### 変更ファイル
+- `data/analytics/2026-04-26/app_store_discovery_and_engagement_standard.tsv`（新規）
+- `data/analytics/2026-04-26/app_store_discovery_and_engagement_detailed.tsv`（新規）
+- `data/analytics/2026-04-26/manifest.json`（新規）
+- `docs/analytics/daily-metrics-2026-04-26.json`（新規・Python 直接生成）
+- `docs/analytics/daily-report-2026-04-26.md`（新規・Python 直接生成）
+- `.claude/MEMORY.md`（このファイル）
+
+## 2026-04-29: Safari 拡張「設定が必要」モーダル誤検知の修正
+**症状**: Safari 設定で拡張機能をオンにしているのにプロフィールタブで「Safari拡張の設定が必要です」アラートが出続ける。
+**原因**: `SafariWebExtensionStatusModule.swift` が `isEnabled = (now - lastActiveAt < 24h)` で判定していたが、iOS には拡張の有効状態を返す公開 API が無く（FB9186842 未対応、Apple Forum 758346 SW 死活問題）、24h Safari を使わなければ偽陰性 disabled になっていた。
+**修正方針**: 二値判定をやめ、JS 側で `lastActiveAt` を一次ソースに 3 状態モデル（`never` / `active` / `stale`）+ 既存 `needsAllUrls` に変更。
+**変更ファイル**:
+- `lib/safariWebExtension/deriveStatus.ts` — 状態モデル拡張、`ACTIVE_WINDOW_SECONDS = 6h` を export
+- `lib/safariWebExtension/setupCompletion.ts`（新規）— `safariExtension.setupCompletedAt` を AsyncStorage に保存/読み出し
+- `hooks/settings/useWebExtensionStatus.ts` — `recheck()` を return、grace period（90s）内は `never→active` に昇格
+- `hooks/safariWebExtension/useSafariWebExtensionSetup.ts` — step 4 到達時に `setSetupCompletedAt(Date.now()/1000)` を呼ぶ
+- `components/profile/SafariExtensionAlertCard.tsx` — `variant: 'warning' | 'info'` prop 追加、`info` は primary 色 + refresh アイコン
+- `app/(tabs)/profile.tsx` — `never`/`needsAllUrls`→警告、`stale`→info プロンプト（recheck）、`active`/`checking`→ToolCard
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift` — `activeWindowSeconds` 24h→6h（JS 側と整合、`isEnabled` はレガシー残置）
+- `locales/ja.ts` / `locales/en.ts` — `safariWebExtension.refresh.{title,description,recheckAction}` 追加、`alert.descriptionDisabled` を「未検出」寄りに微調整、`alert.title` を「Safari 拡張が検出できません」に変更
+**テスト**: `deriveStatus.test.ts`（6件 / 境界値含む）、`useWebExtensionStatus.test.ts`（9件 / grace period・recheck）、`SafariExtensionAlertCard.test.tsx`（8件 / variant）、`ProfileScreen.test.tsx`（10件 / never・stale・active 分岐）、`useSafariWebExtensionSetup.test.ts`（7件 / setSetupCompletedAt 呼び出し）
+**結果**: 272 suites / 1934 tests 全件通過。lint は変更ファイルに新規エラーなし。未コミット。
+**重要な注意**: 実機反映には `npx expo prebuild --clean -p ios` 必須（Swift module の活性化ウィンドウ短縮を反映するため）。Safari Web Extension の `background.scripts` + `persistent: false` は `plugins/withSafariWebExtension.js:64` で既に対応済み。
+**未対応**: 隠し WKWebView による能動 heartbeat 喚起、`hasAllUrls` の native 側厳密検知（現状ハードコード true 維持）、`SFSafariExtensionManager` の iOS 提供（Apple マター）。

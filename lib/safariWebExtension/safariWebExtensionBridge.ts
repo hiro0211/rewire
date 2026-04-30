@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 
 const STUB_STATUS: SafariWebExtensionStatus = {
   isEnabled: false,
+  hasAllUrls: false,
   extensionBundleId: '',
   lastActiveAt: 0,
 };
@@ -31,7 +32,13 @@ export const safariWebExtensionBridge: SafariWebExtensionBridge = {
         logger.warn('SafariWebExtension', 'Native module not available');
         return STUB_STATUS;
       }
-      const status = await mod.getExtensionStatus();
+      const raw = await mod.getExtensionStatus();
+      const status: SafariWebExtensionStatus = {
+        isEnabled: Boolean(raw?.isEnabled),
+        hasAllUrls: Boolean(raw?.hasAllUrls),
+        extensionBundleId: String(raw?.extensionBundleId ?? ''),
+        lastActiveAt: Number(raw?.lastActiveAt ?? 0),
+      };
       logger.debug('SafariWebExtension', 'Status:', JSON.stringify(status));
       return status;
     } catch (error) {

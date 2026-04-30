@@ -479,6 +479,20 @@ export const ja = {
     enabled: '有効',
     unknown: '未検出',
     toolCardDescription: 'アダルトサイトを開くと、Rewireの画面が出る',
+    alert: {
+      title: 'Safari 拡張が検出できません',
+      descriptionDisabled:
+        '拡張機能の動作を確認できませんでした。iOS の「設定」→「アプリ」→「Safari」→「機能拡張」から Rewire を有効にし、「すべての Web サイト」を許可、「プライベートブラウズで許可」をオンにしてください。',
+      descriptionNeedsAllUrls:
+        '拡張はオンですが、「すべての Web サイト」が許可されていません。Safari の機能拡張設定から「許可」に切り替えてください。プライベートブラウズでの許可も忘れずに。',
+      openSettingsAction: '設定を開く',
+    },
+    refresh: {
+      title: 'Safari 拡張の状態を更新',
+      description:
+        'しばらく Safari を開いていないため、最新の状態が確認できません。Safari でウェブページを 1 つ開いてからアプリに戻り、「再確認」を押してください。',
+      recheckAction: '再確認',
+    },
   },
   postPurchaseOnboarding: {
     thankYou: {

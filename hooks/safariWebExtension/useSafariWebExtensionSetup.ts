@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { safariWebExtensionBridge } from '@/lib/safariWebExtension/safariWebExtensionBridge';
+import { setSetupCompletedAt } from '@/lib/safariWebExtension/setupCompletion';
 
 /**
  * 5-step Setup flow:
@@ -32,6 +33,12 @@ export function useSafariWebExtensionSetup() {
     });
     return () => sub.remove();
   }, []);
+
+  useEffect(() => {
+    if (step === 4) {
+      setSetupCompletedAt(Date.now() / 1000);
+    }
+  }, [step]);
 
   const handleNext = useCallback(() => {
     if (step >= 4) {

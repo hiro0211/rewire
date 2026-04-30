@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { ROUTES } from '@/lib/routing/routes';
 import { useOfferings } from './useOfferings';
 import { usePaywallDismiss } from './usePaywallDismiss';
+import { usePaywallSubscriptionGuard } from './usePaywallSubscriptionGuard';
 
 type OfferingType = 'default' | 'discount' | 'trial';
 
@@ -26,6 +27,12 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
 
   const { paywallState, setPaywallState, currentOffering, trialOffering, retry } =
     useOfferings(offeringType);
+
+  usePaywallSubscriptionGuard({
+    onActive: () => {
+      router.replace(ROUTES.tabs);
+    },
+  });
 
   useEffect(() => {
     analyticsClient.logEvent('paywall_viewed', { source: source || 'unknown', offering: offeringType });

@@ -1,0 +1,76 @@
+{
+  "report_date": "2026-04-27",
+  "latest_data_date": "2026-04-26",
+  "note": "ASC has ~2-day processing lag; window analyzed uses 10 days through latest_data_date.",
+  "window": {
+    "start": "2026-04-17",
+    "end": "2026-04-26"
+  },
+  "totals": {
+    "impressions": 82,
+    "page_views": 26,
+    "taps": 4
+  },
+  "rates": {
+    "page_view_rate_pct": 31.71,
+    "tap_rate_pct": 15.38
+  },
+  "by_channel": {
+    "App Store browse": {
+      "Impression": 5,
+      "Tap": 4,
+      "Page view": 3
+    },
+    "App Store search": {
+      "Page view": 19,
+      "Impression": 77
+    },
+    "Web referrer": {
+      "Page view": 4
+    }
+  },
+  "top_territories": [
+    [
+      "JP",
+      87
+    ],
+    [
+      "ID",
+      7
+    ],
+    [
+      "CN",
+      5
+    ],
+    [
+      "US",
+      3
+    ],
+    [
+      "IN",
+      2
+    ],
+    [
+      "MX",
+      2
+    ],
+    [
+      "IL",
+      2
+    ],
+    [
+      "AU",
+      2
+    ]
+  ],
+  "latest_day": {
+    "Page view": 1,
+    "Impression": 11
+  },
+  "latest_day_by_channel": {
+    "App Store search": {
+      "Page view": 1,
+      "Impression": 11
+    }
+  }
+}

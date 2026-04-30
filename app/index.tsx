@@ -6,7 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 // ブランド画面を常に表示する（dev clientでもスキップしない）
 const DEV_SKIP_ONBOARDING = false;
 // ⚠️ 開発用: 起動時にペイウォール後オンボーディングを直接開く。確認後は false に戻すこと
-const DEV_PREVIEW_POST_PURCHASE = true;
+const DEV_PREVIEW_POST_PURCHASE = false;
 
 export default function Index() {
   const { hasHydrated } = useUserStore();

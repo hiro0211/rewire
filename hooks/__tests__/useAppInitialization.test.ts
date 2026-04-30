@@ -1,4 +1,13 @@
 import { renderHook, act } from '@testing-library/react-native';
+import { AppState } from 'react-native';
+
+let appStateChangeHandler: ((state: string) => void) | null = null;
+jest.spyOn(AppState, 'addEventListener').mockImplementation((event, handler) => {
+  if (event === 'change') {
+    appStateChangeHandler = handler as (state: string) => void;
+  }
+  return { remove: jest.fn() } as unknown as ReturnType<typeof AppState.addEventListener>;
+});
 
 const mockLoadUser = jest.fn();
 const mockLoadThemePreference = jest.fn();
@@ -54,6 +63,24 @@ jest.mock('@/lib/subscription/purchasesModule', () => ({
 
 jest.mock('@/lib/tracking/useScreenTracking', () => ({
   useScreenTracking: jest.fn(),
+}));
+
+const mockMarkSynced = jest.fn();
+const mockResetSync = jest.fn();
+jest.mock('@/stores/subscriptionStore', () => ({
+  useSubscriptionStore: {
+    getState: () => ({
+      markSynced: mockMarkSynced,
+      reset: mockResetSync,
+      subscriptionSynced: false,
+    }),
+  },
+}));
+
+jest.mock('@/stores/reflectionStore', () => ({
+  useReflectionStore: {
+    getState: () => ({ loadReflectionState: jest.fn() }),
+  },
 }));
 
 import { useAppInitialization } from '../useAppInitialization';
@@ -155,6 +182,149 @@ describe('useAppInitialization', () => {
       renderHook(() => useAppInitialization());
       await act(async () => {});
       expect(mockAddCustomerInfoUpdateListener).toHaveBeenCalled();
+    });
+  });
+
+  describe('subscriptionSynced フラグ発火', () => {
+    it('getSubscriptionStatus 完了後に markSynced が呼ばれる', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+      expect(mockMarkSynced).toHaveBeenCalled();
+    });
+
+    it('getSubscriptionStatus が失敗しても markSynced は呼ばれる', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      mockGetSubscriptionStatus.mockRejectedValue(new Error('Network error'));
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+      expect(mockMarkSynced).toHaveBeenCalled();
+    });
+
+    it('initialize が失敗しても markSynced は呼ばれる', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      mockInitialize.mockRejectedValueOnce(new Error('init failed'));
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+      expect(mockMarkSynced).toHaveBeenCalled();
+    });
+  });
+
+  describe('listener による isPro=false 上書き抑止', () => {
+    it('listener が空 active を通知しても updateUser は呼ばれない', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: true };
+      mockGetSubscriptionStatus.mockResolvedValue({
+        isActive: true, plan: 'pro_annual', expiresAt: null, willRenew: true,
+      });
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      const listenerFn = mockAddCustomerInfoUpdateListener.mock.calls[0][0];
+      mockUpdateUser.mockClear();
+      await act(async () => {
+        listenerFn({ entitlements: { active: {} } });
+      });
+
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+
+    it('listener が active を通知したら updateUser({isPro: true}) が呼ばれる', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      const listenerFn = mockAddCustomerInfoUpdateListener.mock.calls[0][0];
+      mockUpdateUser.mockClear();
+      await act(async () => {
+        listenerFn({ entitlements: { active: { 'Rewire Pro': {} } } });
+      });
+
+      expect(mockUpdateUser).toHaveBeenCalledWith({ isPro: true });
+    });
+
+    it('既に isPro=true のユーザーに対し listener が active を通知しても updateUser は呼ばれない', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: true };
+      mockGetSubscriptionStatus.mockResolvedValue({
+        isActive: true, plan: 'pro_annual', expiresAt: null, willRenew: true,
+      });
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      const listenerFn = mockAddCustomerInfoUpdateListener.mock.calls[0][0];
+      mockUpdateUser.mockClear();
+      await act(async () => {
+        listenerFn({ entitlements: { active: { 'Rewire Pro': {} } } });
+      });
+
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('configure 先行起動', () => {
+    it('hasHydrated=false でも初期化時に subscriptionClient.initialize が呼ばれる', async () => {
+      mockHasHydrated = false;
+      mockUser = null;
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+      expect(mockInitialize).toHaveBeenCalled();
+    });
+  });
+
+  describe('AppState active 再取得', () => {
+    beforeEach(() => {
+      appStateChangeHandler = null;
+    });
+
+    it('AppState が active に遷移すると getSubscriptionStatus が再呼び出しされる', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      mockGetSubscriptionStatus.mockClear();
+      expect(appStateChangeHandler).not.toBeNull();
+      await act(async () => {
+        appStateChangeHandler!('active');
+      });
+
+      expect(mockGetSubscriptionStatus).toHaveBeenCalled();
+    });
+
+    it('AppState が background に遷移しても getSubscriptionStatus は呼ばれない', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      mockGetSubscriptionStatus.mockClear();
+      await act(async () => {
+        appStateChangeHandler!('background');
+      });
+
+      expect(mockGetSubscriptionStatus).not.toHaveBeenCalled();
+    });
+
+    it('active 遷移時に isActive=true が返れば isPro=true に更新される', async () => {
+      mockHasHydrated = true;
+      mockUser = { nickname: 'Test', isPro: false };
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      mockGetSubscriptionStatus.mockResolvedValue({
+        isActive: true, plan: 'pro_annual', expiresAt: null, willRenew: true,
+      });
+      mockUpdateUser.mockClear();
+      await act(async () => {
+        appStateChangeHandler!('active');
+      });
+
+      expect(mockUpdateUser).toHaveBeenCalledWith({ isPro: true });
     });
   });
 });

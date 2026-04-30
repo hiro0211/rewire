@@ -5,10 +5,17 @@ jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: false }));
 
 const mockInitialize = jest.fn();
 const mockIsReady = jest.fn();
+const mockGetSubscriptionStatus = jest.fn().mockResolvedValue({
+  isActive: false,
+  plan: 'free',
+  expiresAt: null,
+  willRenew: false,
+});
 jest.mock('@/lib/subscription/subscriptionClient', () => ({
   subscriptionClient: {
     isReady: (...args: any[]) => mockIsReady(...args),
     initialize: (...args: any[]) => mockInitialize(...args),
+    getSubscriptionStatus: (...args: any[]) => mockGetSubscriptionStatus(...args),
   },
 }));
 
@@ -33,9 +40,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
 }));
 
-jest.mock('@/stores/userStore', () => ({
-  useUserStore: () => ({ user: null, updateUser: jest.fn() }),
-}));
+jest.mock('@/stores/userStore', () => {
+  const state = { user: null, updateUser: jest.fn() };
+  return {
+    useUserStore: (selector?: (s: any) => any) =>
+      selector ? selector(state) : state,
+  };
+});
 
 import { usePaywallOrchestration } from '../usePaywallOrchestration';
 

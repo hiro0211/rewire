@@ -1,9 +1,11 @@
 import { AchievementsLinkCard } from '@/components/profile/AchievementsLinkCard';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { SafariExtensionAlertCard } from '@/components/profile/SafariExtensionAlertCard';
 import { ToolCard } from '@/components/profile/ToolCard';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { SPACING } from '@/constants/theme';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
+import { useSafariSettingsDeepLink } from '@/hooks/safariWebExtension/useSafariSettingsDeepLink';
 import { useWebExtensionStatus } from '@/hooks/settings/useWebExtensionStatus';
 import { useLocale } from '@/hooks/useLocale';
 import { useTheme } from '@/hooks/useTheme';
@@ -17,7 +19,23 @@ export default function ProfileScreen() {
   const { summary } = useAchievements();
   const { colors } = useTheme();
   const { t } = useLocale();
-  const { webExtensionStatus } = useWebExtensionStatus();
+  const { webExtensionStatus, recheck } = useWebExtensionStatus();
+  const openSafariSettings = useSafariSettingsDeepLink();
+
+  const showWarning =
+    Platform.OS === 'ios' &&
+    (webExtensionStatus === 'never' ||
+      webExtensionStatus === 'needsAllUrls');
+  const showRefreshPrompt =
+    Platform.OS === 'ios' && webExtensionStatus === 'stale';
+  const showToolCard =
+    Platform.OS === 'ios' &&
+    (webExtensionStatus === 'active' || webExtensionStatus === 'checking');
+
+  const warningDescriptionKey =
+    webExtensionStatus === 'needsAllUrls'
+      ? 'safariWebExtension.alert.descriptionNeedsAllUrls'
+      : 'safariWebExtension.alert.descriptionDisabled';
 
   return (
     <SafeAreaWrapper>
@@ -33,18 +51,46 @@ export default function ProfileScreen() {
           />
         </View>
 
+        {showWarning && (
+          <View style={styles.alertContainer}>
+            <SafariExtensionAlertCard
+              variant="warning"
+              title={t('safariWebExtension.alert.title')}
+              description={t(warningDescriptionKey)}
+              actionLabel={t('safariWebExtension.alert.openSettingsAction')}
+              onPress={openSafariSettings}
+            />
+          </View>
+        )}
+
+        {showRefreshPrompt && (
+          <View style={styles.alertContainer}>
+            <SafariExtensionAlertCard
+              variant="info"
+              title={t('safariWebExtension.refresh.title')}
+              description={t('safariWebExtension.refresh.description')}
+              actionLabel={t('safariWebExtension.refresh.recheckAction')}
+              onPress={recheck}
+            />
+          </View>
+        )}
+
         {/* Tool Cards */}
-        <View style={styles.toolCards}>
-          {Platform.OS === 'ios' && (
+        {showToolCard && (
+          <View style={styles.toolCards}>
             <ToolCard
-              icon={webExtensionStatus === 'enabled' ? 'shield-checkmark' : 'shield-outline'}
+              icon={
+                webExtensionStatus === 'active'
+                  ? 'shield-checkmark'
+                  : 'shield-outline'
+              }
               iconColor={colors.danger}
               title={t('safariWebExtension.title')}
               description={t('safariWebExtension.toolCardDescription')}
               onPress={() => router.push(ROUTES.safariWebExtensionSetup)}
             />
-          )}
-        </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaWrapper>
   );
@@ -53,6 +99,10 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingBottom: SPACING.xxxl,
+  },
+  alertContainer: {
+    marginHorizontal: SPACING.screenPadding,
+    marginTop: SPACING.xl,
   },
   achievementsContainer: {
     marginHorizontal: SPACING.screenPadding,

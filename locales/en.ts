@@ -493,6 +493,20 @@ export const en: Translations = {
     enabled: 'Active',
     unknown: 'Not detected',
     toolCardDescription: 'Automatically block adult sites',
+    alert: {
+      title: 'Safari extension not detected',
+      descriptionDisabled:
+        'We could not confirm the extension is running. Open iOS Settings → Apps → Safari → Extensions, turn on Rewire, switch "All Websites" to "Allow", and toggle "Allow in Private Browsing" on.',
+      descriptionNeedsAllUrls:
+        'The extension is on, but "All Websites" is not allowed. Switch it to "Allow" in Safari extensions settings. Remember to also enable "Allow in Private Browsing".',
+      openSettingsAction: 'Open Settings',
+    },
+    refresh: {
+      title: 'Refresh Safari extension status',
+      description:
+        'You have not used Safari for a while, so the latest status is unknown. Open any web page in Safari, return here, and tap "Recheck".',
+      recheckAction: 'Recheck',
+    },
   },
   postPurchaseOnboarding: {
     thankYou: {

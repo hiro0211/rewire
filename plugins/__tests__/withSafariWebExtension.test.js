@@ -27,11 +27,22 @@ describe('generateManifest', () => {
     expect(manifest.permissions).not.toContain('declarativeNetRequestWithHostAccess');
     expect(manifest.declarative_net_request).toBeUndefined();
     expect(manifest.host_permissions).toContain('<all_urls>');
-    expect(manifest.background.service_worker).toBe('background.js');
+    // iOS Safari MV3 service_worker dies after 30-45s (known issue since iOS 17.4).
+    // Use non-persistent scripts as the Apple Forums-recommended workaround.
+    expect(manifest.background.scripts).toEqual(['background.js']);
+    expect(manifest.background.persistent).toBe(false);
+    expect(manifest.background.service_worker).toBeUndefined();
     expect(manifest.content_scripts[0].run_at).toBe('document_start');
     expect(manifest.content_scripts[0].matches).toContain('<all_urls>');
     expect(manifest.content_scripts[0].js).toEqual(['domains.js', 'content.js']);
     expect(manifest.web_accessible_resources[0].resources).toContain('blocked.html');
+  });
+
+  test('declares webNavigation and alarms permissions for heartbeat detection', () => {
+    const manifest = plugin.generateManifest();
+
+    expect(manifest.permissions).toContain('webNavigation');
+    expect(manifest.permissions).toContain('alarms');
   });
 });
 
@@ -75,6 +86,21 @@ describe('generateSwiftHandler', () => {
     expect(swift).toContain('group.rewire.app.com');
     expect(swift).toContain('"route": "/panic"');
     expect(swift).toContain('rewire-shield-panic');
+  });
+
+  test('persists hasAllUrls flag from heartbeat messages into App Group UserDefaults', () => {
+    const swift = plugin.generateSwiftHandler();
+
+    expect(swift).toContain('rewire.webExtension.hasAllUrls');
+    expect(swift).toContain('msg["hasAllUrls"]');
+  });
+
+  test('emits os_log diagnostics for Console.app debugging', () => {
+    const swift = plugin.generateSwiftHandler();
+
+    expect(swift).toContain('import os.log');
+    expect(swift).toContain('os_log');
+    expect(swift).toContain('safari-ext-handler');
   });
 });
 
@@ -145,6 +171,43 @@ describe('generateBackgroundJs', () => {
     expect(js).toContain('sendNativeMessage');
     expect(js).toContain('rewire.app.com.SafariWebExtension');
   });
+
+  test('sends heartbeat on runtime.onStartup', () => {
+    const js = plugin.generateBackgroundJs();
+
+    expect(js).toContain('onStartup.addListener');
+    expect(js).toContain("type: 'heartbeat'");
+  });
+
+  test('sends heartbeat on webNavigation.onCommitted (debounced)', () => {
+    const js = plugin.generateBackgroundJs();
+
+    expect(js).toContain('webNavigation.onCommitted.addListener');
+  });
+
+  test('registers a periodic alarm for heartbeat', () => {
+    const js = plugin.generateBackgroundJs();
+
+    expect(js).toContain("alarms.create('rewire-heartbeat'");
+    expect(js).toContain('periodInMinutes');
+    expect(js).toContain('alarms.onAlarm.addListener');
+  });
+
+  test('hardcodes hasAllUrls:true in heartbeat payload (host_permissions is required)', () => {
+    const js = plugin.generateBackgroundJs();
+
+    // <all_urls> is in manifest.host_permissions (required), so the install gate
+    // already enforces it. Skip permissions.contains because it returns false
+    // unreliably on Safari iOS.
+    expect(js).toContain('hasAllUrls: true');
+    expect(js).not.toContain('permissions.contains');
+  });
+
+  test('relays contentHeartbeat from content_script to native', () => {
+    const js = plugin.generateBackgroundJs();
+
+    expect(js).toContain("'contentHeartbeat'");
+  });
 });
 
 describe('generateContentJs', () => {
@@ -155,6 +218,15 @@ describe('generateContentJs', () => {
     expect(js).toContain('window.stop()');
     expect(js).toContain("getURL('blocked.html')");
     expect(js).toContain('location.replace');
+  });
+
+  test('sends contentHeartbeat to wake background script on every page', () => {
+    const js = plugin.generateContentJs();
+
+    // content_script runs on every page (matches: <all_urls>) and acts as a
+    // backup heartbeat trigger when the background page is asleep / killed.
+    expect(js).toContain("type: 'contentHeartbeat'");
+    expect(js).toContain('sendMessage');
   });
 });
 

@@ -1,0 +1,50 @@
+{
+  "date": "2026-04-26",
+  "latest_data_date": "2026-04-25",
+  "data_lag_days": 1,
+  "daily_metrics": {
+    "date": "2026-04-25",
+    "impressions": 7,
+    "page_views": 9,
+    "taps": 0,
+    "page_view_rate": 1.2857
+  },
+  "ten_day_aggregate": {
+    "from": "2026-04-16",
+    "to": "2026-04-25",
+    "total_impressions": 71,
+    "total_page_views": 25,
+    "total_taps": 4,
+    "avg_page_view_rate": 0.3521
+  },
+  "sources_latest_date": {
+    "App Store search": {
+      "Impression": 7,
+      "Page view": 8,
+      "Tap": 0
+    },
+    "App Store browse": {
+      "Impression": 0,
+      "Page view": 1,
+      "Tap": 0
+    }
+  },
+  "pipeline_status": {
+    "fetch_success": true,
+    "request_id": "394c257b-c76e-4779-9257-30c74024383a",
+    "reports_downloaded": [
+      "App Store Discovery and Engagement Standard",
+      "App Store Discovery and Engagement Detailed"
+    ],
+    "data_note": "No 2026-04-26 rows in TSV due to ASC ~2-day processing lag; analysis uses 2026-04-25 data."
+  },
+  "benchmark_comparison": {
+    "page_view_rate": {
+      "actual_10day_avg": 0.3521,
+      "benchmark_low": 0.25,
+      "benchmark_high": 0.35,
+      "status": "above"
+    }
+  },
+  "bottleneck": null
+}

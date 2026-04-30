@@ -5,8 +5,18 @@ import { useUserStore } from '@/stores/userStore';
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 
+const mockGetSubscriptionStatus = jest.fn().mockResolvedValue({
+  isActive: false,
+  plan: 'free',
+  expiresAt: null,
+  willRenew: false,
+});
 jest.mock('@/lib/subscription/subscriptionClient', () => ({
-  subscriptionClient: { isReady: () => false, initialize: jest.fn() },
+  subscriptionClient: {
+    isReady: () => false,
+    initialize: jest.fn(),
+    getSubscriptionStatus: (...args: unknown[]) => mockGetSubscriptionStatus(...args),
+  },
 }));
 
 jest.mock('@/lib/paywall/discountExpiry', () => ({
@@ -113,6 +123,57 @@ describe('usePaywallOrchestration', () => {
       });
 
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
+  });
+
+  describe('subscription guard', () => {
+    const BASE_USER = {
+      id: 'u1',
+      nickname: 'tester',
+      goalDays: 30,
+      streakStartDate: null,
+      isPro: false,
+      notifyTime: '22:00',
+      notifyEnabled: true,
+      createdAt: '2026-04-01T00:00:00.000Z',
+      consentGivenAt: '2026-04-01T00:00:00.000Z',
+      ageVerifiedAt: null,
+    };
+
+    beforeEach(() => {
+      mockReplace.mockClear();
+      mockGetSubscriptionStatus.mockReset();
+      useUserStore.setState({ user: BASE_USER, isLoading: false, hasHydrated: true });
+    });
+
+    it('マウント時 getSubscriptionStatus が isActive=true を返すと /(tabs) に自動遷移する', async () => {
+      mockGetSubscriptionStatus.mockResolvedValue({
+        isActive: true,
+        plan: 'pro_annual',
+        expiresAt: '2027-04-01T00:00:00.000Z',
+        willRenew: true,
+      });
+
+      renderHook(() => usePaywallOrchestration({ source: 'returning' }));
+
+      await act(async () => {});
+
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
+
+    it('マウント時 getSubscriptionStatus が isActive=false なら遷移しない', async () => {
+      mockGetSubscriptionStatus.mockResolvedValue({
+        isActive: false,
+        plan: 'free',
+        expiresAt: null,
+        willRenew: false,
+      });
+
+      renderHook(() => usePaywallOrchestration({ source: 'returning' }));
+
+      await act(async () => {});
+
+      expect(mockReplace).not.toHaveBeenCalledWith('/(tabs)');
     });
   });
 });
