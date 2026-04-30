@@ -10,12 +10,16 @@ import {
 } from 'react-native-reanimated';
 import { getCountUpDuration, COUNT_UP_ANIMATION } from '@/constants/streakCelebration';
 
-export const useCountUpAnimation = (targetStreak: number) => {
-  const animatedStreak = useSharedValue(0);
+export const useCountUpAnimation = (targetStreak: number, fromStreak: number = 0) => {
+  const animatedStreak = useSharedValue(fromStreak);
   const scale = useSharedValue(0.8);
   const opacity = useSharedValue(0);
 
-  const duration = getCountUpDuration(targetStreak);
+  // When animating just one step (e.g. 9 → 10), use a short fixed duration.
+  const duration =
+    targetStreak - fromStreak === 1
+      ? COUNT_UP_ANIMATION.singleStepDuration
+      : getCountUpDuration(targetStreak);
 
   useEffect(() => {
     // Fade in

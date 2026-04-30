@@ -9,11 +9,12 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 interface StreakNumberProps {
   streak: number;
+  fromStreak?: number;
 }
 
-export function StreakNumber({ streak }: StreakNumberProps) {
+export function StreakNumber({ streak, fromStreak = 0 }: StreakNumberProps) {
   const { colors } = useTheme();
-  const { animatedStreak, scale, opacity } = useCountUpAnimation(streak);
+  const { animatedStreak, scale, opacity } = useCountUpAnimation(streak, fromStreak);
 
   const animatedProps = useAnimatedProps(() => ({
     text: String(Math.round(animatedStreak.value)),

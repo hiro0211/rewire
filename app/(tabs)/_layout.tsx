@@ -45,11 +45,6 @@ export default function TabLayout() {
         name="articles"
         options={{ href: null }}
       />
-      {/* カレンダーは /streak-calendar 独立画面に移行 */}
-      <Tabs.Screen
-        name="history"
-        options={{ href: null }}
-      />
       <Tabs.Screen
         name="learn"
         options={{

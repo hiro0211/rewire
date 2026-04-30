@@ -803,3 +803,104 @@ Step 1+2+window 24h 化を実機で検証 → prebuild 後も誤『Safari 拡張
 **結果**: 272 suites / 1934 tests 全件通過。lint は変更ファイルに新規エラーなし。未コミット。
 **重要な注意**: 実機反映には `npx expo prebuild --clean -p ios` 必須（Swift module の活性化ウィンドウ短縮を反映するため）。Safari Web Extension の `background.scripts` + `persistent: false` は `plugins/withSafariWebExtension.js:64` で既に対応済み。
 **未対応**: 隠し WKWebView による能動 heartbeat 喚起、`hasAllUrls` の native 側厳密検知（現状ハードコード true 維持）、`SFSafariExtensionManager` の iOS 提供（Apple マター）。
+
+## 2026-04-30: カレンダーUI刷新（IMG_4643 ベース）
+
+### 変更概要
+- Streak Calendar 画面を IMG_4643 のミニマル円形セルデザインに刷新
+- List タブと SegmentedControl を撤去、カレンダー単独画面に
+- ホーム画面と同じ `SafeAreaWrapper` + `gradients.background` で背景統一
+- 3 状態（clean / relapse / no-data）+ ストリーク開始前 / 未来日を視覚的に区別
+
+### 影響範囲
+**新規**: `lib/calendar/dayStatus.ts`, `components/history/CalendarDayCell.tsx`, `CalendarLegend.tsx`, `CalendarHeader.tsx`, `CalendarWeekDays.tsx`, `StreakCalendarHeader.tsx` + 各テスト  
+**修正**: `app/index.tsx` (DEV_SKIP_ONBOARDING=true 一時的)、`app/history/index.tsx` 完全書き換え、`components/history/HistoryCalendar.tsx` 分割版へ、`app/(tabs)/_layout.tsx` から `history` タブ参照削除、`app/_layout.tsx` で history headerShown:false、`constants/colorPalettes.ts` に `streakActive` 追加、`types/theme.ts` に `streakActive: string` 追加、`locales/ja.ts` / `locales/en.ts` に `calendar.{noData, streakCalendarTitle, edit}` 追加・`historyView.*` 削除  
+**削除**: `app/streak-calendar.tsx`, `app/__tests__/streak-calendar.test.tsx`, `app/(tabs)/history.tsx`, `components/history/HistoryList.tsx`, `components/history/__tests__/HistoryCalendar.key.test.tsx`, `components/ui/SegmentedControl.tsx` + テスト
+
+### 状態判定ロジック（`getDayStatus`）
+- `clean`: 記録あり・watchedPorn=false → 紫円＋白チェック
+- `relapse`: 記録あり・watchedPorn=true → 赤円＋白×
+- `empty-future`: 今日より未来かつ記録なし → 透明＋テキスト opacity 0.4
+- `empty-pre-streak`: streakStartDate より前 → ボーダーなし完全空（ユーザー要望）
+- `empty-no-data`: ストリーク開始日以降で記録なし → 細ボーダーで「未記録」を明示
+
+### 設計ポイント
+- `StreakEditModal` は `StatsRow.tsx` のパターン（`updateUser({ streakStartDate })`）を再利用
+- 18 行の `app/history/index.tsx` を組立役に。`HistoryCalendar` も状態管理＋コンポジションのみで責務分離（CLAUDE.md SRP 準拠）
+- 紫色は `colors.streakActive` セマンティック名で導入（dark: `#8B5CF6`、light: `#7C4DFF`）。`gradients.button[0]` の inline 参照を回避
+
+### テスト状況
+- **新規**: 8 suites / 25 tests 全通過（dayStatus 7、CalendarDayCell 6、HistoryCalendar 4、historyScreen 4、その他 4）
+- **全体**: 1937 tests passed / **1 failed**（`indexRouting.test.tsx` の "DEV_SKIP_ONBOARDING=false" テストのみ — 故意のトグル切替が原因。`false` に戻せば自動で通る）
+- TypeScript 型エラー新規発生ゼロ（既存 22 件は本変更無関係）
+- ESLint エラー新規発生ゼロ
+
+### ⚠️ ビルド前注意
+- `app/index.tsx:8` の `DEV_SKIP_ONBOARDING = true` を **必ず `false` に戻す**
+- 戻し漏れチェック: `grep "DEV_SKIP_ONBOARDING = true" app/index.tsx`
+- 戻したら `indexRouting.test.tsx` も自動で通るようになる
+
+### 未コミット
+- 上記すべて未コミット。動作確認 → DEV_SKIP_ONBOARDING を false に戻す → コミットの順を推奨
+
+
+---
+
+## 2026-04-30: ストリークセレブレーションモーダル復元（+1 カウントアップ・限定トリガー）
+
+### 目的
+オンボーディング後に出ていた「連続記録が浮かび上がるモーダル」を復元。ただし、過去版の 0→N の長いカウントアップを **+1 だけ**（例: 9→10）に変更し、出現頻度を絞ってしつこさを排除。
+
+### トリガー条件（2 箇所のみ）
+1. **A**: ReflectionSheet で「ポルノを見ていません」(`watchedPorn=false`) と申告した直後
+2. **B**: 申告がなくても、日付更新でストリークが +1 されたタイミングでアプリを開いたとき
+
+### アーキテクチャ（SRP 4 層）
+- `features/streak/celebrationPolicy.ts` — 純関数 `shouldCelebrate({ currentStreak, lastCelebrated, hydrated })` と `computeFromStreak(currentStreak, lastCelebrated)`
+- `lib/storage/celebrationStorage.ts` — `getLastCelebratedStreak() / setLastCelebratedStreak(n)`。settings キー相乗り（`SettingsData.lastCelebratedStreak`）
+- `hooks/streak/useStreakCelebration.ts` — hydration ガード、auto-trigger（B）、明示 trigger（A）、dismiss、relapse クランプ、初回マイグレーション
+- `components/streak/StreakCountUpModal.tsx` — Modal（fade）+ StreakNumber + TIER_CONFIGS に基づくエフェクト（ParticleEffect/GlowOverlay/ConfettiEffect）+ StreakSubText + 閉じるボタン + Haptics
+
+### A の橋渡し（sheet → dashboard）
+`useReflectionSheet` ストアに `pendingCelebrationStreak: number | null` と `clearPendingCelebration()` を追加。`selectUrgeLevelAndSubmit` 成功時に `watchedPorn === false` なら `calculateStreak(streakStartDate, checkins)` で算出した値をセット。dashboard 側 `app/(tabs)/index.tsx` で `useEffect` 監視し、sheet が閉じた瞬間に `trigger()` → `clearPendingCelebration()`。
+
+### 重要な設計判断
+1. **+1 アニメ強制**: `computeFromStreak = max(0, currentStreak - 1)`。lastCelebrated が小さくても巨大カウントアップを発生させない
+2. **relapse クランプ**: 起動時に `currentStreak < lastCelebrated` なら `lastCelebrated = currentStreak` で保存
+3. **初回マイグレーション**: `lastCelebratedStreak === null`（既存ユーザー）は初回 hydration で `currentStreak` を保存して何も表示しない（アップデート直後の派手な表示を防ぐ）
+4. **二重発火ガード**: `visibleRef` で表示中は再 trigger しない
+5. **duration 短縮**: `COUNT_UP_ANIMATION.singleStepDuration: 700` を新規追加。`useCountUpAnimation` は targetStreak - fromStreak === 1 のとき固定 700ms
+
+### 改修ファイル
+- `hooks/streak/useCountUpAnimation.ts` — `fromStreak?: number = 0` 引数追加。`useSharedValue(fromStreak)` に変更。+1 時は singleStepDuration 使用
+- `components/streak/StreakNumber.tsx` — `fromStreak?: number` props 追加
+- `constants/streakCelebration.ts` — `COUNT_UP_ANIMATION.singleStepDuration: 700` 追加
+- `hooks/reflection/useReflectionSheet.ts` — pendingCelebrationStreak / clearPendingCelebration 追加
+- `app/(tabs)/index.tsx` — useStreakCelebration + StreakCountUpModal 統合
+- `locales/ja.ts`, `locales/en.ts` — `streak.celebrationDismiss`（'素晴らしい！' / 'Awesome!'）追加
+
+### 新規ファイル
+- `features/streak/celebrationPolicy.ts` + `__tests__/celebrationPolicy.test.ts` (13 tests)
+- `lib/storage/celebrationStorage.ts` + `__tests__/celebrationStorage.test.ts` (7 tests)
+- `hooks/streak/useStreakCelebration.ts` + `__tests__/useStreakCelebration.test.ts` (8 tests)
+- `components/streak/StreakCountUpModal.tsx` + `__tests__/StreakCountUpModal.test.tsx` (7 tests)
+
+### テスト
+- 関連 18 suites / 158 tests 全通過
+- 全体: 279 suites / 1978 tests 通過、1 failed（`indexRouting.test.tsx` = 既知の post-purchase-onboarding 関連、変更無関係）
+- lint: 新規エラーゼロ（変更前 24 errors / 408 warnings のまま）
+
+### 注意点（次回以降のメンテ）
+- `StreakCountUpModal` 関連のテストでは Haptics モックを `mockResolvedValue(undefined)` で Promise を返す形にすること（`.catch()` を使うため）
+- `useCountUpAnimation` を使う既存 `StreakNumber` には影響なし（`fromStreak` はデフォルト 0）
+- AsyncStorage `settings` キーに `lastCelebratedStreak: number` が増えた。既存の `lastReflectionDate` 等と共存
+- `useReflectionSheet` の getState() で user/checkins を取得しているため、テストモックで両ストアを渡す必要あり
+- 既存ユーザーが初回起動した時は表示されない（仕様）。次回 +1 されたタイミングから表示される
+
+### 未コミット
+- 上記すべて未コミット。Dev build / シミュレーターで A/B 両シナリオ手動確認 → コミット推奨
+- 手動 E2E:
+  - **A**: ReflectionSheet で「見ていません」→ urge → 完了 → モーダル自動表示
+  - **B**: settings.lastCelebratedStreak を currentStreak - 1 に手動セット → 再起動 → 自動表示
+  - **抑止**: dismiss 後再起動 → 出ない
+  - **relapse**: 「見ました」→ recovery → モーダル出ない → 翌日 +1 で出る

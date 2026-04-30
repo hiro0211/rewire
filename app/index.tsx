@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 // ブランド画面を常に表示する（dev clientでもスキップしない）
+// ⚠️ 開発確認用に true。本番ビルド前に必ず false に戻すこと。
 const DEV_SKIP_ONBOARDING = false;
 // ⚠️ 開発用: 起動時にペイウォール後オンボーディングを直接開く。確認後は false に戻すこと
 const DEV_PREVIEW_POST_PURCHASE = false;

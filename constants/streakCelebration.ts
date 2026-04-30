@@ -62,6 +62,7 @@ export const COUNT_UP_ANIMATION = {
   maxDuration: 1500,
   bounceTo: 1.15,
   bounceBack: 1.0,
+  singleStepDuration: 700,
 } as const;
 
 /** Calculate count-up animation duration based on streak value */

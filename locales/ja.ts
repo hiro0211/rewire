@@ -53,6 +53,7 @@ export const ja = {
     daysAchieved: '{{days}}日達成！',
     relapseCount: 'リセット回数',
     since: '{{date}} から',
+    celebrationDismiss: '素晴らしい！',
   },
   sos: {
     feelingUrge: 'ポルノを見たくなったら',
@@ -376,10 +377,6 @@ export const ja = {
     home: 'ホーム',
     profile: 'プロフィール',
     recordHistory: '記録履歴',
-  },
-  historyView: {
-    calendar: 'カレンダー',
-    list: 'リスト',
   },
   surveyForm: {
     submit: '送信する',
@@ -767,6 +764,9 @@ export const ja = {
     monthFormat: 'yyyy年 M月',
     clean: '達成',
     relapse: 'リセット',
+    noData: 'データなし',
+    streakCalendarTitle: 'カレンダー',
+    edit: '編集',
   },
   weekDaysShort: { mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土', sun: '日' },
   analyzing: {

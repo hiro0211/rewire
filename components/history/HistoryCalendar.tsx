@@ -1,121 +1,63 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SPACING, FONT_WEIGHT, } from '@/constants/theme';
-import { useTheme } from '@/hooks/useTheme';
-import { format } from 'date-fns/format';
+import React, { useMemo, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { addMonths } from 'date-fns/addMonths';
 import { subMonths } from 'date-fns/subMonths';
 import { startOfMonth } from 'date-fns/startOfMonth';
 import { endOfMonth } from 'date-fns/endOfMonth';
 import { eachDayOfInterval } from 'date-fns/eachDayOfInterval';
-import { isSameMonth } from 'date-fns/isSameMonth';
-import { isSameDay } from 'date-fns/isSameDay';
 import { getDay } from 'date-fns/getDay';
-import { ja } from 'date-fns/locale/ja';
-import { enUS } from 'date-fns/locale/en-US';
+import { isSameDay } from 'date-fns/isSameDay';
 import { useCheckinStore } from '@/stores/checkinStore';
-import { useLocale } from '@/hooks/useLocale';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { useStreak } from '@/hooks/dashboard/useStreak';
+import { CalendarHeader } from './CalendarHeader';
+import { CalendarWeekDays } from './CalendarWeekDays';
+import { CalendarDayCell } from './CalendarDayCell';
+import { getDayStatus, dateToKey } from '@/lib/calendar/dayStatus';
+import { SPACING } from '@/constants/theme';
 
 export const HistoryCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const checkins = useCheckinStore((state) => state.checkins);
-  const { colors, shadows } = useTheme();
-  const { t, isJapanese } = useLocale();
+  const { streakStartDate } = useStreak();
 
-  const daysInMonth = useMemo(() => {
+  const today = useMemo(() => new Date(), []);
+
+  const days = useMemo(() => {
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  const weekDays = [
-    t('calendar.weekDays.sun'), t('calendar.weekDays.mon'), t('calendar.weekDays.tue'),
-    t('calendar.weekDays.wed'), t('calendar.weekDays.thu'), t('calendar.weekDays.fri'),
-    t('calendar.weekDays.sat'),
-  ];
+  const leadingEmpty = useMemo(() => getDay(startOfMonth(currentMonth)), [currentMonth]);
 
-  // Calculate empty days at start of month for alignment
-  const startDay = getDay(startOfMonth(currentMonth));
-  const emptyDays = Array(startDay).fill(null);
-
-  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-
-  const getDayStatus = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const checkin = checkins.find(c => c.date === dateStr);
-
-    if (!checkin) return 'empty';
-    if (checkin.watchedPorn) return 'relapse';
-    return 'clean';
-  };
+  const checkinByDate = useMemo(() => {
+    const map = new Map<string, (typeof checkins)[number]>();
+    checkins.forEach((c) => map.set(c.date, c));
+    return map;
+  }, [checkins]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface }, shadows.small]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handlePrevMonth} style={styles.arrowButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.monthTitle, { color: colors.text }]}>
-          {format(currentMonth, isJapanese ? 'yyyy年 M月' : 'MMM yyyy', { locale: isJapanese ? ja : enUS })}
-        </Text>
-        <TouchableOpacity onPress={handleNextMonth} style={styles.arrowButton}>
-          <Ionicons name="chevron-forward" size={24} color={colors.text} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Week days */}
-      <View style={styles.weekDays}>
-        {weekDays.map((day, index) => (
-          <Text key={index} style={[styles.weekDayText, { color: colors.textSecondary }, index === 0 && { color: colors.error }]}>
-            {day}
-          </Text>
-        ))}
-      </View>
-
-      {/* Calendar Grid */}
+    <View style={styles.container}>
+      <CalendarHeader
+        month={currentMonth}
+        onPrev={() => setCurrentMonth(subMonths(currentMonth, 1))}
+        onNext={() => setCurrentMonth(addMonths(currentMonth, 1))}
+      />
+      <CalendarWeekDays />
       <View style={styles.grid}>
-        {emptyDays.map((_, index) => (
-          <View key={`empty-${index}`} style={styles.dayCell} />
+        {Array.from({ length: leadingEmpty }).map((_, i) => (
+          <View key={`leading-${i}`} style={styles.cellWrapper} />
         ))}
-        {daysInMonth.map((date) => {
-          const status = getDayStatus(date);
-          const isToday = isSameDay(date, new Date());
-
+        {days.map((date) => {
+          const checkin = checkinByDate.get(dateToKey(date));
+          const status = getDayStatus({ date, checkin, streakStartDate, today });
+          const isToday = isSameDay(date, today);
           return (
-            <View key={date.toString()} style={styles.dayCell}>
-              <View style={[
-                styles.dayCircle,
-                isToday && { borderWidth: 1, borderColor: colors.primary },
-                status === 'clean' && { backgroundColor: colors.success },
-                status === 'relapse' && { backgroundColor: colors.error },
-              ]}>
-                <Text style={[
-                  styles.dayText,
-                  { color: colors.text },
-                  isToday && { color: colors.primary, fontWeight: FONT_WEIGHT.bold },
-                  (status === 'clean' || status === 'relapse') && { color: colors.surface, fontWeight: FONT_WEIGHT.bold },
-                ]}>
-                  {format(date, 'd')}
-                </Text>
-              </View>
+            <View key={date.toISOString()} style={styles.cellWrapper}>
+              <CalendarDayCell date={date} status={status} isToday={isToday} />
             </View>
           );
         })}
-      </View>
-
-      {/* Legend */}
-      <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
-          <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('calendar.clean')}</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.error }]} />
-          <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('calendar.relapse')}</Text>
-        </View>
       </View>
     </View>
   );
@@ -123,69 +65,16 @@ export const HistoryCalendar = () => {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 16,
-    padding: SPACING.md,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  monthTitle: {
-    fontSize: 18,
-    fontWeight: FONT_WEIGHT.bold,
-  },
-  arrowButton: {
-    padding: SPACING.xs,
-  },
-  weekDays: {
-    flexDirection: 'row',
-    marginBottom: SPACING.sm,
-  },
-  weekDayText: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 12,
+    paddingVertical: SPACING.sm,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  dayCell: {
-    width: '14.28%', // 100% / 7
+  cellWrapper: {
+    width: `${100 / 7}%`,
     aspectRatio: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
-  },
-  dayCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dayText: {
-    fontSize: 14,
-  },
-  legend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: SPACING.md,
-    gap: SPACING.lg,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    fontSize: 12,
   },
 });

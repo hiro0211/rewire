@@ -61,6 +61,7 @@ export const en: Translations = {
     daysAchieved: '{{days}} days!',
     relapseCount: 'Resets',
     since: 'Since {{date}}',
+    celebrationDismiss: 'Awesome!',
   },
   sos: {
     feelingUrge: 'Feeling an urge?',
@@ -390,10 +391,6 @@ export const en: Translations = {
     home: 'Home',
     profile: 'Profile',
     recordHistory: 'Record History',
-  },
-  historyView: {
-    calendar: 'Calendar',
-    list: 'List',
   },
   surveyForm: {
     submit: 'Submit',
@@ -781,6 +778,9 @@ export const en: Translations = {
     monthFormat: 'MMM yyyy',
     clean: 'Clean',
     relapse: 'Reset',
+    noData: 'No Data',
+    streakCalendarTitle: 'Streak Calendar',
+    edit: 'Edit',
   },
   weekDaysShort: { mon: 'M', tue: 'T', wed: 'W', thu: 'T', fri: 'F', sat: 'S', sun: 'S' },
   analyzing: {

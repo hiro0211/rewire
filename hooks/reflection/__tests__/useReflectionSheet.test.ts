@@ -6,16 +6,19 @@ jest.mock('@/features/checkin/checkinService', () => ({
 }));
 
 const mockAddCheckin = jest.fn().mockResolvedValue(undefined);
-jest.mock('@/stores/checkinStore', () => ({
-  useCheckinStore: {
-    getState: () => ({ addCheckin: mockAddCheckin }),
+
+const mockLoadUser = jest.fn().mockResolvedValue(undefined);
+let mockUser: any = null;
+jest.mock('@/stores/userStore', () => ({
+  useUserStore: {
+    getState: () => ({ loadUser: mockLoadUser, user: mockUser }),
   },
 }));
 
-const mockLoadUser = jest.fn().mockResolvedValue(undefined);
-jest.mock('@/stores/userStore', () => ({
-  useUserStore: {
-    getState: () => ({ loadUser: mockLoadUser }),
+let mockCheckins: any[] = [];
+jest.mock('@/stores/checkinStore', () => ({
+  useCheckinStore: {
+    getState: () => ({ addCheckin: mockAddCheckin, checkins: mockCheckins }),
   },
 }));
 
@@ -31,6 +34,8 @@ import { useReflectionSheet } from '../useReflectionSheet';
 describe('useReflectionSheet', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUser = null;
+    mockCheckins = [];
     mockProcessCheckin.mockResolvedValue({
       id: 'abc',
       date: '2026-04-19',
@@ -195,6 +200,7 @@ describe('useReflectionSheet', () => {
         step: 3,
         formState: { watchedPorn: true, urgeLevel: 4 },
         submitError: 'error',
+        pendingCelebrationStreak: 5,
       });
 
       useReflectionSheet.getState().reset();
@@ -205,6 +211,54 @@ describe('useReflectionSheet', () => {
       expect(state.formState.watchedPorn).toBeNull();
       expect(state.formState.urgeLevel).toBe(0);
       expect(state.submitError).toBeNull();
+      expect(state.pendingCelebrationStreak).toBeNull();
+    });
+  });
+
+  describe('pendingCelebrationStreak', () => {
+    it('初期値は null', () => {
+      expect(useReflectionSheet.getState().pendingCelebrationStreak).toBeNull();
+    });
+
+    it('watchedPorn=false で submit 成功時、最新ストリーク値が pendingCelebrationStreak にセットされる', async () => {
+      useReflectionSheet.getState().open();
+      useReflectionSheet.getState().selectWatchedPorn(false);
+      // streakStartDate を 10 日前 (= diff 10) に設定
+      const tenDaysAgoMs = Date.now() - 10 * 24 * 60 * 60 * 1000;
+      mockUser = { streakStartDate: new Date(tenDaysAgoMs).toISOString(), goalDays: 30 };
+
+      await useReflectionSheet.getState().selectUrgeLevelAndSubmit(2);
+
+      const state = useReflectionSheet.getState();
+      expect(state.pendingCelebrationStreak).toBe(10);
+    });
+
+    it('watchedPorn=true（relapse）の場合は pendingCelebrationStreak をセットしない', async () => {
+      useReflectionSheet.getState().open();
+      useReflectionSheet.getState().selectWatchedPorn(true);
+      mockUser = { streakStartDate: new Date().toISOString(), goalDays: 30 };
+
+      await useReflectionSheet.getState().selectUrgeLevelAndSubmit(2);
+
+      expect(useReflectionSheet.getState().pendingCelebrationStreak).toBeNull();
+    });
+
+    it('clearPendingCelebration() で null に戻る', () => {
+      useReflectionSheet.setState({ pendingCelebrationStreak: 10 });
+
+      useReflectionSheet.getState().clearPendingCelebration();
+
+      expect(useReflectionSheet.getState().pendingCelebrationStreak).toBeNull();
+    });
+
+    it('streakStartDate がない場合は pendingCelebrationStreak をセットしない', async () => {
+      useReflectionSheet.getState().open();
+      useReflectionSheet.getState().selectWatchedPorn(false);
+      mockUser = { goalDays: 30 };
+
+      await useReflectionSheet.getState().selectUrgeLevelAndSubmit(2);
+
+      expect(useReflectionSheet.getState().pendingCelebrationStreak).toBeNull();
     });
   });
 });

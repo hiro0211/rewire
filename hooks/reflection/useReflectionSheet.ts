@@ -4,6 +4,7 @@ import { checkinService } from '@/features/checkin/checkinService';
 import { useCheckinStore } from '@/stores/checkinStore';
 import { useUserStore } from '@/stores/userStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
+import { calculateStreak } from '@/features/checkin/streakCalculator';
 
 export type ReflectionStep = 1 | 2 | 3;
 
@@ -18,6 +19,7 @@ interface ReflectionSheetState {
   formState: ReflectionFormState;
   isSubmitting: boolean;
   submitError: string | null;
+  pendingCelebrationStreak: number | null;
 }
 
 interface ReflectionSheetActions {
@@ -27,6 +29,7 @@ interface ReflectionSheetActions {
   selectUrgeLevelAndSubmit: (level: number) => Promise<void>;
   confessRelapseAndClose: () => Promise<boolean>;
   finish: () => void;
+  clearPendingCelebration: () => void;
   reset: () => void;
 }
 
@@ -36,6 +39,7 @@ const INITIAL_STATE: ReflectionSheetState = {
   formState: { watchedPorn: null, urgeLevel: 0 },
   isSubmitting: false,
   submitError: null,
+  pendingCelebrationStreak: null,
 };
 
 export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetActions>((set, get) => ({
@@ -79,7 +83,23 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
       const today = format(new Date(), 'yyyy-MM-dd');
       await useReflectionStore.getState().markCompleted(today);
 
-      set({ step: 3, isSubmitting: false });
+      // Stage celebration if user reported staying clean.
+      let pendingCelebrationStreak: number | null = null;
+      if (formState.watchedPorn === false) {
+        const userState = useUserStore.getState();
+        const checkinState = useCheckinStore.getState();
+        if (userState.user?.streakStartDate) {
+          const streak = calculateStreak(
+            userState.user.streakStartDate,
+            checkinState.checkins,
+          );
+          if (streak > 0) {
+            pendingCelebrationStreak = streak;
+          }
+        }
+      }
+
+      set({ step: 3, isSubmitting: false, pendingCelebrationStreak });
     } catch (e: any) {
       set({
         isSubmitting: false,
@@ -122,6 +142,10 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
 
   finish: () => {
     set({ visible: false });
+  },
+
+  clearPendingCelebration: () => {
+    set({ pendingCelebrationStreak: null });
   },
 
   reset: () => {

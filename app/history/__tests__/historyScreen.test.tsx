@@ -2,18 +2,10 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
 const mockBack = jest.fn();
-jest.mock('expo-router', () => {
-  const React = require('react');
-  return {
-    Stack: {
-      Screen: ({ options }: any) => {
-        const headerLeft = options?.headerLeft;
-        return headerLeft ? React.createElement(React.Fragment, null, headerLeft()) : null;
-      },
-    },
-    useRouter: () => ({ back: mockBack }),
-  };
-});
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ back: mockBack }),
+  Stack: { Screen: () => null },
+}));
 
 const mockLoadCheckins = jest.fn();
 jest.mock('@/stores/checkinStore', () => ({
@@ -23,51 +15,22 @@ jest.mock('@/stores/checkinStore', () => ({
   },
 }));
 
-jest.mock('@/hooks/useTheme', () => ({
-  useTheme: () => ({
-    colors: {
-      background: '#000',
-      text: '#fff',
-      textSecondary: '#999',
-      surface: '#111',
-      surfaceHighlight: '#222',
-    },
-    isDark: true,
+const mockUpdateStreakStart = jest.fn();
+jest.mock('@/stores/userStore', () => ({
+  useUserStore: () => ({
+    user: { streakStartDate: '2026-04-01' },
+    updateStreakStart: mockUpdateStreakStart,
   }),
 }));
 
-jest.mock('@/hooks/useLocale', () => ({
-  useLocale: () => ({
-    t: (key: string) => {
-      const map: Record<string, string> = {
-        'nav.recordHistory': 'Record History',
-        'common.back': 'Back',
-        'historyView.calendar': 'Calendar',
-        'historyView.list': 'List',
-      };
-      return map[key] ?? key;
-    },
-  }),
-}));
-
-jest.mock('@/components/ui/GradientCard', () => {
+jest.mock('@/components/common/SafeAreaWrapper', () => {
   const { View } = require('react-native');
-  return { GradientCard: ({ children, ...props }: any) => <View {...props}>{children}</View> };
+  return { SafeAreaWrapper: ({ children }: any) => <View>{children}</View> };
 });
 
-jest.mock('@/components/ui/SegmentedControl', () => {
-  const { View, Text, Pressable } = require('react-native');
-  return {
-    SegmentedControl: ({ segments, selectedIndex, onChange }: any) => (
-      <View testID="segmented-control">
-        {segments.map((s: string, i: number) => (
-          <Pressable key={s} testID={`segment-${i}`} onPress={() => onChange(i)}>
-            <Text>{s}</Text>
-          </Pressable>
-        ))}
-      </View>
-    ),
-  };
+jest.mock('@/components/ui/GlassCard', () => {
+  const { View } = require('react-native');
+  return { GlassCard: ({ children }: any) => <View testID="glass-card">{children}</View> };
 });
 
 jest.mock('@/components/history/HistoryCalendar', () => {
@@ -75,20 +38,34 @@ jest.mock('@/components/history/HistoryCalendar', () => {
   return { HistoryCalendar: () => <View testID="history-calendar" /> };
 });
 
-jest.mock('@/components/history/HistoryList', () => {
+jest.mock('@/components/history/CalendarLegend', () => {
   const { View } = require('react-native');
-  return { HistoryList: () => <View testID="history-list" /> };
+  return { CalendarLegend: () => <View testID="calendar-legend" /> };
 });
 
-jest.mock('react-native-reanimated', () =>
-  require('react-native-reanimated/mock'),
-);
+jest.mock('@/components/history/StreakCalendarHeader', () => {
+  const { View, Pressable } = require('react-native');
+  return {
+    StreakCalendarHeader: ({ onBack, onEdit }: any) => (
+      <View testID="streak-calendar-header">
+        <Pressable testID="header-back" onPress={onBack} />
+        <Pressable testID="header-edit" onPress={onEdit} />
+      </View>
+    ),
+  };
+});
 
-jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
+jest.mock('@/components/dashboard/StreakEditModal', () => {
+  const { View, Text } = require('react-native');
+  return {
+    StreakEditModal: ({ visible }: any) =>
+      visible ? <View testID="streak-edit-modal"><Text>edit-modal</Text></View> : null,
+  };
+});
+
+jest.mock('@/hooks/useTheme', () => ({
+  useTheme: () => ({ colors: { background: '#000' } }),
 }));
-
-jest.mock('@expo/vector-icons/Ionicons', () => 'Ionicons');
 
 import HistoryScreen from '../index';
 
@@ -97,49 +74,27 @@ describe('HistoryScreen', () => {
     jest.clearAllMocks();
   });
 
-  it('SegmentedControlが表示される', () => {
+  it('カレンダーと凡例が表示される', () => {
     const { getByTestId } = render(<HistoryScreen />);
-    expect(getByTestId('segmented-control')).toBeTruthy();
-  });
-
-  it('初期状態でカレンダービューが表示される', () => {
-    const { getByTestId, queryByTestId } = render(<HistoryScreen />);
     expect(getByTestId('history-calendar')).toBeTruthy();
-    expect(queryByTestId('history-list')).toBeNull();
+    expect(getByTestId('calendar-legend')).toBeTruthy();
   });
 
-  it('リストセグメントをタップするとリストビューに切り替わる', () => {
-    const { getByTestId, queryByTestId } = render(<HistoryScreen />);
-
-    fireEvent.press(getByTestId('segment-1'));
-
-    expect(queryByTestId('history-calendar')).toBeNull();
-    expect(getByTestId('history-list')).toBeTruthy();
-  });
-
-  it('リストからカレンダーに戻せる', () => {
-    const { getByTestId, queryByTestId } = render(<HistoryScreen />);
-
-    fireEvent.press(getByTestId('segment-1'));
-    fireEvent.press(getByTestId('segment-0'));
-
-    expect(getByTestId('history-calendar')).toBeTruthy();
-    expect(queryByTestId('history-list')).toBeNull();
-  });
-
-  it('マウント時にloadCheckinsが呼ばれる', () => {
+  it('マウント時に loadCheckins が呼ばれる', () => {
     render(<HistoryScreen />);
     expect(mockLoadCheckins).toHaveBeenCalled();
   });
 
-  it('戻るボタンが表示される', () => {
+  it('Back タップで router.back() が呼ばれる', () => {
     const { getByTestId } = render(<HistoryScreen />);
-    expect(getByTestId('history-back-button')).toBeTruthy();
+    fireEvent.press(getByTestId('header-back'));
+    expect(mockBack).toHaveBeenCalled();
   });
 
-  it('戻るボタンを押すとrouter.back()が呼ばれる', () => {
-    const { getByTestId } = render(<HistoryScreen />);
-    fireEvent.press(getByTestId('history-back-button'));
-    expect(mockBack).toHaveBeenCalled();
+  it('Edit タップで StreakEditModal が開く', () => {
+    const { getByTestId, queryByTestId } = render(<HistoryScreen />);
+    expect(queryByTestId('streak-edit-modal')).toBeNull();
+    fireEvent.press(getByTestId('header-edit'));
+    expect(getByTestId('streak-edit-modal')).toBeTruthy();
   });
 });

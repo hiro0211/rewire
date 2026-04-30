@@ -1,4 +1,4 @@
-import { getCountUpDuration } from '@/constants/streakCelebration';
+import { getCountUpDuration, COUNT_UP_ANIMATION } from '@/constants/streakCelebration';
 
 describe('getCountUpDuration', () => {
   it('streak=0 のとき baseDuration(800ms) を返す', () => {
@@ -28,5 +28,11 @@ describe('getCountUpDuration', () => {
 
   it('streak=47 のとき境界値 800 + 47*15 = 1505 → 1500 にクランプ', () => {
     expect(getCountUpDuration(47)).toBe(1500);
+  });
+});
+
+describe('COUNT_UP_ANIMATION.singleStepDuration', () => {
+  it('+1 アニメーション用の固定 duration が定義されている', () => {
+    expect(COUNT_UP_ANIMATION.singleStepDuration).toBe(700);
   });
 });

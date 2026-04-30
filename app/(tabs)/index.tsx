@@ -30,6 +30,9 @@ import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { ReflectionSheet } from '@/components/reflection/ReflectionSheet';
 import { useReflectionTrigger } from '@/hooks/reflection/useReflectionTrigger';
 import { useAutoOpenReflectionSheet } from '@/hooks/reflection/useAutoOpenReflectionSheet';
+import { useReflectionSheet } from '@/hooks/reflection/useReflectionSheet';
+import { useStreakCelebration } from '@/hooks/streak/useStreakCelebration';
+import { StreakCountUpModal } from '@/components/streak/StreakCountUpModal';
 
 let ViewShot: any = View;
 if (!isExpoGo) {
@@ -70,6 +73,19 @@ export default function DashboardScreen() {
 
   useReflectionTrigger();
   useAutoOpenReflectionSheet();
+
+  const { celebratingStreak, fromStreak, trigger, dismiss } = useStreakCelebration();
+  const reflectionSheetVisible = useReflectionSheet((s) => s.visible);
+  const pendingCelebrationStreak = useReflectionSheet((s) => s.pendingCelebrationStreak);
+  const clearPendingCelebration = useReflectionSheet((s) => s.clearPendingCelebration);
+
+  // Consume pending celebration once the reflection sheet is closed.
+  useEffect(() => {
+    if (!reflectionSheetVisible && pendingCelebrationStreak !== null) {
+      trigger(pendingCelebrationStreak);
+      clearPendingCelebration();
+    }
+  }, [reflectionSheetVisible, pendingCelebrationStreak, trigger, clearPendingCelebration]);
 
   const {
     selectedRating,
@@ -199,6 +215,13 @@ export default function DashboardScreen() {
       />
 
       <ReflectionSheet />
+
+      <StreakCountUpModal
+        visible={celebratingStreak !== null}
+        fromStreak={fromStreak}
+        toStreak={celebratingStreak ?? 0}
+        onDismiss={dismiss}
+      />
 
     </SafeAreaWrapper>
   );

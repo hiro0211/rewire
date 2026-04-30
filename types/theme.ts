@@ -21,6 +21,7 @@ export interface ColorPalette {
   backgroundDeepNavy: string;
   backgroundNavy: string;
   cyan: string;
+  streakActive: string;
   pillBorder: string;
   pillBackground: string;
   selectedPillBorder: string;

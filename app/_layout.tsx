@@ -59,7 +59,7 @@ export default function RootLayout() {
           <Stack.Screen name="breathing/ask" options={{ headerShown: false }} />
           <Stack.Screen name="breathing/success" options={{ headerShown: false }} />
           <Stack.Screen name="recovery/index" options={{ headerShown: false }} />
-          <Stack.Screen name="history/index" options={{ headerShown: true, title: t('nav.history') }} />
+          <Stack.Screen name="history/index" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: true, title: t('nav.settings') }} />
           <Stack.Screen name="achievements" options={{ headerShown: false }} />
           <Stack.Screen name="terms" options={{ headerShown: true, title: t('nav.terms') }} />
