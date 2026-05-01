@@ -1,5 +1,196 @@
 
 
+## 2026-05-01: DEMO_TEST_URL を Google → DuckDuckGo に切り替え（Google アプリの Universal Links 横取り対策）
+
+### 解決した課題
+実機検証で「Safariで検索を開く」を押すと **iOS の Google アプリ**が起動してしまう問題。`https://www.google.com/search?q=pornhub` は Google の apple-app-site-association で claimed されており、ユーザーが Google アプリをインストールしている場合 Universal Links で横取りされ、Safari で開かない → Safari Web Extension がそもそも走らないため、ブロック体験が動作しない。
+
+### 検討した3案
+1. **`x-web-search://?query=pornhub`** — iOS Spotlight が使う非公式スキーム。Safari の URL バーに pornhub を入れた状態で立ち上がるが、iOS バージョンによって挙動が揺れる可能性
+2. **DuckDuckGo URL** ← 採用 — `https://duckduckgo.com/?q=pornhub`。DDG アプリを入れているユーザーが少ないため Safari で確実に開く。SafeSearch も緩く adult クエリで結果が出る
+3. **Google URL の bypass トリック** — Universal Links は fragment や query 追加では回避できない。実用的でない
+
+### 変更ファイル
+- `constants/postPurchaseOnboarding.ts` — `DEMO_TEST_URL` を `https://duckduckgo.com/?q=pornhub` に変更、選定理由をコメント
+- `components/postPurchaseOnboarding/__tests__/DemoStep.test.tsx` — URL アサート更新
+
+### 注意事項
+- `locales/ja.ts` / `locales/en.ts` の demo description は「検索結果が表示されます」と検索エンジン非依存の表現になっており**変更不要**
+- DuckDuckGo の adult 結果は Google より緩いがゼロではない。「pornhub」での検索は最上位に pornhub.com 公式サイトが出る想定。実機で確認
+- DDG アプリをインストールしているユーザーは Universal Links で intercept される可能性。ただしレアケースとして許容。問題が発覚したら `x-web-search://` 系へ更に切り替え検討
+
+### テスト
+- 47 / 47 PASS（postPurchaseOnboarding 系 全 Green）
+
+
+## 2026-05-01: 検知ゲート撤去 → 確認モーダル方式へピボット
+
+### 解決した課題
+同日朝に実装した「多層検知ハイブリッド」(`useExtensionGate` + Tier 1 SFSafariExtensionManager + Tier 2 Darwin Notifications + Tier 3 heartbeat) を実機検証したところ、**拡張機能を ON にしても `disabled` 判定が出続け demo step のメインボタンが永久に押せない**問題が発生。原因デバッグせず、検知の不確実性を受け入れる確認モーダル方式に転換。
+
+### 実装内容（前計画の検知 UI 撤去 + 確認モーダル追加）
+
+**新規**:
+- `components/postPurchaseOnboarding/ExtensionConfirmModal.tsx` — 2 ボタン (続ける / 設定で確認)、外側タップで close
+- `components/postPurchaseOnboarding/__tests__/ExtensionConfirmModal.test.tsx` — 5 tests
+
+**修正**:
+- `components/postPurchaseOnboarding/DemoStep.tsx` — `gate` prop / `gateArea` / `disabledTint` / `probeButton` 全削除。`handleTestBlock` を確認モーダル起動に変更。`handleConfirm` で `onTestBlock` + `Linking.openURL(DEMO_TEST_URL)`。`handleOpenSettings` で `app-settings:` deeplink
+- `components/postPurchaseOnboarding/__tests__/DemoStep.test.tsx` — gate 系テスト全削除、確認モーダルフロー 7 tests
+- `app/post-purchase-onboarding/index.tsx` — `useExtensionGate` import / call / gate prop 削除
+- `app/post-purchase-onboarding/__tests__/PostPurchaseOnboardingScreen.test.tsx` — `useExtensionGate` モック削除
+- `hooks/postPurchaseOnboarding/usePostPurchaseFlow.ts` — `safariWebExtensionBridge.getExtensionStatus()` の auto-skip ブロックを完全削除。`safariAlreadyEnabled` state も削除。戻り値型からも除去
+- `hooks/postPurchaseOnboarding/__tests__/usePostPurchaseFlow.test.ts` — auto-skip 関連 2 テスト削除、`safariAlreadyEnabled` 廃止確認テスト追加
+- `constants/postPurchaseOnboarding.ts` — `EXTENSION_PROBE_URL` / `PROBE_TIMEOUT_MS` 削除
+- `locales/ja.ts` / `locales/en.ts` — `postPurchaseOnboarding.demo.gate.*` 11 キー全削除、`postPurchaseOnboarding.demo.confirm.*` 4 キー追加 (title / body / confirmButton / openSettingsButton)
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift` — 先頭に「現在 UI 未使用 / 将来再利用予定」コメント追加
+
+**削除**:
+- `hooks/postPurchaseOnboarding/useExtensionGate.ts`
+- `hooks/postPurchaseOnboarding/__tests__/useExtensionGate.test.ts`
+- `components/postPurchaseOnboarding/ExtensionDisabledModal.tsx`
+- `components/postPurchaseOnboarding/__tests__/ExtensionDisabledModal.test.tsx`
+
+**保留 (next-time-detection 向けに残す)**:
+- `lib/safariWebExtension/safariWebExtensionBridge.ts` の `getExtensionState` / `subscribeAlive` (orphan)
+- `lib/safariWebExtension/types.ts` の `ExtensionStateNative` / `ExtensionAliveListener`
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift` の `getExtensionState` AsyncFunction + Events("onExtensionAlive") + Darwin observer (`OnCreate`/`OnDestroy`)
+- `plugins/withSafariWebExtension.js` の `generateSwiftHandler` 内 `CFNotificationCenterPostNotification` (Darwin notification post)
+- → prebuild 不要 / dev client 再ビルド不要。次回 native ビルド時に自動的に含まれる
+
+### 結果
+- **テスト: 285 スイート / 2024 テスト, 2023 PASS / 1 FAIL**（失敗 1 件は既存の `indexRouting.test.tsx` の `DEV_PREVIEW_POST_PURCHASE=true` 起因 — `false` に戻せば自動解消）
+- 確認モーダル方式の TDD: ExtensionConfirmModal 5 tests / DemoStep 7 tests / usePostPurchaseFlow 8 tests / PostPurchaseOnboardingScreen 8 tests 全 Green
+
+### 次回やるべきこと / 注意
+
+**hiro 側で必須対応**:
+1. **dev client の JS バンドル更新**: prebuild 不要のため Metro 経由 fast refresh で OK。ただし古いビルドにキャッシュが残っている場合は `Cmd+R` または app reload。Native は変更なしなので Xcode 再ビルド不要
+2. **実機 E2E (簡易版)**:
+   - 拡張 OFF: demo step → 「Safariで検索を開く」 → 確認モーダル → 「続ける」 → Safari → Google検索 → アダルトリンク → **素通し**（OFF なので想定通り）
+   - 拡張 ON: 同フロー → リンクタップ → **ブロックページ表示** → /panic 通知 → アプリ復帰 → demo→complete 自動遷移
+   - 「設定で確認」: モーダル中にタップ → iOS 設定アプリへ
+3. **本番ビルド前**: `app/index.tsx:10` の `DEV_PREVIEW_POST_PURCHASE = true` を `false` に戻す
+
+**設計上の注意**:
+- 確認モーダル方式は「ユーザー自己申告」であり検証ではない。「続ける」を押した上で extension が OFF だとアダルトコンテンツが露出する。これは**プロダクト既知リスク**として受け入れた（モーダル本文で警告）
+- Native 検知 infra（Tier 1 / Darwin / getExtensionState）はコード上残存。将来 native debug を経て検知が動く確認が取れれば `useExtensionGate` 風 hook を再導入して再ゲート化することは可能
+- `safariWebExtensionBridge.getExtensionState` / `subscribeAlive` は orphan（呼び出し元なし）。将来の Pro ユーザー設定画面で「拡張機能状態」を表示するなどの用途に転用可能
+- TestFlight ビルド時は EXTENSION_PROBE_URL を環境変数で外出ししなくてよい（削除済みなので）。`https://hiro0211.github.io/rewire-extension-check/` ページは将来再利用するなら維持、しないなら GitHub リポジトリごと削除可能
+
+
+## 2026-05-01: 拡張機能 OFF 時の Demo URL 露出を防ぐ多層検知ガード（高速 Tier 1+2+3）
+
+### 解決した課題
+ペイウォール後オンボーディング Step 2（DemoStep）の「ブロックをテスト」が **`Linking.openURL('https://www.google.com/search?q=pornhub')` を guard 無しで実行**しており、拡張機能が OFF だとアダルト検索結果が素通しで表示される最悪の体験になっていた。既存 heartbeat 検知は OFF→ON で `never` のまま、ON→OFF で 6h 誤判定する遅延が問題。
+
+### 実装内容（多層防御 + 高速検知ハイブリッド）
+
+**1. iOS 26.2 で追加された `SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier:completionHandler:)` を Tier 1 として採用**
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift` に `getExtensionState` を追加。`@available(iOS 26.2, *)` でガードし、未満は `{ available: false, isEnabled: false }` を返す
+- 同期に近い ~100ms で isEnabled を確定。ON→OFF も 6h 待たずに即時反映
+
+**2. Darwin Notifications を Tier 2 として採用（全 iOS 対応）**
+- `plugins/withSafariWebExtension.js` の `generateSwiftHandler()` に `CFNotificationCenterPostNotification` を追加。extension が走るたびに `rewire.extension.alive` を発火
+- `SafariWebExtensionStatusModule.swift` の `OnCreate` で `CFNotificationCenterAddObserver` 登録 → Expo Events `onExtensionAlive` で JS に通知。アンマウントで `CFNotificationCenterRemoveEveryObserver`
+
+**3. JS 側 `safariWebExtensionBridge` に `getExtensionState` / `subscribeAlive` を追加**
+- `lib/safariWebExtension/types.ts` に `ExtensionStateNative` 型追加
+- iOS 以外は安全な stub を返す
+
+**4. 新規 hook `useExtensionGate` で三段階判定を実装**
+- `hooks/postPurchaseOnboarding/useExtensionGate.ts`（新規）
+- マウント時に Darwin subscribe + 初回 refresh、AppState 'change' → active で再 refresh
+- `refresh()`: Tier 1 → 直近 Darwin alive (30s 窓) → Tier 3 heartbeat の優先順
+- `startProbe()`: `Linking.openURL(EXTENSION_PROBE_URL)` で Safari に飛ばし、5s 以内に alive 受信で `disabled` 抜け / 受信なしで `disabled` 確定
+- `openSettings()`: `Linking.openURL('app-settings:')` で iOS 設定アプリへ直リンク
+
+**5. UI 層 — DemoStep + 新モーダル**
+- `components/postPurchaseOnboarding/ExtensionDisabledModal.tsx`（新規） — 「拡張機能がまだオンになっていません」/「すべての Web サイトを許可してください」状態別文言 + 設定/再チェック/閉じる CTA
+- `components/postPurchaseOnboarding/DemoStep.tsx` 改修 — `gate` prop 受け取り、`canProceed=false` のとき footer を opacity 0.5 + 「動作確認する」ボタン表示。`handleTestBlock` 内で `await gate.refresh()` → false ならモーダル、true なら openURL（最終バリア）
+- `app/post-purchase-onboarding/index.tsx` — `useExtensionGate({ active: step === 2 })` を追加し DemoStep に渡す
+
+**6. usePostPurchaseFlow の auto-skip 条件強化**
+- 旧: `status.isEnabled` だけで step 2 へスキップ → needsAllUrls 状態でデモ画面で詰まる
+- 新: `status.isEnabled && status.hasAllUrls` の両方を要求
+
+**7. 定数 + ロケール**
+- `constants/postPurchaseOnboarding.ts` に `EXTENSION_PROBE_URL='https://hiro0211.github.io/rewire-extension-check/'` + `PROBE_TIMEOUT_MS=5000`
+- `locales/ja.ts` / `locales/en.ts` に `postPurchaseOnboarding.demo.gate.*` 11 キー追加
+
+### TDD 順序（Red → Green 厳守）
+1. safariWebExtensionBridge.test.ts 拡張（11 tests）
+2. withSafariWebExtension.test.js 拡張（24 tests / Darwin notification 検証含む）
+3. useExtensionGate.test.ts 新規（15 tests）
+4. ExtensionDisabledModal.test.tsx 新規（7 tests）
+5. DemoStep.test.tsx 拡張（10 tests）
+6. usePostPurchaseFlow.test.ts 拡張（9 tests）
+7. PostPurchaseOnboardingScreen.test.tsx 既存維持（8 tests / useExtensionGate モック追加）
+
+### 結果
+- **テスト: 286 スイート / 2045 テスト**, **2044 PASS / 1 FAIL**（失敗 1 件は `indexRouting.test.tsx` の `DEV_PREVIEW_POST_PURCHASE=true` 起因の意図的な既存 failure）
+- lint: 新規エラーなし（既存の display-name/import-first warning のみ）
+
+### 変更ファイル
+**新規**:
+- `hooks/postPurchaseOnboarding/useExtensionGate.ts` + `__tests__/useExtensionGate.test.ts`
+- `components/postPurchaseOnboarding/ExtensionDisabledModal.tsx` + `__tests__/ExtensionDisabledModal.test.tsx`
+
+**修正**:
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`
+- `plugins/withSafariWebExtension.js` + `plugins/__tests__/withSafariWebExtension.test.js`
+- `lib/safariWebExtension/types.ts` + `safariWebExtensionBridge.ts` + `__tests__/safariWebExtensionBridge.test.ts`
+- `components/postPurchaseOnboarding/DemoStep.tsx` + `__tests__/DemoStep.test.tsx`
+- `app/post-purchase-onboarding/index.tsx` + `__tests__/PostPurchaseOnboardingScreen.test.tsx`
+- `hooks/postPurchaseOnboarding/usePostPurchaseFlow.ts` + `__tests__/usePostPurchaseFlow.test.ts`
+- `constants/postPurchaseOnboarding.ts`
+- `locales/ja.ts`, `locales/en.ts`
+
+### 次回やるべきこと / 注意
+
+**hiro 側で必須対応**:
+1. **`https://hiro0211.github.io/rewire-extension-check/` の静的ページを事前デプロイ** — content_script が `<all_urls>` で走るベニンな HTML（`<h1>Rewire 拡張機能の動作確認</h1>` 程度）。デプロイしないとプローブが 404 でユーザーには「拡張オフ」に見える
+2. **prebuild 必要**: `npx expo prebuild --clean` で iOS native コードを再生成し、新しい dev client をビルドする（Darwin notification 投稿コードと iOS 26.2 API は generated handler / native module 経由で組み込まれる）
+3. **実機検証**: 計画書 `~/.claude/plans/5-qa-melodic-treasure.md` の「手動 E2E」セクション 10 項目を実機で確認
+4. **本番ビルド前**: `app/index.tsx:10` の `DEV_PREVIEW_POST_PURCHASE = true` を **必ず `false` に戻す**（戻すと `indexRouting.test.tsx` 1 件失敗も自動解消）
+
+**設計上の注意**:
+- `SFSafariExtensionManager` の iOS 26.2 サポートは Web リサーチで確認済み（Apple Developer Documentation の `getStateOfSafariExtension(withIdentifier:completionHandler:)` ページ + Safari 26.2 Release Notes より）。Apple 公式ページの直接パースが WebFetch でできなかったため、念のため初回ビルド時に Xcode コンパイルで検証すること
+- Darwin Notifications はペイロードを持てない仕様。詳細（lastActiveAt / hasAllUrls）は依然 App Group UserDefaults 経由
+- Tier 1 API は `hasAllUrls` を返さないため、「isEnabled だが hasAllUrls 未確認」状態は `needsAllUrls` 扱いに倒す保守的設計
+- `ALIVE_WINDOW_MS = 30_000` が `useExtensionGate` 内のハードコード値。プローブ後 30 秒以内の Darwin 受信を「直近 alive」と判定。長めにすると false positive、短くすると false negative
+
+
+## 2026-05-01: post-purchase Demoフロー — Google検索結果から実サイトをタップ式に変更
+
+### 課題
+- 既存の `/post-purchase-onboarding` Step 2 (DemoStep) は専用LP `https://hiro0211.github.io/rewire-demo-block/` を Safari で開いてリンクタップさせる流れだった
+- ユーザー要望: 「実際の検索結果からアダルトサイトをタップしてブロック体験」のほうが本物感があり納得感（=継続率/LTV）が上がる
+
+### 変更内容
+1. `constants/postPurchaseOnboarding.ts:12` — `DEMO_TEST_URL` を `https://www.google.com/search?q=pornhub` に変更
+2. `locales/ja.ts` の `postPurchaseOnboarding.demo.*` 全文言を「Safariで検索を開く → 上位のアダルトサイトをタップ」フローに合わせて自然な日本語で書き直し
+3. `locales/en.ts` も同様に英語で更新（"Open search in Safari" / "tap one of the top adult sites"）
+4. `components/postPurchaseOnboarding/__tests__/DemoStep.test.tsx` — `DEMO_TEST_URL` の値アサートを新URLへ更新
+5. アプリ内UIには "pornhub" の単語を出さない方針（婉曲表現「アダルトサイト」で統一）。URL内の文字列のみ含む
+
+### App Store審査リスク
+- バイナリ内に `pornhub` 文字列が含まれる（`Linking.openURL` 引数経由）。指摘された場合は URL を Base64 / 文字列分割で隠蔽する対応を検討
+- アプリのUIには露出しないので、ブロッカーアプリとしての文脈で問題ないと判断
+
+### 結果
+- テスト: 283スイート / 2008テスト 全PASS（既存の `indexRouting.test.tsx` 1件のみ失敗 — `DEV_PREVIEW_POST_PURCHASE=true` 起因の既存failure、変更と無関係）
+- lint: 新規エラーなし
+- 未コミット状態
+
+### 変更ファイル
+- 変更: `constants/postPurchaseOnboarding.ts`, `locales/ja.ts`, `locales/en.ts`, `components/postPurchaseOnboarding/__tests__/DemoStep.test.tsx`
+
+### 次回やるべきこと / 注意
+- 実機検証必須: 開発ビルドで Step 2 → 「Safariで検索を開く」→ Safari Google検索結果ページで上位のpornhub.comリンクをタップ → ブロック発動 → 自動でStep 3へ遷移、を確認
+- **Google SafeSearch のリスク**: 端末/地域/アカウントで SafeSearch ON だと pornhub が結果に出ない可能性あり。実機で確認、出ない場合は DuckDuckGo (`https://duckduckgo.com/?q=pornhub`) へのフォールバックを検討
+- 旧 `https://hiro0211.github.io/rewire-demo-block/` リポジトリは未削除。今回のフロー切替で参照ゼロになったが、外しに行くかは別判断
+
 ## 2026-04-30: post-purchase オンボーディング ブロック体験リデザイン
 
 ### 解決した課題
@@ -1022,3 +1213,28 @@ DemoStep（step=2）で実際にブロックが発火し /panic→/breathing→�
 - **シナリオ B** ブロックページの「Rewire を開く」ボタン経由: 同上、`rewire://panic` 経由でも CompleteStep に到達
 - **シナリオ C** grace period 内 (60s 未満) で戻る: 「ブロックをテスト」→ Safari→何もせず戻る → retryHint 出ない（null のまま）
 - **シナリオ D** grace period 経過: 60 秒待つ → retryHint が出る
+
+## 2026-05-01: Post-Purchase Onboarding に右上 Skip ボタン追加
+
+### 変更内容
+通常オンボーディング (`/onboarding`) と同じ UI 一貫性で、`/post-purchase-onboarding` のヘッダー右上にスキップボタンを設置。step 0/1/2 で表示、step 3 (Complete) では非表示。
+
+### 実装の要点
+- `app/post-purchase-onboarding/index.tsx`: `headerRow` 構造追加（左 spacer + 右 Skip）。`handleSkip` は `logEvent('post_purchase_onboarding_skipped', { fromStep: step })` → `markCompleted()` → `router.replace(ROUTES.tabs)`
+- `useTheme` / `useLocale` を import。`t('common.skip')` を再利用（新規キーなし）
+- スタイルは onboarding と同一: `headerRow` (justifyContent: space-between, minHeight 32), `skipText` (FONT_SIZE.md, colors.textSecondary)
+- DemoStep 内部の既存 Skip ボタンとは並存（UI 一貫性優先、整理は別 PR）
+
+### テスト
+- `app/post-purchase-onboarding/__tests__/PostPurchaseOnboardingScreen.test.tsx` に 6 tests 追加（描画 4 + 動作 2）
+- `useTheme` / `useLocale` モック追加
+- 全 14 tests / 当該スイート pass。フル: 285 suites / 2030 tests / 1 failed (`indexRouting.test.tsx` は既存 failure、本変更とは無関係)
+- lint: 該当ファイルに新規エラーなし（test file の `require()` warning は既存パターンと同等）
+
+### 変更ファイル
+- `app/post-purchase-onboarding/index.tsx` (実装)
+- `app/post-purchase-onboarding/__tests__/PostPurchaseOnboardingScreen.test.tsx` (テスト)
+
+### 未コミット
+- 上記 2 ファイルとも未コミット
+- 同日朝の他作業（検知ゲート撤去 + 確認モーダル）と一緒の作業ツリーに乗っているため、コミット粒度は別途判断

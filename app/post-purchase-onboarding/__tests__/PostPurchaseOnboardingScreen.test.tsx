@@ -49,6 +49,18 @@ jest.mock('@/components/ui/ProgressBar', () => {
   return { ProgressBar: () => <View testID="progress-bar" /> };
 });
 
+jest.mock('@/hooks/useTheme', () => ({
+  useTheme: () => ({
+    colors: { textSecondary: '#aaaaaa' },
+  }),
+}));
+
+jest.mock('@/hooks/useLocale', () => ({
+  useLocale: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 jest.mock('@/components/postPurchaseOnboarding/ThankYouStep', () => {
   const { Text } = require('react-native');
   return {
@@ -243,5 +255,53 @@ describe('PostPurchaseOnboardingScreen', () => {
     }
 
     expect(queryByText('demo-retry-hint')).toBeNull();
+  });
+
+  describe('右上の Skip ボタン', () => {
+    it('step 0 (ThankYou) で Skip ボタンが表示される', () => {
+      mockCurrentStep = 0;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
+    });
+
+    it('step 1 (SafariSetup) で Skip ボタンが表示される', () => {
+      mockCurrentStep = 1;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
+    });
+
+    it('step 2 (Demo) で Skip ボタンが表示される', () => {
+      mockCurrentStep = 2;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
+    });
+
+    it('step 3 (Complete) では Skip ボタンが表示されない', () => {
+      mockCurrentStep = 3;
+      const { queryByTestId } = render(<PostPurchaseOnboardingScreen />);
+      expect(queryByTestId('post-purchase-skip-button')).toBeNull();
+    });
+
+    it('押下すると markCompleted と router.replace が呼ばれる', async () => {
+      mockCurrentStep = 1;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      await act(async () => {
+        fireEvent.press(getByTestId('post-purchase-skip-button'));
+      });
+      await waitFor(() => expect(mockMarkCompleted).toHaveBeenCalled());
+      expect(mockReplace).toHaveBeenCalled();
+    });
+
+    it('押下時に logEvent("post_purchase_onboarding_skipped") が現在ステップ付きで呼ばれる', async () => {
+      mockCurrentStep = 1;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      await act(async () => {
+        fireEvent.press(getByTestId('post-purchase-skip-button'));
+      });
+      expect(mockLogEvent).toHaveBeenCalledWith(
+        'post_purchase_onboarding_skipped',
+        expect.objectContaining({ fromStep: 1 }),
+      );
+    });
   });
 });

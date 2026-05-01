@@ -502,12 +502,18 @@ export const ja = {
       description: 'Safariでアダルトサイトを開こうとした瞬間、Rewireが止めます。',
     },
     demo: {
-      title: '試してみましょう',
-      description: 'ボタンをタップするとSafariが開きます。\nそこからリンクをタップして、\nRewireが本当にブロックするか体験してください。',
-      notice: 'コンテンツは表示されません。リンクをタップした瞬間にブロック画面が開きます。',
-      testButton: 'ブロックをテスト',
+      title: '実際にブロックを試してみましょう',
+      description: 'ボタンをタップするとSafariが開き、検索結果が表示されます。\n上位に出てくるアダルトサイトのリンクを、ためしにタップしてみてください。',
+      notice: 'タップした瞬間にRewireが画面を遮ります。サイトの内容は表示されません。',
+      testButton: 'Safariで検索を開く',
       skipButton: 'あとで試す',
-      retryHint: 'ブロックが作動しなかったようです。もう一度試してみましょう。',
+      retryHint: 'ブロックが作動しなかったようです。検索結果の上位リンクをもう一度タップしてみてください。',
+      confirm: {
+        title: '本当に拡張機能はオンにできていますか？',
+        body: '設定アプリ → Safari → 拡張機能で Rewire をオンにしているか確認してください。オンになっていないとアダルトサイトのコンテンツが直接表示されてしまいます。',
+        confirmButton: '続ける',
+        openSettingsButton: '設定で確認',
+      },
     },
     complete: {
       title: '準備完了！🎉',

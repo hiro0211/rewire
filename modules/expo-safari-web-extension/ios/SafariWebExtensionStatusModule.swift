@@ -1,12 +1,23 @@
 import ExpoModulesCore
 import Foundation
+import SafariServices
+import CoreFoundation
 import os.log
+
+// NOTE (2026-05-01): The `getExtensionState` (Tier 1) and Darwin notification
+// observer (Tier 2) APIs below are currently NOT consumed by the JS UI layer.
+// The JS-side `useExtensionGate` hook was removed after real-device testing
+// showed the detection unreliable in production. The post-purchase demo flow
+// now uses a user confirmation modal instead of programmatic detection. These
+// native APIs are kept for future re-attempts at detection — do NOT delete
+// without coordinating with the JS bridge (`safariWebExtensionBridge`).
 
 public class SafariWebExtensionStatusModule: Module {
     private let appGroup = "group.rewire.app.com"
     private let lastActiveKey = "rewire.webExtension.lastActiveAt"
     private let lastBlockedKey = "rewire.webExtension.lastBlockedAt"
     private let hasAllUrlsKey = "rewire.webExtension.hasAllUrls"
+    private let darwinAliveName = "rewire.extension.alive"
     // 6h: matches the JS-side ACTIVE_WINDOW_SECONDS in lib/safariWebExtension/deriveStatus.ts.
     // The JS layer is the primary judge of state (never/active/stale) and reads `lastActiveAt`
     // directly. `isEnabled` here is kept for legacy callers but is effectively unused now.
@@ -15,6 +26,38 @@ public class SafariWebExtensionStatusModule: Module {
 
     public func definition() -> ModuleDefinition {
         Name("SafariWebExtensionStatus")
+
+        Events("onExtensionAlive")
+
+        OnCreate {
+            let center = CFNotificationCenterGetDarwinNotifyCenter()
+            let observer = Unmanaged.passUnretained(self).toOpaque()
+            CFNotificationCenterAddObserver(
+                center,
+                observer,
+                { (_, observerPtr, _, _, _) in
+                    guard let observerPtr = observerPtr else { return }
+                    let module = Unmanaged<SafariWebExtensionStatusModule>
+                        .fromOpaque(observerPtr)
+                        .takeUnretainedValue()
+                    let payload: [String: Any] = [
+                        "receivedAt": Date().timeIntervalSince1970,
+                    ]
+                    DispatchQueue.main.async {
+                        module.sendEvent("onExtensionAlive", payload)
+                    }
+                },
+                self.darwinAliveName as CFString,
+                nil,
+                .deliverImmediately
+            )
+        }
+
+        OnDestroy {
+            let center = CFNotificationCenterGetDarwinNotifyCenter()
+            let observer = Unmanaged.passUnretained(self).toOpaque()
+            CFNotificationCenterRemoveEveryObserver(center, observer)
+        }
 
         AsyncFunction("getExtensionStatus") { () -> [String: Any] in
             let defaults = UserDefaults(suiteName: self.appGroup)
@@ -45,6 +88,43 @@ public class SafariWebExtensionStatusModule: Module {
                 "lastActiveAt": lastActive,
                 "lastBlockedAt": lastBlocked,
             ]
+        }
+
+        // Tier 1: SFSafariExtensionManager.getStateOfSafariExtension (iOS 26.2+).
+        // Returns { available: false } on older iOS so the JS layer can fall back
+        // to Tier 2 (Darwin notification + probe) and Tier 3 (heartbeat).
+        AsyncFunction("getExtensionState") { (promise: Promise) in
+            let bundleId = (Bundle.main.bundleIdentifier ?? "rewire.app.com") + ".SafariWebExtension"
+
+            if #available(iOS 26.2, *) {
+                SFSafariExtensionManager.getStateOfSafariExtension(
+                    withIdentifier: bundleId
+                ) { state, error in
+                    if let error = error {
+                        os_log(
+                            "getStateOfSafariExtension error: %{public}@",
+                            log: self.log,
+                            type: .error,
+                            String(describing: error)
+                        )
+                        promise.resolve([
+                            "available": true,
+                            "isEnabled": false,
+                            "error": String(describing: error),
+                        ])
+                        return
+                    }
+                    promise.resolve([
+                        "available": true,
+                        "isEnabled": state?.isEnabled ?? false,
+                    ])
+                }
+            } else {
+                promise.resolve([
+                    "available": false,
+                    "isEnabled": false,
+                ])
+            }
         }
     }
 }

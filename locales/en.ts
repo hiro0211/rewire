@@ -516,12 +516,18 @@ export const en: Translations = {
       description: 'The moment you open an adult site in Safari, Rewire will stop it.',
     },
     demo: {
-      title: "Let's try it",
-      description: 'Tapping the button opens Safari.\nFrom there, tap the link to experience\nhow Rewire actually blocks adult sites.',
-      notice: 'No content will be displayed. The block screen opens the moment you tap the link.',
-      testButton: 'Test the Block',
+      title: 'Try a real block',
+      description: 'Tap the button to open Safari with a search ready.\nFrom the results, tap one of the top adult sites to see Rewire stop it.',
+      notice: 'Rewire blocks the page the moment you tap. The site itself is never shown.',
+      testButton: 'Open search in Safari',
       skipButton: 'Try later',
-      retryHint: 'Looks like the block did not fire. Try once more.',
+      retryHint: 'Looks like the block did not fire. Tap one of the top result links again.',
+      confirm: {
+        title: 'Is the extension actually turned on?',
+        body: 'Make sure Rewire is enabled in Settings → Safari → Extensions. Otherwise adult content may be exposed directly.',
+        confirmButton: 'Continue',
+        openSettingsButton: 'Check in Settings',
+      },
     },
     complete: {
       title: 'You are ready! 🎉',

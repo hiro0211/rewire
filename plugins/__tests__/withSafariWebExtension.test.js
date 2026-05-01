@@ -102,6 +102,17 @@ describe('generateSwiftHandler', () => {
     expect(swift).toContain('os_log');
     expect(swift).toContain('safari-ext-handler');
   });
+
+  test('posts a Darwin notification on every receive so the host app can detect activity in real-time', () => {
+    const swift = plugin.generateSwiftHandler();
+
+    // Darwin notifications are an iOS-wide IPC mechanism; the host app subscribes
+    // to "rewire.extension.alive" via CFNotificationCenterAddObserver and gets
+    // sub-second confirmation that the extension is running.
+    expect(swift).toContain('CFNotificationCenterGetDarwinNotifyCenter');
+    expect(swift).toContain('CFNotificationCenterPostNotification');
+    expect(swift).toContain('rewire.extension.alive');
+  });
 });
 
 describe('generateBlockedHtml', () => {

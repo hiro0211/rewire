@@ -101,6 +101,7 @@ function generateRules(domains) {
 function generateSwiftHandler() {
   return `import SafariServices
 import UserNotifications
+import CoreFoundation
 import os.log
 
 class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
@@ -108,6 +109,7 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
     private static let lastActiveKey = "rewire.webExtension.lastActiveAt"
     private static let hasAllUrlsKey = "rewire.webExtension.hasAllUrls"
     private static let panicCategoryId = "rewire-shield-panic"
+    private static let darwinAliveName = "rewire.extension.alive"
     private static let log = OSLog(subsystem: "rewire.app.com", category: "safari-ext-handler")
 
     func beginRequest(with context: NSExtensionContext) {
@@ -129,6 +131,18 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
             defaults?.set(hasAllUrls, forKey: Self.hasAllUrlsKey)
             hasAllUrlsLogged = hasAllUrls ? "true" : "false"
         }
+
+        // Real-time signal to the host app: Darwin notifications are observed via
+        // CFNotificationCenterGetDarwinNotifyCenter and deliver in <100ms with no
+        // payload (details remain in the App Group UserDefaults written above).
+        let darwinCenter = CFNotificationCenterGetDarwinNotifyCenter()
+        CFNotificationCenterPostNotification(
+            darwinCenter,
+            CFNotificationName(Self.darwinAliveName as CFString),
+            nil,
+            nil,
+            true
+        )
 
         os_log(
             "recv type=%{public}@ ts=%{public}f hasAllUrls=%{public}@ groupOK=%{public}@",

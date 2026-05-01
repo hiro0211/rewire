@@ -1,11 +1,4 @@
-import { renderHook, act, waitFor } from '@testing-library/react-native';
-
-const mockGetExtensionStatus = jest.fn();
-jest.mock('@/lib/safariWebExtension/safariWebExtensionBridge', () => ({
-  safariWebExtensionBridge: {
-    getExtensionStatus: (...args: any[]) => mockGetExtensionStatus(...args),
-  },
-}));
+import { renderHook, act } from '@testing-library/react-native';
 
 const mockUpdateUser = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/stores/userStore', () => ({
@@ -30,25 +23,13 @@ describe('usePostPurchaseFlow', () => {
     jest.clearAllMocks();
   });
 
-  it('初期マウント時は step=0 (Thank You)', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
-
+  it('初期マウント時は step=0 (Thank You)', () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     expect(result.current.step).toBe(0);
   });
 
-  it('Safari 拡張が既に有効ならマウント後に step=2 (Demo) にスキップする', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: true, extensionBundleId: 'x', lastActiveAt: Date.now() });
-
-    const { result } = renderHook(() => usePostPurchaseFlow());
-
-    await waitFor(() => expect(result.current.safariAlreadyEnabled).toBe(true));
-  });
-
   it('goToNext で step が 1 つ進む', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
-
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     await act(async () => {
@@ -59,8 +40,6 @@ describe('usePostPurchaseFlow', () => {
   });
 
   it('markCompleted が user.hasCompletedPostPurchaseOnboarding = true を更新する', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
-
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     await act(async () => {
@@ -70,9 +49,7 @@ describe('usePostPurchaseFlow', () => {
     expect(mockUpdateUser).toHaveBeenCalledWith({ hasCompletedPostPurchaseOnboarding: true });
   });
 
-  it('logStepViewed がアナリティクスを送る', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
-
+  it('logStepViewed がアナリティクスを送る', () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     act(() => {
@@ -82,9 +59,7 @@ describe('usePostPurchaseFlow', () => {
     expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'demo' });
   });
 
-  it('logStepViewed("complete") を許可する（型/値の互換性）', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
-
+  it('logStepViewed("complete") を許可する（型/値の互換性）', () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     act(() => {
@@ -99,8 +74,6 @@ describe('usePostPurchaseFlow', () => {
   });
 
   it('goToNext で step は最大 TOTAL_POST_PURCHASE_STEPS - 1 (=3) で頭打ち', async () => {
-    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
-
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     await act(async () => {
@@ -111,5 +84,11 @@ describe('usePostPurchaseFlow', () => {
 
     expect(result.current.step).toBe(TOTAL_POST_PURCHASE_STEPS - 1);
     expect(result.current.step).toBe(3);
+  });
+
+  it('safariAlreadyEnabled の auto-skip フィールドは廃止された（戻り値に含まれない）', () => {
+    const { result } = renderHook(() => usePostPurchaseFlow());
+
+    expect((result.current as Record<string, unknown>).safariAlreadyEnabled).toBeUndefined();
   });
 });

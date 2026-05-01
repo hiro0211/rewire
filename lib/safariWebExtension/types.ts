@@ -7,6 +7,16 @@ export interface SafariWebExtensionStatus {
   error?: string;
 }
 
+export interface ExtensionStateNative {
+  available: boolean;
+  isEnabled: boolean;
+  error?: string;
+}
+
+export type ExtensionAliveListener = (payload: { receivedAt: number }) => void;
+
 export interface SafariWebExtensionBridge {
   getExtensionStatus: () => Promise<SafariWebExtensionStatus>;
+  getExtensionState: () => Promise<ExtensionStateNative>;
+  subscribeAlive: (listener: ExtensionAliveListener) => () => void;
 }

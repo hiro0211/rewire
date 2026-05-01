@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, AppState } from 'react-native';
+import { View, StyleSheet, Animated, AppState, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { SPACING } from '@/constants/theme';
+import { SPACING, FONT_SIZE } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { StarryOverlay } from '@/components/ui/StarryOverlay';
@@ -24,15 +26,11 @@ export default function PostPurchaseOnboardingScreen() {
   const flow = usePostPurchaseFlow();
   const translateX = useRef(new Animated.Value(0)).current;
   const detection = useDemoBlockDetection();
+  const { colors } = useTheme();
+  const { t } = useLocale();
 
-  const { safariAlreadyEnabled, step, goToStep, logStepViewed } = flow;
+  const { step, logStepViewed } = flow;
   const { blockFired, registerTestStart, evaluate } = detection;
-
-  useEffect(() => {
-    if (safariAlreadyEnabled && step === 0) {
-      goToStep(2);
-    }
-  }, [safariAlreadyEnabled, step, goToStep]);
 
   useEffect(() => {
     const stepName =
@@ -93,6 +91,12 @@ export default function PostPurchaseOnboardingScreen() {
     router.replace(ROUTES.tabs);
   };
 
+  const handleSkip = async () => {
+    logEvent('post_purchase_onboarding_skipped', { fromStep: step });
+    await markCompleted();
+    router.replace(ROUTES.tabs);
+  };
+
   const handleFinishComplete = () => {
     router.replace(ROUTES.tabs);
   };
@@ -116,6 +120,22 @@ export default function PostPurchaseOnboardingScreen() {
       <StarryOverlay />
       <SafeAreaWrapper style={styles.container}>
         <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <View style={styles.headerSpacer} />
+            {step < TOTAL_POST_PURCHASE_STEPS - 1 ? (
+              <TouchableOpacity
+                onPress={handleSkip}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                testID="post-purchase-skip-button"
+              >
+                <Text style={[styles.skipText, { color: colors.textSecondary }]}>
+                  {t('common.skip')}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.headerSpacer} />
+            )}
+          </View>
           <ProgressBar
             progress={(step + 1) / TOTAL_POST_PURCHASE_STEPS}
             height={4}
@@ -146,6 +166,20 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: SPACING.md,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.sm,
+    minHeight: 32,
+  },
+  headerSpacer: {
+    width: 36,
+    height: 36,
+  },
+  skipText: {
+    fontSize: FONT_SIZE.md,
   },
   content: {
     flex: 1,

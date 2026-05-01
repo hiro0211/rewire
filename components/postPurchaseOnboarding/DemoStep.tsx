@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, LINE_HEIGHT } from '@/constants/theme';
@@ -6,6 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { Button } from '@/components/ui/Button';
 import { DEMO_TEST_URL } from '@/constants/postPurchaseOnboarding';
+import { ExtensionConfirmModal } from './ExtensionConfirmModal';
 
 interface DemoStepProps {
   onTestBlock: () => void;
@@ -16,12 +17,20 @@ interface DemoStepProps {
 export function DemoStep({ onTestBlock, onSkip, showRetryHint }: DemoStepProps) {
   const { colors } = useTheme();
   const { t } = useLocale();
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   const handleTestBlock = () => {
+    setConfirmVisible(true);
+  };
+
+  const handleConfirm = () => {
+    setConfirmVisible(false);
     onTestBlock();
-    Linking.openURL(DEMO_TEST_URL).catch(() => {
-      // silently ignore — user may have denied permission or link fails
-    });
+    Linking.openURL(DEMO_TEST_URL).catch(() => {});
+  };
+
+  const handleOpenSettings = () => {
+    Linking.openURL('app-settings:').catch(() => {});
   };
 
   return (
@@ -65,6 +74,13 @@ export function DemoStep({ onTestBlock, onSkip, showRetryHint }: DemoStepProps) 
           </Text>
         </TouchableOpacity>
       </View>
+
+      <ExtensionConfirmModal
+        visible={confirmVisible}
+        onConfirm={handleConfirm}
+        onOpenSettings={handleOpenSettings}
+        onClose={() => setConfirmVisible(false)}
+      />
     </View>
   );
 }

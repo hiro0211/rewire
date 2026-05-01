@@ -1,8 +1,12 @@
 const mockGetExtensionStatus = jest.fn();
+const mockGetExtensionState = jest.fn();
+const mockAddListener = jest.fn();
 
 jest.mock('../../../modules/expo-safari-web-extension/src', () => ({
   default: {
     getExtensionStatus: mockGetExtensionStatus,
+    getExtensionState: mockGetExtensionState,
+    addListener: mockAddListener,
   },
 }));
 
@@ -87,6 +91,70 @@ describe('safariWebExtensionBridge', () => {
       expect(status.hasAllUrls).toBe(false);
       expect(status.lastBlockedAt).toBe(0);
       expect(status.error).toBeDefined();
+    });
+  });
+
+  describe('getExtensionState (Tier 1: SFSafariExtensionManager iOS 26.2+)', () => {
+    it('iOS 26.2+ で利用可能なら available: true と isEnabled をそのまま返す', async () => {
+      mockGetExtensionState.mockResolvedValue({ available: true, isEnabled: true });
+
+      const state = await safariWebExtensionBridge.getExtensionState();
+
+      expect(state.available).toBe(true);
+      expect(state.isEnabled).toBe(true);
+    });
+
+    it('iOS 26.2+ で利用可能だが拡張機能が無効のとき available: true, isEnabled: false', async () => {
+      mockGetExtensionState.mockResolvedValue({ available: true, isEnabled: false });
+
+      const state = await safariWebExtensionBridge.getExtensionState();
+
+      expect(state.available).toBe(true);
+      expect(state.isEnabled).toBe(false);
+    });
+
+    it('iOS 26.2 未満では available: false を返す', async () => {
+      mockGetExtensionState.mockResolvedValue({ available: false, isEnabled: false });
+
+      const state = await safariWebExtensionBridge.getExtensionState();
+
+      expect(state.available).toBe(false);
+      expect(state.isEnabled).toBe(false);
+    });
+
+    it('ネイティブエラー時は available: false でフォールバックし error を含む', async () => {
+      mockGetExtensionState.mockRejectedValue(new Error('boom'));
+
+      const state = await safariWebExtensionBridge.getExtensionState();
+
+      expect(state.available).toBe(false);
+      expect(state.isEnabled).toBe(false);
+      expect(state.error).toBeDefined();
+    });
+  });
+
+  describe('subscribeAlive (Tier 2: Darwin Notifications)', () => {
+    it('リスナーを native の addListener へ登録し、unsubscribe 関数を返す', () => {
+      const removeMock = jest.fn();
+      mockAddListener.mockReturnValue({ remove: removeMock });
+      const listener = jest.fn();
+
+      const unsubscribe = safariWebExtensionBridge.subscribeAlive(listener);
+
+      expect(mockAddListener).toHaveBeenCalledWith('onExtensionAlive', listener);
+      unsubscribe();
+      expect(removeMock).toHaveBeenCalled();
+    });
+
+    it('addListener が例外を投げても unsubscribe は no-op で呼べる', () => {
+      mockAddListener.mockImplementation(() => {
+        throw new Error('subscribe failed');
+      });
+      const listener = jest.fn();
+
+      const unsubscribe = safariWebExtensionBridge.subscribeAlive(listener);
+
+      expect(() => unsubscribe()).not.toThrow();
     });
   });
 });
