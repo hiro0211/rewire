@@ -3,6 +3,7 @@ export interface SafariWebExtensionStatus {
   hasAllUrls: boolean;
   extensionBundleId: string;
   lastActiveAt: number;
+  lastBlockedAt: number;
   error?: string;
 }
 

@@ -19,6 +19,7 @@ jest.mock('expo-notifications', () => ({
 }));
 
 import { useNotificationDeepLink } from '../useNotificationDeepLink';
+import { panicNotificationTracker } from '@/lib/safariWebExtension/panicNotificationTracker';
 
 const makeResponse = (data: Record<string, unknown>, categoryIdentifier?: string) => ({
   notification: {
@@ -33,6 +34,7 @@ describe('useNotificationDeepLink', () => {
     jest.clearAllMocks();
     listenerCallback = null;
     mockGetLastResponse.mockResolvedValue(null);
+    panicNotificationTracker.reset();
   });
 
   test('通知タップでroute=/panicならrouter.pushを呼ぶ', () => {
@@ -97,5 +99,26 @@ describe('useNotificationDeepLink', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/other');
     expect(mockPush).not.toHaveBeenCalledWith('/panic');
+  });
+
+  test('route=/panic のとき panicNotificationTracker にタイムスタンプを記録する', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    const before = Date.now();
+    act(() => {
+      listenerCallback!(makeResponse({ route: '/panic' }));
+    });
+
+    expect(panicNotificationTracker.getLastPanicNotifiedAt()).toBeGreaterThanOrEqual(before);
+  });
+
+  test('route=/panic 以外では panicNotificationTracker は更新しない', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    act(() => {
+      listenerCallback!(makeResponse({ route: '/other' }));
+    });
+
+    expect(panicNotificationTracker.getLastPanicNotifiedAt()).toBe(0);
   });
 });

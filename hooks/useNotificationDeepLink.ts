@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
+import { panicNotificationTracker } from '@/lib/safariWebExtension/panicNotificationTracker';
 
 function handleResponse(
   response: Notifications.NotificationResponse,
@@ -8,6 +9,9 @@ function handleResponse(
 ) {
   const route = response.notification.request.content.data?.route;
   if (typeof route === 'string') {
+    if (route === '/panic') {
+      panicNotificationTracker.recordPanicNotification();
+    }
     push(route);
   }
 }

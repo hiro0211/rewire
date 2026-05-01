@@ -37,7 +37,7 @@ describe('DemoStep', () => {
     jest.restoreAllMocks();
   });
 
-  it('「ブロックをテスト」タップで Linking.openURL が pornhub.com で呼ばれ、onTestBlock が先に呼ばれる', () => {
+  it('「ブロックをテスト」タップで Linking.openURL が DEMO_TEST_URL で呼ばれ、onTestBlock が先に呼ばれる', () => {
     const onTestBlock = jest.fn();
     const onSkip = jest.fn();
     const { getByText } = render(
@@ -48,6 +48,10 @@ describe('DemoStep', () => {
 
     expect(onTestBlock).toHaveBeenCalledTimes(1);
     expect(Linking.openURL).toHaveBeenCalledWith(DEMO_TEST_URL);
+  });
+
+  it('DEMO_TEST_URL は GitHub Pages の Rewire 中継ページを指す', () => {
+    expect(DEMO_TEST_URL).toBe('https://hiro0211.github.io/rewire-demo-block/');
   });
 
   it('「あとで試す」タップで onSkip が呼ばれる', () => {

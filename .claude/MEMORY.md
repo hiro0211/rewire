@@ -1,5 +1,67 @@
 
 
+## 2026-04-30: post-purchase オンボーディング ブロック体験リデザイン
+
+### 解決した課題
+1. 「ブロックをテスト」が魔法のショートカットに見える問題 — `Linking.openURL('https://www.pornhub.com')` 直叩きで extension が `document_start` で即置換するため、ユーザーは自分でリンクをタップした感覚を得られなかった
+2. パニック機能完了後にオンボーディングが完了しない問題 — `blockFired === true` の検知後の自動遷移ロジックが無く、ユーザーが「あとで試す」を押さないとメインタブに行けなかった
+
+### 実装内容
+**1. GitHub Pages 中継ランディングページ公開**
+- 新規パブリックリポジトリ: `hiro0211/rewire-demo-block` (https://github.com/hiro0211/rewire-demo-block)
+- 公開 URL: https://hiro0211.github.io/rewire-demo-block/
+- `index.html` 1ファイル + `logo.png` (icon.pngコピー) + `favicon.png` + `README.md`
+- デザイン: Rewire Dark テーマ忠実踏襲（背景グラデ #0A0A0F→#1a1a3e→#2d1b4e、CTA 紫グラデ #8B5CF6→#6D28D9、シアンアクセント、glassmorphism カード）
+- LP 構成: ロゴ + 「アダルトサイトへアクセスしてみましょう！」見出し + 説明 + 巨大 CTA「アダルトサイトを開く」(`<a href="https://www.pornhub.com">`) + シアン枠の補足 + フッター
+- ローカル `/Users/arimurahiroaki/rewire-demo-block/` (rewire本体とは独立リポジトリ)
+
+**2. 完了ステップ追加**
+- `PostPurchaseStep` 型を `'thankYou' | 'safariSetup' | 'demo' | 'complete'` に拡張、`POST_PURCHASE_STEPS` 配列に `'complete'` 追加（`TOTAL_POST_PURCHASE_STEPS === 4`）
+- `components/postPurchaseOnboarding/CompleteStep.tsx`（新規）— shield-checkmark + 祝福コピー + CTA「Rewireを始める」
+- `app/post-purchase-onboarding/index.tsx` に `useFocusEffect` を追加 — `step === 2 && blockFired === true` のとき `goToNext()` で step=3 へ自動遷移。AppState 復帰時の `/panic` push と競合しないよう `useFocusEffect` を選択（panic→breathing/recovery 連鎖を抜けて post-purchase 画面に戻った時点で発火）
+- `step === 3` で CompleteStep を描画、CTA で `router.replace(ROUTES.tabs)`
+- `logStepViewed` 名前マッピングに `'complete'` を追加
+
+**3. ロケール文言追加**
+- `locales/ja.ts` / `locales/en.ts` に `postPurchaseOnboarding.complete.{title, description, cta}` 追加
+- `demo.description` / `demo.notice` を「リンクをタップしてブロックを体験」風に微修正
+
+**4. DEMO_TEST_URL 切替**
+- `constants/postPurchaseOnboarding.ts:7` を `https://hiro0211.github.io/rewire-demo-block/` に変更
+
+### TDD サイクル
+- Red→Green を各変更で実施
+- 新規/更新テスト:
+  - `components/postPurchaseOnboarding/__tests__/CompleteStep.test.tsx`（新規）
+  - `components/postPurchaseOnboarding/__tests__/DemoStep.test.tsx`（DEMO_TEST_URL アサート追加）
+  - `hooks/postPurchaseOnboarding/__tests__/usePostPurchaseFlow.test.ts`（'complete' ケース + step 上限テスト追加）
+  - `app/post-purchase-onboarding/__tests__/PostPurchaseOnboardingScreen.test.tsx`（新規 — step=3 描画 / CTA replace / focus callback 登録確認）
+
+### 結果
+- **テスト: 282 スイート / 1990 テスト全 PASS**（前回までベースの 264スイート/1851 から +18スイート/+139テスト）
+- lint: 既存と同レベルの warning のみ。エラー追加なし
+- GitHub Pages: HTTP 200 配信確認済み（`curl` + WebFetch）
+
+### 動作確認の流れ（実機 E2E）
+1. 開発ビルドで Safari 拡張機能を有効化
+2. paywall 後の post-purchase オンボーディングへ進む
+3. `DemoStep` の「ブロックをテスト」タップ → Safari が GitHub Pages LP を開く
+4. LP の「アダルトサイトを開く」リンクをタップ → 拡張機能が pornhub.com への遷移を弾く → ブロックページ表示 → 通知発火
+5. 通知タップで `/panic` → 「今ポルノを見たくなっている」/「ポルノを見てしまった」選択 → `/breathing` or `/recovery` 完遂
+6. アプリに戻ると `CompleteStep`（祝福画面）が自動表示 → CTA タップで `(tabs)` へ
+
+### 変更ファイル一覧（rewire 本体）
+- 変更: `app/post-purchase-onboarding/index.tsx`, `constants/postPurchaseOnboarding.ts`, `locales/ja.ts`, `locales/en.ts`
+- 変更: `components/postPurchaseOnboarding/__tests__/DemoStep.test.tsx`, `hooks/postPurchaseOnboarding/__tests__/usePostPurchaseFlow.test.ts`
+- 新規: `components/postPurchaseOnboarding/CompleteStep.tsx`, `components/postPurchaseOnboarding/__tests__/CompleteStep.test.tsx`
+- 新規: `app/post-purchase-onboarding/__tests__/PostPurchaseOnboardingScreen.test.tsx`
+
+### 次回やるべきこと / 注意
+- **未コミット状態**。変更をコミット時は `Co-Authored-By: Claude Opus 4.7` を含めること
+- GitHub Pages の独自ドメイン化（例: `demo.rewire-app.com`）は未対応。必要なら後日 CNAME ファイル追加で対応可能
+- LP の文言は日本語固定。英語ユーザー向けには英語版 LP を別途用意するか、`?lang=en` クエリで切り替える機構を検討してもよい
+- Safari 拡張機能を有効化していない状態でリンクをタップした場合、ブロックは発動せず実際に pornhub.com が開く可能性あり。LP 側に「Rewire 拡張機能が有効でないとブロックされません」旨の案内を追加するかは要検討
+
 ## 2026-04-16（追補）: OrbCarousel 中央揃え修正 + 前後天体ピーク表示
 
 ### 作業内容
@@ -904,3 +966,59 @@ Step 1+2+window 24h 化を実機で検証 → prebuild 後も誤『Safari 拡張
   - **B**: settings.lastCelebratedStreak を currentStreak - 1 に手動セット → 再起動 → 自動表示
   - **抑止**: dismiss 後再起動 → 出ない
   - **relapse**: 「見ました」→ recovery → モーダル出ない → 翌日 +1 で出る
+
+## 2026-04-30: post-purchase オンボーディング「ブロックが作動しなかったようです」誤判定の修正
+
+### 課題
+DemoStep（step=2）で実際にブロックが発火し /panic→/breathing→戻るのフローを通っても、`showRetryHint=true` で「ブロックが作動しなかったようです」が表示され、CompleteStep に自動進行しなかった。
+
+### 根本原因
+1. 検知が `AppState.addEventListener('change')` の 1 回限り
+2. `lastActiveAt`（heartbeat でも更新）でしか判定しておらず「ブロック発火」固有の信号が無い
+3. AppState コールバックと `useNotificationDeepLink` の `router.push('/panic')` が競合
+4. `useFocusEffect` の callback closure が古い `blockFired` を見るため、blockFired=true への遷移時に `goToNext` がトリガーされない
+5. `setBlockFired(false)` を一発打つと grace period 無しで永続表示される
+
+### 実装内容
+**Phase 1: ネイティブ「ブロック発火」専用シグナル**
+- `ios/SafariWebExtension/SafariWebExtensionHandler.swift` — `lastBlockedKey = "rewire.webExtension.lastBlockedAt"` 追加。`msgType == "blockedAccess"` のときのみ `defaults?.set(now, forKey: lastBlockedKey)`
+- `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift` — `lastBlockedAt` を返却（秒、未発火 0）
+- `lib/safariWebExtension/types.ts` — `SafariWebExtensionStatus.lastBlockedAt: number` 追加
+- `lib/safariWebExtension/safariWebExtensionBridge.ts` — `lastBlockedAt` パース、`STUB_STATUS` 拡張
+
+**Phase 2: 検知ロジック分離 + grace period**
+- `hooks/postPurchaseOnboarding/useDemoBlockDetection.ts`（新規）— `registerTestStart() / evaluate() / reset() / blockFired` を expose。`lastBlockedAt * 1000 >= startMs` または `panicNotificationTracker.getLastPanicNotifiedAt() >= startMs` で true。grace period（デフォルト 60s）内は false 確定を保留。一度 true になったら sticky
+- `lastActiveAt` ではなく `lastBlockedAt` を判定軸にしたため heartbeat 由来の誤検知が消えた
+
+**Phase 3: パニック通知を成功シグナルとして併用**
+- `lib/safariWebExtension/panicNotificationTracker.ts`（新規）— in-memory モジュール。`getLastPanicNotifiedAt() / recordPanicNotification(ms?) / reset()`
+- `hooks/useNotificationDeepLink.ts` — `route === '/panic'` を push する直前に `panicNotificationTracker.recordPanicNotification()` を呼ぶ。「Safari→ブロック→通知タップ→/panic」を通った瞬間に確実に成功判定が立つ
+
+**Phase 4: 画面側のワイヤリング**
+- `app/post-purchase-onboarding/index.tsx` — 旧 `useState<blockFired>` / `useRef<lastDemoOpenAtRef>` / AppState 内検知 を削除し `useDemoBlockDetection()` に置換。`useFocusEffect` は再評価 (`evaluate()`) のみ実行、`goToNext` への自動進行は `useEffect([step, blockFired])` に分離（closure stale 問題を解消）
+
+### テスト
+- `lib/safariWebExtension/__tests__/safariWebExtensionBridge.test.ts` — `lastBlockedAt` 検証 +2 ケース
+- `lib/safariWebExtension/__tests__/panicNotificationTracker.test.ts`（新規）— 4 ケース
+- `hooks/__tests__/useNotificationDeepLink.test.ts` — `/panic` での記録、その他では非更新 +2 ケース
+- `hooks/postPurchaseOnboarding/__tests__/useDemoBlockDetection.test.ts`（新規）— 9 ケース
+- `app/post-purchase-onboarding/__tests__/PostPurchaseOnboardingScreen.test.tsx` — AppState/再フォーカス/grace period の 3 ケース追加。AppState モック + `panicNotificationTracker.reset()` を beforeEach に追加
+- 全体: 284 スイート / 2009 テスト（既存の indexRouting=失敗のみ、変更と無関係）
+
+### 変更ファイル
+- 新規: `hooks/postPurchaseOnboarding/useDemoBlockDetection.ts`, `lib/safariWebExtension/panicNotificationTracker.ts`, 各テスト
+- 修正: `app/post-purchase-onboarding/index.tsx`, `hooks/useNotificationDeepLink.ts`, `lib/safariWebExtension/types.ts`, `lib/safariWebExtension/safariWebExtensionBridge.ts`, `ios/SafariWebExtension/SafariWebExtensionHandler.swift`, `modules/expo-safari-web-extension/ios/SafariWebExtensionStatusModule.swift`
+
+### 重要な注意点
+- **ネイティブ拡張変更のため Dev Client の再ビルドが必須**（`SafariWebExtensionHandler.swift` と `SafariWebExtensionStatusModule.swift`）。Hot reload では新しい `lastBlockedAt` が反映されない
+- App Group `group.rewire.app.com` は変えていない
+- `panicNotificationTracker` は in-memory のみ（プロセス再起動でリセット）。post-purchase の単一セッション内で完結する設計
+- grace period は 60 秒。短すぎたら `useDemoBlockDetection({ graceMs: ... })` で調整可能
+- `app/index.tsx:10` の `DEV_PREVIEW_POST_PURCHASE = true` は本番ビルド前に `false` に戻す
+
+### 未コミット
+- 上記すべて未コミット。実機 Dev Build で以下のシナリオで検証 → コミット推奨
+- **シナリオ A** 通知タップ経由: DemoStep → 「ブロックをテスト」→ Safari → ブロック対象リンクタップ → ブロックページ → 通知タップ → /panic → 深呼吸 → ×→/panic→×→ オンボーディング → **CompleteStep へ自動遷移**
+- **シナリオ B** ブロックページの「Rewire を開く」ボタン経由: 同上、`rewire://panic` 経由でも CompleteStep に到達
+- **シナリオ C** grace period 内 (60s 未満) で戻る: 「ブロックをテスト」→ Safari→何もせず戻る → retryHint 出ない（null のまま）
+- **シナリオ D** grace period 経過: 60 秒待つ → retryHint が出る

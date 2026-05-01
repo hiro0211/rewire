@@ -503,11 +503,16 @@ export const ja = {
     },
     demo: {
       title: '試してみましょう',
-      description: 'ボタンをタップするとSafariが開きます。\nアダルトサイトを開こうとした瞬間、\nRewireが止めるのを体験してください。',
-      notice: 'これはテストです。コンテンツは一切表示されません。',
+      description: 'ボタンをタップするとSafariが開きます。\nそこからリンクをタップして、\nRewireが本当にブロックするか体験してください。',
+      notice: 'コンテンツは表示されません。リンクをタップした瞬間にブロック画面が開きます。',
       testButton: 'ブロックをテスト',
       skipButton: 'あとで試す',
       retryHint: 'ブロックが作動しなかったようです。もう一度試してみましょう。',
+    },
+    complete: {
+      title: '準備完了！🎉',
+      description: 'Rewireはあなたの脳を再配線する準備ができました。\nここから、新しい毎日をはじめましょう。',
+      cta: 'Rewireを始める',
     },
   },
   breathingSuccess: {

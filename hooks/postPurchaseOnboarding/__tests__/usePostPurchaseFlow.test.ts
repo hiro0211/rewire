@@ -23,6 +23,7 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
 }));
 
 import { usePostPurchaseFlow } from '../usePostPurchaseFlow';
+import { TOTAL_POST_PURCHASE_STEPS } from '@/constants/postPurchaseOnboarding';
 
 describe('usePostPurchaseFlow', () => {
   beforeEach(() => {
@@ -79,5 +80,36 @@ describe('usePostPurchaseFlow', () => {
     });
 
     expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'demo' });
+  });
+
+  it('logStepViewed("complete") を許可する（型/値の互換性）', async () => {
+    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
+
+    const { result } = renderHook(() => usePostPurchaseFlow());
+
+    act(() => {
+      result.current.logStepViewed('complete');
+    });
+
+    expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'complete' });
+  });
+
+  it('TOTAL_POST_PURCHASE_STEPS は 4 (thankYou / safariSetup / demo / complete)', () => {
+    expect(TOTAL_POST_PURCHASE_STEPS).toBe(4);
+  });
+
+  it('goToNext で step は最大 TOTAL_POST_PURCHASE_STEPS - 1 (=3) で頭打ち', async () => {
+    mockGetExtensionStatus.mockResolvedValueOnce({ isEnabled: false, extensionBundleId: '', lastActiveAt: 0 });
+
+    const { result } = renderHook(() => usePostPurchaseFlow());
+
+    await act(async () => {
+      for (let i = 0; i < 10; i += 1) {
+        result.current.goToNext();
+      }
+    });
+
+    expect(result.current.step).toBe(TOTAL_POST_PURCHASE_STEPS - 1);
+    expect(result.current.step).toBe(3);
   });
 });

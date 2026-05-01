@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, AppState } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { SPACING } from '@/constants/theme';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -9,8 +10,9 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { ThankYouStep } from '@/components/postPurchaseOnboarding/ThankYouStep';
 import { SafariSetupStep } from '@/components/postPurchaseOnboarding/SafariSetupStep';
 import { DemoStep } from '@/components/postPurchaseOnboarding/DemoStep';
+import { CompleteStep } from '@/components/postPurchaseOnboarding/CompleteStep';
 import { usePostPurchaseFlow } from '@/hooks/postPurchaseOnboarding/usePostPurchaseFlow';
-import { safariWebExtensionBridge } from '@/lib/safariWebExtension/safariWebExtensionBridge';
+import { useDemoBlockDetection } from '@/hooks/postPurchaseOnboarding/useDemoBlockDetection';
 import { TOTAL_POST_PURCHASE_STEPS } from '@/constants/postPurchaseOnboarding';
 import { ROUTES } from '@/lib/routing/routes';
 
@@ -21,10 +23,10 @@ export default function PostPurchaseOnboardingScreen() {
   const router = useRouter();
   const flow = usePostPurchaseFlow();
   const translateX = useRef(new Animated.Value(0)).current;
-  const [blockFired, setBlockFired] = useState<boolean | null>(null);
-  const lastDemoOpenAtRef = useRef<number | null>(null);
+  const detection = useDemoBlockDetection();
 
   const { safariAlreadyEnabled, step, goToStep, logStepViewed } = flow;
+  const { blockFired, registerTestStart, evaluate } = detection;
 
   useEffect(() => {
     if (safariAlreadyEnabled && step === 0) {
@@ -33,28 +35,25 @@ export default function PostPurchaseOnboardingScreen() {
   }, [safariAlreadyEnabled, step, goToStep]);
 
   useEffect(() => {
-    const stepName = step === 0 ? 'thankYou' : step === 1 ? 'safariSetup' : 'demo';
+    const stepName =
+      step === 0
+        ? 'thankYou'
+        : step === 1
+        ? 'safariSetup'
+        : step === 2
+        ? 'demo'
+        : 'complete';
     logStepViewed(stepName);
   }, [step, logStepViewed]);
 
   useEffect(() => {
-    const sub = AppState.addEventListener('change', async (state) => {
+    if (step !== 2) return;
+    const sub = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
-      if (step !== 2) return;
-      if (lastDemoOpenAtRef.current == null) return;
-      try {
-        const status = await safariWebExtensionBridge.getExtensionStatus();
-        if (status.lastActiveAt && status.lastActiveAt * 1000 >= lastDemoOpenAtRef.current) {
-          setBlockFired(true);
-        } else {
-          setBlockFired(false);
-        }
-      } catch {
-        setBlockFired(false);
-      }
+      void evaluate();
     });
     return () => sub.remove();
-  }, [step]);
+  }, [step, evaluate]);
 
   const animateTransition = (direction: number, after: () => void) => {
     Animated.timing(translateX, {
@@ -84,8 +83,7 @@ export default function PostPurchaseOnboardingScreen() {
 
   const handleTestBlock = async () => {
     logEvent('safari_demo_tapped');
-    lastDemoOpenAtRef.current = Date.now();
-    setBlockFired(null);
+    registerTestStart();
     await markCompleted();
   };
 
@@ -94,6 +92,24 @@ export default function PostPurchaseOnboardingScreen() {
     await markCompleted();
     router.replace(ROUTES.tabs);
   };
+
+  const handleFinishComplete = () => {
+    router.replace(ROUTES.tabs);
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (step !== 2) return;
+      void evaluate();
+    }, [step, evaluate]),
+  );
+
+  useEffect(() => {
+    if (step === 2 && blockFired === true) {
+      animateTransition(-1, () => goToNext());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, blockFired, goToNext]);
 
   return (
     <AuroraBackground>
@@ -117,6 +133,7 @@ export default function PostPurchaseOnboardingScreen() {
               showRetryHint={blockFired === false}
             />
           )}
+          {step === 3 && <CompleteStep onFinish={handleFinishComplete} />}
         </Animated.View>
       </SafeAreaWrapper>
     </AuroraBackground>

@@ -517,11 +517,16 @@ export const en: Translations = {
     },
     demo: {
       title: "Let's try it",
-      description: 'Tapping the button will open Safari.\nThe moment you try to open an adult site,\nexperience Rewire stepping in.',
-      notice: 'This is a test. No content will be displayed.',
+      description: 'Tapping the button opens Safari.\nFrom there, tap the link to experience\nhow Rewire actually blocks adult sites.',
+      notice: 'No content will be displayed. The block screen opens the moment you tap the link.',
       testButton: 'Test the Block',
       skipButton: 'Try later',
       retryHint: 'Looks like the block did not fire. Try once more.',
+    },
+    complete: {
+      title: 'You are ready! 🎉',
+      description: 'Rewire is ready to help rewire your brain.\nLet your new everyday begin from here.',
+      cta: 'Start Rewire',
     },
   },
   breathingSuccess: {

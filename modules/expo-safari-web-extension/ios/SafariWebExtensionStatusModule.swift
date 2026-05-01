@@ -5,6 +5,7 @@ import os.log
 public class SafariWebExtensionStatusModule: Module {
     private let appGroup = "group.rewire.app.com"
     private let lastActiveKey = "rewire.webExtension.lastActiveAt"
+    private let lastBlockedKey = "rewire.webExtension.lastBlockedAt"
     private let hasAllUrlsKey = "rewire.webExtension.hasAllUrls"
     // 6h: matches the JS-side ACTIVE_WINDOW_SECONDS in lib/safariWebExtension/deriveStatus.ts.
     // The JS layer is the primary judge of state (never/active/stale) and reads `lastActiveAt`
@@ -18,6 +19,7 @@ public class SafariWebExtensionStatusModule: Module {
         AsyncFunction("getExtensionStatus") { () -> [String: Any] in
             let defaults = UserDefaults(suiteName: self.appGroup)
             let lastActive = defaults?.double(forKey: self.lastActiveKey) ?? 0
+            let lastBlocked = defaults?.double(forKey: self.lastBlockedKey) ?? 0
             let hasAllUrls = defaults?.bool(forKey: self.hasAllUrlsKey) ?? false
             let now = Date().timeIntervalSince1970
             let delta = now - lastActive
@@ -25,10 +27,11 @@ public class SafariWebExtensionStatusModule: Module {
             let bundleId = (Bundle.main.bundleIdentifier ?? "rewire.app.com") + ".SafariWebExtension"
 
             os_log(
-                "status: lastActive=%{public}f delta=%{public}f window=%{public}f isEnabled=%{public}@ hasAllUrls=%{public}@",
+                "status: lastActive=%{public}f lastBlocked=%{public}f delta=%{public}f window=%{public}f isEnabled=%{public}@ hasAllUrls=%{public}@",
                 log: self.log,
                 type: .info,
                 lastActive,
+                lastBlocked,
                 delta,
                 self.activeWindowSeconds,
                 isRecentlyActive ? "true" : "false",
@@ -40,6 +43,7 @@ public class SafariWebExtensionStatusModule: Module {
                 "hasAllUrls": hasAllUrls,
                 "extensionBundleId": bundleId,
                 "lastActiveAt": lastActive,
+                "lastBlockedAt": lastBlocked,
             ]
         }
     }

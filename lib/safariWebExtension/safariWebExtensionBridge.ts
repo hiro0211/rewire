@@ -10,6 +10,7 @@ const STUB_STATUS: SafariWebExtensionStatus = {
   hasAllUrls: false,
   extensionBundleId: '',
   lastActiveAt: 0,
+  lastBlockedAt: 0,
 };
 
 function getNativeModule(): {
@@ -38,6 +39,7 @@ export const safariWebExtensionBridge: SafariWebExtensionBridge = {
         hasAllUrls: Boolean(raw?.hasAllUrls),
         extensionBundleId: String(raw?.extensionBundleId ?? ''),
         lastActiveAt: Number(raw?.lastActiveAt ?? 0),
+        lastBlockedAt: Number(raw?.lastBlockedAt ?? 0),
       };
       logger.debug('SafariWebExtension', 'Status:', JSON.stringify(status));
       return status;
