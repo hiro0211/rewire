@@ -502,8 +502,8 @@ export const ja = {
       description: 'Safariでアダルトサイトを開こうとした瞬間、Rewireが止めます。',
     },
     demo: {
-      title: '実際にブロックを試してみましょう',
-      description: 'ボタンをタップするとSafariが開き、検索結果が表示されます。\n上位に出てくるアダルトサイトのリンクを、ためしにタップしてみてください。',
+      title: 'ブロックを試してみましょう',
+      description: 'ボタンをタップするとSafariが開き\n検索結果が表示されます。\n上位に出てくるアダルトサイトのリンクを\nタップしてみてください。',
       notice: 'タップした瞬間にRewireが画面を遮ります。サイトの内容は表示されません。',
       testButton: 'Safariで検索を開く',
       skipButton: 'あとで試す',
