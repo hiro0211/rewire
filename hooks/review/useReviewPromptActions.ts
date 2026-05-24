@@ -5,7 +5,7 @@ import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { t } from '@/locales/i18n';
 
-const FEEDBACK_EMAIL = 'arimurahiroaki40@gmail.com';
+const FEEDBACK_EMAIL = 'appsupport0326@gmail.com';
 
 export function useReviewPromptActions(onHide: () => void) {
   const [selectedRating, setSelectedRating] = useState(0);

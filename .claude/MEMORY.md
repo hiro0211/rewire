@@ -1238,3 +1238,150 @@ DemoStep（step=2）で実際にブロックが発火し /panic→/breathing→�
 ### 未コミット
 - 上記 2 ファイルとも未コミット
 - 同日朝の他作業（検知ゲート撤去 + 確認モーダル）と一緒の作業ツリーに乗っているため、コミット粒度は別途判断
+
+## 2026-05-10 — rewire-daily-analytics scheduled run
+
+### Summary
+- Fetched ASC analytics for 2026-05-09 request window via `python -m scripts.analytics.main`.
+- Initial run hit `409 Conflict` on `POST /v1/analyticsReportRequests` — an ONGOING request already exists. Re-ran with `--request-id 394c257b-c76e-4779-9257-30c74024383a` (looked up via `GET /v1/apps/6759087214/analyticsReportRequests`).
+- Saved 3 TSVs into `data/analytics/2026-05-09/` (App Store Discovery & Engagement Standard + Detailed, Retention Messaging).
+- Ran `~/.claude/skills/app-analytics/scripts/analyze_funnel.py` → produced `docs/analytics/daily-report-2026-05-09.md` BUT with all zeros (column mapping bug — see below).
+- Generated supplementary corrected report `docs/analytics/daily-report-2026-05-08-corrected.md` + `daily-metrics-2026-05-08-corrected.json` from manual aggregation.
+
+### Real numbers (most recent processed day, 2026-05-08)
+- Impressions 27 · Page views 2 · Taps 0 · Page-view rate **7.4%** (vs 25–35% benchmark — 🔴 below).
+- 100% of impressions came from App Store search.
+- Top territories by impressions: IL (16), TH (6), AZ (2), JP (2), ID (1). Only AZ produced page views.
+- Retention (2026-05-07): 1 cancel-sheet page view, 1 cancellation.
+- 7-day rolling: 96 impressions, 16 page views, 4 taps.
+
+### Issues found / next-actions
+1. **`scripts/analyze_funnel.py` is broken** — its column_mappings expect headers like `Impressions`, `Product Page Views`, `App Units`, but ASC TSVs use `Event` + `Counts` rows. Refactor to group by `Event` and sum `Counts`.
+2. **`scripts/analytics/main.py` does not handle 409 / re-use existing report request.** Should: on 409, GET `/v1/apps/{app_id}/analyticsReportRequests?filter[accessType]=ONGOING` and reuse the returned request id automatically (and persist it).
+3. **Missing report categories** — Downloads / Trial Starts / Paid Conversions / Active Subscriptions are not in the fetched files. `REPORT_CATEGORIES` in `scripts/analytics/asc_client.py` likely needs `APP_USAGE` and `COMMERCE` / Subscription Events to make the full funnel computable.
+4. **Volume is tiny** (~20–30 impressions/day) — conversion rates are noisy; consider Search Ads or short TikTok burst before drawing optimization conclusions.
+
+### Files touched
+- `data/analytics/2026-05-09/*.tsv` (created by ASC fetch)
+- `docs/analytics/daily-report-2026-05-09.md` (created by analyze_funnel.py — zeros, misleading)
+- `docs/analytics/daily-metrics-2026-05-09.json` (created by analyze_funnel.py — zeros)
+- `docs/analytics/daily-report-2026-05-08-corrected.md` (NEW, manual aggregation)
+- `docs/analytics/daily-metrics-2026-05-08-corrected.json` (NEW)
+
+## 2026-05-21
+
+### 作業内容（Daily Rewire App Analytics Pipeline — 自動スケジュール実行）
+- ASC analytics を `python3 -m scripts.analytics.main` で取得（processing date 2026-05-20 ぶん）。
+- 初回実行は `409 Conflict`（`POST /v1/analyticsReportRequests`、ONGOING request 既存）。`--request-id 394c257b-c76e-4779-9257-30c74024383a` を付けて再実行し成功（id は `GET /v1/apps/6759087214/analyticsReportRequests` で取得）。
+- `data/analytics/2026-05-20/` に 2 TSV を保存（App Store Discovery & Engagement Standard, App Store Web Preview Engagement Standard）。今回は Detailed / Retention は ASC から返らず。
+- `~/.claude/skills/app-analytics/scripts/analyze_funnel.py` を実行 → `daily-report-2026-05-20.md` / `daily-metrics-2026-05-20.json` 生成。だが全ゼロ（列マッピングのバグ、下記）。
+- Python で手動再集計し、`daily-report-2026-05-20-corrected.md` + `daily-metrics-2026-05-20-corrected.json` を作成。
+
+### 実数（fetched report 内のイベント日 2026-05-17〜05-19）
+- 3日合計: Impressions 64 · Page views 10 · Taps 4 · ウィンドウ page-view rate **15.6%**（25–35% benchmark に対し 🔴 below）。
+- 日次: 05-17 = 20imp/0pv · 05-18 = 23imp/2pv · 05-19 = 21imp/8pv（**38.1%**, 直近日のみ benchmark 超え。ただしサンプル小・ASC 最新日は未確定の可能性）。
+- ソース: App Store search 57imp/10pv/3tap, App Store browse 7imp/0pv/1tap。**TikTok・web referral 由来の流入はゼロ**（全て organic）。Web Preview report は Edge/JP の 2 page view のみ。
+- 地域: JP 29imp/8pv/4tap が funnel を牽引。IL 18imp/1pv（impression 多いが product page にほぼ届かず）。TH 7imp/0pv。
+- ボトルネック: Impression → Page View（ウィンドウ 15.6%）。Downloads/Trial/Paid は当該レポートに含まれず計測不可。
+
+### 発見した問題 / 次回やること（※05-08, 05-17 から未解決のまま3回連続で再発）
+1. **`analyze_funnel.py` の列マッピングバグ未修正** — `Impressions`/`Product Page Views` 等の wide-format 列を期待しているが、ASC TSV は `Event`+`Counts` の long-format。`Event` でグループ化して `Counts` を合算するよう修正が必要。
+2. **`main.py` の 409 ハンドリング未実装** — 409 時に既存 ONGOING request を自動 GET して再利用＆永続化すべき（毎回手動で `--request-id` 指定が必要）。
+3. **レポートカテゴリ不足** — Downloads/Trial/Paid/Active Subscriptions が fetch されない。`scripts/analytics/asc_client.py` の `REPORT_CATEGORIES` に App Usage / Commerce(Subscription) を追加してフルファネルを計測可能にする。
+4. 流入ボリュームが小さい（~20imp/日）ため conversion rate はノイズ大。05-19 の改善が本物か翌日以降に再確認。
+
+### 変更したファイル
+- `data/analytics/2026-05-20/*.tsv`（ASC fetch で新規作成）
+- `docs/analytics/daily-report-2026-05-20.md` / `daily-metrics-2026-05-20.json`（analyze_funnel.py 生成・全ゼロ・誤り）
+- `docs/analytics/daily-report-2026-05-20-corrected.md`（新規・手動集計）
+- `docs/analytics/daily-metrics-2026-05-20-corrected.json`（新規・手動集計）
+
+## 2026-05-22
+
+### 作業内容（Daily Rewire App Analytics Pipeline — 自動スケジュール実行）
+- ASC analytics を取得（processing date 2026-05-21 ぶん）。
+- 初回実行はまた `409 Conflict`（`POST /v1/analyticsReportRequests`、ONGOING request 既存）。`--request-id 394c257b-c76e-4779-9257-30c74024383a` を付けて再実行し成功（id は `GET /v1/apps/6759087214/analyticsReportRequests` で取得。bare list の `GET /v1/analyticsReportRequests` は 403）。
+- `data/analytics/2026-05-21/` に 2 TSV を保存（App Store Discovery & Engagement Standard, App Store Web Preview Engagement Standard）。
+- `~/.claude/skills/app-analytics/scripts/analyze_funnel.py` を実行 → `daily-report-2026-05-21.md` / `daily-metrics-2026-05-21.json` 生成。だがまた全ゼロ（列マッピングのバグ）。
+- Python で手動再集計し、`daily-report-2026-05-21-corrected.md` + `daily-metrics-2026-05-21-corrected.json` を作成。
+
+### 実数（fetched report 内のイベント日 2026-05-18〜05-20）
+- 3日合計: Impressions 70 · Page views 10 · Taps 2 · ウィンドウ page-view rate **14.3%**（25–35% benchmark に対し 🔴 below）。
+- 日次: 05-18 = 23imp/2pv（8.7%）· 05-19 = 21imp/8pv（**38.1%**, benchmark 超え）· 05-20 = 26imp/0pv（最新日・未確定の可能性大）。最新の完全日は 05-19 とした。
+- 前ウィンドウ（05-17〜05-19）と 05-18/05-19 が重複するため厳密な WoW 比較は不可。impression 64→70 微増、page-view rate 15.6%→14.3% でほぼ横ばい。
+- ソース: App Store search 59imp/10pv/1tap（pv rate 17.0%）, App Store browse 11imp/0pv/1tap。**TikTok・web referral 由来の流入はゼロ**（全て organic）。Web Preview report は 2 page view のみ。
+- 地域: JP 28imp/8pv/2tap が funnel を牽引（pv rate 28.6%）。TH 18imp/0pv・IL 17imp/1pv（impression 多いが product page にほぼ届かず）。
+- ボトルネック: Impression → Page View（ウィンドウ 14.3%）。Downloads/Trial/Paid は当該レポートに含まれず計測不可。
+
+### 発見した問題 / 次回やること（※05-08, 05-17, 05-20 から未解決のまま4回連続で再発）
+1. **`analyze_funnel.py` の列マッピングバグ未修正** — wide-format 列を期待しているが ASC TSV は `Event`+`Counts` の long-format。`Event` でグループ化して `Counts` を合算するよう修正が必要。
+2. **`main.py` の 409 ハンドリング未実装** — 409 時に既存 ONGOING request を自動 GET して再利用＆永続化すべき（毎回手動で `--request-id` 指定が必要）。
+3. **レポートカテゴリ不足** — Downloads/Trial/Paid/Active Subscriptions が fetch されない。`scripts/analytics/asc_client.py` の `REPORT_CATEGORIES` に App Usage / Commerce(Subscription) を追加してフルファネルを計測可能にする。
+4. 流入ボリュームが小さい（~20imp/日）ため conversion rate はノイズ大。05-19 の 38.1% spike が本物か翌日以降に再確認。
+
+### 変更したファイル
+- `data/analytics/2026-05-21/*.tsv`（ASC fetch で新規作成）
+- `docs/analytics/daily-report-2026-05-21.md` / `daily-metrics-2026-05-21.json`（analyze_funnel.py 生成・全ゼロ・誤り）
+- `docs/analytics/daily-report-2026-05-21-corrected.md`（新規・手動集計）
+- `docs/analytics/daily-metrics-2026-05-21-corrected.json`（新規・手動集計）
+
+## 2026-05-23
+
+### 作業内容（Daily Rewire App Analytics Pipeline — 自動スケジュール実行）
+- ASC analytics を取得（processing date 2026-05-22 ぶん）。
+- 初回実行はまた `409 Conflict`（`POST /v1/analyticsReportRequests`、ONGOING request 既存）。`--request-id 394c257b-c76e-4779-9257-30c74024383a` を付けて再実行し成功（id は `GET /v1/apps/6759087214/analyticsReportRequests` で取得）。
+- `data/analytics/2026-05-22/` に 2 TSV を保存（App Store Discovery & Engagement Standard, App Store Web Preview Engagement Standard）。
+- `~/.claude/skills/app-analytics/scripts/analyze_funnel.py` を実行 → `daily-report-2026-05-22.md` / `daily-metrics-2026-05-22.json` 生成。だがまた全ゼロ（列マッピングのバグ）。
+- Python で手動再集計し、`daily-report-2026-05-22-corrected.md` + `daily-metrics-2026-05-22-corrected.json` を作成。
+
+### 実数（fetched report 内のイベント日 2026-05-19〜05-21）
+- 3日合計: Impressions 65 · Page views 8 · Taps 3 · ウィンドウ page-view rate **12.3%**（25–35% benchmark に対し 🔴 below）。確定日のみ（05-19+05-20）だと 8pv/47imp = **17.0%**。
+- 日次: 05-19 = 21imp/8pv（**38.1%**, 確定）· 05-20 = 26imp/0pv（0.0%, 確定・前回 fetch と同値で安定 → 実際に 0pv の日とみられる）· 05-21 = 18imp/0pv/1tap（preliminary・page view 未確定の可能性大）。
+- 前ウィンドウ（05-18〜05-20, 70imp/10pv/14.3%）と 05-19/05-20 が重複するため厳密な WoW 比較は不可。impression 70→65 微減、page-view rate 14.3%→12.3%（preliminary 05-21 が押し下げ）。
+- ソース: App Store search 53imp/8pv/2tap（pv rate 15.1%）, App Store browse 12imp/0pv/1tap。**TikTok・web referral 由来の流入はゼロ**（全て organic）。Web Preview report は 1 page view のみ。
+- 地域: **JP 24imp/8pv/3tap が funnel を全て牽引**（pv rate 33.3%）。TH 27imp/0pv（impression 最多なのに 0 変換 = 最大の無駄）, IL 9imp/0pv。JP 以外は全地域 0% 変換。
+- ボトルネック: Impression → Page View（ウィンドウ 12.3%）。地理的問題で、JP は健全・非JP市場が漏れ。Downloads/Trial/Paid は当該レポートに含まれず計測不可。
+
+### 発見した問題 / 次回やること（※05-08, 05-17, 05-20, 05-21 から未解決のまま **5回連続**で再発）
+1. **`analyze_funnel.py` の列マッピングバグ未修正** — wide-format 列を期待しているが ASC TSV は `Event`+`Counts` の long-format。`Event` でグループ化して `Counts` を合算するよう修正が必要。
+2. **`main.py` の 409 ハンドリング未実装** — 409 時に既存 ONGOING request を自動 GET して再利用＆永続化すべき（毎回手動で `--request-id` 指定が必要）。request id `394c257b-c76e-4779-9257-30c74024383a` を config 等に保存するのが手っ取り早い。
+3. **レポートカテゴリ不足** — Downloads/Trial/Paid/Active Subscriptions が fetch されない。`scripts/analytics/asc_client.py` の `REPORT_CATEGORIES` に App Usage / Commerce(Subscription) を追加してフルファネルを計測可能にする。5ステージ中3ステージが計測不能のまま。
+4. 流入ボリュームが小さい（~20imp/日）ため conversion rate はノイズ大。
+5. 新規アクション課題: TH の impression 27 件（最多）が 0 変換。TH 向けローカライズの要否を判断、または off-target キーワードの剪定。
+
+### 変更したファイル
+- `data/analytics/2026-05-22/*.tsv`（ASC fetch で新規作成）
+- `docs/analytics/daily-report-2026-05-22.md` / `daily-metrics-2026-05-22.json`（analyze_funnel.py 生成・全ゼロ・誤り）
+- `docs/analytics/daily-report-2026-05-22-corrected.md`（新規・手動集計）
+- `docs/analytics/daily-metrics-2026-05-22-corrected.json`（新規・手動集計）
+
+## 2026-05-24
+
+### 作業内容（Daily Rewire App Analytics Pipeline — 自動スケジュール実行）
+- ASC analytics を取得（processing date 2026-05-23 ぶん）。
+- 初回実行はまた `409 Conflict`（`POST /v1/analyticsReportRequests`、ONGOING request 既存）。`GET /v1/analyticsReportRequests` はコレクション GET 不可（`FORBIDDEN_ERROR`）のため一覧不可。前回 corrected レポートに記録済みの request id `394c257b-c76e-4779-9257-30c74024383a` を `--request-id` で渡して再実行し成功。
+- `data/analytics/2026-05-23/` に 3 TSV を保存（App Store Discovery & Engagement Standard / Detailed, App Store Web Preview Engagement Standard）。今回は Detailed レポートも取得できた。
+- `~/.claude/skills/app-analytics/scripts/analyze_funnel.py` を実行 → `daily-report-2026-05-23.md` / `daily-metrics-2026-05-23.json` 生成。だがまた全ゼロ（列マッピングのバグ）。
+- Python で手動再集計し、`daily-report-2026-05-23-corrected.md` + `daily-metrics-2026-05-23-corrected.json` を作成。
+
+### 実数（fetched report 内のイベント日 2026-05-20〜05-22）
+- 3日合計: Impressions 61 · Page views **0** · Taps 1 · ウィンドウ page-view rate **0.0%**（25–35% benchmark に対し 🔴 below、ギャップ約25pt）。
+- 日次: 05-20 = 26imp/0pv（確定・前回 fetch と同値）· 05-21 = 18imp/0pv/1tap（確定・前回 fetch と同値）· 05-22 = 17imp/0pv（preliminary）。確定日のみ（05-20+05-21）= 0pv/44imp = **0.0%**（信頼できる値）。
+- WoW: 前ウィンドウ（05-19〜05-21, 65imp/8pv/12.3%）→ 今回（61imp/0pv/0.0%）。impression はほぼ横ばい。前回の page view 8 は全て 05-19 単日（JP）由来で、今ウィンドウはその好調日を過ぎただけ → 05-19 はスパイク、ベースラインは page view ほぼゼロと確認。
+- ソース: App Store search 55imp/0pv/1tap（impression の90.2%）, App Store browse 6imp/0pv。Detailed レポートの Campaign 列は空 = **キャンペーン帰属なし**。TikTok・web referral 流入ゼロ（6回連続）。Web Preview report は 1 page view のみ。
+- 地域: TH 30imp/0pv（impression の49.2%・最大の無駄、2ウィンドウ連続）· JP 13imp/0pv/1tap · IL 13imp/0pv · その他 NP2/PH1/TW1/MN1。**重要: 前ウィンドウで funnel を牽引していた JP（33.3%）が今回 0pv に転落** → 唯一機能していた市場が沈黙。
+- ボトルネック: Impression → Page View（0.0%）。前回は地理的問題（JP健全）だったが、今回は JP も 0% で全地域に拡大。
+
+### 発見した問題 / 次回やること（※05-08, 05-17, 05-20, 05-21, 05-22 から未解決のまま **6回連続**で再発）
+1. **`analyze_funnel.py` の列マッピングバグ未修正** — wide-format 列を期待しているが ASC TSV は `Event`+`Counts` の long-format。`Event` でグループ化して `Counts` を合算するよう修正が必要。6回連続で全ゼロレポート生成。
+2. **`main.py` の 409 ハンドリング未実装** — 毎回手動で `--request-id 394c257b-c76e-4779-9257-30c74024383a` 指定が必要。config 等に request id を永続化すべき。
+3. **レポートカテゴリ不足** — Downloads/Trial/Paid が fetch されない。`scripts/analytics/asc_client.py` の `REPORT_CATEGORIES` に App Usage / Commerce(Subscription) を追加。5ステージ中3ステージが計測不能のまま。
+4. **新規の重大シグナル**: JP の page-view 転落（24imp/8pv → 13imp/0pv）。ランキング下落・競合・季節性・小サンプルノイズのいずれか要調査。
+5. TH は2ウィンドウ計57 impression で engagement ゼロ。ターゲット市場か判断し、off-target キーワードを剪定。
+
+### 変更したファイル
+- `data/analytics/2026-05-23/*.tsv`（ASC fetch で新規作成、3ファイル）
+- `docs/analytics/daily-report-2026-05-23.md` / `daily-metrics-2026-05-23.json`（analyze_funnel.py 生成・全ゼロ・誤り）
+- `docs/analytics/daily-report-2026-05-22.md` / `daily-metrics-2026-05-22.json`（フェッチ前に最新dirとして再生成・全ゼロ。05-22 の corrected 版は前回分が有効）
+- `docs/analytics/daily-report-2026-05-23-corrected.md`（新規・手動集計）
+- `docs/analytics/daily-metrics-2026-05-23-corrected.json`（新規・手動集計）

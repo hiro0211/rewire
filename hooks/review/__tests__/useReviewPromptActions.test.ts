@@ -144,7 +144,7 @@ describe('useReviewPromptActions', () => {
       });
 
       expect(mockOpenURL).toHaveBeenCalledWith(
-        expect.stringContaining('mailto:arimurahiroaki40@gmail.com')
+        expect.stringContaining('mailto:appsupport0326@gmail.com')
       );
     });
 

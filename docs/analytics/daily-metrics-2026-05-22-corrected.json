@@ -1,0 +1,103 @@
+{
+  "date": "2026-05-22",
+  "processing_date": "2026-05-22",
+  "report_window": "2026-05-19 to 2026-05-21",
+  "latest_event_date": "2026-05-21",
+  "latest_complete_day": "2026-05-19",
+  "single_day_metrics": {
+    "date": "2026-05-19",
+    "impressions": 21,
+    "page_views": 8,
+    "taps": 2,
+    "page_view_rate": 0.381
+  },
+  "incomplete_latest_day": {
+    "date": "2026-05-21",
+    "events": {
+      "Impression": 18,
+      "Tap": 1
+    }
+  },
+  "day_status": {
+    "2026-05-19": "finalized",
+    "2026-05-20": "finalized",
+    "2026-05-21": "preliminary"
+  },
+  "window_totals": {
+    "Impression": 65,
+    "Page view": 8,
+    "Tap": 3,
+    "page_view_rate": 0.1231
+  },
+  "prior_window_totals": {
+    "Impression": 70,
+    "Page view": 10,
+    "Tap": 2,
+    "page_view_rate": 0.1429
+  },
+  "by_date": {
+    "2026-05-19": {
+      "Tap": 2,
+      "Impression": 21,
+      "Page view": 8
+    },
+    "2026-05-20": {
+      "Impression": 26
+    },
+    "2026-05-21": {
+      "Impression": 18,
+      "Tap": 1
+    }
+  },
+  "by_source_window": {
+    "App Store browse": {
+      "Tap": 1,
+      "Impression": 12
+    },
+    "App Store search": {
+      "Impression": 53,
+      "Page view": 8,
+      "Tap": 2
+    }
+  },
+  "by_territory_window": {
+    "TH": {
+      "Impression": 27
+    },
+    "JP": {
+      "Tap": 3,
+      "Impression": 24,
+      "Page view": 8
+    },
+    "IL": {
+      "Impression": 9
+    },
+    "NP": {
+      "Impression": 2
+    },
+    "LK": {
+      "Impression": 1
+    },
+    "AU": {
+      "Impression": 1
+    },
+    "MN": {
+      "Impression": 1
+    }
+  },
+  "web_preview_report": {
+    "Page view": 1
+  },
+  "bottleneck": {
+    "stage": "page_view_rate",
+    "window_rate": 0.1231,
+    "benchmark_low": 0.25,
+    "benchmark_high": 0.35,
+    "gap_vs_low": 0.1269
+  },
+  "notes": {
+    "script_issue": "analyze_funnel.py column mappings expect wide-format columns; ASC TSV is long-format (Event + Counts). The skill script reported all zeros (daily-metrics-2026-05-22.json).",
+    "missing_funnel_stages": "Downloads / Trial Starts / Paid are NOT in the App Store Discovery & Engagement reports. They need App Usage / Commerce / Subscription report categories.",
+    "fetch_workaround": "POST /v1/analyticsReportRequests returned 409 Conflict (ONGOING request already exists). Re-ran fetch with existing request id 394c257b-c76e-4779-9257-30c74024383a, found via GET /v1/apps/6759087214/analyticsReportRequests."
+  }
+}

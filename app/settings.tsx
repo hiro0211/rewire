@@ -127,7 +127,7 @@ export default function SettingsScreen() {
           <SettingItem
             label={t('settings.labels.contact')}
             icon="mail-outline"
-            onPress={() => Linking.openURL('mailto:arimurahiroaki40@gmail.com')}
+            onPress={() => Linking.openURL('mailto:appsupport0326@gmail.com')}
           />
           <SettingItem
             label={t('settings.labels.terms')}

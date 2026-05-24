@@ -751,7 +751,7 @@ export const en: Translations = {
       s7Title: '7. Data Deletion',
       s7Body: 'You can delete all data from within the App via Settings → Reset Data. Uninstalling the App will also delete all locally stored data.',
       s8Title: '8. Contact',
-      s8Body: 'For inquiries regarding this Privacy Policy, please contact us at:\n\narimurahiroaki40@gmail.com',
+      s8Body: 'For inquiries regarding this Privacy Policy, please contact us at:\n\nappsupport0326@gmail.com',
     },
   },
   lessons: {

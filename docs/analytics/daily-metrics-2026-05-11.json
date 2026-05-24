@@ -1,0 +1,51 @@
+{
+  "date": "2026-05-11",
+  "data_window": {
+    "start": "2026-05-07",
+    "end": "2026-05-09"
+  },
+  "data_source": "data/analytics/2026-05-10/ (ASC fetch for 2026-05-11 returned 409 Conflict)",
+  "single_day": {
+    "date": "2026-05-09",
+    "impressions": 7,
+    "page_views": 1,
+    "taps": 0,
+    "page_view_rate_pct": 14.29
+  },
+  "window": {
+    "impressions": 53,
+    "page_views": 5,
+    "taps": 1,
+    "page_view_rate_pct": 9.43
+  },
+  "sources_single_day": {
+    "App Store search": {
+      "Impression": 7
+    },
+    "Web referrer": {
+      "Page view": 1
+    }
+  },
+  "territories_single_day": {
+    "TH": {
+      "Impression": 2
+    },
+    "JP": {
+      "Impression": 4,
+      "Page view": 1
+    },
+    "TT": {
+      "Impression": 1
+    }
+  },
+  "retention": {
+    "Page views": 1,
+    "Cancels": 1
+  },
+  "bottleneck": "page_view_rate",
+  "notes": [
+    "ASC fetch returned 409 Conflict — existing report request pending",
+    "Downloads/Trial Starts/Paid not in fetched reports (App Usage + Subscription Events categories missing)",
+    "analyze_funnel.py column mappings do not match event-based ASC TSV format (known bug)"
+  ]
+}

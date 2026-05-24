@@ -1,0 +1,88 @@
+{
+  "date": "2026-05-20",
+  "processing_date": "2026-05-20",
+  "report_window": "2026-05-17 to 2026-05-19",
+  "latest_event_date": "2026-05-19",
+  "single_day_metrics": {
+    "date": "2026-05-19",
+    "impressions": 21,
+    "page_views": 8,
+    "taps": 2,
+    "page_view_rate": 0.381
+  },
+  "window_totals": {
+    "Impression": 64,
+    "Page view": 10,
+    "Tap": 4,
+    "page_view_rate": 0.1562
+  },
+  "by_date": {
+    "2026-05-17": {
+      "Impression": 20,
+      "Tap": 2
+    },
+    "2026-05-18": {
+      "Impression": 23,
+      "Page view": 2
+    },
+    "2026-05-19": {
+      "Impression": 21,
+      "Page view": 8,
+      "Tap": 2
+    }
+  },
+  "by_source_window": {
+    "App Store browse": {
+      "Impression": 7,
+      "Tap": 1
+    },
+    "App Store search": {
+      "Impression": 57,
+      "Tap": 3,
+      "Page view": 10
+    }
+  },
+  "by_territory_window": {
+    "JP": {
+      "Impression": 29,
+      "Tap": 4,
+      "Page view": 8
+    },
+    "AF": {
+      "Impression": 2,
+      "Page view": 1
+    },
+    "MN": {
+      "Impression": 3
+    },
+    "IL": {
+      "Impression": 18,
+      "Page view": 1
+    },
+    "NP": {
+      "Impression": 1
+    },
+    "VN": {
+      "Impression": 1
+    },
+    "TH": {
+      "Impression": 7
+    },
+    "ID": {
+      "Impression": 1
+    },
+    "AU": {
+      "Impression": 1
+    },
+    "LK": {
+      "Impression": 1
+    }
+  },
+  "web_preview_report": {
+    "Page view": 2
+  },
+  "notes": {
+    "script_issue": "analyze_funnel.py column mappings expect wide-format columns; ASC TSV is long-format (Event + Counts). The skill script reported all zeros.",
+    "missing_funnel_stages": "Downloads / Trial Starts / Paid are NOT in the App Store Discovery & Engagement reports. They need App Usage / Commerce / Subscription report categories."
+  }
+}
