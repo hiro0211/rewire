@@ -15,6 +15,7 @@ import { useLocaleStore } from '@/stores/localeStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
+import { SUPPORT_EMAIL } from '@/constants/support';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
@@ -127,7 +128,7 @@ export default function SettingsScreen() {
           <SettingItem
             label={t('settings.labels.contact')}
             icon="mail-outline"
-            onPress={() => Linking.openURL('mailto:appsupport0326@gmail.com')}
+            onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}
           />
           <SettingItem
             label={t('settings.labels.terms')}

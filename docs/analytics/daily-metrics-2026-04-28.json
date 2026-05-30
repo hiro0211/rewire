@@ -1,50 +1,58 @@
 {
   "date": "2026-04-28",
   "metrics": {
-    "impressions": 0,
-    "product_page_views": 0,
+    "impressions": 24,
+    "product_page_views": 13,
     "app_units": 0,
+    "taps": 0,
     "sessions": 0,
     "active_devices": 0,
     "trial_starts": 0,
     "paid_conversions": 0,
-    "cancellations": 0,
+    "cancellations": 1,
     "active_subscriptions": 0
   },
   "funnel": {
-    "page_view_rate": null,
-    "download_rate": null,
+    "page_view_rate": 0.5417,
+    "download_rate": 0.0,
     "trial_start_rate": null,
     "trial_to_paid_rate": null,
     "monthly_churn_rate": null
   },
-  "bottleneck": null,
+  "bottleneck": {
+    "stage": "download_rate",
+    "gap": 0.3
+  },
   "sources": {
     "Unavailable": {
       "impressions": 0,
-      "product_page_views": 0,
+      "product_page_views": 2,
       "app_units": 0,
+      "taps": 0,
       "trial_starts": 0,
       "paid_conversions": 0
     },
     "App Store Search": {
-      "impressions": 0,
-      "product_page_views": 0,
+      "impressions": 24,
+      "product_page_views": 9,
       "app_units": 0,
+      "taps": 0,
       "trial_starts": 0,
       "paid_conversions": 0
     },
     "App Store Browse": {
       "impressions": 0,
-      "product_page_views": 0,
+      "product_page_views": 1,
       "app_units": 0,
+      "taps": 0,
       "trial_starts": 0,
       "paid_conversions": 0
     },
     "Unknown": {
       "impressions": 0,
-      "product_page_views": 0,
+      "product_page_views": 1,
       "app_units": 0,
+      "taps": 0,
       "trial_starts": 0,
       "paid_conversions": 0
     }

@@ -4,8 +4,8 @@
 
 | Stage | Count | Conversion Rate | vs Benchmark |
 |-------|-------|----------------|--------------|
-| Impressions | 0 | N/A | — |
-| → Page Views | 0 | N/A | — |
+| Impressions | 13 | N/A | — |
+| → Page Views | 0 | 0.0% | 🔴 Below |
 | → Downloads | 0 | N/A | — |
 | → Trial Starts | 0 | N/A | — |
 | → Paid | 0 | N/A | — |
@@ -13,18 +13,18 @@
 
 ## Bottleneck Analysis
 
-No significant bottleneck detected (all stages within benchmark).
+The biggest drop-off is at **Page View Rate** (0.0% vs benchmark 25.0%).
 
 ## Channel Comparison
 
 | Channel | Impressions | Downloads | Trial Starts | Paid |
 |---------|-------------|-----------|--------------|------|
-| App Store Search | 0 | 0 | 0 | 0 |
+| App Store Search | 13 | 0 | 0 | 0 |
 
 ## Top 3 Improvement Actions
 
-1. Review the full funnel with the latest data to identify emerging bottlenecks.
-2. Set up weekly A/B tests on the lowest-performing funnel stage.
-3. Analyze TikTok campaign performance vs organic to optimize ad spend.
+1. Optimize App Store keywords and title to improve impression-to-page-view conversion. Test adding the main value proposition to the subtitle.
+2. Update the app icon to be more eye-catching in search results. A/B test 2-3 variants using App Store Product Page Optimization.
+3. Increase App Store Optimization (ASO) focus: research competitor keywords and add relevant long-tail keywords.
 
-*Report generated: 2026-04-20 09:04*
+*Report generated: 2026-05-24 22:20*

@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Rewire',
   slug: 'rewire',
-  version: '2.1.0',
+  version: '2.2.0',
   icon: './assets/images/icon.png',
   orientation: 'portrait',
   scheme: 'rewire',
@@ -77,6 +77,22 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     './plugins/withWidget',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',
+    // ホーム画面の長押しメニューに「削除理由」項目を静的登録（初回起動前から表示）。
+    // id は hooks/feedback/useDeletionFeedbackQuickAction.ts の
+    // DELETION_FEEDBACK_ACTION_ID と一致させること。iOS の静的アクションは最大4個。
+    [
+      'expo-quick-actions',
+      {
+        iosActions: [
+          {
+            id: 'rewire-delete-feedback',
+            title: '削除しますか？',
+            subtitle: 'アプリを削除する理由を教えてください',
+            icon: 'symbol:envelope',
+          },
+        ],
+      },
+    ],
     './plugins/withRemoveTrackingDescription',
   ],
   extra: {

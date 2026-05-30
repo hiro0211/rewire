@@ -50,6 +50,9 @@ jest.mock('expo-splash-screen', () => ({
 jest.mock('expo-status-bar', () => ({
   StatusBar: () => null,
 }));
+jest.mock('@/hooks/feedback/useDeletionFeedbackQuickAction', () => ({
+  useDeletionFeedbackQuickAction: jest.fn(),
+}));
 
 // Mock tracking/subscription
 jest.mock('@/lib/tracking/analyticsClient', () => ({

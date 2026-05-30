@@ -1,76 +1,60 @@
 {
-  "report_date": "2026-04-27",
-  "latest_data_date": "2026-04-26",
-  "note": "ASC has ~2-day processing lag; window analyzed uses 10 days through latest_data_date.",
-  "window": {
-    "start": "2026-04-17",
-    "end": "2026-04-26"
+  "date": "2026-04-27",
+  "metrics": {
+    "impressions": 28,
+    "product_page_views": 14,
+    "app_units": 0,
+    "taps": 2,
+    "sessions": 0,
+    "active_devices": 0,
+    "trial_starts": 0,
+    "paid_conversions": 0,
+    "cancellations": 1,
+    "active_subscriptions": 0
   },
-  "totals": {
-    "impressions": 82,
-    "page_views": 26,
-    "taps": 4
+  "funnel": {
+    "page_view_rate": 0.5,
+    "download_rate": 0.0,
+    "trial_start_rate": null,
+    "trial_to_paid_rate": null,
+    "monthly_churn_rate": null
   },
-  "rates": {
-    "page_view_rate_pct": 31.71,
-    "tap_rate_pct": 15.38
+  "bottleneck": {
+    "stage": "download_rate",
+    "gap": 0.3
   },
-  "by_channel": {
-    "App Store browse": {
-      "Impression": 5,
-      "Tap": 4,
-      "Page view": 3
+  "sources": {
+    "Unavailable": {
+      "impressions": 0,
+      "product_page_views": 2,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
     },
-    "App Store search": {
-      "Page view": 19,
-      "Impression": 77
+    "App Store Search": {
+      "impressions": 28,
+      "product_page_views": 10,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
     },
-    "Web referrer": {
-      "Page view": 4
-    }
-  },
-  "top_territories": [
-    [
-      "JP",
-      87
-    ],
-    [
-      "ID",
-      7
-    ],
-    [
-      "CN",
-      5
-    ],
-    [
-      "US",
-      3
-    ],
-    [
-      "IN",
-      2
-    ],
-    [
-      "MX",
-      2
-    ],
-    [
-      "IL",
-      2
-    ],
-    [
-      "AU",
-      2
-    ]
-  ],
-  "latest_day": {
-    "Page view": 1,
-    "Impression": 11
-  },
-  "latest_day_by_channel": {
-    "App Store search": {
-      "Page view": 1,
-      "Impression": 11
+    "App Store Browse": {
+      "impressions": 0,
+      "product_page_views": 1,
+      "app_units": 0,
+      "taps": 2,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    },
+    "Unknown": {
+      "impressions": 0,
+      "product_page_views": 1,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
     }
   }
 }

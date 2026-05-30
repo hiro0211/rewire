@@ -4,6 +4,7 @@
     "impressions": 14000,
     "product_page_views": 4310,
     "app_units": 1450,
+    "taps": 0,
     "sessions": 0,
     "active_devices": 0,
     "trial_starts": 293,
@@ -24,6 +25,7 @@
       "impressions": 8500,
       "product_page_views": 2800,
       "app_units": 950,
+      "taps": 0,
       "trial_starts": 190,
       "paid_conversions": 95
     },
@@ -31,6 +33,7 @@
       "impressions": 3200,
       "product_page_views": 640,
       "app_units": 180,
+      "taps": 0,
       "trial_starts": 25,
       "paid_conversions": 10
     },
@@ -38,6 +41,7 @@
       "impressions": 1800,
       "product_page_views": 720,
       "app_units": 280,
+      "taps": 0,
       "trial_starts": 70,
       "paid_conversions": 28
     },
@@ -45,6 +49,7 @@
       "impressions": 500,
       "product_page_views": 150,
       "app_units": 40,
+      "taps": 0,
       "trial_starts": 8,
       "paid_conversions": 3
     }

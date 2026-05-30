@@ -1,0 +1,35 @@
+{
+  "date": "2026-05-25",
+  "data_window": {
+    "processing_date": "2026-05-25",
+    "event_dates": [
+      "2026-05-22",
+      "2026-05-23",
+      "2026-05-24"
+    ]
+  },
+  "metrics": {
+    "impressions": 103,
+    "taps": 4,
+    "product_page_views": 12,
+    "downloads": 1,
+    "free_trial_starts": 3,
+    "trial_to_paid_conversions": 1,
+    "voluntary_churn": 7,
+    "active_full_price_subscriptions": 1
+  },
+  "rates": {
+    "tap_rate_taps_over_impressions": 0.0388,
+    "trial_to_paid_rate": 0.3333,
+    "net_subscriber_change": -4
+  },
+  "channels_impressions": {
+    "App Store search": 100,
+    "App Store browse": 3
+  },
+  "channels_taps": {
+    "App Store search": 3,
+    "App Store browse": 1
+  },
+  "data_quality_note": "Auto analyze_funnel.py reports downloads/trials/paid/churn=0 because extract_metrics() only keys on an 'Event' column. The COMMERCE reports use 'Download Type' / 'Event Name' / 'State Metric' instead and are silently dropped. Counts here are re-derived from raw TSVs. This is the 8th consecutive run with this bug."
+}

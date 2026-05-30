@@ -35,6 +35,7 @@ yarn-error.*
 .env*.local
 .env.line
 .env.discord
+.env.analytics
 .secret*
 
 # Bot runtime files

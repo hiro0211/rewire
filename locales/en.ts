@@ -809,6 +809,18 @@ export const en: Translations = {
     starLabel: '{{count}} stars',
     feedbackSubject: 'Rewire Feedback',
   },
+  deletionFeedback: {
+    subject: 'Rewire feedback before deleting',
+    bodyIntro: 'Please tell us why you are deleting the app (optional, OK to send as is)',
+    labelAppVersion: 'App version',
+    labelIosVersion: 'iOS version',
+    labelIosBuild: 'Build',
+    labelDevice: 'Device',
+    labelLanguage: 'Language',
+    labelTimezone: 'Timezone',
+    labelExtension: 'Safari extension status',
+    unknown: 'unknown',
+  },
   illustrations: {
     shameCycle: { watching: 'Watching', regret: 'Regret', stress: 'Stress', craving: 'Craving' },
     dopamineBars: { food: 'Food', exercise: 'Exercise', porn: 'Porn', achievement: 'Success', conversation: 'Social' },

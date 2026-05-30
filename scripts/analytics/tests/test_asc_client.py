@@ -114,6 +114,73 @@ class TestASCClient:
         assert "impressions" in result
         assert "1000" in result
 
+    def test_list_report_requests_filters_by_access_type(self):
+        client = self._make_client()
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "data": [
+                {"id": "ongoing-1", "attributes": {"accessType": "ONGOING"}},
+            ]
+        }
+        with patch("requests.get", return_value=mock_response) as mock_get:
+            result = client.list_report_requests(access_type="ONGOING")
+        call_url = mock_get.call_args[0][0]
+        # Endpoint must be scoped to the configured app
+        assert "/v1/apps/123456789/analyticsReportRequests" in call_url
+        params = mock_get.call_args.kwargs.get("params") or {}
+        assert params.get("filter[accessType]") == "ONGOING"
+        assert result["data"][0]["id"] == "ongoing-1"
+
+    def test_get_or_create_returns_new_id_when_no_conflict(self):
+        client = self._make_client()
+        create_resp = MagicMock(status_code=201)
+        create_resp.json.return_value = {"data": {"id": "fresh-req"}}
+        with patch("requests.post", return_value=create_resp), \
+             patch("requests.get") as mock_get:
+            request_id = client.get_or_create_report_request()
+        assert request_id == "fresh-req"
+        # GET fallback should not be touched when create succeeds
+        mock_get.assert_not_called()
+
+    def test_get_or_create_returns_existing_id_on_409(self):
+        client = self._make_client()
+        import requests as _req
+
+        # Simulate the 409 conflict from create_report_request → ASC says
+        # "an ONGOING request already exists for this app".
+        conflict = MagicMock(status_code=409)
+        conflict.raise_for_status.side_effect = _req.HTTPError("409 Conflict", response=conflict)
+
+        listing = MagicMock(status_code=200)
+        listing.json.return_value = {
+            "data": [
+                {"id": "existing-ongoing", "attributes": {"accessType": "ONGOING"}},
+            ]
+        }
+        with patch("requests.post", return_value=conflict), \
+             patch("requests.get", return_value=listing) as mock_get:
+            request_id = client.get_or_create_report_request()
+        assert request_id == "existing-ongoing"
+        # Fallback must hit the per-app listing endpoint
+        called_url = mock_get.call_args[0][0]
+        assert "/v1/apps/123456789/analyticsReportRequests" in called_url
+
+    def test_get_or_create_raises_when_409_but_no_ongoing_listed(self):
+        client = self._make_client()
+        import requests as _req
+        import pytest as _pt
+
+        conflict = MagicMock(status_code=409)
+        conflict.raise_for_status.side_effect = _req.HTTPError("409 Conflict", response=conflict)
+        empty_listing = MagicMock(status_code=200)
+        empty_listing.json.return_value = {"data": []}
+        with patch("requests.post", return_value=conflict), \
+             patch("requests.get", return_value=empty_listing):
+            with _pt.raises(RuntimeError) as exc:
+                client.get_or_create_report_request()
+        assert "ONGOING" in str(exc.value)
+
     def test_download_segment_does_not_send_auth_headers(self):
         """Pre-signed S3 URLs reject requests that include the ASC bearer token.
 

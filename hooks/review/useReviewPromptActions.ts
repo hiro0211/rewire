@@ -4,8 +4,7 @@ import { reviewPromptStorage } from '@/lib/storage/reviewPromptStorage';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { t } from '@/locales/i18n';
-
-const FEEDBACK_EMAIL = 'appsupport0326@gmail.com';
+import { SUPPORT_EMAIL } from '@/constants/support';
 
 export function useReviewPromptActions(onHide: () => void) {
   const [selectedRating, setSelectedRating] = useState(0);
@@ -40,7 +39,7 @@ export function useReviewPromptActions(onHide: () => void) {
     await analyticsClient.logEvent('review_prompt_feedback_tapped');
     await reviewPromptStorage.recordFeedbackSent();
     const subject = encodeURIComponent(t('review.feedbackSubject'));
-    await Linking.openURL(`mailto:${FEEDBACK_EMAIL}?subject=${subject}`);
+    await Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${subject}`);
     onHide();
   }, [onHide]);
 

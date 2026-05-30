@@ -5,12 +5,7 @@ from pathlib import Path
 
 import pytest
 
-# Add skill scripts to path
-SKILL_SCRIPTS = Path(__file__).parent.parent.parent.parent.parent / ".claude" / "skills" / "app-analytics" / "scripts"
-if str(SKILL_SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SKILL_SCRIPTS))
-
-from analyze_funnel import (
+from scripts.analytics.analyze_funnel import (
     calculate_funnel,
     extract_metrics,
     identify_bottleneck,
@@ -138,6 +133,111 @@ class TestExtractMetrics:
     def test_handles_empty_data(self):
         metrics = extract_metrics({})
         assert metrics["impressions"] == 0
+
+
+class TestExtractMetricsLongFormat:
+    """Real ASC Analytics Reports TSVs use Event + Counts columns (long format).
+
+    The legacy wide-format mapper would silently return all zeros for these
+    files — which is the bug that produced 6+ rounds of zero daily reports.
+    See MEMORY.md (2026-05-09, 2026-05-17, 2026-05-20 entries).
+    """
+
+    def test_groups_impressions_by_event_column(self):
+        data = {
+            "discovery": [
+                {"Event": "Impression", "Counts": "5", "Source Type": "App Store search"},
+                {"Event": "Impression", "Counts": "3", "Source Type": "App Store search"},
+                {"Event": "Tap", "Counts": "1", "Source Type": "App Store search"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["impressions"] == 8
+
+    def test_maps_page_view_event_to_product_page_views(self):
+        data = {
+            "web_preview": [
+                {"Event": "Page view", "Counts": "12"},
+                {"Event": "Page view", "Counts": "3"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["product_page_views"] == 15
+
+    def test_collects_tap_event_separately_from_downloads(self):
+        # ASC "Tap" = user tapped the Get button (intent). Real downloads come
+        # from APP_USAGE category, not from Tap. Must not be summed into app_units.
+        data = {
+            "discovery": [
+                {"Event": "Tap", "Counts": "4"},
+                {"Event": "Impression", "Counts": "100"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["taps"] == 4
+        assert metrics["app_units"] == 0
+
+    def test_maps_cancels_event_to_cancellations(self):
+        data = {
+            "retention": [
+                {"Event": "Cancels", "Counts": "2"},
+                {"Event": "Cancels", "Counts": "1"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["cancellations"] == 3
+
+    def test_handles_comma_separated_thousands_in_counts(self):
+        data = {
+            "x": [{"Event": "Impression", "Counts": "1,234"}],
+        }
+        metrics = extract_metrics(data)
+        assert metrics["impressions"] == 1234
+
+    def test_ignores_unknown_event_values(self):
+        data = {
+            "x": [
+                {"Event": "Impression", "Counts": "5"},
+                {"Event": "MysteryEvent", "Counts": "999"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["impressions"] == 5
+        # Mystery event should not pollute any tracked metric.
+        for k, v in metrics.items():
+            if k == "impressions":
+                continue
+            assert v == 0, f"{k} should be 0 but is {v}"
+
+    def test_long_and_wide_formats_can_coexist(self):
+        data = {
+            "long": [{"Event": "Impression", "Counts": "10"}],
+            "wide": [{"Impressions": "20", "Product Page Views": "5"}],
+        }
+        metrics = extract_metrics(data)
+        assert metrics["impressions"] == 30
+        assert metrics["product_page_views"] == 5
+
+
+class TestExtractMetricsBySourceLongFormat:
+    """The per-source breakdown must also handle long-format Event rows."""
+
+    def test_groups_by_source_type_with_event_counts(self):
+        from scripts.analytics.analyze_funnel import extract_metrics_by_source
+
+        data = {
+            "discovery": [
+                {"Event": "Impression", "Counts": "30", "Source Type": "App Store search"},
+                {"Event": "Impression", "Counts": "10", "Source Type": "App Store browse"},
+                {"Event": "Page view", "Counts": "4", "Source Type": "App Store search"},
+                {"Event": "Tap", "Counts": "1", "Source Type": "App Store browse"},
+            ]
+        }
+        result = extract_metrics_by_source(data)
+        assert result["App Store Search"]["impressions"] == 30
+        assert result["App Store Search"]["product_page_views"] == 4
+        assert result["App Store Browse"]["impressions"] == 10
+        assert result["App Store Browse"].get("taps", 0) == 1
 
 
 class TestLoadTsvData:

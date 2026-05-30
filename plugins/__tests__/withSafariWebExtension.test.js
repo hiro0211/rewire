@@ -88,6 +88,15 @@ describe('generateSwiftHandler', () => {
     expect(swift).toContain('rewire-shield-panic');
   });
 
+  test('localizes notification body via Locale.preferredLanguages with ja + en strings', () => {
+    const swift = plugin.generateSwiftHandler();
+
+    expect(swift).toContain('Locale.preferredLanguages');
+    expect(swift).toContain('localizedNotificationBody');
+    expect(swift).toContain('衝動に気づきました。今の気持ちを振り返りましょう。');
+    expect(swift).toContain('We noticed an urge. Take a moment to reflect.');
+  });
+
   test('persists hasAllUrls flag from heartbeat messages into App Group UserDefaults', () => {
     const swift = plugin.generateSwiftHandler();
 
@@ -125,7 +134,7 @@ describe('generateBlockedHtml', () => {
     expect(html).toContain('rewire-open');
   });
 
-  test('uses the updated natural Japanese copy', () => {
+  test('keeps Japanese copy as inline fallback (for pre-DOMContentLoaded paint and tests)', () => {
     const html = plugin.generateBlockedHtml();
 
     expect(html).toContain('止めるって、決めたはず。');
@@ -139,6 +148,15 @@ describe('generateBlockedHtml', () => {
     const html = plugin.generateBlockedHtml();
 
     expect(html).toContain('id="blocked-domain"');
+  });
+
+  test('annotates every user-facing string with data-i18n keys for browser.i18n replacement', () => {
+    const html = plugin.generateBlockedHtml();
+
+    expect(html).toContain('data-i18n="blockTitle"');
+    expect(html).toContain('data-i18n="blockBody"');
+    expect(html).toContain('data-i18n="openRewire"');
+    expect(html).toContain('data-i18n="notificationHint"');
   });
 });
 
@@ -170,6 +188,19 @@ describe('generateBlockedJs', () => {
     expect(js).toContain('blocked-domain');
     expect(js).toContain('textContent');
     expect(js).not.toContain('innerHTML');
+  });
+
+  test('localizes text via browser.i18n.getMessage for [data-i18n] elements', () => {
+    const js = plugin.generateBlockedJs();
+
+    // Reads i18n keys dynamically from each element's data-i18n attribute,
+    // so the JS contains the attribute name + getMessage call; per-key
+    // assertions live on generateBlockedHtml / generateLocaleMessages.
+    expect(js).toContain('data-i18n');
+    expect(js).toContain('i18n.getMessage');
+    // blockBody is the only key with a substitution (the domain), so its
+    // literal must appear in the source.
+    expect(js).toContain("'blockBody'");
   });
 });
 
@@ -238,6 +269,41 @@ describe('generateContentJs', () => {
     // backup heartbeat trigger when the background page is asleep / killed.
     expect(js).toContain("type: 'contentHeartbeat'");
     expect(js).toContain('sendMessage');
+  });
+});
+
+describe('generateLocaleMessages', () => {
+  test('ja messages include all user-facing keys for the block page', () => {
+    const ja = plugin.generateLocaleMessages('ja');
+
+    expect(ja.extensionDescription.message).toContain('Rewire');
+    expect(ja.blockTitle.message).toBe('止めるって、決めたはず。');
+    expect(ja.blockBody.message).toContain('$DOMAIN$');
+    expect(ja.blockBody.message).toContain('をブロックしました');
+    expect(ja.blockBody.message).toContain('あのときの自分を、信じて。');
+    expect(ja.blockBody.placeholders.domain.content).toBe('$1');
+    expect(ja.openRewire.message).toBe('Rewire を開く');
+    expect(ja.notificationHint.message).toBe('通知からも Rewire を開けます');
+  });
+
+  test('en messages mirror the ja key set with English copy', () => {
+    const en = plugin.generateLocaleMessages('en');
+
+    expect(en.extensionDescription.message).toContain('Rewire');
+    expect(en.blockTitle.message.length).toBeGreaterThan(0);
+    expect(en.blockTitle.message).not.toBe('止めるって、決めたはず。');
+    expect(en.blockBody.message).toContain('$DOMAIN$');
+    expect(en.blockBody.message.toLowerCase()).toContain('blocked');
+    expect(en.blockBody.placeholders.domain.content).toBe('$1');
+    expect(en.openRewire.message.toLowerCase()).toContain('rewire');
+    expect(en.notificationHint.message.length).toBeGreaterThan(0);
+  });
+
+  test('ja and en have the same key set (no missing translations)', () => {
+    const ja = plugin.generateLocaleMessages('ja');
+    const en = plugin.generateLocaleMessages('en');
+
+    expect(Object.keys(en).sort()).toEqual(Object.keys(ja).sort());
   });
 });
 

@@ -1,5 +1,86 @@
 
 
+## 2026-05-30: アプリ削除前フィードバック iOS Quick Action（expo-quick-actions）
+
+### 概要
+ホーム画面でアプリアイコンを長押し → 「Appを削除」の隣に自前項目「削除しますか？／アプリを削除する理由を教えてください」を表示。タップするとデバッグ情報入りのサポート宛メール作成画面が開く。Expo公式の "Save users from deleting your app" パターン。ユーザー添付スクショの再現。**Swiftは書かない**（expo-quick-actions がネイティブ実装を提供。設定はapp.config.ts + JS Hookのみ）。
+
+### 採用方針
+- **expo-quick-actions ^6.0.2**（SDK54対応）。静的iOSアクションを config plugin で登録（初回起動前から表示）。タップ受信は `useQuickActionCallback`（expo-quick-actions/hooks、cold-start初期アクションにも発火）。メール本文は実行時に動的生成するため静的 href:mailto は不使用。
+- 新規ネイティブ依存3つ追加: **expo-quick-actions, expo-device(~8.0.10), expo-application(~7.0.8)**。`npx expo install` 済み。→ **要ネイティブ再ビルド**（Expo Go不可、OTA不可）。
+- メール起動は既存の `Linking.openURL('mailto:...')` 流用（expo-mail-composer не使用）。
+
+### 新規ファイル（TDD: Red→Green、全テスト通過）
+- `constants/support.ts` — `SUPPORT_EMAIL = 'appsupport0326@gmail.com'`（既存4箇所の重複を集約）
+- `lib/feedback/types.ts` — DeletionDebugInfo / DeletionFeedbackEmail
+- `lib/feedback/deletionFeedbackEmail.ts`(+test 15件) — 純粋: buildDeletionFeedbackEmail / buildDeletionFeedbackMailto（件名・本文・URLエンコード・unknownフォールバック）
+- `lib/feedback/collectDeletionDebugInfo.ts`(+test 11件) — expo-device/application/localization + safariWebExtensionBridge→deriveStatus を集約。取得失敗は unknown/never
+- `hooks/feedback/useDeletionFeedbackQuickAction.ts`(+test 5件) — `DELETION_FEEDBACK_ACTION_ID='rewire-delete-feedback'`。Platform.OS!=='ios'ガード + id一致時のみメール起動
+
+### 変更ファイル
+- `app.config.ts` — plugins に `['expo-quick-actions', {iosActions:[{id:'rewire-delete-feedback', title:'削除しますか？', subtitle:'アプリを削除する理由を教えてください', icon:'symbol:envelope'}]}]`（withRemoveTrackingDescription の前）。**id は Hook定数と一致必須**（不一致でタップ無反応）
+- `app/_layout.tsx` — `useDeletionFeedbackQuickAction()` を useNotificationDeepLink() の隣に追加
+- `locales/ja.ts` / `en.ts` — `deletionFeedback` ブロック追加（件名/本文ラベル/unknown。enはASCIIのみ、{{}}変数なし → i18nQuality通過）
+- `hooks/review/useReviewPromptActions.ts` / `app/settings.tsx` — ハードコードメールを SUPPORT_EMAIL 参照に置換
+- `jest.setup.js` — グローバルモック追加: expo-quick-actions/hooks, expo-device, expo-application
+- `app/__tests__/RootLayout.theme.test.tsx` — useDeletionFeedbackQuickAction をモック（ネイティブimport回避）
+
+### テスト結果
+- 新規35テスト全通過。全体: 286 suites / 2065 passed。**既存failは2件のみで本変更と無関係**（`indexRouting`=DEV_SKIP_ONBOARDINGフラグ、`i18nQuality`=postPurchaseOnboarding.demo.descriptionの改行差。両方とも本変更前から失敗を git stash で確認済み）
+- tsc: 本機能の新規ファイルはエラーゼロ（既存エラーは別領域）。eslint: 新規ファイル0エラー（テストの import/first 警告のみ＝既存パターン同様）
+
+### 未完了 / 次回
+- **実機/シミュレータ検証が未実施**（要ネイティブ再ビルド）: `npx expo prebuild -p ios` → `npx expo run:ios` → アイコン長押しで項目表示 → タップでメール起動を確認すること。シミュレータは Device.* が null を返す場合あり → unknownフォールバックでカバー済み
+- メニュー文言は Info.plist にビルド時固定（i18n非対応）。ja主体で日本語固定の判断
+- **本番/EASビルド前に `app/index.tsx:7` の DEV_SKIP_ONBOARDING を false に戻すこと**
+- 文言・メール方式・デバッグ情報範囲は AskUserQuestion がツール障害で送れず「写真に忠実」をデフォルト採用。変更要望あれば差し替え
+
+## 2026-05-29: Safari Web Extension ブロックページ + 通知本文を OS 言語ベースで英語対応
+
+### 解決した課題
+ブロックページ (`止めるって、決めたはず。` 等) と Safari 拡張から発火するローカル通知本文 (`衝動に気づきました。今の気持ちを振り返りましょう。`) が 100% ハードコード日本語。OS 言語が日本語以外のユーザーに意味不明な画面・通知が出ていた。
+
+### 設計判断
+- **OS 言語自動判定** を採用（hiro 当初案「右上に手動トグル」は不採用）。理由：ブロックページは「衝動を止めるスローダウン画面」であり、トグル UI は集中を削ぐ。アプリ本体 `locales/i18n.ts` の `expo-localization` 判定と一貫性。
+- **Web Extension 標準 `browser.i18n.getMessage()` + `_locales/`** を採用（`navigator.language` 自前分岐や HTML 2 枚案は不採用）。manifest の `default_locale: 'ja'` と `_locales/{ja,en}/messages.json` 生成は plugin が既に下地を持っていた。
+- **Swift 通知本文は `Locale.preferredLanguages.first` で分岐**（NSLocalizedString + .strings 方式は plugin 改造コストが大きい。文字列 1 つなので分岐で十分）。
+
+### 変更ファイル
+- `plugins/withSafariWebExtension.js` — 唯一の編集対象
+  - `generateBlockedHtml()`: `<h1>` / `<p>` / `<button>` / `.subtext` に `data-i18n="blockTitle|blockBody|openRewire|notificationHint"` 属性を追加。日本語コピーは pre-DOMContentLoaded / テスト用フォールバックとしてインライン保持。
+  - `generateBlockedCss()`: 本文 `<p>` に `white-space: pre-line` を追加（i18n メッセージ内の `\n` を改行レンダー）。
+  - `generateBlockedJs()`: `browser.i18n.getMessage` 呼び出しを追加。`[data-i18n]` ノードを走査し textContent を上書き。`blockBody` のみ domain を $1 substitution として渡す。i18n 取得失敗時は HTML インラインフォールバックを残すデグレード分岐。
+  - **新規** `generateLocaleMessages(locale)`: `_locales/{ja,en}/messages.json` の内容を 1 か所に集約。`withExtensionFiles` 内のインライン JSON 生成をこの関数で置換。
+  - `generateSwiftHandler()`: 新規 `localizedNotificationBody()` 関数を追加。`Locale.preferredLanguages.first?.prefix(2).lowercased() == "ja"` で日本語 / それ以外英語。
+  - exports に `generateLocaleMessages` 追加。
+- `plugins/__tests__/withSafariWebExtension.test.js` — テスト追加（30 tests, +6 new）：
+  - blocked.html に 4 つの `data-i18n` 属性が含まれる
+  - blocked.js が `browser.i18n.getMessage` を呼ぶ + `'blockBody'` リテラルを含む
+  - `generateLocaleMessages('ja'|'en')` の戻り値検証（キー対称性チェック含む）
+  - Swift handler に `Locale.preferredLanguages` + `localizedNotificationBody` + 両言語文字列
+
+### 注意事項
+- **prebuild + EAS Build 必須**: plugin 出力が変わるので OTA では届かない。
+- **`notificationBody` キー**は `_locales/messages.json` には**含めていない**（Swift から `browser.i18n` を読めないため重複定義になる）。Swift 内のハードコード文字列が source of truth。文言を変える時は Swift と messages.json を両方更新する必要がないが、運用上は翻訳整合性のため将来 `notificationBody` を messages.json にも追加して「Swift ハードコードは messages.json と一致させる」運用にしてもよい（今回は最小変更を優先）。
+- **Safari のロケール解決**: OS 言語が `ja-JP` → `_locales/ja/`、それ以外 → 最良マッチ → なければ `default_locale: 'ja'`。`en-US`, `en-GB` 等は `_locales/en/` にマッチする。
+- **`white-space: pre-line` 追加**は既存 `<p class="subtext">` にも影響するが、subtext は単一行なので視覚的変化なし。
+- 既存の `locales/ja.ts` / `locales/en.ts` の `blockedSiteTitle` / `blockedSiteBody` は **RN 側のローカル通知用** であり、今回追加した `_locales/messages.json` (拡張専用) とは別空間。混同しないこと。
+
+### テスト
+- plugin: 30 / 30 PASS（withSafariWebExtension.test.js）
+- 全体: **2034 / 2036 PASS**。失敗 2 件は事前から赤の `locales/__tests__/i18nQuality.test.ts`（`postPurchaseOnboarding.demo.description` の改行数差分）と `app/__tests__/indexRouting.test.tsx`（`DEV_SKIP_ONBOARDING` 関連）— 今回の変更と無関係。
+- lint: 私の変更ファイルにエラー 0（既存 24 errors / 420 warnings は全て他ファイル）。
+
+### 検証手順（hiro が実施）
+1. `npx expo prebuild --platform ios --clean` で `ios/SafariWebExtension/_locales/en/messages.json` に `blockTitle`/`blockBody`/`openRewire`/`notificationHint` が含まれること、`blocked.html` に `data-i18n` 属性が含まれることを目視確認
+2. **`DEV_SKIP_ONBOARDING` を false** に戻してから EAS development build（`eas build --profile development --platform ios`）
+3. 実機で iOS 言語を English に切り替え → Safari 再起動 → ブロック対象ドメインを開く → 英語ブロックページ + 英語通知が出ること確認
+4. iOS 言語を日本語に戻す → 同じ手順で日本語表示が出ること確認
+
+### 未コミット状態
+- 編集: `plugins/withSafariWebExtension.js`, `plugins/__tests__/withSafariWebExtension.test.js`, `.claude/MEMORY.md`
+
+
 ## 2026-05-01: DEMO_TEST_URL を Google → DuckDuckGo に切り替え（Google アプリの Universal Links 横取り対策）
 
 ### 解決した課題
@@ -1385,3 +1466,57 @@ DemoStep（step=2）で実際にブロックが発火し /panic→/breathing→�
 - `docs/analytics/daily-report-2026-05-22.md` / `daily-metrics-2026-05-22.json`（フェッチ前に最新dirとして再生成・全ゼロ。05-22 の corrected 版は前回分が有効）
 - `docs/analytics/daily-report-2026-05-23-corrected.md`（新規・手動集計）
 - `docs/analytics/daily-metrics-2026-05-23-corrected.json`（新規・手動集計）
+
+## 2026-05-25
+
+### 作業内容（Daily Rewire App Analytics Pipeline / スケジュールタスク自動実行）
+- `python3 -m scripts.analytics.main` を実行 → **成功**。`--request-id` 指定なしで 409 を自動処理し、ONGOING request `394c257b-...` を再利用。前回までの既知問題 #2（409ハンドリング未実装）は**解消済み**。
+- COMMERCE カテゴリを含む **6レポート**を取得 → `data/analytics/2026-05-24/` に 6 TSV 保存（Discovery Std/Detailed, Web Preview, App Downloads Std, Subscription Event Std, Subscription State Std）。既知問題 #3（レポートカテゴリ不足）も**解消済み**。
+- `analyze_funnel.py` を実行 → `daily-report-2026-05-24.md` / `daily-metrics-2026-05-24.json` 生成。だが Downloads/Trial/Paid/Churn が**また全ゼロ**。
+- Python で raw TSV から再集計し、`daily-report-2026-05-24-corrected.md` + `daily-metrics-2026-05-24-corrected.json` を作成。
+
+### 実数（fetched report 内のイベント日 2026-05-21〜05-23）
+- Impressions **58** · Taps **3**（5.2%）· Web preview page view **1** · First-time download **1** · Free trial **3** · Trial→Paid **1** · Voluntary churn **7** · Active subscription 0（データに無し）。
+- **Net subscriber change = 新規trial 3 − churn 7 = -4**（当ウィンドウで純減）。
+- Trial→Paid = 1/3 = 33.3%（ベンチマーク 40–60% に対し下回り）。
+- チャネル: App Store search 56imp · App Store browse 2imp。**organic 100%、TikTok/有料/web referral 流入ゼロ（7回連続）**。
+- ただし Subscription State に offer code `REWIRE2026`（`SNS_Campaign_2026_Free1Year`）経由の年額 free trial が 2 件 → SNS キャンペーンは offer-code redemption としては機能している（discovery のチャネル分解には出ない）。
+- Churn 7 件は**全て「Turned off auto-renew」**、大半が年額プラン。
+
+### 発見した問題 / 次回やること
+1. **`analyze_funnel.py` の列マッピングバグ（最重要・本日で7回連続再発）** — 前回までで discovery レポートの long-format（`Event`+`Counts`）対応は入った（Impression/Tap/Page view は正しく集計される様になった）。**しかし COMMERCE 3レポートが未対応**: App Downloads は `Download Type` 列、Subscription Event は `Event Name` 列、Subscription State は `State Metric` 列で、`extract_metrics()` は `Event` 列しか見ないため全て無視され 0 になる。`extract_metrics()` / `extract_metrics_by_source()` にこれら3スキーマのマッピングを追加する必要あり。修正するまで公式日次レポートは Page View 以下が常に誤り。
+2. 既知問題 #2（409）/ #3（レポートカテゴリ）は解消済み。MEMORY 過去分の該当項目はクローズ可。
+3. **リテンション悪化シグナル**: churn(7) > 新規trial(3)。trial 終了前通知・更新リマインダ通知の実装、年額プランの価値訴求見直しを検討。
+4. トップオブファネルが極小（3日で 58imp / 3tap）。ASO 強化と、SNS/TikTok キャンペーンに正しい attribution タグ付けを行い流入を可視化する。
+
+### 変更したファイル
+- `data/analytics/2026-05-24/*.tsv`（ASC fetch で新規作成、6ファイル）+ `manifest.json`
+- `docs/analytics/daily-report-2026-05-24.md` / `daily-metrics-2026-05-24.json`（analyze_funnel.py 生成・Page View 以下が全ゼロ・誤り）
+- `docs/analytics/daily-report-2026-05-24-corrected.md`（新規・手動集計）
+- `docs/analytics/daily-metrics-2026-05-24-corrected.json`（新規・手動集計）
+
+## 2026-05-26（scheduled task: rewire-daily-analytics 自動実行）
+
+### 実行サマリ
+- Step 1 ASC fetch 成功: `data/analytics/2026-05-25/` に 5 レポート（TSV）保存。report request `394c257b...`（既存 ONGOING を再利用）。
+- Step 2 `analyze_funnel.py` 実行成功 → `docs/analytics/daily-report-2026-05-25.md` / `daily-metrics-2026-05-25.json` 生成。
+- Step 3 既知バグのため手動補正版を生成（前回 05-24 と同形式）。
+
+### 実数（fetched report 内のイベント日 2026-05-22〜05-24）
+- Impressions **103** · Taps **4**（3.9%）· Page view **12** · First-time download **1** · Free trial start **3** · Trial→Paid **1** · Voluntary churn **7** · Active full-price subscription **1**。
+- **Net subscriber change = 新規trial 3 − churn 7 = -4**（当ウィンドウで純減・3回連続マイナス）。
+- Trial→Paid = 1/3 = 33.3%（ベンチマーク 40–60% を下回り）。
+- チャネル: App Store search 100imp/3tap · App Store browse 3imp/1tap。**organic 100%、TikTok/有料/web referral 流入ゼロ（8回連続）**。
+- offer code `REWIRE2026`（`SNS_Campaign_2026_Free1Year`）経由の年額 free trial 2 件 → SNS キャンペーンは機能しているが discovery のチャネル分解に出ない。
+- Churn 7 件は全て「Turned off auto-renew」。
+
+### 発見した問題 / 次回やること
+1. **`analyze_funnel.py` の列マッピングバグ（本日で8回連続再発）** — COMMERCE 3レポート（App Downloads=`Download Type`列 / Subscription Event=`Event Name`列 / Subscription State=`State Metric`列）が `extract_metrics()`（`Event`列のみ参照）で無視され Downloads/Trial/Paid/Churn が全て 0 になる。要修正。TDD ルールにより各スキーマの失敗テストを先に追加すること。
+2. リテンション悪化継続: churn(7) > 新規trial(3)。trial 終了前通知・更新リマインダ通知の実装を検討。
+3. トップオブファネルが極小（3日で 103imp / 4tap）。ASO 強化 + SNS/TikTok キャンペーンへの attribution タグ付け。
+
+### 変更したファイル
+- `data/analytics/2026-05-25/*.tsv`（ASC fetch で新規作成、5ファイル）+ `manifest.json`
+- `docs/analytics/daily-report-2026-05-25.md` / `daily-metrics-2026-05-25.json`（analyze_funnel.py 生成・Page View 以下が全ゼロ・誤り）
+- `docs/analytics/daily-report-2026-05-25-corrected.md`（新規・手動集計）
+- `docs/analytics/daily-metrics-2026-05-25-corrected.json`（新規・手動集計）

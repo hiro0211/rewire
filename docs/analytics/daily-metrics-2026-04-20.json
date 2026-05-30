@@ -1,45 +1,60 @@
 {
   "date": "2026-04-20",
-  "note": "ASC ongoing report dated 2026-04-20 contained event rows for 2026-04-17..19 (1-2 day ASC delay). Aggregates below span those three days.",
   "metrics": {
     "impressions": 38,
     "product_page_views": 10,
-    "downloads_get_taps": 1,
-    "trial_starts": null,
-    "paid_conversions": null,
-    "cancellations": null,
-    "active_subscriptions": null
+    "app_units": 0,
+    "taps": 1,
+    "sessions": 0,
+    "active_devices": 0,
+    "trial_starts": 0,
+    "paid_conversions": 0,
+    "cancellations": 0,
+    "active_subscriptions": 0
   },
   "funnel": {
     "page_view_rate": 0.2632,
-    "download_rate": 0.1,
+    "download_rate": 0.0,
     "trial_start_rate": null,
     "trial_to_paid_rate": null,
     "monthly_churn_rate": null
   },
   "bottleneck": {
     "stage": "download_rate",
-    "value": 0.1,
-    "benchmark_low": 0.3,
-    "gap": 0.2
+    "gap": 0.3
   },
   "sources": {
-    "App Store Search": {"impressions": 33, "product_page_views": 6, "get_taps": 0, "page_view_rate": 0.1818},
-    "App Store Browse": {"impressions": 5, "product_page_views": 2, "get_taps": 1, "page_view_rate": 0.4},
-    "Web Referral": {"impressions": 0, "product_page_views": 1, "get_taps": 0},
-    "Unavailable": {"impressions": 0, "product_page_views": 1, "get_taps": 0},
-    "TikTok": null
-  },
-  "most_recent_day": {
-    "date": "2026-04-19",
-    "impressions": 9,
-    "product_page_views": 1,
-    "get_taps": 1
-  },
-  "known_issues": [
-    "analyze_funnel.py expects wide-format ASC columns and produces zero output against current long/event-format TSVs",
-    "APP_USAGE category returned no data for this window",
-    "SUBSCRIPTION category is not in REPORT_CATEGORIES; trial/paid/churn metrics unavailable",
-    "No TikTok-tagged source rows — attribution may not be wired up"
-  ]
+    "Unavailable": {
+      "impressions": 0,
+      "product_page_views": 1,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    },
+    "App Store Browse": {
+      "impressions": 5,
+      "product_page_views": 2,
+      "app_units": 0,
+      "taps": 1,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    },
+    "App Store Search": {
+      "impressions": 33,
+      "product_page_views": 6,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    },
+    "Web Referral": {
+      "impressions": 0,
+      "product_page_views": 1,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
+    }
+  }
 }

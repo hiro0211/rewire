@@ -1,75 +1,44 @@
 {
-  "date": "2026-04-11",
-  "report_fetched_for": "2026-04-12",
-  "note": "April 12 report instance fetched, but data rows cover up to April 11",
+  "date": "2026-04-12",
   "metrics": {
-    "impressions": 7,
-    "product_page_views": 0,
+    "impressions": 13,
+    "product_page_views": 1,
     "app_units": 0,
+    "taps": 0,
+    "sessions": 0,
+    "active_devices": 0,
     "trial_starts": 0,
     "paid_conversions": 0,
     "cancellations": 0,
-    "active_subscriptions": 0,
-    "sessions": 0,
-    "active_devices": 0
+    "active_subscriptions": 0
   },
   "funnel": {
-    "page_view_rate": 0.0,
-    "download_rate": null,
+    "page_view_rate": 0.0769,
+    "download_rate": 0.0,
     "trial_start_rate": null,
-    "trial_to_paid_rate": null
+    "trial_to_paid_rate": null,
+    "monthly_churn_rate": null
   },
-  "bottleneck": null,
+  "bottleneck": {
+    "stage": "download_rate",
+    "gap": 0.3
+  },
   "sources": {
-    "App Store Search": {
-      "impressions": 7,
-      "product_page_views": 0,
+    "Unavailable": {
+      "impressions": 0,
+      "product_page_views": 1,
       "app_units": 0,
+      "taps": 0,
       "trial_starts": 0,
       "paid_conversions": 0
-    }
-  },
-  "trend": {
-    "2026-04-09": {
-      "impressions": 2
     },
-    "2026-04-10": {
-      "impressions": 4
-    },
-    "2026-04-11": {
-      "impressions": 7
-    }
-  },
-  "historical_comparison": {
-    "2026-04-03": {
-      "impressions": 14000,
-      "page_views": 4310,
-      "downloads": 1450
-    },
-    "2026-04-06": {
-      "impressions": 27,
-      "page_views": 11,
-      "downloads": 1
-    },
-    "2026-04-07": {
-      "impressions": 0,
-      "page_views": 0,
-      "downloads": 0
-    },
-    "2026-04-09": {
-      "impressions": 0,
-      "page_views": 0,
-      "downloads": 0
-    },
-    "2026-04-11": {
-      "impressions": 0,
-      "page_views": 0,
-      "downloads": 0
-    },
-    "2026-04-12": {
-      "impressions": 0,
-      "page_views": 0,
-      "downloads": 0
+    "App Store Search": {
+      "impressions": 13,
+      "product_page_views": 0,
+      "app_units": 0,
+      "taps": 0,
+      "trial_starts": 0,
+      "paid_conversions": 0
     }
   }
 }

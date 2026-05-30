@@ -8,6 +8,7 @@ import { useAppInitialization } from '@/hooks/useAppInitialization';
 import * as SplashScreen from 'expo-splash-screen';
 import { FONT_WEIGHT } from '@/constants/theme';
 import { useNotificationDeepLink } from '@/hooks/useNotificationDeepLink';
+import { useDeletionFeedbackQuickAction } from '@/hooks/feedback/useDeletionFeedbackQuickAction';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,6 +17,7 @@ export default function RootLayout() {
   const { colors, isDark } = useTheme();
   const { t } = useLocale();
   useNotificationDeepLink();
+  useDeletionFeedbackQuickAction();
 
   if (!hasHydrated) {
     return null;

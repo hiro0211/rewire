@@ -8,6 +8,7 @@ import logging
 from typing import Optional
 
 import requests
+from requests.exceptions import HTTPError
 
 from scripts.analytics.jwt_auth import get_auth_headers
 
@@ -15,10 +16,13 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.appstoreconnect.apple.com"
 
-# Report categories we care about for funnel analysis
+# Report categories we care about for funnel analysis.
+# COMMERCE is required for Downloads, Trial Starts, Paid Conversions, and
+# Active Subscriptions — without it the funnel below Page View is permanently 0.
 REPORT_CATEGORIES = [
-    "APP_USAGE",        # Impressions, Page Views, Downloads, Sessions
-    "APP_STORE_ENGAGEMENT",  # Product page engagement
+    "APP_USAGE",              # Sessions, Active Devices
+    "APP_STORE_ENGAGEMENT",   # Impressions, Page Views, Taps (discovery)
+    "COMMERCE",               # Downloads, Trial Starts, Paid Conversions, Subscriptions
 ]
 
 
@@ -75,6 +79,51 @@ class ASCClient:
             }
         }
         return self._post(url, payload)
+
+    def list_report_requests(self, access_type: Optional[str] = None) -> dict:
+        """List analytics report requests for this app.
+
+        Args:
+            access_type: Optional filter, e.g. 'ONGOING' or 'ONE_TIME_SNAPSHOT'.
+
+        Returns:
+            API response with a list of report request entities.
+        """
+        url = f"{self.base_url}/v1/apps/{self.app_id}/analyticsReportRequests"
+        params = {}
+        if access_type:
+            params["filter[accessType]"] = access_type
+        return self._get(url, params=params)
+
+    def get_or_create_report_request(self, access_type: str = "ONGOING") -> str:
+        """Return the request id for an ONGOING report, creating one if needed.
+
+        ASC returns 409 Conflict from POST /v1/analyticsReportRequests when an
+        ONGOING request already exists for the app. In that case we list the
+        existing requests and reuse the first matching id, so the daily
+        scheduler does not need a hand-pasted --request-id every time.
+
+        Raises:
+            RuntimeError: when ASC reports the conflict but no matching
+                request is found in the listing.
+        """
+        try:
+            resp = self.create_report_request(access_type=access_type)
+            return resp["data"]["id"]
+        except HTTPError as exc:
+            status = getattr(exc.response, "status_code", None)
+            if status != 409:
+                raise
+
+        listing = self.list_report_requests(access_type=access_type)
+        for entry in listing.get("data", []):
+            entry_id = entry.get("id")
+            if entry_id:
+                return entry_id
+        raise RuntimeError(
+            f"ASC returned 409 for create but no {access_type} request listed "
+            f"for app {self.app_id}. Inspect the dashboard manually."
+        )
 
     def get_reports(
         self, request_id: str, category: Optional[str] = None

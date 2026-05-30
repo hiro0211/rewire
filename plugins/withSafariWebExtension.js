@@ -52,7 +52,7 @@ function generateManifest() {
   return {
     manifest_version: 3,
     name: 'Rewire Safari Extension',
-    version: '2.1.0',
+    version: '2.2.0',
     description: 'アダルトサイトを、開く前に止める。Rewire の Safari 拡張。',
     default_locale: 'ja',
     permissions: ['nativeMessaging', 'webNavigation', 'alarms'],
@@ -163,10 +163,22 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
         context.completeRequest(returningItems: [response], completionHandler: nil)
     }
 
+    private func localizedNotificationBody() -> String {
+        // Mirror RN-side getDeviceLocale(): ja gets the Japanese copy,
+        // everything else falls through to English. Source of truth for the
+        // translated strings is _locales/{ja,en}/messages.json (notificationBody
+        // is duplicated here because App Extensions cannot read browser.i18n).
+        let lang = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "ja"
+        if lang == "ja" {
+            return "衝動に気づきました。今の気持ちを振り返りましょう。"
+        }
+        return "We noticed an urge. Take a moment to reflect."
+    }
+
     private func scheduleNotification(domain: String) {
         let content = UNMutableNotificationContent()
         content.title = "Rewire"
-        content.body = "衝動に気づきました。今の気持ちを振り返りましょう。"
+        content.body = localizedNotificationBody()
         content.sound = .default
         content.categoryIdentifier = Self.panicCategoryId
         content.userInfo = ["route": "/panic", "domain": domain]
@@ -184,6 +196,11 @@ class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
 }
 
 function generateBlockedHtml() {
+  // Inline copy stays as Japanese fallback — used pre-DOMContentLoaded and
+  // when running outside a real WebExtension context (tests, manual preview).
+  // At runtime, blocked.js replaces text via browser.i18n.getMessage() using
+  // the data-i18n keys. Safari resolves the locale from the user's OS
+  // language preferences and falls back to manifest.default_locale.
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -195,10 +212,11 @@ function generateBlockedHtml() {
 <body>
   <div class="container">
     <img src="icons/app-icon.png" alt="Rewire" class="app-icon" />
-    <h1>止めるって、決めたはず。</h1>
-    <p><span id="blocked-domain"></span> をブロックしました。<br/>あのときの自分を、信じて。</p>
-    <button id="rewire-open" type="button">Rewire を開く</button>
-    <p class="subtext">通知からも Rewire を開けます</p>
+    <h1 data-i18n="blockTitle">止めるって、決めたはず。</h1>
+    <p data-i18n="blockBody"><span id="blocked-domain"></span> をブロックしました。
+あのときの自分を、信じて。</p>
+    <button id="rewire-open" type="button" data-i18n="openRewire">Rewire を開く</button>
+    <p class="subtext" data-i18n="notificationHint">通知からも Rewire を開けます</p>
   </div>
   <script src="blocked.js"></script>
 </body>
@@ -247,6 +265,9 @@ p {
   color: #9CA0B5;
   line-height: 1.6;
   margin: 0 0 32px;
+  /* blockBody message uses \\n line breaks (no <br/>); preserve them when
+     blocked.js swaps textContent via browser.i18n.getMessage. */
+  white-space: pre-line;
 }
 button {
   background: #8B5CF6;
@@ -270,13 +291,18 @@ button:active { transform: scale(0.97); }
 }
 
 function generateBlockedJs() {
+  // i18n keys here MUST stay in sync with generateLocaleMessages(). Safari
+  // picks the locale based on the user's OS language preferences; manifest
+  // default_locale=ja is the fallback when no match is found.
   return `(function() {
   const params = new URLSearchParams(location.search);
   const domain = params.get('domain') || 'unknown';
 
-  var runtime = (typeof browser !== 'undefined' && browser.runtime)
-    ? browser.runtime
-    : (typeof chrome !== 'undefined' ? chrome.runtime : null);
+  var ext = (typeof browser !== 'undefined') ? browser
+          : (typeof chrome !== 'undefined') ? chrome
+          : null;
+  var runtime = ext && ext.runtime ? ext.runtime : null;
+  var i18n = ext && ext.i18n ? ext.i18n : null;
 
   if (runtime && runtime.sendMessage) {
     try {
@@ -284,11 +310,40 @@ function generateBlockedJs() {
     } catch (e) { /* noop */ }
   }
 
+  function localize(key, substitutions) {
+    if (!i18n || !i18n.getMessage) return null;
+    try {
+      var msg = substitutions
+        ? i18n.getMessage(key, substitutions)
+        : i18n.getMessage(key);
+      return msg && msg.length > 0 ? msg : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    // Domain fallback first — guarantees the domain is shown even if i18n
+    // replacement below fails (e.g. older Safari, unexpected runtime).
     var domainEl = document.getElementById('blocked-domain');
     if (domainEl) {
       domainEl.textContent = domain;
     }
+
+    // Per-key localization. Static keys swap textContent; blockBody passes
+    // the domain as a $DOMAIN$ substitution so message authors control word order.
+    var nodes = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var key = el.getAttribute('data-i18n');
+      var msg = (key === 'blockBody')
+        ? localize('blockBody', [domain])
+        : localize(key);
+      if (msg) {
+        el.textContent = msg;
+      }
+    }
+
     var btn = document.getElementById('rewire-open');
     if (btn) {
       btn.addEventListener('click', function () {
@@ -407,6 +462,48 @@ function generateDomainsJs(domains) {
   return `const BLOCKED_DOMAINS = ${json};\n`;
 }
 
+// _locales/{ja,en}/messages.json content. Safari resolves the locale from the
+// user's OS language preferences and falls back to manifest.default_locale (ja).
+// Keys here MUST stay in sync with the data-i18n attributes emitted by
+// generateBlockedHtml() and the lookups in generateBlockedJs().
+const LOCALE_MESSAGES = {
+  ja: {
+    extensionDescription: {
+      message: 'Rewire が衝動に気づかせるカスタムブロック拡張',
+    },
+    blockTitle: { message: '止めるって、決めたはず。' },
+    blockBody: {
+      message: '$DOMAIN$ をブロックしました。\nあのときの自分を、信じて。',
+      placeholders: { domain: { content: '$1', example: 'example.com' } },
+    },
+    openRewire: { message: 'Rewire を開く' },
+    notificationHint: { message: '通知からも Rewire を開けます' },
+  },
+  en: {
+    extensionDescription: {
+      message: 'Rewire custom block extension that helps you notice urges',
+    },
+    blockTitle: { message: "You said you'd stop." },
+    blockBody: {
+      message:
+        "$DOMAIN$ has been blocked.\nTrust the version of you who made that choice.",
+      placeholders: { domain: { content: '$1', example: 'example.com' } },
+    },
+    openRewire: { message: 'Open Rewire' },
+    notificationHint: { message: 'You can also open Rewire from the notification' },
+  },
+};
+
+function generateLocaleMessages(locale) {
+  const messages = LOCALE_MESSAGES[locale];
+  if (!messages) {
+    throw new Error(
+      `[withSafariWebExtension] No locale messages defined for "${locale}"`
+    );
+  }
+  return messages;
+}
+
 // ============================================================
 // Sub-plugin 1: App Groups entitlement on main app
 // ============================================================
@@ -474,19 +571,11 @@ function withExtensionFiles(config, { appGroup }) {
       // _locales
       fs.writeFileSync(
         path.join(localesDir, 'ja', 'messages.json'),
-        JSON.stringify({
-          extensionDescription: {
-            message: 'Rewire が衝動に気づかせるカスタムブロック拡張',
-          },
-        })
+        JSON.stringify(generateLocaleMessages('ja'), null, 2)
       );
       fs.writeFileSync(
         path.join(localesDir, 'en', 'messages.json'),
-        JSON.stringify({
-          extensionDescription: {
-            message: 'Rewire custom block extension that helps you notice urges',
-          },
-        })
+        JSON.stringify(generateLocaleMessages('en'), null, 2)
       );
 
       // Swift handler
@@ -515,7 +604,7 @@ function withExtensionFiles(config, { appGroup }) {
 \t<key>CFBundlePackageType</key>
 \t<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 \t<key>CFBundleShortVersionString</key>
-\t<string>2.1.0</string>
+\t<string>2.2.0</string>
 \t<key>CFBundleVersion</key>
 \t<string>1</string>
 \t<key>NSExtension</key>
@@ -592,7 +681,7 @@ function withExtensionTarget(config, { appleTeamId }) {
             DEVELOPMENT_TEAM: appleTeamId,
             TARGETED_DEVICE_FAMILY: `"1,2"`,
             GENERATE_INFOPLIST_FILE: 'NO',
-            MARKETING_VERSION: '2.1.0',
+            MARKETING_VERSION: '2.2.0',
             CURRENT_PROJECT_VERSION: '1',
             SWIFT_EMIT_LOC_STRINGS: 'YES',
             CODE_SIGN_ENTITLEMENTS: `"${EXTENSION_NAME}/${EXTENSION_NAME}.entitlements"`,
@@ -741,5 +830,6 @@ withSafariWebExtension.generateBlockedJs = generateBlockedJs;
 withSafariWebExtension.generateBackgroundJs = generateBackgroundJs;
 withSafariWebExtension.generateContentJs = generateContentJs;
 withSafariWebExtension.generateDomainsJs = generateDomainsJs;
+withSafariWebExtension.generateLocaleMessages = generateLocaleMessages;
 
 module.exports = withSafariWebExtension;

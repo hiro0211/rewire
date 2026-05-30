@@ -4,29 +4,29 @@
 
 | Stage | Count | Conversion Rate | vs Benchmark |
 |-------|-------|----------------|--------------|
-| Impressions | 0 | N/A | — |
-| → Page Views | 0 | N/A | — |
-| → Downloads | 0 | N/A | — |
+| Impressions | 60 | N/A | — |
+| → Page Views | 3 | 5.0% | 🔴 Below |
+| → Downloads | 0 | 0.0% | 🔴 Below |
 | → Trial Starts | 0 | N/A | — |
 | → Paid | 0 | N/A | — |
 | Churn Rate | 0/0 | N/A | — |
 
 ## Bottleneck Analysis
 
-No significant bottleneck detected (all stages within benchmark).
+The biggest drop-off is at **Download Rate** (0.0% vs benchmark 30.0%).
 
 ## Channel Comparison
 
 | Channel | Impressions | Downloads | Trial Starts | Paid |
 |---------|-------------|-----------|--------------|------|
-| App Store Browse | 0 | 0 | 0 | 0 |
-| App Store Search | 0 | 0 | 0 | 0 |
+| App Store Browse | 1 | 0 | 0 | 0 |
+| App Store Search | 59 | 0 | 0 | 0 |
 | App referrer | 0 | 0 | 0 | 0 |
 
 ## Top 3 Improvement Actions
 
-1. Review the full funnel with the latest data to identify emerging bottlenecks.
-2. Set up weekly A/B tests on the lowest-performing funnel stage.
-3. Analyze TikTok campaign performance vs organic to optimize ad spend.
+1. Improve the first 3 screenshots on the product page — they should clearly show the core value proposition within 2 seconds of viewing.
+2. Add or update the app preview video to demonstrate the key user journey. Keep it under 15 seconds with clear text overlays.
+3. Update the app description's first paragraph with social proof (ratings, user count, testimonials).
 
-*Report generated: 2026-05-20 00:02*
+*Report generated: 2026-05-24 22:20*

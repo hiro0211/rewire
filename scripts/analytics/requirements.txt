@@ -1,0 +1,5 @@
+requests>=2.32
+PyJWT[crypto]>=2.10
+cryptography>=46.0
+python-dotenv>=1.0
+pytest>=8.0

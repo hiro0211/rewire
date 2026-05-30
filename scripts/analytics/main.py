@@ -47,7 +47,11 @@ def main():
 
     try:
         client = ASCClient(app_id=APP_ID)
-        data = fetch_daily_data(client, date=args.date, request_id=args.request_id)
+        # Resolve the report request id: explicit override, else look up or
+        # create an ONGOING request so the scheduler never needs --request-id.
+        request_id = args.request_id or client.get_or_create_report_request()
+        logger.info(f"Using report request: {request_id}")
+        data = fetch_daily_data(client, date=args.date, request_id=request_id)
 
         if data:
             output_path = save_daily_data(data, args.date)
