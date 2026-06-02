@@ -1601,3 +1601,55 @@ GOOGLE_APPLICATION_CREDENTIALS=/Users/arimurahiroaki/.config/gcloud/application_
 - User ADC は token 自動更新されるが、サーバー（cron）運用には不向き（リフレッシュ失効リスクあり）。個人 Mac 上の日次実行なら問題なし
 - SETUP_FIREBASE.md には今回の回避策を別ガイドとして追記検討（未実施）
 - 変更ファイル（未コミット）: `scripts/analytics/firebase_ga4_client.py`, `scripts/analytics/tests/test_firebase_ga4_client.py`
+
+---
+
+## 2026-06-02 App Store リジェクト対応 — Guideline 3.1.2(c) 価格表示の優先順位修正
+
+### リジェクト内容（App Review）
+- 日付: 2026-05-31 / Submission ID: `b2ac77cd-093e-44ef-9bf8-965030e46b07` / レビュー端末: iPad Air 11-inch (M3) / 対象: 2.2 (1)
+- **Guideline 3.1.2(c)**: "the auto-renewable subscription displays the **monthly calculated pricing** more clearly and conspicuously than **the billed amount**."
+
+### 根本原因（コードで特定）
+- `components/paywall/PlanSelector.tsx` の年額カードが、**月換算した計算上の価格**（`calcMonthlyPrice(annualPrice)` = ¥5,400÷12 = ¥450）を `FONT_SIZE.xxl`(24)/`extrabold` で最も目立つ要素として描画。
+- **実際の請求総額**（¥5,400/年）はフッター `billingNote`（`PaywallDefault.tsx`, `FONT_SIZE.xs`=12/`textSecondary`）にしか出ていなかった → Apple の優先順位要件を反転。
+- ルートの正式ソース: [Auto-renewable Subscriptions](https://developer.apple.com/app-store/subscriptions/)（3.1.2(c) が参照）「the amount that will be billed must be the most prominent pricing element … breakdown は subordinate position and size」。月換算の併記は**許可**だがサイズ・位置で従属必須。
+
+### 修正内容（TDD: Red→Green→Refactor）
+- **方針（hiro 承認済み）**: 年額カード = 請求総額を主役 + 月換算（従属）+ 割引バッジ（従属）。修正範囲は**有効な PaywallDefault / PlanSelector のみ**（Discount/Trial は Guideline 5.6 でコメントアウト・無効のため対象外）。
+- `components/paywall/PlanSelector.tsx`:
+  - 年額カードの主役を `formatPrice(annualMonthly)`（月換算）→ **`annualPriceStr`（実請求総額・RC priceString）** に変更。period を `／月`→**`／年`**。
+  - 従属の月換算行 `約 ¥450／月`（新 `priceEquivalent`: xs/muted）と割引バッジ `34%お得`（新 `savingsBadge`: xs/`colors.success`）を追加。バッジは `calcRelativeDiscount`（既存）を再利用し `showMonthly && monthlyPackage` のときのみ表示。
+  - ハードコード `Annual`/`Monthly` を i18n 化。月額カードは実請求額が既に主役のためラベルのみ localize。
+  - 主役 `priceMain`=24px/extrabold > 従属=12px を担保。
+- `locales/ja.ts` / `locales/en.ts`（`paywall` セクション）にキー追加: `perYear`(／年//yr), `planAnnual`(年額/Annual), `planMonthly`(月額/Monthly), `monthlyEquivalent`(約 {{price}}／月/≈ {{price}}/mo), `savePercent`({{percent}}%お得/Save {{percent}}%)。
+- フッター `billingAnnual`（"3日間無料、そのあと {{price}}／年"）と CTA「無料で始める」は維持（カード内で請求総額が最も目立つ構成のため準拠）。
+- 新規テスト: `components/paywall/__tests__/PlanSelector.test.tsx`（7件）。
+
+### テスト / lint
+- 新規 PlanSelector テスト 7件含む paywall 関連 32 スイート/252 テスト全通過。
+- 全体: **2084 passed / 1 failed**。失敗は `locales/__tests__/i18nQuality.test.ts` の `postPurchaseOnboarding.demo.description`（ja 改行3 vs en 改行1）で、**git stash で確認した結果 clean HEAD でも失敗する既存の不具合**（今回の変更とは無関係。別途修正候補）。
+- lint: 新規エラー・警告ゼロ（PlanSelector.tsx / test / locales）。
+- tsc: 変更ファイルに型エラーなし。
+
+### 再申請メモ（hiro が App Store Connect で実施）
+- `app.json` buildNumber `1` → **`2`** にインクリメント（version 2.2.0 据え置き）して archive→upload。本番ビルド前に `app/index.tsx:7` の `DEV_SKIP_ONBOARDING` を **false** に戻すこと。
+- iPad Air 11" でのリジェクトのため、**iPad シミュレータで paywall の目視確認**（年額カードで ¥X,XXX/年 が最大・太字、月換算と割引バッジが従属）+ スクリーンショット取得。
+- Resolution Center 返信テンプレ（英語）: "Per Guideline 3.1.2(c): the total billed amount (e.g. ¥5,400/year) is now the most prominent pricing element … the per-month equivalent (≈¥450/mo) and savings badge are shown in a smaller, subordinate position and size …"
+
+### 目視確認（実機ビルドで確認済み）
+- `npx expo run:ios` で **iPad Air 11-inch (M3)**（リジェクトと同一端末）にビルド→`rewire://paywall` でペイウォール表示。RevenueCat 実価格がロードされた。
+- 確認結果: 年額カードは **$34.99 ／年（大・太字＝請求総額）** が主役、`27%お得`（小・緑バッジ）と `約 $3.00／月`（小・muted）が従属。月額カードは `$3.99 ／月`。→ **3.1.2(c) 準拠を視覚的に確認**（スクショ `/tmp/rewire_paywall2.png`）。シミュレータの storefront が US のため通貨は $ 表示だが、レイアウト階層は通貨非依存で同一。
+
+### 本番フラグ修正（2026-06-02 目視確認後）
+- `app/index.tsx`: `DEV_SKIP_ONBOARDING` を **`true` → `false`** に変更（本番運用設定）。`DEV_PREVIEW_POST_PURCHASE` は元々 `false`。grep 済み: ハードコードの dev/debug/mock フラグはこの2つのみ。
+- これに伴い `app/__tests__/indexRouting.test.tsx` を**本番挙動（user有無に関わらず `/brand` へ遷移・DEV seed 不実行）に書き換え**（TDD: Red→Green）。`/brand` 画面が `/(tabs)` か `/onboarding` を振り分ける。
+- シミュレータ shutdown・Metro(8081) 停止済み。
+- 全体テスト: **2084 passed / 1 failed**（失敗は既存の i18nQuality のみ、無関係）。lint: 0 error。
+
+### 変更ファイル（未コミット）
+- `components/paywall/PlanSelector.tsx`
+- `components/paywall/__tests__/PlanSelector.test.tsx`（新規）
+- `locales/ja.ts`, `locales/en.ts`
+- `app/index.tsx`（DEV_SKIP_ONBOARDING=false）
+- `app/__tests__/indexRouting.test.tsx`（本番挙動に更新）

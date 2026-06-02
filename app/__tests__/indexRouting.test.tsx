@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
+import Index from '../index';
 
 jest.mock('expo-router', () => ({
   Redirect: ({ href }: { href: string }) => {
@@ -25,18 +26,25 @@ jest.mock('@/lib/dev/seedDevUser', () => ({
   seedDevUser: () => mockSeedDevUser(),
 }));
 
-import Index from '../index';
-
-describe('Index routing', () => {
+// 本番運用設定（DEV_SKIP_ONBOARDING=false）の挙動を検証する。
+// ブランド画面へ遷移し、ブランド画面側で /(tabs) か /onboarding を振り分ける。
+describe('Index routing（本番設定）', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockHasHydrated = true;
     mockUser = { id: 'u' };
   });
 
-  it('userが既に存在 → /(tabs) にリダイレクト（DEV_SKIP_ONBOARDING=true）', () => {
+  it('userが存在 → /brand にリダイレクトし、DEV seedは実行されない', () => {
     const { getByTestId } = render(<Index />);
-    expect(getByTestId('redirect').props.children).toBe('/(tabs)');
+    expect(getByTestId('redirect').props.children).toBe('/brand');
+    expect(mockSeedDevUser).not.toHaveBeenCalled();
+  });
+
+  it('userがnullでも /brand にリダイレクトし、DEV seedは実行されない', () => {
+    mockUser = null;
+    const { getByTestId } = render(<Index />);
+    expect(getByTestId('redirect').props.children).toBe('/brand');
     expect(mockSeedDevUser).not.toHaveBeenCalled();
   });
 
@@ -44,12 +52,5 @@ describe('Index routing', () => {
     mockHasHydrated = false;
     const { getByTestId } = render(<Index />);
     expect(getByTestId('activity-indicator')).toBeTruthy();
-  });
-
-  it('userがnullのときDEV seedが実行され、その間はローディングを表示する', async () => {
-    mockUser = null;
-    const { getByTestId } = render(<Index />);
-    expect(getByTestId('activity-indicator')).toBeTruthy();
-    await waitFor(() => expect(mockSeedDevUser).toHaveBeenCalledTimes(1));
   });
 });

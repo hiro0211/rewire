@@ -276,9 +276,9 @@ function generateInfoPlist() {
 \t<key>CFBundlePackageType</key>
 \t<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 \t<key>CFBundleShortVersionString</key>
-\t<string>2.2.0</string>
+\t<string>$(MARKETING_VERSION)</string>
 \t<key>CFBundleVersion</key>
-\t<string>1</string>
+\t<string>$(CURRENT_PROJECT_VERSION)</string>
 \t<key>NSExtension</key>
 \t<dict>
 \t\t<key>NSExtensionPointIdentifier</key>
@@ -405,8 +405,9 @@ function withWidgetExtensionTarget(config) {
             DEVELOPMENT_TEAM: "KV6CYPA7JK",
             TARGETED_DEVICE_FAMILY: `"1,2"`,
             GENERATE_INFOPLIST_FILE: "NO",
-            MARKETING_VERSION: "2.2.0",
-            CURRENT_PROJECT_VERSION: "1",
+            // 親アプリ(app.config/app.json)のバージョン・ビルド番号を継承し、拡張と本体の不一致を防ぐ
+            MARKETING_VERSION: config.version ?? "2.2.0",
+            CURRENT_PROJECT_VERSION: String(config.ios?.buildNumber ?? "1"),
             SWIFT_EMIT_LOC_STRINGS: "YES",
             CODE_SIGN_ENTITLEMENTS: `"${WIDGET_EXTENSION_NAME}/${WIDGET_EXTENSION_NAME}.entitlements"`,
           });

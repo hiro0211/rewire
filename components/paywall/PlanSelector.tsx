@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { calcMonthlyPrice, formatPrice } from './paywallUtils';
+import { calcMonthlyPrice, calcRelativeDiscount, formatPrice } from './paywallUtils';
 
 interface PlanSelectorProps {
   annualPackage: any;
@@ -28,6 +28,10 @@ export function PlanSelector({
   const monthlyPrice = monthlyPackage?.product?.price ?? 680;
   const annualMonthly = calcMonthlyPrice(annualPrice);
 
+  // 月額プランがある場合のみ、月額比の割引率を従属バッジとして表示する
+  const discountPercent =
+    showMonthly && monthlyPackage ? calcRelativeDiscount(monthlyPrice, annualPrice) : 0;
+
   const annualPriceStr = annualPackage?.product?.priceString ?? `¥${annualPrice}`;
   const monthlyPriceStr = monthlyPackage?.product?.priceString ?? `¥${monthlyPrice}`;
 
@@ -45,9 +49,21 @@ export function PlanSelector({
         onPress={() => onSelectPlan('annual')}
         activeOpacity={0.7}
       >
-        <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Annual</Text>
-        <Text style={[styles.priceMain, { color: colors.text }]}>{formatPrice(annualMonthly, currencyCode)}</Text>
-        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perMonth')}</Text>
+        <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>
+          {t('paywall.planAnnual')}
+        </Text>
+        {discountPercent > 0 && (
+          <Text style={[styles.savingsBadge, { color: colors.success }]}>
+            {t('paywall.savePercent', { percent: discountPercent })}
+          </Text>
+        )}
+        {/* 主役: 実際に請求される総額（Guideline 3.1.2(c)） */}
+        <Text style={[styles.priceMain, { color: colors.text }]}>{annualPriceStr}</Text>
+        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perYear')}</Text>
+        {/* 従属: 月換算は小さく muted に */}
+        <Text style={[styles.priceEquivalent, { color: colors.textSecondary }]}>
+          {t('paywall.monthlyEquivalent', { price: formatPrice(annualMonthly, currencyCode) })}
+        </Text>
       </TouchableOpacity>
 
       {/* Monthly Card */}
@@ -63,7 +79,9 @@ export function PlanSelector({
           onPress={() => onSelectPlan('monthly')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>Monthly</Text>
+          <Text style={[styles.planLabel, { marginTop: SPACING.xxl, color: colors.textSecondary }]}>
+            {t('paywall.planMonthly')}
+          </Text>
           <Text style={[styles.priceMain, { color: colors.text }]}>{monthlyPriceStr}</Text>
           <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perMonth')}</Text>
         </TouchableOpacity>
@@ -95,6 +113,18 @@ const styles = StyleSheet.create({
   },
   priceSub: {
     fontSize: FONT_SIZE.sm,
+    marginBottom: SPACING.xs,
+  },
+  // 月換算（従属表示）: 主役の請求総額より明確に小さく muted
+  priceEquivalent: {
+    fontSize: FONT_SIZE.xs,
+    marginTop: SPACING.xs,
+    marginBottom: SPACING.xs,
+  },
+  // 割引バッジ（従属表示）
+  savingsBadge: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.semibold,
     marginBottom: SPACING.xs,
   },
 });

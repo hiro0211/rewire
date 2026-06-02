@@ -6,8 +6,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { seedDevUser } from '@/lib/dev/seedDevUser';
 
 // ブランド画面を常に表示する（dev clientでもスキップしない）
-// ⚠️ 開発確認用に true。本番ビルド前に必ず false に戻すこと。
-const DEV_SKIP_ONBOARDING = true;
+// ⚠️ 本番運用設定: false。ローカルでオンボーディングをスキップしたい場合のみ一時的に true にする。
+const DEV_SKIP_ONBOARDING = false;
 // ⚠️ 開発用: 起動時にペイウォール後オンボーディングを直接開く。確認後は false に戻すこと
 const DEV_PREVIEW_POST_PURCHASE = false;
 
