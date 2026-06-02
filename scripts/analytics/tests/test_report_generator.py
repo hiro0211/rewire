@@ -66,6 +66,30 @@ class TestBuildPrompt:
         prompt = build_prompt(date(2026, 5, 23), SAMPLE_METRICS, existing_report=None)
         assert "Markdown" in prompt or "markdown" in prompt
 
+    def test_documents_firebase_payload_shape(self):
+        from scripts.analytics.report_generator import build_prompt
+
+        prompt = build_prompt(date(2026, 5, 23), SAMPLE_METRICS, existing_report=None)
+        assert "firebase" in prompt
+        assert "top_screens" in prompt
+        assert "paywall_viewed" in prompt
+        assert "breathing_completed" in prompt
+
+    def test_requests_cross_source_analysis_section(self):
+        from scripts.analytics.report_generator import build_prompt
+
+        prompt = build_prompt(date(2026, 5, 23), SAMPLE_METRICS, existing_report=None)
+        assert "横断分析" in prompt
+
+    def test_requests_three_layered_improvement_section(self):
+        # Today / This week / This month — the structure that drives action.
+        from scripts.analytics.report_generator import build_prompt
+
+        prompt = build_prompt(date(2026, 5, 23), SAMPLE_METRICS, existing_report=None)
+        assert "今日" in prompt
+        assert "今週" in prompt
+        assert "今月" in prompt
+
 
 class TestGenerateReport:
     """Tests for the subprocess invocation of `claude -p`."""

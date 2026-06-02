@@ -3,6 +3,7 @@
 Reads runtime configuration from ~/.config/rewire/.env.analytics.
 Single source of truth for all agent secrets and runtime knobs.
 """
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -30,10 +31,21 @@ class AnalyticsConfig:
     report_timezone: str
     revenuecat_api_key: Optional[str] = None
     revenuecat_project_id: Optional[str] = None
+    ga4_property_id: Optional[str] = None
+    google_application_credentials: Optional[str] = None
 
     @property
     def has_revenuecat(self) -> bool:
         return bool(self.revenuecat_api_key and self.revenuecat_project_id)
+
+    @property
+    def has_firebase(self) -> bool:
+        # Both config values present AND the service-account JSON readable.
+        # The file-existence check catches the most common setup mistake
+        # (env points at a path the user hasn't placed yet).
+        if not (self.ga4_property_id and self.google_application_credentials):
+            return False
+        return Path(self.google_application_credentials).is_file()
 
 
 def _is_placeholder(value: str) -> bool:
@@ -46,6 +58,13 @@ def _optional(raw, name: str) -> Optional[str]:
     if not value or _is_placeholder(value):
         return None
     return value
+
+
+def _optional_path(raw, name: str) -> Optional[str]:
+    value = _optional(raw, name)
+    if value is None:
+        return None
+    return os.path.expanduser(value)
 
 
 def load_config(env_path: str = DEFAULT_ENV_PATH) -> AnalyticsConfig:
@@ -84,4 +103,6 @@ def load_config(env_path: str = DEFAULT_ENV_PATH) -> AnalyticsConfig:
         report_timezone=(raw.get("REPORT_TIMEZONE") or _DEFAULT_TIMEZONE).strip(),
         revenuecat_api_key=_optional(raw, "REVENUECAT_API_KEY"),
         revenuecat_project_id=_optional(raw, "REVENUECAT_PROJECT_ID"),
+        ga4_property_id=_optional(raw, "GA4_PROPERTY_ID"),
+        google_application_credentials=_optional_path(raw, "GOOGLE_APPLICATION_CREDENTIALS"),
     )

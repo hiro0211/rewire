@@ -1520,3 +1520,84 @@ DemoStep（step=2）で実際にブロックが発火し /panic→/breathing→�
 - `docs/analytics/daily-report-2026-05-25.md` / `daily-metrics-2026-05-25.json`（analyze_funnel.py 生成・Page View 以下が全ゼロ・誤り）
 - `docs/analytics/daily-report-2026-05-25-corrected.md`（新規・手動集計）
 - `docs/analytics/daily-metrics-2026-05-25-corrected.json`（新規・手動集計）
+
+## 2026-05-30: ストリーク演出を旧フルスクリーンUIに復元
+### 作業内容
+- お祝い演出を小モーダル（320pxカード＋「素晴らしい！」）→ 旧フルスクリーン演出（参照画像 IMG_4203.PNG: 大きな数字＋ラベル＋曜日トラッカー＋Continueボタン）に戻した。
+- トリガー/重複防止ロジック（useStreakCelebration + celebrationStorage + reflection の pendingCelebrationStreak、app/(tabs)/index.tsx 219-224行）は無変更で維持。表示のみ差し替え。
+- DRY/SRP のため純粋表示コンポーネント `StreakCelebrationContent` を新規抽出し、モーダルと app/streak.tsx（/streak ディープリンク画面）の両方で共有。
+- ラベルは画像に合わせ「新しいストリーク」(en: New streak) を採用（locale新規キー streak.newStreak）。Continueボタンは common.continue（新規キー）。
+- TDD: RED（StreakCountUpModal.test 更新 + StreakCelebrationContent.test 新規）→ GREEN → REFACTOR(app/streak.tsx)。
+
+### 変更/新規ファイル
+- 新規: `components/streak/StreakCelebrationContent.tsx`, `components/streak/__tests__/StreakCelebrationContent.test.tsx`
+- 書換: `components/streak/StreakCountUpModal.tsx`（全画面 LinearGradient(gradients.hero) + SafeArea insets + 共有コンテンツ）
+- 修正: `components/ui/Button.tsx`（testID prop 追加）, `app/streak.tsx`（共有コンテンツへ置換）
+- locale: `locales/ja.ts` / `locales/en.ts`（common.continue, streak.newStreak 追加）
+- テスト更新: `components/streak/__tests__/StreakCountUpModal.test.tsx`（hero gradient/shadows/safe-area/WeeklyTracker モック + weekly-tracker/sub-text テスト追加）
+
+### 検証結果
+- 対象テスト: StreakCountUpModal + StreakCelebrationContent = 15 passed
+- 全テスト: 2077 passed / 1 failed（失敗は既存の `i18nQuality` postPurchaseOnboarding.demo.description 改行数差、本変更と無関係＝stashで再現確認済み）
+- tsc: 変更ファイルに新規エラーなし（Button line77 の LinearGradient overload は HEAD でも存在の既存issue）
+
+### 注意点・次回
+- `StreakCountUpModal` の props/testID（streak-count-up-modal, streak-count-up-modal-dismiss）は不変。ダッシュボード配線は触っていない。
+- 既存の i18nQuality 失敗（postPurchaseOnboarding.demo.description の ja/en 改行数差）は別途要修正の既存負債。
+- 調整余地: 曜日トラッカーは既存7日 WeeklyTracker を流用（画像は4日ピル型）。厳密一致が必要なら別途トラッカー作成。
+- 未コミット状態。
+
+
+## 2026-06-01: GA4 Data API セットアップ — 新規SA バグ回避（User OAuth ADC に切替）
+
+### 経緯
+`SETUP_FIREBASE.md` 通り Step 1〜6 を進めたが、Step 6（GA4 Property に Service Account を Viewer 追加）で **「このメールアドレスは Google アカウントと一致しません」** エラーが消えず詰まる。
+
+### 原因（Google 側の既知バグ）
+- **`email not found` バグ**: 2026年4月23日頃から発生中の Google 公式バグ
+- **2026年4月20日以降に新規作成された Service Account** は GA4 / Search Console に追加できない
+- 2026年6月時点で**修正未定**（Source: piunikaweb 2026-05-01, discuss.google.dev）
+- 設定ミスではないため、SA を諦めて **User OAuth (ADC)** に切替
+
+### 実施した解決策（Option A: User OAuth ADC）
+個人開発・Gmail が GA4 管理者の条件下では SA 不要。Gmail 自身の権限で API を叩く。
+
+#### コード変更（最小・TDD）
+- `scripts/analytics/firebase_ga4_client.py`:
+  - `from google.oauth2.service_account import Credentials` → `from google.auth import load_credentials_from_file`
+  - `Credentials.from_service_account_file(path)` → `load_credentials_from_file(path, scopes=[GA4_READ_SCOPE])`
+  - `GA4_READ_SCOPE = "https://www.googleapis.com/auth/analytics.readonly"` を定数化
+  - docstring も SA / ADC 両対応を明記
+- `scripts/analytics/tests/test_firebase_ga4_client.py`:
+  - モック対象を `Credentials.from_service_account_file` → `load_credentials_from_file` に変更
+  - `load_credentials_from_file` は `(creds, project_id)` タプルを返すためモック戻り値も更新
+  - `test_passes_credentials_to_sdk` に scopes チェック追加
+- テスト: 127/127 通過
+
+#### 環境セットアップ
+1. `brew install --cask google-cloud-sdk` で gcloud 570.0.0 インストール
+2. `~/.zshrc` に `source "/opt/homebrew/share/google-cloud-sdk/path.zsh.inc"` 追加
+3. **gcloud デフォルト OAuth クライアントは analytics.readonly スコープを拒否**するため、自前 OAuth クライアントを GCP Console で作成（Desktop type）→ `~/.config/gcloud/oauth_client_local.json` に配置
+4. OAuth 同意画面（External）に **テストユーザーとして `arimurahiroaki40@gmail.com` を追加**（これを忘れると 403 access_denied）
+5. `gcloud auth application-default login --client-id-file=$HOME/.config/gcloud/oauth_client_local.json --scopes=openid,https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/analytics.readonly`
+6. `~/.config/gcloud/application_default_credentials.json` (type: `authorized_user`) が生成される
+
+#### `.env.analytics` 更新
+```
+GA4_PROPERTY_ID=526015389
+GOOGLE_APPLICATION_CREDENTIALS=/Users/arimurahiroaki/.config/gcloud/application_default_credentials.json
+```
+
+#### 削除済（不要）
+- `~/.config/firebase/ga4-sa.json` (SA キー)
+
+### 疎通確認
+2026-05-31 データ取得成功: active_users=4, new_users=3, sessions=4, screen_page_views=46, events=7種, top_screens=10件
+
+### 注意 / 次回
+- **SETUP_FIREBASE.md の Step 6（SA を GA4 に追加）は当面機能しない**。新規 SA が必要な場合は Google のバグ修正待ち、または同様に User OAuth ADC で回避
+- gcloud デフォルト OAuth クライアントは analytics スコープ非対応。**自前 OAuth クライアント必須**
+- OAuth 同意画面のテストユーザー登録忘れに注意（403 になる）
+- User ADC は token 自動更新されるが、サーバー（cron）運用には不向き（リフレッシュ失効リスクあり）。個人 Mac 上の日次実行なら問題なし
+- SETUP_FIREBASE.md には今回の回避策を別ガイドとして追記検討（未実施）
+- 変更ファイル（未コミット）: `scripts/analytics/firebase_ga4_client.py`, `scripts/analytics/tests/test_firebase_ga4_client.py`

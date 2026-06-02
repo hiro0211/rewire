@@ -118,3 +118,96 @@ class TestRevenueCatOptionalFields:
             "REVENUECAT_PROJECT_ID=cb6956cd\n"
         )
         assert load_config(str(env_file_on)).has_revenuecat is True
+
+
+class TestFirebaseOptionalFields:
+    """Firebase/GA4 keys are optional. has_firebase must additionally verify
+    that the service-account JSON actually exists on disk — a missing file is
+    the most common configuration mistake and we want to fail fast."""
+
+    def test_firebase_fields_default_to_none(self, tmp_path):
+        from scripts.analytics.config import load_config
+
+        env_file = tmp_path / ".env.analytics"
+        env_file.write_text("RESEND_API_KEY=re_real\n")
+        cfg = load_config(str(env_file))
+        assert cfg.ga4_property_id is None
+        assert cfg.google_application_credentials is None
+
+    def test_firebase_fields_loaded_when_present(self, tmp_path):
+        from scripts.analytics.config import load_config
+
+        sa = tmp_path / "ga4-sa.json"
+        sa.write_text('{"type":"service_account"}')
+
+        env_file = tmp_path / ".env.analytics"
+        env_file.write_text(
+            "RESEND_API_KEY=re_real\n"
+            "GA4_PROPERTY_ID=123456789\n"
+            f"GOOGLE_APPLICATION_CREDENTIALS={sa}\n"
+        )
+        cfg = load_config(str(env_file))
+        assert cfg.ga4_property_id == "123456789"
+        assert cfg.google_application_credentials == str(sa)
+
+    def test_firebase_placeholder_treated_as_unset(self, tmp_path):
+        from scripts.analytics.config import load_config
+
+        env_file = tmp_path / ".env.analytics"
+        env_file.write_text(
+            "RESEND_API_KEY=re_real\n"
+            "GA4_PROPERTY_ID=123456789_REPLACE_ME\n"
+            "GOOGLE_APPLICATION_CREDENTIALS=/path/to/REPLACE_ME.json\n"
+        )
+        cfg = load_config(str(env_file))
+        assert cfg.ga4_property_id is None
+        assert cfg.google_application_credentials is None
+
+    def test_has_firebase_requires_credentials_file_to_exist(self, tmp_path):
+        from scripts.analytics.config import load_config
+
+        # Both env values present, but the JSON file does NOT exist.
+        env_file = tmp_path / ".env.analytics"
+        env_file.write_text(
+            "RESEND_API_KEY=re_real\n"
+            "GA4_PROPERTY_ID=123456789\n"
+            "GOOGLE_APPLICATION_CREDENTIALS=/nonexistent/ga4-sa.json\n"
+        )
+        assert load_config(str(env_file)).has_firebase is False
+
+    def test_has_firebase_true_when_both_present_and_file_exists(self, tmp_path):
+        from scripts.analytics.config import load_config
+
+        sa = tmp_path / "ga4-sa.json"
+        sa.write_text('{"type":"service_account"}')
+
+        env_file = tmp_path / ".env.analytics"
+        env_file.write_text(
+            "RESEND_API_KEY=re_real\n"
+            "GA4_PROPERTY_ID=123456789\n"
+            f"GOOGLE_APPLICATION_CREDENTIALS={sa}\n"
+        )
+        assert load_config(str(env_file)).has_firebase is True
+
+    def test_tilde_in_credentials_path_is_expanded(self, tmp_path, monkeypatch):
+        """Common gotcha: users paste ~/.config/firebase/ga4-sa.json and the
+        agent must expand to absolute or has_firebase silently returns False."""
+        from scripts.analytics.config import load_config
+
+        # Pretend the user's home is tmp_path so ~ expands somewhere we control.
+        monkeypatch.setenv("HOME", str(tmp_path))
+        sa_dir = tmp_path / ".config" / "firebase"
+        sa_dir.mkdir(parents=True)
+        sa = sa_dir / "ga4-sa.json"
+        sa.write_text('{"type":"service_account"}')
+
+        env_file = tmp_path / ".env.analytics"
+        env_file.write_text(
+            "RESEND_API_KEY=re_real\n"
+            "GA4_PROPERTY_ID=123456789\n"
+            "GOOGLE_APPLICATION_CREDENTIALS=~/.config/firebase/ga4-sa.json\n"
+        )
+        cfg = load_config(str(env_file))
+        # Stored expanded so downstream callers can hand it straight to the SDK.
+        assert cfg.google_application_credentials == str(sa)
+        assert cfg.has_firebase is True

@@ -18,6 +18,7 @@ from typing import Optional
 
 from scripts.analytics.config import load_config
 from scripts.analytics.data_loader import find_latest_metrics, find_matching_report
+from scripts.analytics.firebase_ga4_client import fetch_ga4_snapshot
 from scripts.analytics.mailer import send_email
 from scripts.analytics.report_generator import generate_report
 from scripts.analytics.revenuecat_client import fetch_overview
@@ -65,6 +66,26 @@ def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
             # so hiro hears about the gap rather than getting silence.
             logger.warning("RevenueCat fetch failed; continuing without: %s", e)
             payload["revenuecat_error"] = str(e)
+
+    if cfg.has_firebase:
+        # Align GA4 with the ASC data date so the report describes a single
+        # coherent day across sources. ASC's own 24-48h lag already pushes
+        # `latest.date` safely outside GA4's standard-report lag window.
+        try:
+            ga4_snapshot = fetch_ga4_snapshot(
+                property_id=cfg.ga4_property_id,
+                credentials_path=cfg.google_application_credentials,
+                target_date=latest.date,
+            )
+            payload["firebase"] = ga4_snapshot
+            logger.info(
+                "GA4 snapshot fetched: %d events, %d screens",
+                len(ga4_snapshot.get("events", {})),
+                len(ga4_snapshot.get("top_screens", [])),
+            )
+        except RuntimeError as e:
+            logger.warning("GA4 fetch failed; continuing without: %s", e)
+            payload["firebase_error"] = str(e)
 
     try:
         markdown = generate_report(

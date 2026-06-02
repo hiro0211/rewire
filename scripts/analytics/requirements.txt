@@ -2,4 +2,5 @@ requests>=2.32
 PyJWT[crypto]>=2.10
 cryptography>=46.0
 python-dotenv>=1.0
+google-analytics-data>=0.18
 pytest>=8.0

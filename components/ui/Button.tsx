@@ -16,6 +16,7 @@ interface ButtonProps {
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  testID?: string;
 }
 
 export function Button({
@@ -27,6 +28,7 @@ export function Button({
   disabled = false,
   style,
   textStyle,
+  testID,
 }: ButtonProps) {
   const { colors, gradients, glow, shadows } = useTheme();
   const { onPressIn, onPressOut, animatedStyle } = usePressAnimation();
@@ -63,6 +65,7 @@ export function Button({
     return (
       <Animated.View style={[animatedStyle, style]}>
         <TouchableOpacity
+          testID={testID}
           style={[styles.gradientOuter, shadows.glowCard, { height, shadowColor: glow.purple }]}
           onPress={handlePress}
           onPressIn={onPressIn}
@@ -92,6 +95,7 @@ export function Button({
   return (
     <Animated.View style={[animatedStyle, style]}>
       <TouchableOpacity
+        testID={testID}
         style={[
           styles.container,
           {

@@ -19,9 +19,21 @@ def _config(**overrides) -> AnalyticsConfig:
         report_timezone="Asia/Tokyo",
         revenuecat_api_key=None,
         revenuecat_project_id=None,
+        ga4_property_id=None,
+        google_application_credentials=None,
     )
     defaults.update(overrides)
     return AnalyticsConfig(**defaults)
+
+
+def _firebase_config(tmp_path, **overrides) -> AnalyticsConfig:
+    sa = tmp_path / "ga4-sa.json"
+    sa.write_text('{"type":"service_account"}')
+    return _config(
+        ga4_property_id="123456789",
+        google_application_credentials=str(sa),
+        **overrides,
+    )
 
 
 def _latest(tmp_path, value=10) -> LatestMetrics:
@@ -136,6 +148,88 @@ class TestSendDailyOrchestration:
         mock_rc.assert_called_once_with(api_key="sk_real", project_id="projcb6956cd")
         passed = mock_gen.call_args.kwargs["metrics"]
         assert passed["revenuecat"]["mrr"]["value"] == 4
+
+    def test_skips_firebase_when_not_configured(self, tmp_path):
+        from scripts.analytics import send_daily
+
+        latest = _latest(tmp_path)
+        with patch.object(send_daily, "load_config", return_value=_config()), \
+             patch.object(send_daily, "find_latest_metrics", return_value=latest), \
+             patch.object(send_daily, "find_matching_report", return_value=None), \
+             patch.object(send_daily, "fetch_ga4_snapshot") as mock_ga4, \
+             patch.object(send_daily, "generate_report", return_value="# Body") as mock_gen, \
+             patch.object(send_daily, "send_email", return_value="msg"):
+            send_daily.run(dry_run=False, analytics_dir=tmp_path)
+        mock_ga4.assert_not_called()
+        passed = mock_gen.call_args.kwargs["metrics"]
+        assert "firebase" not in passed
+        assert "firebase_error" not in passed
+
+    def test_calls_firebase_and_merges_into_payload_when_configured(self, tmp_path):
+        from scripts.analytics import send_daily
+
+        latest = _latest(tmp_path)
+        cfg = _firebase_config(tmp_path)
+        ga4_snapshot = {
+            "basics": {"active_users": {"yesterday": 67, "prior_week_avg": 65}},
+            "events": {"paywall_viewed": {"count": 23, "users": 19}},
+            "top_screens": [{"name": "dashboard", "views": 230, "engagement_seconds": 4520}],
+            "fetched_at": "2026-05-31T08:00:00+00:00",
+        }
+        with patch.object(send_daily, "load_config", return_value=cfg), \
+             patch.object(send_daily, "find_latest_metrics", return_value=latest), \
+             patch.object(send_daily, "find_matching_report", return_value=None), \
+             patch.object(
+                 send_daily, "fetch_ga4_snapshot", return_value=ga4_snapshot,
+             ) as mock_ga4, \
+             patch.object(send_daily, "generate_report", return_value="# Body") as mock_gen, \
+             patch.object(send_daily, "send_email", return_value="msg"):
+            send_daily.run(dry_run=False, analytics_dir=tmp_path)
+        mock_ga4.assert_called_once()
+        kwargs = mock_ga4.call_args.kwargs
+        assert kwargs["property_id"] == "123456789"
+        assert kwargs["credentials_path"] == cfg.google_application_credentials
+        passed = mock_gen.call_args.kwargs["metrics"]
+        assert passed["firebase"]["basics"]["active_users"]["yesterday"] == 67
+
+    def test_firebase_target_date_aligns_with_asc_data_date(self, tmp_path):
+        # The daily report describes a single day across all sources, so GA4
+        # is fetched for the same calendar date as the ASC metrics file. ASC's
+        # own ~5-day lag already pushes that date safely past GA4's 24-48h
+        # standard-report lag.
+        from scripts.analytics import send_daily
+        from datetime import date
+
+        latest = _latest(tmp_path)
+        cfg = _firebase_config(tmp_path)
+        with patch.object(send_daily, "load_config", return_value=cfg), \
+             patch.object(send_daily, "find_latest_metrics", return_value=latest), \
+             patch.object(send_daily, "find_matching_report", return_value=None), \
+             patch.object(send_daily, "fetch_ga4_snapshot", return_value={}) as mock_ga4, \
+             patch.object(send_daily, "generate_report", return_value="# Body"), \
+             patch.object(send_daily, "send_email", return_value="msg"):
+            send_daily.run(dry_run=False, analytics_dir=tmp_path)
+        assert mock_ga4.call_args.kwargs["target_date"] == date(2026, 5, 23)
+
+    def test_continues_when_firebase_fetch_fails(self, tmp_path):
+        from scripts.analytics import send_daily
+
+        latest = _latest(tmp_path)
+        cfg = _firebase_config(tmp_path)
+        with patch.object(send_daily, "load_config", return_value=cfg), \
+             patch.object(send_daily, "find_latest_metrics", return_value=latest), \
+             patch.object(send_daily, "find_matching_report", return_value=None), \
+             patch.object(
+                 send_daily, "fetch_ga4_snapshot",
+                 side_effect=RuntimeError("403 PERMISSION_DENIED"),
+             ), \
+             patch.object(send_daily, "generate_report", return_value="# Body") as mock_gen, \
+             patch.object(send_daily, "send_email", return_value="msg"):
+            exit_code = send_daily.run(dry_run=False, analytics_dir=tmp_path)
+        assert exit_code == 0
+        passed = mock_gen.call_args.kwargs["metrics"]
+        assert "firebase_error" in passed
+        assert "PERMISSION_DENIED" in passed["firebase_error"]
 
     def test_continues_when_revenuecat_fetch_fails(self, tmp_path):
         # A flaky RevenueCat must not block the daily email — fall back to

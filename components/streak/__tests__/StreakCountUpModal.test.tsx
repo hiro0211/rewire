@@ -38,9 +38,21 @@ jest.mock('react-native-reanimated', () => {
 
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
-    colors: { text: '#fff', textSecondary: '#aaa', background: '#000', cyan: '#00ffff' },
-    gradients: { button: ['#8B5CF6', '#6D28D9'] },
+    colors: {
+      text: '#fff',
+      textSecondary: '#aaa',
+      background: '#000',
+      cyan: '#00ffff',
+      contrastText: '#fff',
+      surface: '#111',
+      surfaceHighlight: '#222',
+      border: '#333',
+      success: '#0f0',
+      primary: '#8B5CF6',
+    },
+    gradients: { button: ['#8B5CF6', '#6D28D9'], hero: ['#1a0b2e', '#2d1b4e'] },
     glow: { purple: 'rgba(139, 92, 246, 0.3)' },
+    shadows: { glowCard: {} },
     isDark: true,
   }),
 }));
@@ -54,6 +66,17 @@ jest.mock('@/hooks/useLocale', () => ({
     locale: 'ja' as const,
     isJapanese: true,
   }),
+}));
+
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
+jest.mock('@/components/streak/WeeklyTracker', () => ({
+  WeeklyTracker: () => {
+    const { View } = require('react-native');
+    return <View testID="weekly-tracker" />;
+  },
 }));
 
 const mockHaptics = jest.fn().mockResolvedValue(undefined);
@@ -117,7 +140,7 @@ describe('StreakCountUpModal', () => {
     expect(getByTestId('streak-number')).toBeTruthy();
   });
 
-  it('閉じるボタンをタップすると onDismiss が呼ばれる', () => {
+  it('Continue ボタンをタップすると onDismiss が呼ばれる', () => {
     const onDismiss = jest.fn();
     const { getByTestId } = render(
       <StreakCountUpModal
@@ -129,6 +152,30 @@ describe('StreakCountUpModal', () => {
     );
     fireEvent.press(getByTestId('streak-count-up-modal-dismiss'));
     expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('フルスクリーン演出として WeeklyTracker が表示される', () => {
+    const { getByTestId } = render(
+      <StreakCountUpModal
+        visible={true}
+        fromStreak={9}
+        toStreak={10}
+        onDismiss={jest.fn()}
+      />,
+    );
+    expect(getByTestId('weekly-tracker')).toBeTruthy();
+  });
+
+  it('数字の下にラベル（サブテキスト）が表示される', () => {
+    const { getByTestId } = render(
+      <StreakCountUpModal
+        visible={true}
+        fromStreak={9}
+        toStreak={10}
+        onDismiss={jest.fn()}
+      />,
+    );
+    expect(getByTestId('streak-sub-text')).toBeTruthy();
   });
 
   it('toStreak=10 (innerPlanets) のとき ParticleEffect が表示される', () => {
