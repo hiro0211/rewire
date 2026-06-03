@@ -1,5 +1,196 @@
 
 
+## 2026-06-02: Family Controls による他ブラウザApp Shield 統合（案2 + 案A 単一トグル）
+
+### 概要
+Safariの既存 Web Extension /panic フローを**完全無傷**で維持しつつ、Family Controls (Distribution) を使って Chrome / Firefox / Brave / Edge 等の非Safariブラウザアプリ全体を Shield。Shield UI のプライマリボタンタップで /panic 通知発射→アプリ起動→既存 useNotificationDeepLink で /panic 画面表示。UI は信頼第一哲学に基づく**単一トグル（確認ダイアログ無し）**（案A）。
+
+### アーキテクチャ決定
+- **react-native-device-activity@^0.6.1** 採用（自前 expo-screen-time モジュール構築は数週間追加作業のため不採用）
+- `@kingstinct/expo-apple-targets` 経由で3つの Extension target を自動生成: ShieldConfiguration / ShieldAction / ActivityMonitorExtension
+- App Shield: `blockSelection({activitySelectionId})` / `unblockSelection({activitySelectionId})`、`setFamilyActivitySelectionId({id, familyActivitySelection})` で App Group UserDefaults に永続化
+- Shield UI ブランディング: `updateShield(config, actions)` で UserDefaults 経由（Extensionが読み取り）
+- Shield Action: `sendNotification` で `categoryIdentifier: 'rewire-shield-panic'` + `userInfo.route: '/panic'` 発射
+
+### 新規ファイル
+- `lib/screenTime/screenTimeBridge.ts`(+16テスト) — requestAuth / getStatus / persistSelection / getStoredSelection / applyAppShield / clearAppShield / isShieldActive
+- `lib/screenTime/shieldConfig.ts`(dc36738復元) — buildRewireShieldConfig / buildShieldActions（紫BG/シアン強調/送通知）
+- `stores/screenTimeStore.ts`(+8テスト) — enabled / selectionToken / selectionApplicationCount / lastShieldedAt / lastClearedAt + AsyncStorage永続化
+- `hooks/screenTime/useScreenTimeSetup.ts`(+10テスト) — auth → picking → finalize（persist + applyShield + markShielded → completed）
+- `hooks/settings/useScreenTimeStatus.ts`(dc36738復元) — 認可ステータス監視
+- `components/screen-time/ScreenTimeSetupIntro.tsx`(dc36738復元)
+- `components/screen-time/BrowserShieldToggleCard.tsx`(+6テスト) — **案A 単一トグル**: ON時 selectionToken なければ /screen-time-setup へ遷移、あれば即 applyAppShield。OFF時は確認なし即 clearAppShield（信頼第一）
+- `app/screen-time-setup.tsx` — DeviceActivitySelectionSheetView を `step === 'picking'` 時に Overlay として mount。完了時 finalizePicker、キャンセル時 cancelPicker
+- `targets/ShieldConfiguration/`, `targets/ShieldAction/`, `targets/ActivityMonitorExtension/`（dc36738復元、`react-native-device-activity/config-plugin/createExpoTargetConfig` 経由でターゲット自動生成）
+
+### 変更ファイル
+- `constants/screenTime/screenTimeConfig.ts` — `PANIC_NOTIFICATION_IDENTIFIER = 'rewire-shield-panic'`, `BROWSER_SELECTION_ID = 'rewire-browsers'` 追加
+- `hooks/useNotificationDeepLink.ts`(+3テスト) — categoryIdentifier=rewire-shield-panic フォールバック分岐追加（data.route 優先、無ければ categoryIdentifier）
+- `app.config.ts` — `['react-native-device-activity', { appleTeamId, appGroup }]` プラグイン登録
+- `app/_layout.tsx` — `<Stack.Screen name="screen-time-setup" headerShown:false />` 追加
+- `lib/routing/routes.ts` — `screenTimeSetup: route('/screen-time-setup')` 追加
+- `app/(tabs)/profile.tsx` — `BrowserShieldToggleCard` を ScrollView 末尾に追加（Platform.OS==='ios' ガード）
+- `locales/ja.ts` / `en.ts` — `screenTime` ブロック追加（title / intro / toggleTitle / targetCount / lastChangedAt / streakDays / changeTargets / shieldPrimaryButton 等14キー）
+
+### テスト
+- 新規43テスト全通過: bridge=16, store=8, hook=10, ToggleCard=6, NotificationDeepLink追加=3
+- 全体: **297 suites / 2138 passed, 1 failed**（既存 `i18nQuality` の `postPurchaseOnboarding.demo.description` 改行差、本変更と無関係）
+- lint: 新規ファイルでエラー追加ゼロ（4 warning は test mock パターン）
+
+### iOS ビルド検証
+- `npx expo prebuild --platform ios --clean` 成功
+- `ios/Rewire/Rewire.entitlements` に `com.apple.developer.family-controls = true` 追加確認
+- 3つの Extension entitlements にも family-controls + app-groups 設定確認
+- `xcodebuild` Debug build (CODE_SIGNING_ALLOWED=NO): **BUILD SUCCEEDED**
+
+### Family Controls エンタイトルメント
+- ユーザー確認: 4つのBundle ID（rewire.app.com / .ShieldConfiguration / .ShieldAction / .DeviceActivityMonitor）すべて Apple 承認済み
+
+### 動作フロー
+- **Safari**: 既存 Web Extension の `document_start` interception → `sendNativeMessage` → 通知 → `data.route='/panic'` → useNotificationDeepLink → /panic（**完全無変更**）
+- **Chrome/Firefox/Brave/Edge**: アプリ起動 → iOS が ManagedSettings.shield.applications に基づき Shield UI を被せる → ShieldConfigurationDataSource が UserDefaults から Rewire ブランド設定読み取り → ユーザー「Rewireを開く」タップ → ShieldAction → `sendNotification(categoryIdentifier='rewire-shield-panic', userInfo.route='/panic')` → useNotificationDeepLink が data.route で /panic 起動（categoryIdentifier フォールバックは defense-in-depth）
+
+### UI 案A の哲学（CLAUDE.md セクション1+7 整合）
+- iOS純正設定アプリ風の単一トグル。OFF→ON は1タップ、ON→OFF も**確認ダイアログ無し**で即解除可
+- フリクション・タイマー・パートナー承認・コミットメント文章入力は意図的に**持たない**
+- 抑止力は「初期セットアップの摩擦（認可 + Picker選択）」と「シールド画面の /panic 誘導」で確保
+- ユーザー信頼第一、ダークパターン禁止の Rewire 哲学に最も合致
+
+### 未完了 / 次回
+- **実機検証が未実施**: Family Controls は iOS Simulator で動作不可。EAS Development Build → 物理デバイスで以下を検証要:
+  - 認可ダイアログ → 許可 → FamilyActivityPicker → Chrome等を選択 → 「完了」→ 設定画面のトグル ON 表示
+  - Chrome 起動 → Rewire ブランドの Shield UI 表示 → 「Rewireを開く」→ /panic 画面表示
+  - Safari で missav.ai 等 → 既存 /panic 画面表示（現行フロー無傷確認）
+- **post-purchase-onboarding** への screen-time-setup ステップ統合は未実施（オンボーディング離脱率配慮で Skip 可なオプションステップとして後追加可）
+- 計画ファイル: `/Users/arimurahiroaki/.claude/plans/family-control-safari-safari-safari-safa-cuddly-codd.md`
+
+### 重要な注意点
+- 過去 2026-04 の Screen Time 統合は `.auto()` Web Filter ベースだったが Safari の /panic フローと干渉して revert
+- 復元元コミット: `dc36738`（2026-04-21）— `git show dc36738:<path>` で取得
+- react-native-device-activity v0.6.1 = npm の最新版（2026-06時点）。peer dep: expo>=52, react>=18.3, react-native>=0.76（SDK54で互換性OK）
+
+## 2026-06-02 追加: quittr 風ハイブリッド化（案1 + 案2 + 大きなパワーボタンUI）
+
+### 変更の動機
+ユーザーから quittr の「Content Blocker」UI スクショ（巨大な赤いパワーボタン + Block Apps 行）を共有され、「トグルONだけでブロックできるようにできない？」と要望。当初の案2 (App Shield only) では:
+- Chrome 全体がブロックされる（アダルトサイト「だけ」ではない）
+- 初回 FamilyActivityPicker でユーザーが手動でアプリ選択必須
+- ユーザーの元の要望「iOS純正の大人向けコンテンツ制限のような形」に最も近いのは案1 (`.auto()` Web Filter) だった
+
+### 採用: 案3 ハイブリッド（quittr 同等）
+- **`.auto()` Web Content Filter (案1)**: トグルONだけで全 WebKit ブラウザ (Safari/Chrome/Firefox/Brave) のアダルトサイトをURLレベルでブロック。**Picker不要**。`setWebContentFilterPolicy({type:'auto', domains: PRIORITY_BLOCKED_DOMAINS})` で Apple 自動分類 + 50ドメインの defense-in-depth
+- **App Shield (案2)**: 任意でユーザーがFamilyActivityPicker から「Block Apps」を選ぶと、そのアプリ全体がシールド（Chrome全体不可など）。**選択無しでも `.auto()` だけで動作する**
+- **Safari への影響**: `.auto()` が Safari にも適用されるため、Apple Filter が先取りする URL では既存 Web Extension の `/panic` フローが部分発火しない（trade-off）
+
+### 変更ファイル
+- `lib/screenTime/screenTimeBridge.ts`: applyAppShield(t, hasSelection=true) / clearAppShield(hasSelection=true) を導入。`setWebContentFilterPolicy/clearWebContentFilterPolicy` 呼び出し追加。hasSelection=false の時は blockSelection/unblockSelection スキップ（テスト18件全通過）
+- `components/screen-time/ContentBlockerPanel.tsx`（新規, +7テスト）: quittr 風 UI。中央に **140px の円形パワーボタン**（OFF=赤 `#FF3B3B`、ON=緑 `#3DD68C`、グロー付き）。状態ラベル「ブロック中/ブロックOFF」+ 説明。下部に「Block Apps」行（選択数表示 + chevron）でPicker起動。連打防止の isBusy ステート
+- `app/(tabs)/profile.tsx`: `BrowserShieldToggleCard` → `ContentBlockerPanel` に差し替え
+- `locales/ja.ts` / `en.ts`: `contentBlocker` ブロック追加（heading/statusActive/statusInactive/descriptionActive/descriptionInactive/blockApps/blockAppsCount/blockAppsNone）
+
+### 動作（ユーザー視点）
+1. 初回起動 → パワーボタンタップ
+2. 認可ダイアログ（初回のみ） → 許可
+3. **即座にアダルトサイトが Safari / Chrome / Firefox / Brave 等で URLレベルでブロックされる**（Picker不要、`.auto()`のみ）
+4. オプション: 「Block Apps」行タップ → /screen-time-setup → FamilyActivityPicker で Chrome 等を選択 → 完了 → 選択アプリ全体もシールド対象に
+5. パワーボタン再タップで全解除
+
+### Safari /panic フローへの影響（重要）
+- `.auto()` を Safari に適用するため、Apple Filter が先に URL をブロックする場合 Web Extension の content_script が発火しない
+- Apple 分類済みドメイン（pornhub.com 等大手）→ Apple のデフォルト「制限されました」画面（カスタム /panic 発火せず）
+- Rewire の `ALL_BLOCKED_DOMAINS` には含まれるが Apple 分類されないニッチサイト → Web Extension で従来通り /panic 発火
+- **ユーザーは元の要望「iOS純正のような大人向け制限」を希望したため、この trade-off は許容範囲**
+
+### テスト結果
+- 新規 7 テスト (ContentBlockerPanel) + bridge 2 テスト追加 = 全通過
+- 全体: **298 suites / 2147 passed, 1 failed**（既存 i18nQuality 同上）
+- lint: 新規エラーゼロ
+
+### 未使用となった既存資産
+- `components/screen-time/BrowserShieldToggleCard.tsx` + テスト: 案2 only の単一トグル UI。ContentBlockerPanel に置き換え後も削除せず保持（将来 settings.tsx に控えめなトグルを置く想定で再利用余地あり）
+
+### iOS ビルド
+- 変更は JS のみ（ネイティブ層・config plugin 無変更）のため prebuild/xcodebuild 再実行不要。ホットリロード反映可能
+
+## 2026-06-02 追加: アンインストール防止（自己束縛 / Self-Binding）
+
+### 動機
+ユーザー要望: 「Rewire のアンインストール防止を Family Controls で実装したい。設定のスクリーンタイムアクセスで Rewire をオフにしない限り、アンインストールを防止したい」
+
+### Apple API 調査結果
+- **`ManagedSettingsStore.application.denyAppRemoval = true`** が公式 API（iOS 16+）
+- 設定すると **デバイス全体でアプリ削除禁止**（Rewire 単体ではなく全アプリ）
+- 解除には: 設定 → スクリーンタイム → スクリーンタイムにアクセスできるApp → Rewire → トグル OFF
+- **iOS 17.4 以降は上記設定変更に Screen Time パスコード必須** = 衝動回避に最強
+- `.individual` 認可 (Family Sharing なし) では Apple が保証しない場面ありとフォーラム回答 (`developer.apple.com/forums/thread/729717`)
+- 競合: Opal / BlockerX / LeadMeNot / quittr 全て同じ仕組みを使用
+
+### 採用アーキテクチャ
+**react-native-device-activity v0.6.1 は denyAppRemoval を JS から呼べないため、自前 Expo Module を新規作成**:
+
+#### 新規モジュール: `modules/expo-app-removal-guard/`
+- `expo-module.config.json` — platforms iOS, modules AppRemovalGuardModule
+- `package.json` — `expo-app-removal-guard@1.0.0` local module
+- `src/index.ts` — `requireOptionalNativeModule<{setDenyAppRemoval/getDenyAppRemoval}>('ExpoAppRemovalGuard')`
+- `ios/AppRemovalGuardModule.swift` — `ManagedSettingsStore().application.denyAppRemoval = value` を AsyncFunction で expose
+- `ios/ExpoAppRemovalGuard.podspec` — CocoaPods 統合（platforms iOS 15.1 + @available(iOS 16.0, *) 内部ガード）
+- `package.json` 本体に `"expo-app-removal-guard": "file:modules/expo-app-removal-guard"` 追記
+
+**重要な学び**: Expo Module の autolinking には **package.json への file: 依存追加が必須**。`expo-modules-autolinking search` は modules/ 配下を検出するが、Podfile.lock に入るには package.json dependency 必要。**podspec の `s.platforms` を 15.1 に揃えること**（プロジェクト deployment target に合わせる、機能の iOS 16+ 要件は Swift 側で `@available` チェック）。
+
+#### JS Bridge: `lib/screenTime/appRemovalBridge.ts`
+- `lock()` / `unlock()` / `isLocked()` の薄いラッパー。Platform/null チェック + try-catch でログ
+- 5テスト全通過
+
+#### Store 拡張: `stores/screenTimeStore.ts`
+- `removalLocked` (boolean) + `lastRemovalLockedAt` (number|null) 追加
+- `markRemovalLocked()` / `markRemovalUnlocked()` アクション追加
+- 10テスト全通過
+
+#### UI: `components/screen-time/UninstallLockCard.tsx`
+- 赤いロックアイコン + タイトル + ステータス + Switch
+- **OFF→ON**: 1タップで lock + markRemovalLocked
+- **ON→OFF**: **アプリ内では解除不可**、情報モーダル表示
+  - モーダル内容: 「設定 → スクリーンタイム → スクリーンタイムにアクセスできるApp → Rewire → OFF」+「（iOS 17.4 以降はパスコード必須）」
+  - 「設定を開く」ボタン: `Linking.openURL('App-Prefs:SCREEN_TIME')` で iOS 設定アプリへ
+  - 「すでに解除済み（同期する）」: `appRemovalBridge.isLocked()` で再確認し false なら store 同期
+  - 「キャンセル」: モーダル閉じる
+- 6テスト全通過
+- ユーザー要望「設定のスクリーンタイムアクセスで Rewire をオフにしない限り、アンインストールを防止」を実現
+
+#### 統合: `app/(tabs)/profile.tsx`
+- `ContentBlockerPanel` の下に `UninstallLockCard` を配置（Platform iOS ガード）
+
+#### ロケール: `locales/ja.ts` / `en.ts`
+- `uninstallLock` ブロック追加（title / statusOn / statusOff / helperOn / unlockModalTitle / unlockModalSteps / openSettings / alreadyRevoked / cancel）
+
+### 検証結果
+- 新規 21 テスト全通過（bridge 5 + store 4 追加 + UI 6 + 連動 6 含む）
+- 全体: **300 suites / 2160 passed, 1 failed**（既存 i18nQuality 同上）
+- `npx expo prebuild --platform ios --clean`: 成功
+- Podfile.lock に `ExpoAppRemovalGuard (1.0.0)` 追加確認
+- **`xcodebuild` Debug build: BUILD SUCCEEDED**
+
+### 制約・注意
+- **`denyAppRemoval = true` を一度設定すると**: ユーザーがアプリ内で OFF にしない限り**他の全アプリも削除不可**になる（Apple の仕様、Rewire 単体スコープは不可）。情報モーダルで明示する必要あり
+- **`.individual` 認可では Apple 公式に「削除防止の保証なし」**。`.child` 認可 (Family Sharing) なら強保証だが UX 複雑
+- **App Store 審査**: Opal / BlockerX / LeadMeNot 等の前例があり、self-binding 用途は ガイドライン 4.5 / 5.4 の範囲内。アプリ内で解除導線を明示することが重要
+- **Family Controls Distribution エンタイトルメント**: 既に承認済み（4 Bundle ID）、本機能は既存認可で動作
+
+### 動作フロー（実機検証要）
+1. プロフィール画面で `UninstallLockCard` の Switch を ON
+2. iOS が `denyAppRemoval = true` を有効化 → ホーム画面長押しで Rewire の削除がグレーアウト
+3. ユーザーが解除したい時:
+   - アプリ内 Switch OFF → 情報モーダル → 「設定を開く」→ 設定 → スクリーンタイム → スクリーンタイムにアクセスできるApp → Rewire → OFF
+   - （iOS 17.4 以降）Screen Time パスコード入力要求
+4. 設定 OFF 後 → アプリ内モーダルの「すでに解除済み」タップ → store を同期
+
+### Sources
+- [denyAppRemoval — Apple Developer](https://developer.apple.com/documentation/managedsettings/applicationsettings/denyappremoval-swift.property)
+- [denyAppRemoval guarantees — Apple Forums](https://developer.apple.com/forums/thread/729717)
+- [Opal App Uninstall Protection](https://opalapp.com/help/what-is-app-uninstall-protection)
+- [Tech Lockdown — iOS 17.4 Screen Time passcode](https://www.techlockdown.com/articles/ios26-update-screen-time-protected-app-permissions)
+
 ## 2026-05-30: アプリ削除前フィードバック iOS Quick Action（expo-quick-actions）
 
 ### 概要

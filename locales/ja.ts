@@ -493,6 +493,53 @@ export const ja = {
       recheckAction: '再確認',
     },
   },
+  uninstallLock: {
+    title: 'アンインストール防止',
+    statusOn: 'Rewire は削除できない状態です',
+    statusOff: '衝動的な削除を防ぐ自己束縛モード',
+    helperOn: '解除するには 設定 → スクリーンタイム → スクリーンタイムにアクセスできるApp → Rewire を OFF にしてください',
+    unlockModalTitle: 'アプリ内では解除できません',
+    unlockModalSteps:
+      '自己束縛モードを解除するには:\n\n1. iOS の「設定」を開く\n2. スクリーンタイム → スクリーンタイムにアクセスできるApp\n3. Rewire のトグルを OFF\n\n（iOS 17.4 以降はスクリーンタイムのパスコードが必要）',
+    openSettings: '設定を開く',
+    alreadyRevoked: 'すでに解除済み（同期する）',
+    cancel: 'キャンセル',
+  },
+  contentBlocker: {
+    heading: 'コンテンツブロッカー',
+    statusActive: 'ブロック中',
+    statusInactive: 'ブロックOFF',
+    descriptionActive: 'アダルトサイトと選択したアプリを全ブラウザで遮断中',
+    descriptionInactive: 'アダルトサイトと選択したアプリは現在ブロックされていません',
+    blockApps: 'アプリをブロック',
+    blockAppsCount: '%{count}個のアプリ/カテゴリ',
+    blockAppsNone: '未選択（タップして追加）',
+  },
+  screenTime: {
+    title: '他のブラウザを封印',
+    intro:
+      'Chrome や Firefox などの他のブラウザを Family Controls で封印します。Safariのカスタム保護はそのままに、抜け道を塞ぎます。',
+    enableButton: '封印を開始',
+    skip: 'あとで設定',
+    done: '完了',
+    completionTitle: '封印完了！',
+    completionDescription:
+      '選んだブラウザを起動すると Rewire のシールド画面が出ます。',
+    deniedTitle: 'Family Controls の許可が必要です',
+    deniedDescription:
+      '設定 → スクリーンタイム から Rewire を許可してください。',
+    errorTitle: 'エラーが発生しました',
+    errorDescription:
+      '時間をおいて再度お試しください。',
+    toggleTitle: '他のブラウザを封印',
+    targetCount: '%{count}つのブラウザ・カテゴリを封印中',
+    targetNone: '対象未選択',
+    lastChangedAt: '最終変更: %{time}',
+    streakDays: '封印継続: %{days}日',
+    changeTargets: '対象を変更',
+    shieldPrimaryButton: 'Rewireを開く',
+    shieldSecondaryButton: '閉じる',
+  },
   postPurchaseOnboarding: {
     thankYou: {
       title: 'プランを購入いただき\nありがとうございます！',

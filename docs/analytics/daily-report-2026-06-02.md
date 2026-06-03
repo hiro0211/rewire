@@ -1,11 +1,11 @@
-# Rewire Daily Analytics - 2026-05-31
+# Rewire Daily Analytics - 2026-06-02
 
 ## Funnel Summary
 
 | Stage | Count | Conversion Rate | vs Benchmark |
 |-------|-------|----------------|--------------|
-| Impressions | 77 | N/A | — |
-| → Page Views | 5 | 6.5% | 🔴 Below |
+| Impressions | 62 | N/A | — |
+| → Page Views | 3 | 4.8% | 🔴 Below |
 | → Downloads | 0 | 0.0% | 🔴 Below |
 | → Trial Starts | 0 | N/A | — |
 | → Paid | 0 | N/A | — |
@@ -19,9 +19,8 @@ The biggest drop-off is at **Download Rate** (0.0% vs benchmark 30.0%).
 
 | Channel | Impressions | Downloads | Trial Starts | Paid |
 |---------|-------------|-----------|--------------|------|
-| App Store Browse | 3 | 0 | 0 | 0 |
-| App Store Search | 74 | 0 | 0 | 0 |
-| Unavailable | 0 | 0 | 0 | 0 |
+| App Store Browse | 0 | 0 | 0 | 0 |
+| App Store Search | 62 | 0 | 0 | 0 |
 | Unknown | 0 | 0 | 0 | 0 |
 
 ## Top 3 Improvement Actions
@@ -30,4 +29,4 @@ The biggest drop-off is at **Download Rate** (0.0% vs benchmark 30.0%).
 2. Add or update the app preview video to demonstrate the key user journey. Keep it under 15 seconds with clear text overlays.
 3. Update the app description's first paragraph with social proof (ratings, user count, testimonials).
 
-*Report generated: 2026-06-02 13:17*
+*Report generated: 2026-06-03 00:02*

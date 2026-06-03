@@ -507,6 +507,53 @@ export const en: Translations = {
       recheckAction: 'Recheck',
     },
   },
+  uninstallLock: {
+    title: 'Prevent Uninstall',
+    statusOn: 'Rewire cannot be deleted right now',
+    statusOff: 'Self-binding mode against impulsive deletion',
+    helperOn: 'To disable, go to Settings → Screen Time → Apps with Screen Time Access → toggle Rewire OFF',
+    unlockModalTitle: 'Cannot disable in-app',
+    unlockModalSteps:
+      'To turn off self-binding mode:\n\n1. Open iOS Settings\n2. Screen Time → Apps with Screen Time Access\n3. Toggle Rewire OFF\n\n(Screen Time passcode required on iOS 17.4+)',
+    openSettings: 'Open Settings',
+    alreadyRevoked: 'Already revoked (sync state)',
+    cancel: 'Cancel',
+  },
+  contentBlocker: {
+    heading: 'Content Blocker',
+    statusActive: 'Blocker Active',
+    statusInactive: 'Blocker Inactive',
+    descriptionActive: 'NSFW websites and selected apps are blocked',
+    descriptionInactive: 'NSFW websites and selected apps are NOT blocked',
+    blockApps: 'Block Apps',
+    blockAppsCount: '%{count} app(s) / categories',
+    blockAppsNone: 'None (tap to add)',
+  },
+  screenTime: {
+    title: 'Lock other browsers',
+    intro:
+      'Lock Chrome, Firefox, and other browsers via Family Controls. Safari custom protection stays as-is — this closes the side door.',
+    enableButton: 'Start lock',
+    skip: 'Set up later',
+    done: 'Done',
+    completionTitle: 'Lock complete!',
+    completionDescription:
+      'When you open any locked browser, the Rewire shield will appear.',
+    deniedTitle: 'Family Controls permission needed',
+    deniedDescription:
+      'Go to Settings → Screen Time and allow Rewire.',
+    errorTitle: 'Something went wrong',
+    errorDescription:
+      'Please try again later.',
+    toggleTitle: 'Lock other browsers',
+    targetCount: '%{count} browsers/categories locked',
+    targetNone: 'No targets selected',
+    lastChangedAt: 'Last changed: %{time}',
+    streakDays: 'Locked for %{days} day(s)',
+    changeTargets: 'Change targets',
+    shieldPrimaryButton: 'Open Rewire',
+    shieldSecondaryButton: 'Close',
+  },
   postPurchaseOnboarding: {
     thankYou: {
       title: 'Thank you for\nupgrading to Pro!',

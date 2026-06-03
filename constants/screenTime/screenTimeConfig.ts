@@ -1,6 +1,12 @@
 // Route used by local notifications to deep-link into the panic screen.
-// Historically lived in this file alongside Shield-specific constants
-// (SHIELD_ID, WEB_FILTER_ACTIVITY_ID, PANIC_NOTIFICATION_IDENTIFIER) that
-// were removed when Screen Time API integration was retired to unblock
-// App Store submission. See docs/screen-time-restoration.md for history.
 export const PANIC_ROUTE = '/panic';
+
+// Category identifier set on local notifications fired by the Shield extension
+// when the user taps the primary button on the iOS Shield UI. Used as a
+// fallback by useNotificationDeepLink in case the JS-side data.route path is
+// missing.
+export const PANIC_NOTIFICATION_IDENTIFIER = 'rewire-shield-panic';
+
+// FamilyActivitySelection id used to persist the user-chosen browser apps
+// in the App Group UserDefaults. Referenced by blockSelection / unblockSelection.
+export const BROWSER_SELECTION_ID = 'rewire-browsers';

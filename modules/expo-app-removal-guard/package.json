@@ -1,0 +1,5 @@
+{
+  "name": "expo-app-removal-guard",
+  "version": "1.0.0",
+  "main": "src/index.ts"
+}

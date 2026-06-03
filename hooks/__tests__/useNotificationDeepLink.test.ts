@@ -77,14 +77,32 @@ describe('useNotificationDeepLink', () => {
     expect(mockRemoveSubscription).toHaveBeenCalled();
   });
 
-  test('categoryIdentifierのみの通知（routeなし）はナビゲーションしない', () => {
-    // Screen Time Shield から categoryIdentifier だけで送られる通知は
-    // Screen Time API 撤去に伴い発生しなくなったので、フォールバック経路は廃止。
-    // Safari Web Extension からの通知は常に userInfo.route を持つ。
+  test('categoryIdentifier=rewire-shield-panic（routeなし）でも/panicへ遷移する (Shield Actionフォールバック)', () => {
     renderHook(() => useNotificationDeepLink());
 
     act(() => {
       listenerCallback!(makeResponse({}, 'rewire-shield-panic'));
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/panic');
+  });
+
+  test('categoryIdentifier=rewire-shield-panicでpanicNotificationTrackerが更新される', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    const before = Date.now();
+    act(() => {
+      listenerCallback!(makeResponse({}, 'rewire-shield-panic'));
+    });
+
+    expect(panicNotificationTracker.getLastPanicNotifiedAt()).toBeGreaterThanOrEqual(before);
+  });
+
+  test('未知のcategoryIdentifier（routeなし）はナビゲーションしない', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    act(() => {
+      listenerCallback!(makeResponse({}, 'some-other-category'));
     });
 
     expect(mockPush).not.toHaveBeenCalled();

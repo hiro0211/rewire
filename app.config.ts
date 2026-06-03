@@ -74,6 +74,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         appGroup: 'group.rewire.app.com',
       },
     ],
+    [
+      'react-native-device-activity',
+      {
+        appleTeamId: 'KV6CYPA7JK',
+        appGroup: 'group.rewire.app.com',
+      },
+    ],
     './plugins/withWidget',
     './plugins/withDisableResourceBundleSigning',
     '@react-native-community/datetimepicker',

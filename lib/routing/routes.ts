@@ -27,6 +27,7 @@ export const ROUTES = {
   streak: route('/streak'),
   brand: route('/brand'),
   safariWebExtensionSetup: route('/safari-web-extension-setup'),
+  screenTimeSetup: route('/screen-time-setup'),
   settings: route('/settings'),
   terms: route('/terms'),
   privacyPolicy: route('/privacy-policy'),

@@ -2,6 +2,8 @@ import { AchievementsLinkCard } from '@/components/profile/AchievementsLinkCard'
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { SafariExtensionAlertCard } from '@/components/profile/SafariExtensionAlertCard';
 import { ToolCard } from '@/components/profile/ToolCard';
+import { ContentBlockerPanel } from '@/components/screen-time/ContentBlockerPanel';
+import { UninstallLockCard } from '@/components/screen-time/UninstallLockCard';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { SPACING } from '@/constants/theme';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
@@ -91,6 +93,9 @@ export default function ProfileScreen() {
             />
           </View>
         )}
+
+        {Platform.OS === 'ios' && <ContentBlockerPanel />}
+        {Platform.OS === 'ios' && <UninstallLockCard />}
       </ScrollView>
     </SafeAreaWrapper>
   );
