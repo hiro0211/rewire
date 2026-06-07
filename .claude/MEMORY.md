@@ -1,5 +1,38 @@
 
 
+## 2026-06-03: App Store Guideline 1.1 リジェクト対応（英語メタデータ "porn" 排除）
+
+### 概要
+v2.2(2) が 2026-06-03 に **Guideline 1.1 (Safety - Objectionable Content)** でリジェクト。マーケティング/メタデータ（screenshots, description, subtitle, keywords）が "porn" を多数参照していたため。※ 価格 3.1.2(c) は前ビルド(c6767f1)で解決済み＝今回は再発していない。
+
+### 方針（hiro 承認）
+- **英語(US)ロケールのみ**修正（日本語プライマリは据え置き）
+- 臨床用語 `adult content / adult sites / explicit content` は**残す**、`porn / nofap / quit porn / porn blocker` は**削除**
+- 年齢制限 13+ 維持
+
+### Claude in Chrome で ASC を直接編集・保存済み（未提出）
+- **Subtitle (App情報/EN)**: `Quit porn, rewire your brain` → `Quit the habit, reboot focus`
+- **Keywords (v2.2/EN)**: `nofap,quit porn,porn blocker,...` → `reboot,dopamine detox,self control,streak,recovery,abstinence,urge,blocker,addiction,willpower`
+- **Description (v2.2/EN)**: ライブ版の "porn" 3箇所のみ surgical 置換（"adult sites" 等は維持）
+  1. `Porn hijacks the brain's reward system` → `Explicit content hijacks...`
+  2. `drive that porn quietly drains` → `drive that the habit quietly drains`
+  3. `— Built-In Porn Blocker` → `— Built-In Content Blocker`
+- **Promotional Text (v2.2/EN)**: ライブ版は既にクリーン（"a built-in Safari blocker"）→ 変更不要
+
+### ★ 未完了タスク（hiro 実施）
+1. **英語スクショ差し替え（全サイズ）**: スクショに `Quit Porn with Rewire` / `Block Porn in Safari` / `Quit porn…` が写っており **1.1 の主因**。テキスト修正だけでは通らない。差し替えキャプション案は `docs/AppStoreConnect/appInfo.en.md` に記載
+2. 新スクショUP後、Resolution Center に返信文（appInfo.en.md に英文ドラフト）投稿 → **「審査内容を更新」で再提出**（最終ボタンは hiro）
+
+### 注意点・残リスク
+- 日本語スクショ（「ポルノをやめる」「ポルノを見る前に止める」）は据え置き＝Apple が日本語側を理由に再リジェクトする可能性は残る（第2弾で対応）
+- ASC のテキスト欄は read_page/get_page_text で値取得不可 → textarea リサイズ+ズーム読取り+ダブルクリック単語選択で surgical 編集した
+
+### 変更ファイル
+- `docs/AppStoreConnect/appInfo.en.md`（1.1 対応セクション+スクショ差し替え案+Apple返信文を追記）
+- ASC 側: Rewire / 英語(US) の Subtitle・Keywords・Description（コミット対象外）
+
+---
+
 ## 2026-06-02: Family Controls による他ブラウザApp Shield 統合（案2 + 案A 単一トグル）
 
 ### 概要
@@ -1844,3 +1877,103 @@ GOOGLE_APPLICATION_CREDENTIALS=/Users/arimurahiroaki/.config/gcloud/application_
 - `locales/ja.ts`, `locales/en.ts`
 - `app/index.tsx`（DEV_SKIP_ONBOARDING=false）
 - `app/__tests__/indexRouting.test.tsx`（本番挙動に更新）
+
+## 2026-06-03: 地球オーブの「緑の塊」バグ修正
+- **症状**: ダッシュボード中央の Earth バッジ（30日）オーブで、地球上部に不自然な緑の塊が表示されていた
+- **根本原因**: `components/dashboard/EarthOrbRenderer.tsx` の `<SkiaImageShader>` が `fit="fill"` だけで **`rect` プロップを欠いていた**。RN Skia (`@shopify/react-native-skia@2.6.2`) では `fit` は `rect` とセットでないと無効で、`rect` 無しだと `image.eval(coord)` の座標空間が**画像のネイティブピクセル空間（earth-equirect.png は 1024×512）**になる。一方シェーダー `constants/shaders/earthOrb.ts:64-68` は正規化texCoord(0..1)に `resolution`(=[size,size]≈[120,120] のキャンバスサイズ)を掛けて eval に渡していたため、1024×512テクスチャの**左上 約120×120px（北半球の陸地＝緑）だけ**を repeat サンプリング → 球面上部に緑の塊
+- **修正**: `<SkiaImageShader>` に `rect={{ x: 0, y: 0, width: size, height: size }}` を追加（公式 "Render a Nested Shader" パターン準拠）。これで eval 座標空間がキャンバス空間(0..size)になり、既存の `* resolution` が正しくなる。**シェーダー(earthOrb.ts)は無変更**。あわせてデバッグ用 console.log を削除
+- **第1次調査の誤推定を排除**: 「`* resolution` を削除すべき」は誤り。rect 無しのまま削除すると texCoord 0..1 で左上1pxのみサンプリング＝単色化で悪化。eval 座標空間は ImageShader の rect/fit で決まるのが肝
+- **テスト基盤の重要な発見**: `EarthOrbRenderer.tsx` はモジュールトップで `skiaEarthInit()` を分割代入するため、`beforeEach` で `skiaModulesRef` を変更しても import 済みの const（null）に反映されない。既存テストの「Skiaキャンバスを描画する」等は実はフォールバックを描画していた false positive（フォールバックも `testID ?? ...` で同じ testID を使うため気付けなかった）。対策として静的 import を `setSkiaAvailable()` 実行後の `require('../EarthOrbRenderer')` に置換し、初回 require 時点で Skia 利用可能にして実際の Skia パスを検証できるようにした。`jest.isolateModules` は React も再ロードし "Invalid hook call" になるため不可
+- **TDD**: rect プロップ受け渡しの失敗テスト追加 → Green → console.log 削除。EarthOrbRenderer スイート 7/7 通過
+- **テスト全体**: 2161 passed / 1 failed。失敗は `locales/__tests__/i18nQuality.test.ts`（ja/en 改行数差分）で**本変更と無関係・既存の未コミット locale 変更由来**
+- **lint**: 変更2ファイルとも HEAD と同一（新規エラー・警告ゼロ。display-name 等は既存パターン）
+- **目視確認は未実施（hiro が dev build で要確認）**: 青い海＋自然な大陸分布になり緑の塊が消えること、自転で大陸が横に流れること、Venus/Mars 等他オーブが従来通りであること（CoreOrbRenderer 経路は無変更）
+- **変更ファイル**: `components/dashboard/EarthOrbRenderer.tsx`, `components/dashboard/__tests__/EarthOrbRenderer.test.tsx`
+
+## 2026-06-03: Claude Code から Xcode Archive → TestFlight 自動化スクリプト
+- **目的**: EAS Build を使わず、ローカル Mac の `xcodebuild` で archive → IPA → `altool` で TestFlight にアップロードする一発スクリプトを整備。Claude が `npm run release:testflight` 1 行で実行できる
+- **採用方針の経緯**: `XcodeBuildMCP` (getsentry) は archive/exportArchive までは MCP ツール化されているが、altool / TestFlight upload は提供していない。MCP を入れても最後の 1 ステップが Bash になるため、依存最小で素のシェルスクリプト方式に確定
+- **新規ファイル**:
+  - `scripts/release-testflight.sh` — bash. `--prebuild` / `--skip-pods` / `--skip-upload` フラグ対応。archive→exportArchive→altool を 1 本化。`-allowProvisioningUpdates` + `-authenticationKey*` 系で App Store Connect API key 認証（2FA 不要）
+  - `scripts/ExportOptions.plist` — method=app-store-connect / teamID=KV6CYPA7JK / signingStyle=automatic / uploadSymbols=true / destination=export
+  - `docs/release-testflight.md` — 初回セットアップ・通常運用・トラブルシューティング
+- **変更ファイル**:
+  - `.gitignore` — `/build` 追記（`*.p8` は既存。`/ios` も既存 = prebuild 産物のローカル保持）
+  - `.claude/settings.local.json` — Bash 許可: `./scripts/release-testflight.sh:*`, `npm run release:testflight:*`, `xcodebuild:*`, `xcrun altool:*`, `xcrun:*`, `pod install:*`, `cd ios && pod install:*`, `plutil:*`
+  - `package.json` — `release:testflight` npm script 追加
+- **App Store Connect API Key（既存キーを使い回し）**:
+  - Key ID: `2X7YAY8C29`
+  - Issuer ID: `f9b7f07e-d315-46ba-895a-144635852ffd`
+  - .p8 配置先: `~/.config/rewire/AuthKey_2X7YAY8C29.p8`（hiro が `~/Downloads/` から移動するタスク残）
+  - スクリプトに上記をデフォルト埋め込み済み。`ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_PATH` 環境変数で上書き可能
+- **重要な発見**:
+  - `/ios` は `.gitignore` 入り＝prebuild 産物。Plan Mode の初回 Explore agent は「git-tracked」と誤報告したが、`git ls-files ios` で 0 件と確定。`--prebuild` フラグで `npx expo prebuild --platform ios --no-install` を opt-in 実行する設計
+  - altool は `API_PRIVATE_KEYS_DIR` 環境変数で `.p8` の探索先を指定できる（`~/.appstoreconnect/private_keys/` への symlink 不要）
+- **構文検査**: `bash -n` OK / `plutil -lint` OK / `python3 json.load` OK
+- **未実施（hiro 側）**:
+  1. `mv ~/Downloads/AuthKey_2X7YAY8C29.p8 ~/.config/rewire/` + `chmod 600`
+  2. Xcode → Settings → Accounts で Apple Distribution 証明書の存在確認
+  3. `app.json` の `expo.ios.buildNumber` を `2` → `3` 以上に上げる
+  4. `npm run release:testflight` を初回実行 → archive 成功 / IPA 生成 / altool "No errors uploading" を確認
+- **未コミット状態**
+
+## 2026-06-03 (続き): 汎用版 release-testflight を ~/.local/bin に設置
+- **目的**: Swift native プロジェクトでも `release-testflight` 一発で archive→IPA→TestFlight を実行可能にする
+- **新規ファイル**:
+  - `~/.local/bin/release-testflight` — 汎用 bash スクリプト（実行可）。auto-detect: cwd または ./ios 配下の `*.xcworkspace` / `*.xcodeproj`、scheme（container 名と一致 or 最初の scheme）、Podfile の有無
+  - `~/.config/appstore/credentials` (chmod 600) — 全 iOS プロジェクト共通の ASC 認証情報。`source` 形式の env ファイル
+- **フラグ**: `--scheme NAME` / `--workspace PATH` / `--project PATH` / `--ios-dir DIR` / `--skip-pods` / `--skip-upload`
+- **挙動**:
+  - Expo: cwd に `ios/*.xcworkspace` があれば自動でそこを使う（Rewire でも `cd /path/to/rewire && release-testflight` で動く）
+  - Swift: cwd に `MyApp.xcworkspace` or `MyApp.xcodeproj` があれば自動検出
+  - Podfile が無ければ pod install を skip（SPM only プロジェクト対応）
+  - ExportOptions.plist は `build/ExportOptions.plist` に毎回動的生成（teamID は `$APPLE_TEAM_ID` から）
+- **認証情報の優先順位**: env vars > `~/.config/appstore/credentials`
+- **Apple Team が複数ある場合**: そのプロジェクトでだけ `APPLE_TEAM_ID=XXXX release-testflight` のように一時上書き
+- **Rewire 専用版との関係**: `scripts/release-testflight.sh` は Rewire 内に残置（後方互換）。新規プロジェクトはグローバル版を使えば DRY
+
+## 2026-06-04: ProfileHeader の Earth オーブが地球テクスチャで描画されない問題を修正
+- **症状**: ホーム画面 (`OrbCarousel`) では Earth バッジが Skia + earth-equirect.png で地球テクスチャ付き描画されるが、プロフィール画面 (`ProfileHeader`) では青グローの球体のみで地球が出ない
+- **根本原因**: `components/profile/ProfileHeader.tsx:49` で `AnimatedOrb` に `badgeId` プロップを渡していなかったため、`AnimatedOrb.tsx:106` の `badgeId === 'earth'` 分岐が常に false → `EarthOrbRenderer` ではなく `CoreOrbRenderer` にフォールバックしていた
+- **修正**: `ProfileHeader.tsx:49` に `badgeId={badge.id}` を追加（1行）
+- **TDDサイクル**: Red（mercury を渡すかチェックするテスト追加 → 失敗）→ Green（1行追加 → 通過）→ 全テスト 2166/2167 通過（既存の i18nQuality 失敗は変更前から）
+- **学び**: `AnimatedOrb` の特殊レンダラ分岐は現状 `earth` のみ（`AnimatedOrb.tsx:106-112`）。今後 saturn ring / stellarSystem などの特殊ビジュアル分岐が追加されたら、この修正により ProfileHeader も自動的に有効化される
+- 変更ファイル: `components/profile/ProfileHeader.tsx`, `components/profile/__tests__/ProfileHeader.test.tsx`
+- 未コミット状態
+
+## 2026-06-06 (scheduled daily analytics run)
+- 実行: `python3 -m scripts.analytics.main` → 成功。ASC API から 2026-06-05 分として Subscription Event + Subscription State の2レポートをDL（`data/analytics/2026-06-05/`）。
+- `analyze_funnel.py` 実行 → `daily-report-2026-06-05.md` / `daily-metrics-2026-06-05.json` 生成。だが**また全ゼロ**（既知の列マッピングバグ: `Event`/`Counts` を期待するが ASC subscription TSV は `Event Name`/`State Metric`）。
+- Python で手動再集計し `daily-report-2026-06-05-corrected.md` + `daily-metrics-2026-06-05-corrected.json` を作成。
+- データ実態: ファイル内の行は event=2026-06-02、state=2026-06-03/04 のみ（ASC のレポートラグで 06-05 の行は無し）。engagement/commerce レポートが今回 fetch されず、impressions/page views/downloads は取得不能 → 上部ファネル算出不可。
+- 主要数値（ファイル内全期間）: 新規トライアル開始=1、トライアル→有料転換=1、**自発的解約(Voluntary churn)=16**、アクティブ有料=4、アクティブトライアル=8。チャネル: 解約は App Store search 14 / App referrer 2 に集中。
+- 注意点: **解約がアクティブ有料数を大きく上回る**（16 vs 4）= 最大の懸念。
+- 未完了/次回TODO:
+  1. `analyze_funnel.py` の列マッピングバグ修正（`Event Name`/`State Metric` でグループ化し `Counts` 合算）。
+  2. fetch に APP_STORE_ENGAGEMENT / APP_USAGE / COMMERCE を追加し全ファネルを再計算可能にする。
+  3. 指定日に行が無い場合「最新の利用可能日にフォールバック」する挙動を追加（全ゼロ空レポートの抑止）。
+- 変更ファイル: docs/analytics/daily-report-2026-06-05-corrected.md, docs/analytics/daily-metrics-2026-06-05-corrected.json, .claude/MEMORY.md
+
+## 2026-06-06 (GA4 リテンション取得 + 全イベント走査の追加 / CVR・継続率分析)
+**背景**: hiro「ペイウォール課金率と継続率を改善したい。どの数値をどう判断するのが定例か」。リサーチ（RevenueCat State of Subscription Apps 2025 等）+ 既存計測の調査 + GA4実データ取得を実施。計画: `~/.claude/plans/firebase-revenuecat-app-snug-island.md`（2トラック）。
+- **重要な気付き**: GA4 puller (`scripts/analytics/firebase_ga4_client.py`) は既に DAU/イベント/画面を取得済み（hiro指摘どおりGA4からイベントデータは取れる）。ただし**リテンション・コホート未取得**だった。`analyticsClient` の no-op は **Expo Goのみ**（TestFlight/本番は発火）。
+- **Track 1 実装（アプリ改修なし・完了）**: `firebase_ga4_client.py` に TDD で追加
+  - `fetch_ga4_retention()` + `_build_retention_request()`(cohortSpec, firstSessionDate) + `_parse_retention()` + `summarize_retention()` … D1/D7/D30。**GA4制約: cohort名は `cohort_` 始まり禁止**（→`all_users`）。`fetch_ga4_snapshot`とは独立関数（既存テスト3-call前提を壊さないため＋SRP）。
+  - `fetch_all_events()` + `_build_all_events_request()` … 許可リスト解除の全イベント走査。
+  - 共通ヘルパ `_run_single_report()` で認証ボイラープレートをDRY化。
+  - テスト新規: `tests/test_ga4_retention.py`(11), `tests/test_ga4_all_events.py`(6)。**全144 analytics テスト通過**。
+- **GA4実データ判定（2026-05-29〜06-04, 7日）**:
+  - リテンション: **D1 ≈13-17% / D7 ≈2-4% / D30 計測不可（履歴浅い）**。ベンチ(健康系 D1 20%/D7 7-8%)を**下回る**。特にD7が弱い=早期離脱。※ローリング窓集計は新規希釈でやや過小、母数小。
+  - 7日ファネル(ユニークU): first_open 21U → **onboarding_complete 6U=28.6%（最大の社内リーク, 71%離脱）** → benefits 6U → paywall_viewed 8U → **pro_purchase_completed 4U = paywall→購入 50%（ベンチ超で良好）**。
+  - **結論の転換**: 当初スナップショットの「CVR 0%」は単日ノイズ。**ペイウォールは問題ない（50%）**。真のリークは①オンボ完了率29% ②D7継続2-4%。
+  - `reflection_completed/opened/relapse_recorded` は **発火ゼロ=コード未実装**（エンゲージ継続率は測れない→Track 2）。
+- **未完了/次回TODO**:
+  1. **Track 2（別PR・要TestFlight）**: `reflection_completed`(streak_day/urge_level) / `reflection_opened`(source) / `relapse_recorded`(previous_streak) + user props(current_streak/relapse_count) を TDD 追加。発火箇所は `hooks/reflection/useReflectionSheet.ts` の `selectUrgeLevelAndSubmit`/`open`/`confessRelapseAndClose`、`stores/checkinStore.ts addCheckin`。新イベントを `REWIRE_KEY_EVENTS` 許可リストにも追加。
+  2. （任意）retention/all-events を日報(`send_daily`/`report_generator`)に組込み。
+- **オンボ離脱の調査＋計測追加（完了）**: GA4画面データで **`/onboarding` 25U入 → `/onboarding/goal` 11U** = **27ステップ機械の中で約56%離脱**だが全て単一ルート `/onboarding` 内のためGA4はステップ別を不可視（screen_view=/onboarding 1回のみ）。ステップ構造: `constants/onboarding.ts STEPS`(27要素), 遷移チョークポイント=`hooks/onboarding/useOnboardingNavigation.ts`(goToNextStep/goToStep/goToPreviousStep が `setStep` をラップ)。
+  - **実装(TDD)**: 新フック `hooks/onboarding/useOnboardingStepTracking.ts` = `nav.step` 変化ごとに `onboarding_step_viewed{step_index, step_type}` 発火（`useEffect([step])`、範囲外/重複ガード）。`app/onboarding/index.tsx` で `useOnboardingStepTracking(nav.step)` を呼出。`onboarding_step_viewed` を `REWIRE_KEY_EVENTS` 許可リストに追加。
+  - テスト: `hooks/onboarding/__tests__/useOnboardingStepTracking.test.ts`(4)。onboarding jest 63通過/11スイート、analytics python 144通過。lint 0 error。
+  - **配布後**: TestFlightで `onboarding_step_viewed` を step_index でファネル化すれば**どのステップで落ちるか**が判明する。
+  - 次の改善: 判明した離脱ステップを軽く（質問削減/順序/コピー）改善。最大の社内リーク。
+- **変更ファイル**: `scripts/analytics/firebase_ga4_client.py`(retention/all-events/helper/allowlist), `scripts/analytics/tests/test_ga4_retention.py`(新規), `scripts/analytics/tests/test_ga4_all_events.py`(新規), `hooks/onboarding/useOnboardingStepTracking.ts`(新規), `hooks/onboarding/__tests__/useOnboardingStepTracking.test.ts`(新規), `app/onboarding/index.tsx`(フック配線), `~/.claude/plans/firebase-revenuecat-app-snug-island.md`
+- 未コミット状態

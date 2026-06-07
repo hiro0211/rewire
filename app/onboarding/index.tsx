@@ -18,6 +18,7 @@ import { format } from 'date-fns/format';
 import { useOnboardingForm } from '@/hooks/onboarding/useOnboardingForm';
 import { useOnboardingNavigation } from '@/hooks/onboarding/useOnboardingNavigation';
 import { useOnboardingAnimation } from '@/hooks/onboarding/useOnboardingAnimation';
+import { useOnboardingStepTracking } from '@/hooks/onboarding/useOnboardingStepTracking';
 import {
   STEPS,
   NO_FOOTER_TYPES,
@@ -34,6 +35,7 @@ import {
 export default function OnboardingScreen() {
   const form = useOnboardingForm();
   const nav = useOnboardingNavigation();
+  useOnboardingStepTracking(nav.step);
   const router = useRouter();
   const autoAdvancingRef = useRef(false);
   const { colors } = useTheme();

@@ -24,6 +24,9 @@ from typing import Dict, Iterable, List, Tuple
 
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
+    Cohort,
+    CohortSpec,
+    CohortsRange,
     DateRange,
     Dimension,
     Filter,
@@ -44,6 +47,7 @@ REWIRE_KEY_EVENTS: Tuple[str, ...] = (
     "pro_purchase_completed",
     "benefits_screen_viewed",
     "benefits_cta_tapped",
+    "onboarding_step_viewed",
     "onboarding_complete",
     "breathing_started",
     "breathing_completed",
@@ -60,6 +64,9 @@ REWIRE_KEY_EVENTS: Tuple[str, ...] = (
     "post_purchase_step_viewed",
     "post_purchase_onboarding_skipped",
 )
+
+# Day offsets at which we report cohort retention (D1 / D7 / D30 convention).
+RETENTION_OFFSETS: Tuple[int, ...] = (1, 7, 30)
 
 
 def _require(value: str, name: str) -> None:
@@ -307,3 +314,191 @@ def summarize_ga4(snapshot: dict) -> Dict[str, str]:
         summary["breathing_completion_rate"] = f"{rate:.1f}%"
 
     return summary
+
+
+# ---------------------------------------------------------------------------
+# Cohort retention (D1 / D7 / D30)
+#
+# Kept independent of `fetch_ga4_snapshot`: retention uses a CohortSpec report
+# (a different shape) and must fail on its own so a flaky cohort call never
+# takes down the basics/events table. GA4 derives retention automatically from
+# `first_open` / `session_start`, so this needs no in-app instrumentation —
+# it measures "opened-the-app" retention, not engaged (core-action) retention.
+# ---------------------------------------------------------------------------
+
+
+def _run_single_report(credentials_path: str, request: RunReportRequest, label: str):
+    """Load credentials, build a client, and run one report — wrapping any
+    GA4 SDK failure as a RuntimeError tagged with ``label`` for diagnosis."""
+    try:
+        credentials, _ = load_credentials_from_file(
+            credentials_path, scopes=[GA4_READ_SCOPE]
+        )
+        client = BetaAnalyticsDataClient(credentials=credentials)
+        return client.run_report(request=request)
+    except Exception as exc:  # google.api_core errors surface here.
+        raise RuntimeError(f"GA4 {label} fetch failed: {exc}") from exc
+
+
+def _build_retention_request(
+    property_id: str,
+    end_date: date,
+    cohort_window_days: int,
+    max_offset: int,
+) -> RunReportRequest:
+    """One aggregated daily cohort of users who first opened within the window.
+
+    `cohortActiveUsers` at nthDay=0 is the cohort size; at nthDay=N it is how
+    many returned N days later. Retention(N) = active(N) / active(0).
+    """
+    start = end_date - timedelta(days=cohort_window_days)
+    return RunReportRequest(
+        property=f"properties/{property_id}",
+        dimensions=[Dimension(name="cohort"), Dimension(name="cohortNthDay")],
+        metrics=[Metric(name="cohortActiveUsers")],
+        cohort_spec=CohortSpec(
+            cohorts=[Cohort(
+                # GA4 rejects names beginning with "cohort_".
+                name="all_users",
+                dimension="firstSessionDate",
+                date_range=DateRange(
+                    start_date=_gtm_date_string(start),
+                    end_date=_gtm_date_string(end_date),
+                ),
+            )],
+            cohorts_range=CohortsRange(
+                granularity=CohortsRange.Granularity.DAILY,
+                start_offset=0,
+                end_offset=max_offset,
+            ),
+        ),
+    )
+
+
+def _parse_retention(response, offsets: Iterable[int] = RETENTION_OFFSETS) -> dict:
+    active_by_day: Dict[int, int] = {}
+    for row in response.rows:
+        nth = _to_int(row.dimension_values[1].value)
+        active = _to_int(row.metric_values[0].value)
+        active_by_day[nth] = active_by_day.get(nth, 0) + active
+
+    day0 = active_by_day.get(0, 0)
+    retention: Dict[int, float] = {}
+    for d in offsets:
+        if day0 > 0 and d in active_by_day:
+            retention[d] = round(active_by_day[d] / day0, 4)
+        else:
+            retention[d] = None
+
+    return {
+        "cohort_size": day0,
+        "active_by_day": active_by_day,
+        "retention": retention,
+    }
+
+
+def fetch_ga4_retention(
+    property_id: str,
+    credentials_path: str,
+    end_date: date,
+    cohort_window_days: int = 28,
+    max_offset: int = 30,
+    offsets: Iterable[int] = RETENTION_OFFSETS,
+) -> dict:
+    """Return D1/D7/D30 (or supplied offsets) retention for a recent cohort.
+
+    The cohort aggregates everyone whose first session falls in
+    ``[end_date - cohort_window_days, end_date]``. Because it is a single
+    rolling window, offset N only reflects members old enough to have N days
+    of history — with a 28-day window D30 is a partial (lower-bound) signal.
+
+    Raises:
+        ValueError: when ``property_id`` or ``credentials_path`` is empty.
+        RuntimeError: when the underlying GA4 Data API call fails.
+    """
+    _require(property_id, "property_id")
+    _require(credentials_path, "credentials_path")
+
+    start = end_date - timedelta(days=cohort_window_days)
+    request = _build_retention_request(
+        property_id, end_date, cohort_window_days, max_offset
+    )
+    response = _run_single_report(credentials_path, request, "retention")
+
+    result = _parse_retention(response, offsets)
+    result["cohort_start"] = _gtm_date_string(start)
+    result["cohort_end"] = _gtm_date_string(end_date)
+    result["fetched_at"] = datetime.now(timezone.utc).isoformat()
+    return result
+
+
+def summarize_retention(result: dict) -> Dict[str, str]:
+    """Render retention into compact strings (D1/D7/D30 + cohort size)."""
+    retention = result.get("retention", {})
+
+    def _pct(rate) -> str:
+        return "N/A" if rate is None else f"{rate * 100:.1f}%"
+
+    return {
+        "d1": _pct(retention.get(1)),
+        "d7": _pct(retention.get(7)),
+        "d30": _pct(retention.get(30)),
+        "cohort_size": str(result.get("cohort_size", 0)),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Full event scan (allowlist removed)
+#
+# `fetch_ga4_snapshot` filters to REWIRE_KEY_EVENTS to keep the daily table
+# focused. This unfiltered scan surfaces EVERYTHING actually firing — useful
+# to catch instrumentation gaps (an event we expect but see 0 of), unexpected
+# events, and GA4 automatic events (first_open, session_start, screen_view).
+# ---------------------------------------------------------------------------
+
+
+def _build_all_events_request(property_id: str, target_date: date) -> RunReportRequest:
+    return RunReportRequest(
+        property=f"properties/{property_id}",
+        date_ranges=[DateRange(
+            start_date=_gtm_date_string(target_date),
+            end_date=_gtm_date_string(target_date),
+        )],
+        dimensions=[Dimension(name="eventName")],
+        metrics=[
+            Metric(name="eventCount"),
+            Metric(name="totalUsers"),
+        ],
+        order_bys=[OrderBy(
+            metric=OrderBy.MetricOrderBy(metric_name="eventCount"),
+            desc=True,
+        )],
+    )
+
+
+def fetch_all_events(
+    property_id: str,
+    credentials_path: str,
+    target_date: date,
+) -> List[dict]:
+    """Return every event firing on ``target_date`` as ``{name, count, users}``
+    sorted by count descending (no allowlist filter).
+
+    Raises:
+        ValueError: when ``property_id`` or ``credentials_path`` is empty.
+        RuntimeError: when the underlying GA4 Data API call fails.
+    """
+    _require(property_id, "property_id")
+    _require(credentials_path, "credentials_path")
+
+    request = _build_all_events_request(property_id, target_date)
+    response = _run_single_report(credentials_path, request, "all-events")
+
+    return [
+        {
+            "name": row.dimension_values[0].value,
+            "count": _to_int(row.metric_values[0].value),
+            "users": _to_int(row.metric_values[1].value),
+        }
+        for row in response.rows
+    ]
