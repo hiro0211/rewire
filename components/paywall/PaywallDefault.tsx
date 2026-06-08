@@ -4,6 +4,7 @@ import { GlowDivider } from '@/components/ui/GlowDivider';
 import { FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, SPACING } from '@/constants/theme';
 import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 import { usePurchase } from '@/hooks/paywall/usePurchase';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { useLocale } from '@/hooks/useLocale';
 import { useTheme } from '@/hooks/useTheme';
 import React, { useState } from 'react';
@@ -49,9 +50,15 @@ export function PaywallDefault({
 
   const { purchasing, handlePurchase, handleRestore } = usePurchase({
     package: selectedPackage,
+    plan: selectedPlan,
     onPurchaseCompleted,
     onRestoreCompleted,
   });
+
+  const handleSelectPlan = (plan: 'annual' | 'monthly') => {
+    trackEvent('plan_selected', { plan });
+    setSelectedPlan(plan);
+  };
 
   const annualCurrencyCode = currencyCode;
   const monthlyCurrencyCode = monthlyPackage?.product?.currencyCode ?? 'JPY';
@@ -84,7 +91,7 @@ export function PaywallDefault({
               annualPackage={annualPackage}
               monthlyPackage={monthlyPackage}
               selectedPlan={selectedPlan}
-              onSelectPlan={setSelectedPlan}
+              onSelectPlan={handleSelectPlan}
               currencyCode={annualCurrencyCode}
               showMonthly={hasMonthly}
             />

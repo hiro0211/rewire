@@ -6,6 +6,11 @@ jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(),
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 import * as WebBrowser from 'expo-web-browser';
 import { PaywallDefault } from '../PaywallDefault';
 
@@ -72,6 +77,12 @@ describe('PaywallDefault', () => {
     const { getByTestId, getByText } = render(<PaywallDefault {...defaultProps} />);
     fireEvent.press(getByTestId('plan-monthly'));
     expect(getByText('3日間無料、そのあと ¥680／月')).toBeTruthy();
+  });
+
+  it('プラン選択時に plan_selected を送信する', () => {
+    const { getByTestId } = render(<PaywallDefault {...defaultProps} />);
+    fireEvent.press(getByTestId('plan-monthly'));
+    expect(mockTrackEvent).toHaveBeenCalledWith('plan_selected', { plan: 'monthly' });
   });
 
   it('購入復元リンクが表示される', () => {

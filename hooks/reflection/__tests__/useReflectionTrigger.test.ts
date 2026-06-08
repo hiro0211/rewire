@@ -44,7 +44,7 @@ describe('useReflectionTrigger', () => {
       },
     });
 
-    expect(mockOpen).toHaveBeenCalled();
+    expect(mockOpen).toHaveBeenCalledWith('notification');
   });
 
   it('action が違う場合は open() を呼ばない', () => {
@@ -73,7 +73,7 @@ describe('useReflectionTrigger', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(mockOpen).toHaveBeenCalled();
+    expect(mockOpen).toHaveBeenCalledWith('notification');
   });
 
   it('unmount 時に subscription.remove が呼ばれる', () => {

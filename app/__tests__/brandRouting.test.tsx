@@ -23,6 +23,17 @@ jest.mock('@/stores/userStore', () => ({
   ),
 }));
 
+jest.mock('@/stores/localeStore', () => {
+  const state = { hasHydrated: true, localePreference: 'system' as const };
+  return {
+    useLocaleStore: Object.assign(
+      (selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      { getState: () => ({ ...state, loadLocalePreference: jest.fn() }) },
+    ),
+  };
+});
+
 import { BrandScreen, BRAND_HARD_TIMEOUT_MS } from '../brand';
 import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';

@@ -16,14 +16,14 @@ export function useReflectionTrigger() {
 
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (!cancelled && isReflectionResponse(response)) {
-        useReflectionSheet.getState().open();
+        useReflectionSheet.getState().open('notification');
       }
     });
 
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         if (isReflectionResponse(response)) {
-          useReflectionSheet.getState().open();
+          useReflectionSheet.getState().open('notification');
         }
       }
     );

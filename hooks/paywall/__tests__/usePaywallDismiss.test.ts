@@ -26,6 +26,11 @@ jest.mock('@/lib/routing/routes', () => ({
   }),
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 describe('usePaywallDismiss', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -81,5 +86,43 @@ describe('usePaywallDismiss', () => {
 
     expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
     expect(mockDismiss).not.toHaveBeenCalled();
+  });
+
+  it('オンボーディング時の dismiss で paywall_dismissed source=onboarding を送信する', async () => {
+    const { result } = renderHook(() =>
+      usePaywallDismiss({
+        isFromOnboarding: true,
+        offeringType: 'default',
+        setOfferingType: jest.fn(),
+        setDiscountRemainingSeconds: jest.fn(),
+        setShowTrialSheet: jest.fn(),
+        onOfferingChange: jest.fn(),
+      }),
+    );
+
+    await act(async () => {
+      await result.current.handleDismiss();
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'onboarding' });
+  });
+
+  it('非オンボーディング時の dismiss で paywall_dismissed source=direct を送信する', async () => {
+    const { result } = renderHook(() =>
+      usePaywallDismiss({
+        isFromOnboarding: false,
+        offeringType: 'default',
+        setOfferingType: jest.fn(),
+        setDiscountRemainingSeconds: jest.fn(),
+        setShowTrialSheet: jest.fn(),
+        onOfferingChange: jest.fn(),
+      }),
+    );
+
+    await act(async () => {
+      await result.current.handleDismiss();
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'direct' });
   });
 });

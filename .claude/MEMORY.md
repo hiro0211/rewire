@@ -1976,4 +1976,174 @@ GOOGLE_APPLICATION_CREDENTIALS=/Users/arimurahiroaki/.config/gcloud/application_
   - **配布後**: TestFlightで `onboarding_step_viewed` を step_index でファネル化すれば**どのステップで落ちるか**が判明する。
   - 次の改善: 判明した離脱ステップを軽く（質問削減/順序/コピー）改善。最大の社内リーク。
 - **変更ファイル**: `scripts/analytics/firebase_ga4_client.py`(retention/all-events/helper/allowlist), `scripts/analytics/tests/test_ga4_retention.py`(新規), `scripts/analytics/tests/test_ga4_all_events.py`(新規), `hooks/onboarding/useOnboardingStepTracking.ts`(新規), `hooks/onboarding/__tests__/useOnboardingStepTracking.test.ts`(新規), `app/onboarding/index.tsx`(フック配線), `~/.claude/plans/firebase-revenuecat-app-snug-island.md`
+- **コミット済**: ブランチ `analytics/ga4-retention-onboarding-instrumentation` commit `71e7003`、`origin` に push 済（PR未作成）。
+
+## 2026-06-07 (Track 2: reflection 計測＝エンゲージ継続率)
+**目的**: コア習慣「毎日のリフレクション」に計測を入れ、GA4でエンゲージ継続率(D1/D7/D30)とチャーン先行指標を取れるようにする。要TestFlight配布。
+- **実装(TDD)**: `hooks/reflection/useReflectionSheet.ts`
+  - `open(source?)` に `ReflectionOpenSource='manual'|'notification'|'auto_reminder'` 追加 → `reflection_opened{source}` 発火。呼出3箇所更新: `components/dashboard/QuickActionGrid.tsx`(manual), `hooks/reflection/useReflectionTrigger.ts`(notification), `hooks/reflection/useAutoOpenReflectionSheet.ts`(auto_reminder)。
+  - `selectUrgeLevelAndSubmit` 成功時 → `reflection_completed{streak_day, urge_level}`（North Star/アクティベーション/エンゲージ継続）。
+  - `confessRelapseAndClose` 成功時 → `relapse_recorded{previous_streak}`（streakリセット前に算出）。チャーン先行指標。
+  - user props: 新ヘルパ `lib/tracking/retentionUserProperties.ts setRetentionUserProperties(streakStartDate, checkins)` を **loadUser後**に呼び `current_streak`/`relapse_count` を設定（relapse時の順序問題回避のため addCheckin ではなく loadUser 後）。
+  - `reflection_opened/completed`, `relapse_recorded` を `REWIRE_KEY_EVENTS` 許可リストに追加。
+- **新規ファイル**: `lib/tracking/retentionUserProperties.ts` + テスト, テスト追記: `useReflectionSheet.test.ts`(+7), call-site 3テストで source 検証(`toHaveBeenCalledWith('manual'|'notification'|'auto_reminder')`)。
+- **テスト**: 関連jest 52通過/6スイート + python 15通過。**全jest 2179通過 / 1 既存失敗のみ**（`locales/__tests__/i18nQuality.test.ts` = `postPurchaseOnboarding.demo.description` の ja/en 改行差、**私の作業前から存在・無関係・locale未変更**）。lint 0 error。
+- **配布後の読み方**: GA4 コホート探索 内包=`first_open` 基準=`reflection_completed` で D1/D7/D30 エンゲージ継続。`reflection_opened`→`reflection_completed` で儀式の途中離脱。`relapse_recorded` 発火後のD1復帰でチャーン予兆。
+- **未コミット状態**（Track 2 はまだ未コミット。Track 1 と同ブランチに積む想定）。
+- 次TODO: 既存の i18nQuality 失敗（postPurchaseOnboarding.demo.description の改行差）は別途要修正（無関係）。
+
+## 2026-06-08 (機能利用計測 Feature Usage Analytics: 基盤A + 高価値機能B)
+**背景**: hiro「どの機能を・いつ・どれくらい使っているか知って改善したい」。GA4監査の結論: WHEN✅(時間帯ピーク22/12/19時)・WHICH画面✅(screen_view)は取れるが、**滞在時間は壊れ((not set)に1909分集中)**・**機能内操作はほぼ未計測**。計画: `~/.claude/plans/firebase-revenuecat-app-snug-island.md`（基盤→高価値4機能で承認）。前提: analyticsClient no-op は Expo Goのみ。
+- **A1 型付きイベントカタログ**: `constants/analyticsEvents.ts`(AnalyticsEventParams 型マップ) + `lib/tracking/trackEvent.ts`(型付きラッパ, 可変長tupleで params有無対応)。新イベントは trackEvent 経由。
+- **A3 ユーザープロパティ**: `hooks/tracking/useThemeLocaleUserProperties.ts`(themePreference/localePreference を user property化, 変更にも追従) を `useAppInitialization` から呼出。※`useAppInitialization.test.ts` は本フックを `useScreenTracking` 同様にモック追加で対応。
+- **B1 レッスン**: `lesson_started`(マウント時, 早期return前のuseEffect)/`lesson_completed`(handleComplete) {lesson_id} — `app/lesson/[id].tsx`。
+- **B2 クイックアクション+実績**: `quick_action_tapped{action}`(QuickActionGrid handle()), `achievements_opened`(achievements.tsx mount), `badge_unlocked{badge_id,chapter}`(BadgeUnlockModal, badge非null時)。
+- **B3 ペイウォール深掘り**: `usePurchase` に集約 → `purchase_initiated{plan}`/`purchase_failed{reason,cancelled}`/`restore_tapped`/`restore_completed{success}`（options に `plan` 追加, PaywallDefault が selectedPlan を渡す）。`plan_selected{plan}`(PaywallDefault handleSelectPlan), `paywall_dismissed{source:onboarding|direct}`(usePaywallDismiss)。
+- **B4 通知**: `notification_permission{granted}`/`notification_scheduled{hour}`(notificationClient), `notification_opened{route}`(useNotificationDeepLink, data.route と shield fallback 両方)。全新イベントを Python `REWIRE_KEY_EVENTS` に追加。
+- **A2 滞在時間(not set)問題: 調査完了・修正は実機ビルド検証時に保留**。原因=**react-native-screens が firebase_screen_class を自動設定**し user_engagement がそこへ帰属、自動タグが(not set)化。修正はネイティブ画面クラス設定領域で、DebugView/GA4でしか検証不可のため speculative変更は見送り（CLAUDE.md「確信がないなら確認」）。次回ビルドで要検証。出典: rnfirebase.io/analytics/screen-tracking。
+- **テスト**: 各増分TDD(Red→Green)。**全jest 2202通過 / 1 既存失敗のみ**(i18nQuality, 無関係)。python analytics 15通過。**lint 0 error**(新規warning は lesson/badge の `[id]` 依存 exhaustive-deps 2件のみ=意図的)。
+- **新規ファイル**: constants/analyticsEvents.ts, lib/tracking/trackEvent.ts(+test), hooks/tracking/useThemeLocaleUserProperties.ts(+test), app/lesson/__tests__/lessonDetailAnalytics.test.tsx, components/achievements/__tests__/BadgeUnlockModalAnalytics.test.tsx。
+- **変更ファイル(主要)**: hooks/useAppInitialization.ts, app/lesson/[id].tsx, components/dashboard/QuickActionGrid.tsx, app/achievements.tsx, components/achievements/BadgeUnlockModal.tsx, hooks/paywall/usePurchase.ts, components/paywall/PaywallDefault.tsx, hooks/paywall/usePaywallDismiss.ts, lib/notifications/notificationClient.ts, hooks/useNotificationDeepLink.ts, scripts/analytics/firebase_ga4_client.py + 各テスト。
+- **未コミット状態**。Track 2(reflection計測, 未コミット) と本作業が同ブランチ `analytics/ga4-retention-onboarding-instrumentation` の作業ツリーに同居。コミット時は論理分割推奨（Track2 / feature-usage A / feature-usage B など）。
+- **次TODO**: ①次回TestFlightビルドで全新イベント+user props を DebugView 確認、A2 の engagement 再帰属を GA4 で検証 ②包括計測の残り(履歴/設定全アクション/Safari拡張セットアップ/呼吸深掘り) ③既存イベントの trackEvent 移行。
+
+
+## 2026-06-08: NASA Phase 2 — 全惑星バッジに NASA 由来テクスチャ適用
+
+### 概要
+Phase 1 で Earth のみだった NASA Blue Marble 風実写テクスチャを、太陽系の物理天体 10 種（Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Moon, Sun）に拡張。ホーム画面 `AnimatedOrb` カルーセルと Achievements `BadgeOrb` の両方で球面マッピングされた実写表現に統一。抽象バッジ（galaxy, cosmos, stellarSystem 等 8 個）は手続き描画を継続。
+
+### 主な実装
+- **新規アセット**: `assets/images/planets/{mercury,venus,earth,mars,jupiter,saturn,uranus,neptune,moon,sun}-equirect.webp`（合計 **1.81 MB**, Solar System Scope CC-BY 4.0）
+- **新規取得スクリプト**: `scripts/fetch_planet_textures.sh`（curl + cwebp q80）
+- **新規モジュール**:
+  - `constants/planets/planetTextureMap.ts` — `getPlanetTexture(badgeId)`, `hasPlanetTexture(badgeId)`, `PLANET_BADGE_IDS`
+  - `constants/planets/planetShaderConfig.ts` — per-planet `{cloudOpacity, atmosphereColor, emissive, rotationSpeed}` 定義
+  - `components/dashboard/SaturnRingOverlay.tsx` — BadgeOrb 内の SaturnRing を共有抽出（ホーム画面でも環付き Saturn を表示）
+- **リネーム & 汎用化**:
+  - `EarthOrbRenderer.tsx` → `PlanetOrbRenderer.tsx`（badgeId prop で texture/uniforms を切替）
+  - `lib/dashboard/skiaEarthInit.ts` → `skiaPlanetInit.ts`
+  - `constants/shaders/earthOrb.ts` (`EARTH_SHADER`) → `planetOrb.ts` (`PLANET_SHADER`)：cloudOpacity / atmosphereColor / emissive / rotationSpeed を uniform 化、Sun の emissive=1 で陰影 & specular を無効化
+- **ルーティング更新**:
+  - `AnimatedOrb.tsx` — `badgeId === 'earth'` 単独判定を `hasPlanetTexture(badgeId)` に置換、`badgeId === 'saturn'` で `SaturnRingOverlay` も描画
+  - `BadgeOrb.tsx` — 同じく `hasPlanetTexture` ルーティング、ローカル SaturnRing 定義を共有コンポに置換
+- **ライセンス**: `docs/asset-credits.md` 新規（Solar System Scope CC-BY 4.0 + NASA 帰属）
+
+### テスト
+- 新規/拡張テスト: planetTextureMap.test.ts (24件) + planetShaderConfig.test.ts (31件) + planetOrb.test.ts (10件) + skiaPlanetInit.test.ts (3件) + PlanetOrbRenderer.test.tsx (31件) + SaturnRingOverlay.test.tsx (4件)
+- 既存テスト更新: AnimatedOrb / OrbCarouselItem / BadgeOrb（モック testID を planet-orb-fallback-{badgeId} に置換、Saturn ring routing 追加）
+- **結果**: jest 全体 **2,314/2,317 通過**（残 3 件は既存の i18nQuality + indexRouting、本作業と無関係）
+- 関連 39 スイート / 330 テストすべて GREEN
+- TypeScript: 私の変更分のエラーゼロ（既存 TS エラーは別作業由来）
+- lint: 新規エラーゼロ（display-name 4件は旧 EarthOrbRenderer テストと同パターン）
+
+### バンドル影響
+- 10 惑星 WebP 合計 **+1.81 MB**（旧 earth-equirect.webp 166KB を削除済み、ネット +1.64 MB）
+- 旧 EarthOrbRenderer/skiaEarthInit/earthOrb shader ファイル一式と関連テスト削除
+
+### 削除ファイル
+- `assets/images/earth-equirect.webp`（planets/ 配下に移動）
+- `components/dashboard/EarthOrbRenderer.tsx` + tests
+- `lib/dashboard/skiaEarthInit.ts` + tests
+- `constants/shaders/earthOrb.ts` + tests
+
+### Plan ファイル
+`~/.claude/plans/nasa-phase-2-zippy-clarke.md`
+
+### 注意点
+- **App Store 公開前に Settings → About への CC-BY 4.0 帰属表示が必須**（docs/asset-credits.md の本文を流用）
+- `cwebp` 依存（`brew install webp`）
+- Solar System Scope の URL は `/textures/download/2k_*.jpg` パターン
 - 未コミット状態
+
+### 続き: Settings → About → クレジット 画面追加（2026-06-08 同日）
+
+- **新規ファイル**: `app/credits.tsx`（テクスチャ提供元・CC BY 4.0 帰属・NASA 由来データの明記、`Linking.openURL(ccUrl)` で license 全文へ）、`app/__tests__/credits.test.tsx` (5件)
+- **i18n キー追加**:
+  - `nav.credits` (ja/en)
+  - `settings.sections.about` ("について" / "About")
+  - `settings.labels.credits` ("クレジット" / "Credits")
+  - `legal.credits.{updatedDate, intro, planetsTitle, planetsBody, licenseTitle, licenseBody, ccUrlLabel, ccUrl}` (ja/en)
+- **ルーティング**: `ROUTES.credits = '/credits'` 追加、`app/_layout.tsx` に Stack.Screen 登録（headerShown:true, title=t('nav.credits')）
+- **Settings 統合**: `app/settings.tsx` に About セクション追加（サポートの直下、SettingItem icon="information-circle-outline"）。settings.test.tsx に 3 件追加（About 見出し / クレジット項目 / `mockPush('/credits')` 検証）
+- **結果**: jest 全体 **2,323/2,326 通過**（+9 件新規、失敗 3 件は既存の i18nQuality + indexRouting で本作業と無関係）
+- **設計判断**: クレジット画面は terms.tsx/privacy-policy.tsx と同じ構造（ScrollView + SectionTitle + Paragraph）で統一感を保つ。ライセンス全文は inline 表示ではなく Linking で外部ブラウザに飛ばす（CC license 文書は長文のため）
+
+## 2026-06-08: Safari Web Extension 機能を完全削除（全ブラウザ共通 ScreenTime ブロッカーに統合）
+
+### 概要
+全ブラウザ共通の Screen Time（Family Controls）ベースブロッカーに移行済みのため、Safari Web Extension 関連のコード・UI・ネイティブターゲットを一掃。Post-purchase onboarding を 4→3 ステップに縮減。
+
+### 主な変更
+- **PPO (Post-purchase onboarding)**: 4 ステップ → 3 ステップに縮減
+  - 旧: thankYou → safariSetup → demo → complete
+  - 新: thankYou → screenTimeSetup → complete
+  - `constants/postPurchaseOnboarding.ts` の型・配列・`DEMO_TEST_URL` を更新／削除
+  - 新規 `components/postPurchaseOnboarding/ScreenTimeSetupStep.tsx`（`useScreenTimeSetup` + `DeviceActivitySelectionSheetView` を内包）
+  - `app/post-purchase-onboarding/index.tsx` を簡素化、`useDemoBlockDetection` / `useFocusEffect` / `AppState` 監視・demo 関連 state 全削除
+- **Profile (`app/(tabs)/profile.tsx`)**: Safari UI 全削除。`ContentBlockerPanel` + `UninstallLockCard` のみ残す。`SafariExtensionAlertCard` / `ToolCard` / `useWebExtensionStatus` / `useSafariSettingsDeepLink` 排除
+- **Notification deep link (`hooks/useNotificationDeepLink.ts`)**: `panicNotificationTracker` 呼び出し削除。data.route と Shield Action (`categoryIdentifier === 'rewire-shield-panic'`) → /panic 経路は維持
+- **削除メールデバッグ情報**: `DeletionDebugInfo.webExtensionStatus` フィールド廃止、`labelExtension` i18n キーも削除
+- **app.config.ts**: `withSafariWebExtension` プラグイン登録と `SafariWebExtension` Extension target を削除
+- **lib/routing/routes.ts**: `safariWebExtensionSetup` ルート削除
+- **app/_layout.tsx**: `Stack.Screen name="safari-web-extension-setup"` 削除
+- **i18n**: `safariWebExtension.*` (40+ キー) を ja/en 両方から削除
+- **docs/release-testflight.md**: 3 profile → 2 profile に修正
+
+### 削除ファイル（ソース）
+- `app/safari-web-extension-setup.tsx`
+- `components/safari-web-extension/`（5 ファイル）
+- `components/postPurchaseOnboarding/SafariSetupStep.tsx` + `DemoStep.tsx` + 各テスト
+- `components/profile/SafariExtensionAlertCard.tsx` + テスト
+- `hooks/safariWebExtension/`（2 hook + 各テスト）
+- `hooks/settings/useWebExtensionStatus.ts` + テスト
+- `hooks/postPurchaseOnboarding/useDemoBlockDetection.ts` + テスト
+- `lib/safariWebExtension/`（5 ファイル: bridge, panicNotificationTracker, deriveStatus, setupCompletion, types + 各テスト）
+- `modules/expo-safari-web-extension/`（expo モジュール一式）
+- `plugins/withSafariWebExtension.js` + テスト
+- `ios/SafariWebExtension/`（ネイティブ拡張ターゲット）
+- `documents/safari-blocked-page/`
+
+### Xcode プロジェクト
+`ios/Rewire.xcodeproj/project.pbxproj` には旧 SafariWebExtension target 参照が残るが、次回 `expo prebuild`（`scripts/release-testflight.sh` が実行）で `app.config.ts` をもとに再生成され削除される。
+
+### テスト結果
+- 全体 **2,215/2,218 通過**（残 3 件は既存の i18nQuality + indexRouting で本作業と無関係）
+- 既存 Safari 関連テスト 6 スイートを Screen Time 系に置換 or 削除
+- TypeScript: 私の変更分の新規エラーゼロ（既存 121 件は別案件由来）
+- lint: 新規エラーゼロ
+
+### 注意点
+- バンドル ID `rewire.app.com.SafariWebExtension` の App Store Connect / Apple Developer Portal 上の App ID は手動で削除すべき（自動削除されない）
+- 次回 TestFlight ビルドでは prebuild により SafariWebExtension target が project.pbxproj から消える
+- 既存ユーザーは次回 update で Safari 拡張が自動的に動作停止（拡張本体がアプリバンドルから消えるため）
+
+---
+
+## 2026-06-08: App Store スクショ1枚目を「コード合成」で作成（日本語版）
+
+### 作業内容
+AI画像生成ではなく **HTML/CSS → ヘッドレスChrome → PNG** のコード合成で App Store スクショ1枚目（日本語版）を作成。端末内に**実スクショをそのまま埋め込む**方式なので審査 Guideline 2.3 が盤石。
+
+### 構図
+ダーク宇宙背景(`#0A0A0F→#1a1a3e→#2d1b4e`＋星＋発光オーブ) / 上部にアプリアイコン(紫グロー) / 見出し「欲に振り回されない毎日へ」(白・極太) / 中央に3D回転したiPhoneモック(実ダッシュボード) / 下部に月桂冠バッジ2枚「記録は端末の中だけ」「脳科学にもとづく設計」。
+
+### 成果物
+- **`scripts/appstore/output/appstore-jp-1_1320x2868.png`**（および `~/Desktop/` にコピー）
+- 仕様: **1320×2868 / PNG / RGB / アルファなし**（2026年の6.9" iPhoneネイティブ最大。Appleが下位機種へ自動スケール）。`sips`/`file` で寸法・非アルファを検証済み。
+
+### 新規ファイル（`scripts/appstore/`）
+- `screenshot1.template.html` — レイアウト(CSS)。トークン `{{FONT_900}} {{FONT_700}} {{ICON}} {{SCREEN}} {{STARS}} {{LAUREL}}` を置換
+- `build_screenshot1.py` — base64埋め込み→星生成→月桂冠SVGをパラメトリック生成(ベジェ茎に沿って葉を配置)→Chrome描画→Pillowでアルファ除去・寸法保証
+- `fonts/NotoSansJP-{900,700}.woff2` — fontsource(jsDelivr)から取得し base64 埋め込み
+- `assets/dashboard.jpg` — 埋め込んだ実スクショ(hiro提供、925×2000)
+- `screenshot1.html`(生成物 6.3MB), `output/`
+
+### 重要な学び・ハマりポイント
+- **このMacに真の日本語 Hiragino / Noto CJK JP の静的フォントが無い**（Chinese variantのHiragino Sans GB/CNS/TCのみ）。日本語の極太見出しは **Noto Sans JP woff2 を base64 埋め込み**して決定論的に描画した。
+- **ヘッドレスChromeのハング = stdoutパイプのEOF待ち**。Chromeはスクショ書き出し後も helper プロセスが stdout を握り続けるため、`subprocess.run(capture_output=True)` や `| tail` が永久にブロックする。対策: 出力をファイルへ流し、**PNGファイルの出現をポーリング**してから `--user-data-dir` パスで対象 Chrome のみ kill。`--use-mock-keychain` も付与(keychainプロンプト回避)。
+- hiro提供スクショはチャット添付 → ディスクに無かったため **セッションtranscript(.jsonl)内のbase64から抽出**して取得した（添付画像が必要な時の汎用手段）。
+
+### 未完了・次回
+- 2〜N枚目のスクショ、米国版（見出し「Quit 🌽 with Rewire」）は未着手。テンプレを流用可能。
+- ⚠️ 別件の**撮影用コード改変の戻し（本番ビルド前必須・未対応のまま）**: `app/index.tsx` の `DEV_SKIP_ONBOARDING` を false に / `lib/dev/seedDevUser.ts` の `streakStartDate`=now, `goalDays`=30 に戻す。

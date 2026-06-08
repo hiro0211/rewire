@@ -69,6 +69,7 @@ describe('useAutoOpenReflectionSheet', () => {
     renderHook(() => useAutoOpenReflectionSheet());
 
     expect(mockOpen).toHaveBeenCalledTimes(1);
+    expect(mockOpen).toHaveBeenCalledWith('auto_reminder');
   });
 
   it('既に visible=true (通知タップ経由で開かれている) の場合は open されない', () => {

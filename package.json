@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "test": "jest --forceExit",
     "test:watch": "jest --watch --forceExit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "release:testflight": "./scripts/release-testflight.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

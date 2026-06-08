@@ -26,7 +26,7 @@ export function useAutoOpenReflectionSheet(): void {
 
     if (now.getTime() >= reminderAt.getTime()) {
       hasOpenedRef.current = true;
-      open();
+      open('auto_reminder');
     }
   }, [user, lastReflectionDate, visible, open]);
 }

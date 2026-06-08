@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
 import { discountExpiry } from '@/lib/paywall/discountExpiry';
 import { ROUTES, routeWithParams } from '@/lib/routing/routes';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 type OfferingType = 'default' | 'discount' | 'trial';
 
@@ -27,6 +28,7 @@ export function usePaywallDismiss({
   const { user } = useUserStore();
 
   const handleDismiss = useCallback(async () => {
+    trackEvent('paywall_dismissed', { source: isFromOnboarding ? 'onboarding' : 'direct' });
     if (isFromOnboarding) {
       // paywall を閉じたらベネフィット画面へ戻す
       router.replace(ROUTES.onboardingBenefits);

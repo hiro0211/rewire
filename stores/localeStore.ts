@@ -4,6 +4,7 @@ import type { LocalePreference } from '@/types/i18n';
 
 interface LocaleState {
   localePreference: LocalePreference;
+  hasHydrated: boolean;
 }
 
 interface LocaleActions {
@@ -17,6 +18,7 @@ interface SettingsData {
 
 export const useLocaleStore = create<LocaleState & LocaleActions>((set) => ({
   localePreference: 'system',
+  hasHydrated: false,
 
   setLocalePreference: async (pref) => {
     set({ localePreference: pref });
@@ -32,6 +34,8 @@ export const useLocaleStore = create<LocaleState & LocaleActions>((set) => ({
       }
     } catch {
       // Keep default 'system'
+    } finally {
+      set({ hasHydrated: true });
     }
   },
 }));

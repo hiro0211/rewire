@@ -29,6 +29,11 @@ jest.mock('@/lib/logger', () => ({
   },
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 const mockPackage = { identifier: '$rc_annual' };
 const onPurchaseCompleted = jest.fn();
 const onRestoreCompleted = jest.fn();
@@ -37,6 +42,7 @@ function renderUsePurchase(pkg: any = mockPackage) {
   return renderHook(() =>
     usePurchase({
       package: pkg,
+      plan: 'annual',
       onPurchaseCompleted,
       onRestoreCompleted,
     }),
@@ -273,6 +279,47 @@ describe('usePurchase', () => {
 
       expect(Alert.alert).toHaveBeenCalledWith('エラー', 'プランの取得に失敗しました。再度お試しください。');
     });
+
+    it('購入開始時に purchase_initiated を plan 付きで送信する', async () => {
+      mockPurchasePackage.mockResolvedValue({
+        customerInfo: { entitlements: { active: { 'Rewire Pro': {} } } },
+      });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('purchase_initiated', { plan: 'annual' });
+    });
+
+    it('ユーザーキャンセル時に purchase_failed を cancelled=true で送信する', async () => {
+      mockPurchasePackage.mockRejectedValue({ userCancelled: true, code: '1' });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('purchase_failed', {
+        reason: '1',
+        cancelled: true,
+      });
+    });
+
+    it('実エラー時に purchase_failed を cancelled=false で送信する', async () => {
+      mockPurchasePackage.mockRejectedValue({ code: '2', message: 'store problem' });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('purchase_failed', {
+        reason: '2',
+        cancelled: false,
+      });
+    });
   });
 
   describe('handleRestore', () => {
@@ -331,6 +378,41 @@ describe('usePurchase', () => {
         '復元エラー',
         expect.stringContaining('ネットワーク'),
       );
+    });
+
+    it('リストア実行時に restore_tapped を送信する', async () => {
+      mockRestorePurchases.mockResolvedValue({ entitlements: { active: {} } });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handleRestore();
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('restore_tapped');
+    });
+
+    it('リストア成功時に restore_completed を success=true で送信する', async () => {
+      mockRestorePurchases.mockResolvedValue({
+        entitlements: { active: { 'Rewire Pro': {} } },
+      });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handleRestore();
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('restore_completed', { success: true });
+    });
+
+    it('有効サブスク無し時に restore_completed を success=false で送信する', async () => {
+      mockRestorePurchases.mockResolvedValue({ entitlements: { active: {} } });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handleRestore();
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('restore_completed', { success: false });
     });
   });
 });

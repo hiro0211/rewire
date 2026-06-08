@@ -8,6 +8,7 @@ import {
 import { FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
+import { useLocaleStore } from '@/stores/localeStore';
 import { useLocale } from '@/hooks/useLocale';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -20,6 +21,20 @@ const CHAR_INTERVAL = BRAND_TIMING_CONFIG.charInterval;
 export const BRAND_HARD_TIMEOUT_MS = 7000;
 
 export function BrandScreen() {
+  const localeHydrated = useLocaleStore((s) => s.hasHydrated);
+
+  // Why: locale 確定前に catchphrase をマウントすると、useRef でキャプチャした文字数と
+  // 後続レンダーの文字数がズレ、末尾の文字が opacity=undefined (=1) で先に可視化する。
+  // 背景レイヤだけ先に出し、locale ハイドレーション完了後にアニメ本体をマウントする。
+  return (
+    <StarryBackground twinkle={true} gradientColors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}>
+      <ShootingStars />
+      {localeHydrated && <BrandScreenAnimated />}
+    </StarryBackground>
+  );
+}
+
+function BrandScreenAnimated() {
   const router = useRouter();
   const { user } = useUserStore();
   const subscriptionSynced = useSubscriptionStore((s) => s.subscriptionSynced);
@@ -29,7 +44,7 @@ export function BrandScreen() {
 
   const logoOpacity = useRef(new Animated.Value(0)).current;
 
-  // 各行の各文字ごとに Animated.Value を生成
+  // 各行の各文字ごとに Animated.Value を生成（locale 確定後の文字数で 1 回だけキャプチャ）
   const charOpacities = useRef(
     catchphrases.map((phrase) =>
       [...phrase].map(() => new Animated.Value(0)),
@@ -125,42 +140,39 @@ export function BrandScreen() {
   }, [subscriptionSynced, user?.isPro, tryNavigate]);
 
   return (
-    <StarryBackground twinkle={true} gradientColors={['#0A0A0F', '#1a1a3e', '#2d1b4e']}>
-      <ShootingStars />
-      <View style={styles.content}>
-        <Animated.Image
-          source={require('@/assets/images/icon.png')}
-          style={[styles.logoImage, { opacity: logoOpacity }]}
-          resizeMode="contain"
-          testID="brand-logo-image"
-        />
-        <Animated.Text style={[styles.logoText, { opacity: logoOpacity }]}>
-          Rewire
-        </Animated.Text>
+    <View style={styles.content}>
+      <Animated.Image
+        source={require('@/assets/images/icon.png')}
+        style={[styles.logoImage, { opacity: logoOpacity }]}
+        resizeMode="contain"
+        testID="brand-logo-image"
+      />
+      <Animated.Text style={[styles.logoText, { opacity: logoOpacity }]}>
+        Rewire
+      </Animated.Text>
 
-        <View style={styles.catchphrases}>
-          {catchphrases.map((phrase, lineIdx) => (
-            <View
-              key={lineIdx}
-              style={styles.catchphraseLine}
-              testID={`catchphrase-line-${lineIdx}`}
-            >
-              {[...phrase].map((char, charIdx) => (
-                <Animated.Text
-                  key={charIdx}
-                  style={[
-                    styles.catchphrase,
-                    { opacity: charOpacities[lineIdx][charIdx] },
-                  ]}
-                >
-                  {char}
-                </Animated.Text>
-              ))}
-            </View>
-          ))}
-        </View>
+      <View style={styles.catchphrases}>
+        {catchphrases.map((phrase, lineIdx) => (
+          <View
+            key={lineIdx}
+            style={styles.catchphraseLine}
+            testID={`catchphrase-line-${lineIdx}`}
+          >
+            {[...phrase].map((char, charIdx) => (
+              <Animated.Text
+                key={charIdx}
+                style={[
+                  styles.catchphrase,
+                  { opacity: charOpacities[lineIdx][charIdx] },
+                ]}
+              >
+                {char}
+              </Animated.Text>
+            ))}
+          </View>
+        ))}
       </View>
-    </StarryBackground>
+    </View>
   );
 }
 

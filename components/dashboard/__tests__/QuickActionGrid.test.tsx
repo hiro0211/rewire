@@ -13,6 +13,11 @@ jest.mock('@/hooks/reflection/useReflectionSheet', () => ({
   useReflectionSheet: (selector: any) => selector({ open: mockOpenReflection }),
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
     colors: {
@@ -42,6 +47,7 @@ describe('QuickActionGrid', () => {
   beforeEach(() => {
     mockPush.mockClear();
     mockOpenReflection.mockClear();
+    mockTrackEvent.mockClear();
   });
 
   it('3ボタンがレンダリングされる', () => {
@@ -56,12 +62,14 @@ describe('QuickActionGrid', () => {
     render(<QuickActionGrid />);
     fireEvent.press(screen.getByTestId('qa-breathe'));
     expect(mockPush).toHaveBeenCalledWith('/breathing');
+    expect(mockTrackEvent).toHaveBeenCalledWith('quick_action_tapped', { action: 'breathe' });
   });
 
   it('振り返りボタンタップで ReflectionSheet を開く', () => {
     render(<QuickActionGrid />);
     fireEvent.press(screen.getByTestId('qa-checkin'));
-    expect(mockOpenReflection).toHaveBeenCalled();
+    expect(mockOpenReflection).toHaveBeenCalledWith('manual');
+    expect(mockTrackEvent).toHaveBeenCalledWith('quick_action_tapped', { action: 'checkin' });
     expect(mockPush).not.toHaveBeenCalledWith('/checkin');
   });
 
@@ -69,5 +77,6 @@ describe('QuickActionGrid', () => {
     render(<QuickActionGrid />);
     fireEvent.press(screen.getByTestId('qa-calendar'));
     expect(mockPush).toHaveBeenCalledWith('/history');
+    expect(mockTrackEvent).toHaveBeenCalledWith('quick_action_tapped', { action: 'calendar' });
   });
 });

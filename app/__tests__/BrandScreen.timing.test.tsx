@@ -22,6 +22,17 @@ jest.mock('@/stores/userStore', () => ({
   ),
 }));
 
+jest.mock('@/stores/localeStore', () => {
+  const state = { hasHydrated: true, localePreference: 'system' as const };
+  return {
+    useLocaleStore: Object.assign(
+      (selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      { getState: () => ({ ...state, loadLocalePreference: jest.fn() }) },
+    ),
+  };
+});
+
 import * as Haptics from 'expo-haptics';
 import { BrandScreen } from '../brand';
 import {

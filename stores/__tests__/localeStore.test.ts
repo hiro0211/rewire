@@ -14,11 +14,27 @@ const mockSet = asyncStorageClient.set as jest.MockedFunction<typeof asyncStorag
 describe('localeStore', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useLocaleStore.setState({ localePreference: 'system' });
+    useLocaleStore.setState({ localePreference: 'system', hasHydrated: false });
   });
 
   it('デフォルトの言語設定はsystemである', () => {
     expect(useLocaleStore.getState().localePreference).toBe('system');
+  });
+
+  it('初期状態では hasHydrated は false である', () => {
+    expect(useLocaleStore.getState().hasHydrated).toBe(false);
+  });
+
+  it('loadLocalePreference 成功時に hasHydrated が true になる', async () => {
+    mockGet.mockResolvedValueOnce({ localePreference: 'en' });
+    await useLocaleStore.getState().loadLocalePreference();
+    expect(useLocaleStore.getState().hasHydrated).toBe(true);
+  });
+
+  it('loadLocalePreference でエラーが起きても hasHydrated は true になる（BrandScreen の永久待機防止）', async () => {
+    mockGet.mockRejectedValueOnce(new Error('storage error'));
+    await useLocaleStore.getState().loadLocalePreference();
+    expect(useLocaleStore.getState().hasHydrated).toBe(true);
   });
 
   it('setLocalePreferenceで言語設定を変更できる', async () => {

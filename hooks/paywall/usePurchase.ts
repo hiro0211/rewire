@@ -4,16 +4,18 @@ import { getPurchaseErrorKeys } from '@/constants/purchaseErrors';
 import { t } from '@/locales/i18n';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 import { logger } from '@/lib/logger';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 const ENTITLEMENT_KEY = 'Rewire Pro';
 
 interface UsePurchaseOptions {
   package: any;
+  plan?: string;
   onPurchaseCompleted: () => void;
   onRestoreCompleted: () => void;
 }
 
-export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreCompleted }: UsePurchaseOptions) {
+export function usePurchase({ package: pkg, plan, onPurchaseCompleted, onRestoreCompleted }: UsePurchaseOptions) {
   const [purchasing, setPurchasing] = useState(false);
 
   const handlePurchase = useCallback(async () => {
@@ -22,6 +24,7 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
       Alert.alert(t('checkinForm.error'), t('purchaseAlerts.packageFailed'));
       return;
     }
+    trackEvent('purchase_initiated', { plan: plan ?? 'unknown' });
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
@@ -33,6 +36,10 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
         error?.userCancelled ||
         error?.code === '1' ||
         error?.code === 'PURCHASE_CANCELLED';
+      trackEvent('purchase_failed', {
+        reason: String(error?.code ?? error?.message ?? 'unknown'),
+        cancelled: Boolean(isCancelled),
+      });
       if (!isCancelled) {
         logger.error('Purchase', 'failed:', {
           code: error?.code,
@@ -48,14 +55,17 @@ export function usePurchase({ package: pkg, onPurchaseCompleted, onRestoreComple
     } finally {
       setPurchasing(false);
     }
-  }, [pkg, purchasing, onPurchaseCompleted]);
+  }, [pkg, plan, purchasing, onPurchaseCompleted]);
 
   const handleRestore = useCallback(async () => {
     if (!Purchases) return;
+    trackEvent('restore_tapped');
     setPurchasing(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
-      if (customerInfo.entitlements.active[ENTITLEMENT_KEY]) {
+      const success = !!customerInfo.entitlements.active[ENTITLEMENT_KEY];
+      trackEvent('restore_completed', { success });
+      if (success) {
         onRestoreCompleted();
       } else {
         Alert.alert(t('purchaseAlerts.restoreResult'), t('purchaseAlerts.restoreNoSub'));

@@ -29,6 +29,15 @@ jest.mock('@/stores/reflectionStore', () => ({
   },
 }));
 
+const mockLogEvent = jest.fn();
+const mockSetUserProperty = jest.fn();
+jest.mock('@/lib/tracking/analyticsClient', () => ({
+  analyticsClient: {
+    logEvent: (...args: any[]) => mockLogEvent(...args),
+    setUserProperty: (...args: any[]) => mockSetUserProperty(...args),
+  },
+}));
+
 import { useReflectionSheet } from '../useReflectionSheet';
 
 describe('useReflectionSheet', () => {
@@ -72,6 +81,22 @@ describe('useReflectionSheet', () => {
       expect(state.step).toBe(1);
       expect(state.formState.watchedPorn).toBeNull();
       expect(state.formState.urgeLevel).toBe(0);
+    });
+
+    it('reflection_opened を source 付きで送信する', () => {
+      useReflectionSheet.getState().open('notification');
+
+      expect(mockLogEvent).toHaveBeenCalledWith('reflection_opened', {
+        source: 'notification',
+      });
+    });
+
+    it('source 省略時は manual で送信する', () => {
+      useReflectionSheet.getState().open();
+
+      expect(mockLogEvent).toHaveBeenCalledWith('reflection_opened', {
+        source: 'manual',
+      });
     });
   });
 
@@ -134,6 +159,38 @@ describe('useReflectionSheet', () => {
       expect(state.submitError).toBe('validation failed');
       expect(mockMarkCompleted).not.toHaveBeenCalled();
     });
+
+    it('成功時に reflection_completed を streak_day/urge_level 付きで送信する', async () => {
+      const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+      mockUser = { streakStartDate: tenDaysAgo, goalDays: 30 };
+
+      await useReflectionSheet.getState().selectUrgeLevelAndSubmit(2);
+
+      expect(mockLogEvent).toHaveBeenCalledWith('reflection_completed', {
+        streak_day: 10,
+        urge_level: 2,
+      });
+    });
+
+    it('失敗時は reflection_completed を送信しない', async () => {
+      mockProcessCheckin.mockRejectedValueOnce(new Error('boom'));
+
+      await useReflectionSheet.getState().selectUrgeLevelAndSubmit(2);
+
+      expect(mockLogEvent).not.toHaveBeenCalledWith(
+        'reflection_completed',
+        expect.anything(),
+      );
+    });
+
+    it('成功時に retention user properties を設定する', async () => {
+      mockUser = { streakStartDate: new Date().toISOString(), goalDays: 30 };
+
+      await useReflectionSheet.getState().selectUrgeLevelAndSubmit(1);
+
+      expect(mockSetUserProperty).toHaveBeenCalledWith('current_streak', expect.any(String));
+      expect(mockSetUserProperty).toHaveBeenCalledWith('relapse_count', expect.any(String));
+    });
   });
 
   describe('confessRelapseAndClose', () => {
@@ -180,6 +237,29 @@ describe('useReflectionSheet', () => {
       expect(state.isSubmitting).toBe(false);
       expect(mockMarkCompleted).not.toHaveBeenCalled();
       expect(result).toBe(false);
+    });
+
+    it('成功時に relapse_recorded を previous_streak 付きで送信する', async () => {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      mockUser = { streakStartDate: sevenDaysAgo, goalDays: 30 };
+
+      await useReflectionSheet.getState().confessRelapseAndClose();
+
+      expect(mockLogEvent).toHaveBeenCalledWith('relapse_recorded', {
+        previous_streak: 7,
+      });
+    });
+
+    it('失敗時は relapse_recorded を送信しない', async () => {
+      mockProcessCheckin.mockRejectedValueOnce(new Error('down'));
+      mockUser = { streakStartDate: new Date().toISOString(), goalDays: 30 };
+
+      await useReflectionSheet.getState().confessRelapseAndClose();
+
+      expect(mockLogEvent).not.toHaveBeenCalledWith(
+        'relapse_recorded',
+        expect.anything(),
+      );
     });
   });
 

@@ -5,8 +5,13 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { useUserStore } from '@/stores/userStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
 import { calculateStreak } from '@/features/checkin/streakCalculator';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { setRetentionUserProperties } from '@/lib/tracking/retentionUserProperties';
 
 export type ReflectionStep = 1 | 2 | 3;
+
+/** Where the daily reflection sheet was opened from (funnel attribution). */
+export type ReflectionOpenSource = 'manual' | 'notification' | 'auto_reminder';
 
 interface ReflectionFormState {
   watchedPorn: boolean | null;
@@ -23,7 +28,7 @@ interface ReflectionSheetState {
 }
 
 interface ReflectionSheetActions {
-  open: () => void;
+  open: (source?: ReflectionOpenSource) => void;
   close: () => void;
   selectWatchedPorn: (value: boolean) => void;
   selectUrgeLevelAndSubmit: (level: number) => Promise<void>;
@@ -45,7 +50,8 @@ const INITIAL_STATE: ReflectionSheetState = {
 export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetActions>((set, get) => ({
   ...INITIAL_STATE,
 
-  open: () => {
+  open: (source = 'manual') => {
+    analyticsClient.logEvent('reflection_opened', { source });
     set({ ...INITIAL_STATE, visible: true });
   },
 
@@ -99,6 +105,16 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
         }
       }
 
+      analyticsClient.logEvent('reflection_completed', {
+        streak_day: pendingCelebrationStreak ?? 0,
+        urge_level: level,
+      });
+      const fresh = useUserStore.getState().user;
+      setRetentionUserProperties(
+        fresh?.streakStartDate,
+        useCheckinStore.getState().checkins,
+      );
+
       set({ step: 3, isSubmitting: false, pendingCelebrationStreak });
     } catch (e: any) {
       set({
@@ -115,6 +131,12 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
       submitError: null,
     });
 
+    // Capture the streak being broken before processCheckin resets it.
+    const userBefore = useUserStore.getState().user;
+    const previousStreak = userBefore?.streakStartDate
+      ? calculateStreak(userBefore.streakStartDate, useCheckinStore.getState().checkins)
+      : 0;
+
     try {
       const checkin = await checkinService.processCheckin({
         watchedPorn: true,
@@ -128,6 +150,13 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
       await useUserStore.getState().loadUser();
       const today = format(new Date(), 'yyyy-MM-dd');
       await useReflectionStore.getState().markCompleted(today);
+
+      analyticsClient.logEvent('relapse_recorded', { previous_streak: previousStreak });
+      const fresh = useUserStore.getState().user;
+      setRetentionUserProperties(
+        fresh?.streakStartDate,
+        useCheckinStore.getState().checkins,
+      );
 
       set({ visible: false, isSubmitting: false });
       return true;

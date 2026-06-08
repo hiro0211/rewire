@@ -6,6 +6,60 @@ English transcreation of the Japanese v2.1 metadata, prepared for v2.2 submissio
 
 ---
 
+## ⚠️ 2026-06-03 Guideline 1.1 対応（最新・これが現行の正です。以下の旧ドラフトは履歴）
+
+**背景**: v2.2(2) が 2026-06-03 に **Guideline 1.1 (Safety - Objectionable Content)** でリジェクト。英語メタデータ＋スクショが "porn" を多数参照していたため。価格(3.1.2c)は前ビルドで解決済み。
+
+**方針（hiro 承認）**: 英語(US)ロケールのみ修正 / 臨床用語(adult content, adult sites, explicit content)は残し "porn・nofap・quit porn・porn blocker" を削除 / 日本語ロケールは今回据え置き / 年齢制限 13+ 維持。
+
+**ASC で実施済み（Claude in Chrome 経由・保存済み、未提出）**:
+
+| フィールド | 変更後（現在 ASC に保存済み） |
+|---|---|
+| Subtitle (App情報/EN) | `Quit the habit, reboot focus` |
+| Keywords (v2.2/EN) | `reboot,dopamine detox,self control,streak,recovery,abstinence,urge,blocker,addiction,willpower` |
+| Promotional Text (v2.2/EN) | **変更不要**（ライブ版は既にクリーン: "...a built-in Safari blocker..."） |
+| Description (v2.2/EN) | 下記3箇所の "porn" のみ置換（"adult sites" 等は維持） |
+
+**Description 置換（3箇所）**:
+1. `It's not that your willpower is weak. Porn hijacks the brain's reward system,` → `... Explicit content hijacks the brain's reward system,`
+2. `• Reclaiming the focus and drive that porn quietly drains` → `... that the habit quietly drains`
+3. 見出し `— Built-In Porn Blocker` → `— Built-In Content Blocker`
+
+**★ 残タスク（hiro 実施）: スクリーンショット差し替え（全サイズ）**
+英語スクショに "porn" 文言が写っており 1.1 の主因。以下のキャプションで画像を作り直す（②④⑤はOKなので任意）:
+
+| # | 現状キャプション | 差し替え案 |
+|---|---|---|
+| 1 | Quit **Porn** with Rewire / Willpower Not Required | **Quit the Habit with Rewire** / Willpower Not Required |
+| 2 | Stop yourself Before You relapse | （OK・維持可） |
+| 3 | Block **Porn** in Safari Before It loads | **Block Adult Sites in Safari** / Before They Load |
+| 4 | See Your Progress Without Opening the App | （OK・維持可） |
+| 5 | Reflect Daily, Understand Your Urges | （OK・維持可） |
+| 6 | **Quit porn** … / Reclaim yourself. | **Reclaim Yourself** / Start Today |
+
+> 日本語スクショ（「ポルノをやめる」「ポルノを見る前に止める」）は今回据え置き＝Apple が日本語側を理由に再リジェクトするリスクは残る（その場合は第2弾で日本語も対応）。
+
+**Apple Resolution Center 返信文（英語・hiro が投稿）**:
+
+```
+Hello,
+
+Thank you for the review. We have revised the app's English (U.S.) metadata and
+are updating the screenshots to remove any references that could be considered
+objectionable. The subtitle, keywords, and description now describe the app for
+what it is: a science-based recovery and focus tool in the Health & Fitness
+category that helps users build healthier digital habits through check-ins,
+breathing exercises, streak tracking, and a Safari content blocker.
+
+Rewire does not contain, provide, or enable the creation of any objectionable
+content. Please let us know if any further adjustments are needed. Thank you.
+```
+
+**提出前チェック**: ① 新スクショ(全サイズ)アップロード → ② 全EN欄に "porn/nofap" がゼロか目視 → ③「審査内容を更新」で再提出（最終ボタンは hiro が押す）。
+
+---
+
 ## App Information (App-wide)
 
 | Field | Limit | Value |

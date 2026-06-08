@@ -26,6 +26,18 @@ jest.mock('@/stores/userStore', () => ({
   ),
 }));
 
+// Mock localeStore — テストではハイドレーション完了状態を前提にする
+jest.mock('@/stores/localeStore', () => {
+  const state = { hasHydrated: true, localePreference: 'system' as const };
+  return {
+    useLocaleStore: Object.assign(
+      (selector?: (s: typeof state) => unknown) =>
+        selector ? selector(state) : state,
+      { getState: () => ({ ...state, loadLocalePreference: jest.fn() }) },
+    ),
+  };
+});
+
 import * as Haptics from 'expo-haptics';
 import { BrandScreen } from '../brand';
 import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
