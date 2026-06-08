@@ -374,6 +374,7 @@ export const ja = {
     settings: '設定',
     terms: '利用規約',
     privacyPolicy: 'プライバシーポリシー',
+    credits: 'クレジット',
     learn: '学ぶ',
     insights: 'インサイト',
     home: 'ホーム',
@@ -421,6 +422,7 @@ export const ja = {
       subscription: 'サブスクリプション',
       survey: 'アンケート',
       support: 'サポート',
+      about: 'について',
       data: 'データ管理',
     },
     labels: {
@@ -434,6 +436,7 @@ export const ja = {
       contact: 'お問い合わせ',
       terms: '利用規約',
       privacyPolicy: 'プライバシーポリシー',
+      credits: 'クレジット',
       resetData: 'データをリセット',
       language: '言語',
       daysFormat: '{{days}}日',
@@ -455,42 +458,6 @@ export const ja = {
     streakEdit: {
       title: '開始日を編集',
       description: 'アプリ導入前から継続している場合、開始日を変更できます',
-    },
-  },
-  safariWebExtension: {
-    title: 'Safariで、見る前に',
-    intro: 'Safariでアダルトサイトにアクセスしたら Rewire のカスタム画面と通知で止めます。\n4ステップで設定できます。',
-    completionTitle: '設定完了！',
-    completionDescription: 'Safariでアダルトサイトを開くと\nRewireが止めてくれます',
-    step1Title: '「設定」→「アプリ」→「Safari」',
-    step1Desc: '設定アプリを開いて「アプリ」から「Safari」を選択してください',
-    step2Title: '「機能拡張」をタップ',
-    step2Desc: 'Safari設定の中にある「機能拡張」を選択してください',
-    step3Title: 'Rewire を有効にする',
-    step3Desc: '「機能拡張を許可」と「プライベートブラウズで許可」をオンにし、「すべての Web サイト」を「許可」に切り替えてください',
-    startSetup: 'セットアップを開始',
-    openSettings: '設定アプリを開く',
-    openSettingsShort: '設定を開く',
-    skipSetup: 'あとで設定する',
-    prev: '前へ',
-    settingsStatus: 'Safari カスタム保護',
-    setupGuide: '設定する',
-    enabled: '有効',
-    unknown: '未検出',
-    toolCardDescription: 'アダルトサイトを開くと、Rewireの画面が出る',
-    alert: {
-      title: 'Safari 拡張が検出できません',
-      descriptionDisabled:
-        '拡張機能の動作を確認できませんでした。iOS の「設定」→「アプリ」→「Safari」→「機能拡張」から Rewire を有効にし、「すべての Web サイト」を許可、「プライベートブラウズで許可」をオンにしてください。',
-      descriptionNeedsAllUrls:
-        '拡張はオンですが、「すべての Web サイト」が許可されていません。Safari の機能拡張設定から「許可」に切り替えてください。プライベートブラウズでの許可も忘れずに。',
-      openSettingsAction: '設定を開く',
-    },
-    refresh: {
-      title: 'Safari 拡張の状態を更新',
-      description:
-        'しばらく Safari を開いていないため、最新の状態が確認できません。Safari でウェブページを 1 つ開いてからアプリに戻り、「再確認」を押してください。',
-      recheckAction: '再確認',
     },
   },
   uninstallLock: {
@@ -545,24 +512,6 @@ export const ja = {
       title: 'プランを購入いただき\nありがとうございます！',
       description: 'Rewireのメイン機能をご紹介します。\n一緒に、見る前に止める仕組みを整えましょう。',
       cta: 'はじめる',
-    },
-    safariSetup: {
-      title: 'Safariブロッカーを設定',
-      description: 'Safariでアダルトサイトを開こうとした瞬間、Rewireが止めます。',
-    },
-    demo: {
-      title: 'ブロックを試してみましょう',
-      description: 'ボタンをタップするとSafariが開き\n検索結果が表示されます。\n上位に出てくるアダルトサイトのリンクを\nタップしてみてください。',
-      notice: 'タップした瞬間にRewireが画面を遮ります。サイトの内容は表示されません。',
-      testButton: 'Safariで検索を開く',
-      skipButton: 'あとで試す',
-      retryHint: 'ブロックが作動しなかったようです。検索結果の上位リンクをもう一度タップしてみてください。',
-      confirm: {
-        title: '本当に拡張機能はオンにできていますか？',
-        body: '設定アプリ → Safari → 拡張機能で Rewire をオンにしているか確認してください。オンになっていないとアダルトサイトのコンテンツが直接表示されてしまいます。',
-        confirmButton: '続ける',
-        openSettingsButton: '設定で確認',
-      },
     },
     complete: {
       title: '準備完了！🎉',
@@ -793,6 +742,16 @@ export const ja = {
       s8Title: '8. お問い合わせ',
       s8Body: '本プライバシーポリシーに関するお問い合わせは、以下のメールアドレスまでご連絡ください。\n\nappsupport0326@gmail.com',
     },
+    credits: {
+      updatedDate: '最終更新日: 2026年6月8日',
+      intro: 'Rewire は、公開されている宇宙画像をアプリ内で活用しています。本ページでは、その提供元とライセンス情報を明記します。',
+      planetsTitle: '惑星テクスチャ',
+      planetsBody: 'ホーム画面および「達成」画面で使用している太陽系の天体（Mercury / Venus / Earth / Mars / Jupiter / Saturn / Uranus / Neptune / Moon / Sun）の正距円筒図法テクスチャは、Solar System Scope（https://www.solarsystemscope.com/textures/）が提供する素材を、Creative Commons Attribution 4.0 International（CC BY 4.0）ライセンスのもとで利用しています。これらのテクスチャは NASA / JPL / ESA 等が公開する観測データ（Cassini, Voyager, MESSENGER, Mariner, Mars Global Surveyor, Hubble, Lunar Reconnaissance Orbiter, Solar Dynamics Observatory 等）をもとに Solar System Scope が再加工したものです。',
+      licenseTitle: 'ライセンス表記',
+      licenseBody: 'Planet textures by Solar System Scope (https://www.solarsystemscope.com/textures/), licensed under CC BY 4.0. Derived from NASA imagery.',
+      ccUrlLabel: 'CC BY 4.0 ライセンス全文',
+      ccUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    },
   },
   lessons: {
     lesson1: {
@@ -858,7 +817,6 @@ export const ja = {
     labelDevice: 'デバイス',
     labelLanguage: '言語設定',
     labelTimezone: 'タイムゾーン',
-    labelExtension: 'Safari拡張ステータス',
     unknown: '不明',
   },
   illustrations: {

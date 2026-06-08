@@ -11,11 +11,20 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
-jest.mock('../EarthOrbRenderer', () => {
+jest.mock('../PlanetOrbRenderer', () => {
   const { View } = require('react-native');
   return {
-    EarthOrbRenderer: (props: Record<string, unknown>) => (
-      <View testID="earth-orb-fallback" {...props} />
+    PlanetOrbRenderer: (props: Record<string, unknown>) => (
+      <View testID={`planet-orb-fallback-${props.badgeId}`} {...props} />
+    ),
+  };
+});
+
+jest.mock('../SaturnRingOverlay', () => {
+  const { View } = require('react-native');
+  return {
+    SaturnRingOverlay: (props: Record<string, unknown>) => (
+      <View testID="saturn-ring" {...props} />
     ),
   };
 });
@@ -85,22 +94,46 @@ describe('AnimatedOrb', () => {
   it('badgeIdなしの場合はCoreOrbRendererを描画する', () => {
     render(<AnimatedOrb colors={testColors} chapterId="birth" />);
     expect(screen.getByTestId('orb-canvas')).toBeTruthy();
-    expect(screen.queryByTestId('earth-orb-fallback')).toBeNull();
-    expect(screen.queryByTestId('earth-orb-canvas')).toBeNull();
+    expect(screen.queryByTestId('planet-orb-fallback-earth')).toBeNull();
   });
 
-  it('badgeId="earth"の場合はEarthOrbRendererを描画する', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" badgeId="earth" />);
-    // EarthOrbRenderer renders with either earth-orb-canvas or earth-orb-fallback testID
-    const hasEarthOrb =
-      screen.queryByTestId('earth-orb-canvas') !== null ||
-      screen.queryByTestId('earth-orb-fallback') !== null;
-    expect(hasEarthOrb).toBe(true);
+  it.each([
+    'mercury',
+    'venus',
+    'earth',
+    'mars',
+    'jupiter',
+    'saturn',
+    'uranus',
+    'neptune',
+    'moon',
+    'sun',
+  ] as const)('badgeId="%s"の場合はPlanetOrbRendererを描画する', (id) => {
+    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" badgeId={id} />);
+    expect(screen.getByTestId(`planet-orb-fallback-${id}`)).toBeTruthy();
     expect(screen.queryByTestId('orb-canvas')).toBeNull();
   });
 
-  it('badgeId="mars"の場合はCoreOrbRendererを描画する', () => {
-    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" badgeId="mars" />);
-    expect(screen.getByTestId('orb-canvas')).toBeTruthy();
+  it.each(['galaxy', 'cosmos', 'starCluster', 'stardust', 'nebula'] as const)(
+    '抽象バッジ %s では CoreOrbRenderer を描画する',
+    (id) => {
+      render(<AnimatedOrb colors={testColors} chapterId="cosmic" badgeId={id} />);
+      expect(screen.getByTestId('orb-canvas')).toBeTruthy();
+    },
+  );
+
+  it('badgeId="saturn" のとき SaturnRingOverlay も描画される', () => {
+    render(<AnimatedOrb colors={testColors} chapterId="outerPlanets" badgeId="saturn" />);
+    expect(screen.getByTestId('saturn-ring')).toBeTruthy();
+  });
+
+  it('badgeId="earth" のとき SaturnRingOverlay は描画されない', () => {
+    render(<AnimatedOrb colors={testColors} chapterId="terrestrial" badgeId="earth" />);
+    expect(screen.queryByTestId('saturn-ring')).toBeNull();
+  });
+
+  it('badgeId なしのとき SaturnRingOverlay は描画されない', () => {
+    render(<AnimatedOrb colors={testColors} chapterId="birth" />);
+    expect(screen.queryByTestId('saturn-ring')).toBeNull();
   });
 });

@@ -203,6 +203,24 @@ describe('SettingsScreen', () => {
     expect(getByText('プライバシーポリシー')).toBeTruthy();
   });
 
+  describe('About セクション', () => {
+    it('About セクション見出しが表示される', () => {
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('について')).toBeTruthy();
+    });
+
+    it('クレジット項目が表示される', () => {
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('クレジット')).toBeTruthy();
+    });
+
+    it('クレジット項目タップで router.push("/credits") が呼ばれる', () => {
+      const { getByTestId } = render(<SettingsScreen />);
+      fireEvent.press(getByTestId('setting-クレジット'));
+      expect(mockPush).toHaveBeenCalledWith('/credits');
+    });
+  });
+
   describe('アプリを評価する', () => {
     it('iOSで「アプリを評価する」項目が表示される', () => {
       Platform.OS = 'ios';

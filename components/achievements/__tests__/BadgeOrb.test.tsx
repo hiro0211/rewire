@@ -324,6 +324,70 @@ describe('CosmosOverlay 特殊描画', () => {
   });
 });
 
+// earth バッジの colors（実際の BADGE_DEFINITIONS に揃える）
+const EARTH_COLORS: BadgeColorTriad = {
+  core: '#3B5CE6',
+  mid: '#4A90E2',
+  outer: '#1E3A8A',
+  glow: '#7DD3E8',
+};
+
+describe('Planet 実写描画', () => {
+  it.each([
+    ['mercury', 'innerPlanets'],
+    ['venus', 'innerPlanets'],
+    ['earth', 'terrestrial'],
+    ['mars', 'terrestrial'],
+    ['jupiter', 'terrestrial'],
+    ['saturn', 'outerPlanets'],
+    ['uranus', 'outerPlanets'],
+    ['neptune', 'outerPlanets'],
+    ['moon', 'innerPlanets'],
+    ['sun', 'stellar'],
+  ] as const)('badgeId="%s" のとき PlanetOrbRenderer が描画される（テスト環境では fallback）', (id, chapter) => {
+    render(
+      <BadgeOrb
+        colors={EARTH_COLORS}
+        isUnlocked
+        chapterId={chapter}
+        badgeId={id}
+      />,
+    );
+    expect(screen.getByTestId('planet-orb-fallback')).toBeTruthy();
+  });
+
+  it('badgeId="earth" のとき badge-orb-canvas（CoreOrbRenderer）は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={EARTH_COLORS}
+        isUnlocked
+        chapterId="terrestrial"
+        badgeId="earth"
+      />,
+    );
+    expect(screen.queryByTestId('badge-orb-canvas')).toBeNull();
+  });
+
+  it('抽象バッジ（galaxy）では planet-orb-fallback は描画されない', () => {
+    render(
+      <BadgeOrb
+        colors={MOCK_COLORS}
+        isUnlocked
+        chapterId="cosmic"
+        badgeId="galaxy"
+      />,
+    );
+    expect(screen.queryByTestId('planet-orb-fallback')).toBeNull();
+  });
+
+  it('badgeId なしのとき planet-orb-fallback は描画されない', () => {
+    render(
+      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
+    );
+    expect(screen.queryByTestId('planet-orb-fallback')).toBeNull();
+  });
+});
+
 // galaxy バッジの colors
 const GALAXY_COLORS: BadgeColorTriad = {
   core: '#A855F7',

@@ -37,22 +37,7 @@ jest.mock('expo-constants', () => ({
   default: { expoConfig: { version: '9.9.9' } },
 }));
 
-jest.mock('@/lib/safariWebExtension/safariWebExtensionBridge', () => ({
-  safariWebExtensionBridge: { getExtensionStatus: jest.fn() },
-}));
-
 import { collectDeletionDebugInfo } from '../collectDeletionDebugInfo';
-import { safariWebExtensionBridge } from '@/lib/safariWebExtension/safariWebExtensionBridge';
-
-const mockGetStatus = safariWebExtensionBridge.getExtensionStatus as jest.Mock;
-
-const activeStatus = (nowSeconds: number) => ({
-  isEnabled: true,
-  hasAllUrls: true,
-  extensionBundleId: 'x',
-  lastActiveAt: nowSeconds - 60,
-  lastBlockedAt: 0,
-});
 
 describe('collectDeletionDebugInfo', () => {
   beforeEach(() => {
@@ -61,8 +46,6 @@ describe('collectDeletionDebugInfo', () => {
     mockState.modelId = 'iPhone17,5';
     mockState.osVersion = '26.5';
     mockState.osBuildId = '23F77';
-    mockGetStatus.mockReset();
-    mockGetStatus.mockResolvedValue(activeStatus(Date.now() / 1000));
     jest
       .spyOn(Intl, 'DateTimeFormat')
       .mockReturnValue({
@@ -74,50 +57,41 @@ describe('collectDeletionDebugInfo', () => {
     jest.restoreAllMocks();
   });
 
-  it('appVersionがnativeApplicationVersionになる', async () => {
+  it('appVersion が nativeApplicationVersion になる', async () => {
     expect((await collectDeletionDebugInfo()).appVersion).toBe('2.1.0');
   });
 
-  it('buildNumberがnativeBuildVersionになる', async () => {
+  it('buildNumber が nativeBuildVersion になる', async () => {
     expect((await collectDeletionDebugInfo()).buildNumber).toBe('42');
   });
 
-  it('deviceModelIdがDevice.modelIdになる', async () => {
+  it('deviceModelId が Device.modelId になる', async () => {
     expect((await collectDeletionDebugInfo()).deviceModelId).toBe('iPhone17,5');
   });
 
-  it('iosVersionがDevice.osVersionになる', async () => {
+  it('iosVersion が Device.osVersion になる', async () => {
     expect((await collectDeletionDebugInfo()).iosVersion).toBe('26.5');
   });
 
-  it('iosBuildIdがDevice.osBuildIdになる', async () => {
+  it('iosBuildId が Device.osBuildId になる', async () => {
     expect((await collectDeletionDebugInfo()).iosBuildId).toBe('23F77');
   });
 
-  it('languageTagがgetLocalesの言語タグになる', async () => {
+  it('languageTag が getLocales の言語タグになる', async () => {
     expect((await collectDeletionDebugInfo()).languageTag).toBe('ja-JP');
   });
 
-  it('timezoneがIntlのresolvedOptionsから取得される', async () => {
+  it('timezone が Intl の resolvedOptions から取得される', async () => {
     expect((await collectDeletionDebugInfo()).timezone).toBe('Asia/Tokyo');
   });
 
-  it('webExtensionStatusがderiveStatusの結果(active)になる', async () => {
-    expect((await collectDeletionDebugInfo()).webExtensionStatus).toBe('active');
-  });
-
-  it('Device.modelIdがnullのときunknownになる', async () => {
+  it('Device.modelId が null のとき unknown になる', async () => {
     mockState.modelId = null;
     expect((await collectDeletionDebugInfo()).deviceModelId).toBe('unknown');
   });
 
-  it('nativeApplicationVersionがnullのときConstantsのversionにフォールバックする', async () => {
+  it('nativeApplicationVersion が null のとき Constants の version にフォールバックする', async () => {
     mockState.appVersion = null;
     expect((await collectDeletionDebugInfo()).appVersion).toBe('9.9.9');
-  });
-
-  it('getExtensionStatusが例外を投げてもneverを返す', async () => {
-    mockGetStatus.mockRejectedValue(new Error('boom'));
-    expect((await collectDeletionDebugInfo()).webExtensionStatus).toBe('never');
   });
 });

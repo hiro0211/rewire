@@ -141,6 +141,15 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
+        <SettingSection title={t('settings.sections.about')}>
+          <SettingItem
+            label={t('settings.labels.credits')}
+            icon="information-circle-outline"
+            onPress={() => router.push(ROUTES.credits)}
+            isLast
+          />
+        </SettingSection>
+
         <SettingSection title={t('settings.sections.data')}>
           <SettingItem
             label={t('settings.labels.resetData')}

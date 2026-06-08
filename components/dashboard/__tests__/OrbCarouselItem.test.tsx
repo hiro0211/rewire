@@ -58,11 +58,11 @@ jest.mock('@/hooks/useLocale', () => ({
   useLocale: () => ({ isJapanese: true }),
 }));
 
-jest.mock('../EarthOrbRenderer', () => {
+jest.mock('../PlanetOrbRenderer', () => {
   const { View } = require('react-native');
   return {
-    EarthOrbRenderer: (props: any) => (
-      <View testID="earth-orb-fallback" {...props} />
+    PlanetOrbRenderer: (props: any) => (
+      <View testID={`planet-orb-fallback-${props.badgeId}`} {...props} />
     ),
   };
 });
@@ -260,11 +260,10 @@ describe('OrbCarouselItem', () => {
         currentDays={100}
       />
     );
-    // EarthOrbRenderer is mocked, so earth-orb-fallback should appear
-    expect(getByTestId('earth-orb-fallback')).toBeTruthy();
+    expect(getByTestId('planet-orb-fallback-earth')).toBeTruthy();
   });
 
-  it('marsバッジのとき CoreOrbRenderer が描画される（orb-canvas）', () => {
+  it('marsバッジのとき PlanetOrbRenderer に badgeId="mars" が渡される', () => {
     const { getByTestId, queryByTestId } = render(
       <OrbCarouselItem
         badge={planetesimal}
@@ -274,7 +273,7 @@ describe('OrbCarouselItem', () => {
         currentDays={100}
       />
     );
-    expect(getByTestId('orb-canvas')).toBeTruthy();
-    expect(queryByTestId('earth-orb-fallback')).toBeNull();
+    expect(getByTestId('planet-orb-fallback-mars')).toBeTruthy();
+    expect(queryByTestId('orb-canvas')).toBeNull();
   });
 });

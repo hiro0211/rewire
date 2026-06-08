@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 interface BadgeUnlockModalProps {
   badge: NeuralBadgeDefinition | null;
@@ -22,6 +23,12 @@ interface BadgeUnlockModalProps {
  */
 export function BadgeUnlockModal({ badge, onDismiss }: BadgeUnlockModalProps) {
   const { colors } = useTheme();
+
+  React.useEffect(() => {
+    if (badge) {
+      trackEvent('badge_unlocked', { badge_id: badge.id, chapter: badge.chapter });
+    }
+  }, [badge?.id]);
 
   if (!badge) return null;
 

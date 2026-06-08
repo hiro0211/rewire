@@ -53,10 +53,10 @@ describe('usePostPurchaseFlow', () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     act(() => {
-      result.current.logStepViewed('demo');
+      result.current.logStepViewed('screenTimeSetup');
     });
 
-    expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'demo' });
+    expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'screenTimeSetup' });
   });
 
   it('logStepViewed("complete") を許可する（型/値の互換性）', () => {
@@ -69,11 +69,11 @@ describe('usePostPurchaseFlow', () => {
     expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'complete' });
   });
 
-  it('TOTAL_POST_PURCHASE_STEPS は 4 (thankYou / safariSetup / demo / complete)', () => {
-    expect(TOTAL_POST_PURCHASE_STEPS).toBe(4);
+  it('TOTAL_POST_PURCHASE_STEPS は 3 (thankYou / screenTimeSetup / complete)', () => {
+    expect(TOTAL_POST_PURCHASE_STEPS).toBe(3);
   });
 
-  it('goToNext で step は最大 TOTAL_POST_PURCHASE_STEPS - 1 (=3) で頭打ち', async () => {
+  it('goToNext で step は最大 TOTAL_POST_PURCHASE_STEPS - 1 (=2) で頭打ち', async () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     await act(async () => {
@@ -83,7 +83,7 @@ describe('usePostPurchaseFlow', () => {
     });
 
     expect(result.current.step).toBe(TOTAL_POST_PURCHASE_STEPS - 1);
-    expect(result.current.step).toBe(3);
+    expect(result.current.step).toBe(2);
   });
 
   it('safariAlreadyEnabled の auto-skip フィールドは廃止された（戻り値に含まれない）', () => {

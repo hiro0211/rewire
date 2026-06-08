@@ -5,6 +5,11 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 let listenerCallback: ((response: unknown) => void) | null = null;
 const mockRemoveSubscription = jest.fn();
 const mockGetLastResponse = jest.fn();
@@ -19,7 +24,6 @@ jest.mock('expo-notifications', () => ({
 }));
 
 import { useNotificationDeepLink } from '../useNotificationDeepLink';
-import { panicNotificationTracker } from '@/lib/safariWebExtension/panicNotificationTracker';
 
 const makeResponse = (data: Record<string, unknown>, categoryIdentifier?: string) => ({
   notification: {
@@ -34,10 +38,9 @@ describe('useNotificationDeepLink', () => {
     jest.clearAllMocks();
     listenerCallback = null;
     mockGetLastResponse.mockResolvedValue(null);
-    panicNotificationTracker.reset();
   });
 
-  test('通知タップでroute=/panicならrouter.pushを呼ぶ', () => {
+  test('通知タップで route=/panic なら router.push を呼ぶ', () => {
     renderHook(() => useNotificationDeepLink());
 
     expect(listenerCallback).not.toBeNull();
@@ -49,7 +52,7 @@ describe('useNotificationDeepLink', () => {
     expect(mockPush).toHaveBeenCalledWith('/panic');
   });
 
-  test('routeがない通知はナビゲーションしない', () => {
+  test('route がない通知はナビゲーションしない', () => {
     renderHook(() => useNotificationDeepLink());
 
     act(() => {
@@ -59,7 +62,27 @@ describe('useNotificationDeepLink', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  test('コールドスタート時にlastNotificationResponseを処理', async () => {
+  test('route 付き通知タップで notification_opened を route 付きで送信する', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    act(() => {
+      listenerCallback!(makeResponse({ route: '/panic' }));
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith('notification_opened', { route: '/panic' });
+  });
+
+  test('route なし通知では notification_opened を送信しない', () => {
+    renderHook(() => useNotificationDeepLink());
+
+    act(() => {
+      listenerCallback!(makeResponse({}, 'some-other-category'));
+    });
+
+    expect(mockTrackEvent).not.toHaveBeenCalled();
+  });
+
+  test('コールドスタート時に lastNotificationResponse を処理', async () => {
     mockGetLastResponse.mockResolvedValue(makeResponse({ route: '/panic' }));
 
     renderHook(() => useNotificationDeepLink());
@@ -77,7 +100,7 @@ describe('useNotificationDeepLink', () => {
     expect(mockRemoveSubscription).toHaveBeenCalled();
   });
 
-  test('categoryIdentifier=rewire-shield-panic（routeなし）でも/panicへ遷移する (Shield Actionフォールバック)', () => {
+  test('categoryIdentifier=rewire-shield-panic（route なし）でも /panic へ遷移する (Shield Action フォールバック)', () => {
     renderHook(() => useNotificationDeepLink());
 
     act(() => {
@@ -87,18 +110,7 @@ describe('useNotificationDeepLink', () => {
     expect(mockPush).toHaveBeenCalledWith('/panic');
   });
 
-  test('categoryIdentifier=rewire-shield-panicでpanicNotificationTrackerが更新される', () => {
-    renderHook(() => useNotificationDeepLink());
-
-    const before = Date.now();
-    act(() => {
-      listenerCallback!(makeResponse({}, 'rewire-shield-panic'));
-    });
-
-    expect(panicNotificationTracker.getLastPanicNotifiedAt()).toBeGreaterThanOrEqual(before);
-  });
-
-  test('未知のcategoryIdentifier（routeなし）はナビゲーションしない', () => {
+  test('未知の categoryIdentifier（route なし）はナビゲーションしない', () => {
     renderHook(() => useNotificationDeepLink());
 
     act(() => {
@@ -108,7 +120,7 @@ describe('useNotificationDeepLink', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  test('routeがあればそれを優先してrouter.pushする', () => {
+  test('route があればそれを優先して router.push する', () => {
     renderHook(() => useNotificationDeepLink());
 
     act(() => {
@@ -117,26 +129,5 @@ describe('useNotificationDeepLink', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/other');
     expect(mockPush).not.toHaveBeenCalledWith('/panic');
-  });
-
-  test('route=/panic のとき panicNotificationTracker にタイムスタンプを記録する', () => {
-    renderHook(() => useNotificationDeepLink());
-
-    const before = Date.now();
-    act(() => {
-      listenerCallback!(makeResponse({ route: '/panic' }));
-    });
-
-    expect(panicNotificationTracker.getLastPanicNotifiedAt()).toBeGreaterThanOrEqual(before);
-  });
-
-  test('route=/panic 以外では panicNotificationTracker は更新しない', () => {
-    renderHook(() => useNotificationDeepLink());
-
-    act(() => {
-      listenerCallback!(makeResponse({ route: '/other' }));
-    });
-
-    expect(panicNotificationTracker.getLastPanicNotifiedAt()).toBe(0);
   });
 });

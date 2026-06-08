@@ -30,7 +30,6 @@ const fakeInfo = {
   deviceModelId: 'iPhone17,5',
   languageTag: 'ja-JP',
   timezone: 'Asia/Tokyo',
-  webExtensionStatus: 'active',
 };
 
 let openURLSpy: jest.SpyInstance;

@@ -18,7 +18,6 @@ const fullInfo: DeletionDebugInfo = {
   deviceModelId: 'iPhone17,5',
   languageTag: 'ja-JP',
   timezone: 'Asia/Tokyo',
-  webExtensionStatus: 'active',
 };
 
 describe('buildDeletionFeedbackEmail', () => {
@@ -58,10 +57,6 @@ describe('buildDeletionFeedbackEmail', () => {
 
   it('本文にタイムゾーンが含まれる', () => {
     expect(buildDeletionFeedbackEmail(fullInfo).body).toContain('Asia/Tokyo');
-  });
-
-  it('本文にSafari拡張ステータスが含まれる', () => {
-    expect(buildDeletionFeedbackEmail(fullInfo).body).toContain('active');
   });
 
   it('デバイスモデルIDが空文字のときunknownラベルにフォールバックする', () => {

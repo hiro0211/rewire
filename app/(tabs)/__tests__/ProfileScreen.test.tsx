@@ -49,16 +49,6 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-const mockUseWebExtensionStatus = jest.fn();
-jest.mock('@/hooks/settings/useWebExtensionStatus', () => ({
-  useWebExtensionStatus: () => mockUseWebExtensionStatus(),
-}));
-
-const mockOpenSafariSettings = jest.fn();
-jest.mock('@/hooks/safariWebExtension/useSafariSettingsDeepLink', () => ({
-  useSafariSettingsDeepLink: () => mockOpenSafariSettings,
-}));
-
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34 }),
 }));
@@ -68,135 +58,65 @@ jest.mock('@/components/profile/ProfileHeader', () => {
   return { ProfileHeader: () => <View testID="profile-header" /> };
 });
 
-jest.mock('@/components/profile/ToolCard', () => {
-  const { View } = require('react-native');
-  return { ToolCard: () => <View testID="tool-card" /> };
-});
-
-jest.mock('@/components/profile/SafariExtensionAlertCard', () => {
+jest.mock('@/components/profile/AchievementsLinkCard', () => {
   const { View } = require('react-native');
   return {
-    SafariExtensionAlertCard: (props: any) => (
-      <View testID="safari-extension-alert-card" {...props} />
+    AchievementsLinkCard: (props: any) => (
+      <View testID="achievements-link-card" {...props} />
     ),
   };
 });
 
-jest.mock('@/components/ui/GradientCard', () => {
+jest.mock('@/components/screen-time/ContentBlockerPanel', () => {
   const { View } = require('react-native');
-  return { GradientCard: ({ children }: any) => <View>{children}</View> };
+  return { ContentBlockerPanel: () => <View testID="content-blocker-panel" /> };
+});
+
+jest.mock('@/components/screen-time/UninstallLockCard', () => {
+  const { View } = require('react-native');
+  return { UninstallLockCard: () => <View testID="uninstall-lock-card" /> };
 });
 
 import ProfileScreen from '../profile';
 
 describe('ProfileScreen', () => {
-  const mockRecheck = jest.fn();
-
   beforeEach(() => {
-    mockUseWebExtensionStatus.mockReset();
-    mockRecheck.mockReset();
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'active',
-      recheck: mockRecheck,
-    });
+    jest.clearAllMocks();
     Platform.OS = 'ios';
   });
 
-  it('SafeAreaWrapperでラップされている', () => {
+  it('SafeAreaWrapper でラップされている', () => {
     const { getByTestId } = render(<ProfileScreen />);
     expect(getByTestId('safe-area-wrapper')).toBeTruthy();
   });
 
-  it('AuroraBackground / StarryOverlay は使用されない', () => {
-    const { queryByTestId } = render(<ProfileScreen />);
-    expect(queryByTestId('aurora-background')).toBeNull();
-    expect(queryByTestId('aurora-container')).toBeNull();
-    expect(queryByTestId('starry-overlay')).toBeNull();
-  });
-
-  it('status=active のとき ToolCard が表示され、警告カードは表示されない', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'active',
-      recheck: mockRecheck,
-    });
-    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
-    expect(getByTestId('tool-card')).toBeTruthy();
-    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
-  });
-
-  it('status=never のとき SafariExtensionAlertCard（警告）が表示される', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'never',
-      recheck: mockRecheck,
-    });
-    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
-    expect(getByTestId('safari-extension-alert-card')).toBeTruthy();
-    expect(queryByTestId('tool-card')).toBeNull();
-  });
-
-  it('status=needsAllUrls のときも SafariExtensionAlertCard が表示される', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'needsAllUrls',
-      recheck: mockRecheck,
-    });
-    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
-    expect(getByTestId('safari-extension-alert-card')).toBeTruthy();
-    expect(queryByTestId('tool-card')).toBeNull();
-  });
-
-  it('status=stale のときは警告ではなく info プロンプトを表示する', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'stale',
-      recheck: mockRecheck,
-    });
-    const { getByTestId, queryByTestId } = render(<ProfileScreen />);
-    const card = getByTestId('safari-extension-alert-card');
-    expect(card.props.variant).toBe('info');
-    expect(queryByTestId('tool-card')).toBeNull();
-  });
-
-  it('status=stale のとき再確認ボタンを押すと recheck() が呼ばれる', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'stale',
-      recheck: mockRecheck,
-    });
+  it('ProfileHeader が描画される', () => {
     const { getByTestId } = render(<ProfileScreen />);
-    const card = getByTestId('safari-extension-alert-card');
-    card.props.onPress();
-    expect(mockRecheck).toHaveBeenCalledTimes(1);
+    expect(getByTestId('profile-header')).toBeTruthy();
   });
 
-  it('status=checking のとき警告は出さない（フラッシュ防止）', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'checking',
-      recheck: mockRecheck,
-    });
-    const { queryByTestId } = render(<ProfileScreen />);
-    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
+  it('AchievementsLinkCard が描画される', () => {
+    const { getByTestId } = render(<ProfileScreen />);
+    expect(getByTestId('achievements-link-card')).toBeTruthy();
   });
 
-  it('Android では ToolCard も警告カードも表示されない', () => {
+  it('iOS では ContentBlockerPanel と UninstallLockCard が描画される', () => {
+    Platform.OS = 'ios';
+    const { getByTestId } = render(<ProfileScreen />);
+    expect(getByTestId('content-blocker-panel')).toBeTruthy();
+    expect(getByTestId('uninstall-lock-card')).toBeTruthy();
+  });
+
+  it('Android では ContentBlockerPanel と UninstallLockCard は非表示', () => {
     Platform.OS = 'android';
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'never',
-      recheck: mockRecheck,
-    });
     const { queryByTestId } = render(<ProfileScreen />);
-    expect(queryByTestId('tool-card')).toBeNull();
-    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
+    expect(queryByTestId('content-blocker-panel')).toBeNull();
+    expect(queryByTestId('uninstall-lock-card')).toBeNull();
   });
 
-  it('status=never のとき、警告カードは Achievements より後ろに表示される', () => {
-    mockUseWebExtensionStatus.mockReturnValue({
-      webExtensionStatus: 'never',
-      recheck: mockRecheck,
-    });
-    const { toJSON } = render(<ProfileScreen />);
-    const tree = JSON.stringify(toJSON());
-    const achievementsIdx = tree.indexOf('"achievements-link-card"');
-    const alertIdx = tree.indexOf('"safari-extension-alert-card"');
-    expect(achievementsIdx).toBeGreaterThan(-1);
-    expect(alertIdx).toBeGreaterThan(-1);
-    expect(achievementsIdx).toBeLessThan(alertIdx);
+  it('Safari 関連 UI は描画されない（削除済み）', () => {
+    const { queryByTestId } = render(<ProfileScreen />);
+    expect(queryByTestId('safari-extension-alert-card')).toBeNull();
+    expect(queryByTestId('tool-card')).toBeNull();
   });
 });

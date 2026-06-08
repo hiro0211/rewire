@@ -69,6 +69,11 @@ jest.mock('@/components/achievements/AchievementsHeader', () => {
   return { AchievementsHeader: () => <View testID="achievements-header" /> };
 });
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 import AchievementsScreen from '../achievements';
 
 describe('AchievementsScreen', () => {
@@ -95,5 +100,11 @@ describe('AchievementsScreen', () => {
   it('サマリーが表示される', () => {
     const { getByTestId } = render(<AchievementsScreen />);
     expect(getByTestId('summary-circle')).toBeTruthy();
+  });
+
+  it('表示時に achievements_opened を送信する', () => {
+    mockTrackEvent.mockClear();
+    render(<AchievementsScreen />);
+    expect(mockTrackEvent).toHaveBeenCalledWith('achievements_opened');
   });
 });

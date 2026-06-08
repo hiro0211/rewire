@@ -24,7 +24,6 @@ export function buildDeletionFeedbackEmail(
     `${t('deletionFeedback.labelDevice')}: ${orUnknown(info.deviceModelId)}`,
     `${t('deletionFeedback.labelLanguage')}: ${orUnknown(info.languageTag)}`,
     `${t('deletionFeedback.labelTimezone')}: ${orUnknown(info.timezone)}`,
-    `${t('deletionFeedback.labelExtension')}: ${orUnknown(info.webExtensionStatus)}`,
   ];
 
   return {

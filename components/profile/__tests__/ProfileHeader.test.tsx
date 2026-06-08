@@ -56,6 +56,12 @@ describe('ProfileHeader', () => {
     expect(getByTestId('animated-orb')).toBeTruthy();
   });
 
+  it('AnimatedOrbにbadgeIdを渡す（streak=15 → mercury）— ホーム画面と同じ特殊レンダラ分岐を有効化', () => {
+    const { getByTestId } = render(<ProfileHeader />);
+    const orb = getByTestId('animated-orb');
+    expect(orb.props.badgeId).toBe('mercury');
+  });
+
   it('バッジ名を表示する（streak=15 → mercury → 水星）', () => {
     const { getByText } = render(<ProfileHeader />);
     expect(getByText('水星')).toBeTruthy();

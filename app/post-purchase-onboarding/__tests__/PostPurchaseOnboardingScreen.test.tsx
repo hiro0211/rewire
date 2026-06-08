@@ -1,31 +1,11 @@
 import React from 'react';
-import { fireEvent, render, waitFor, act } from '@testing-library/react-native';
-
-let focusCallback: (() => void) | null = null;
-jest.mock('@react-navigation/native', () => ({
-  useFocusEffect: (cb: () => void) => {
-    focusCallback = cb;
-  },
-}));
+import { fireEvent, render } from '@testing-library/react-native';
 
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace, push: mockPush }),
 }));
-
-let appStateChangeListener: ((state: string) => void) | null = null;
-const mockAppStateRemove = jest.fn();
-jest.mock('react-native', () => {
-  const rn = jest.requireActual('react-native');
-  rn.AppState = {
-    addEventListener: (_event: string, cb: (state: string) => void) => {
-      appStateChangeListener = cb;
-      return { remove: mockAppStateRemove };
-    },
-  };
-  return rn;
-});
 
 jest.mock('@/components/common/SafeAreaWrapper', () => {
   const { View } = require('react-native');
@@ -68,24 +48,13 @@ jest.mock('@/components/postPurchaseOnboarding/ThankYouStep', () => {
   };
 });
 
-jest.mock('@/components/postPurchaseOnboarding/SafariSetupStep', () => {
-  const { Text } = require('react-native');
+jest.mock('@/components/postPurchaseOnboarding/ScreenTimeSetupStep', () => {
+  const { Text, TouchableOpacity } = require('react-native');
   return {
-    SafariSetupStep: () => <Text>safari-step</Text>,
-  };
-});
-
-jest.mock('@/components/postPurchaseOnboarding/DemoStep', () => {
-  const { Text, TouchableOpacity, View } = require('react-native');
-  return {
-    DemoStep: ({ onTestBlock, showRetryHint }: { onTestBlock: () => void; showRetryHint?: boolean }) => (
-      <View>
-        <Text>demo-step</Text>
-        {showRetryHint ? <Text>demo-retry-hint</Text> : null}
-        <TouchableOpacity testID="demo-test-button" onPress={onTestBlock}>
-          <Text>test-button</Text>
-        </TouchableOpacity>
-      </View>
+    ScreenTimeSetupStep: ({ onComplete }: { onComplete: () => void }) => (
+      <TouchableOpacity testID="screentime-complete" onPress={onComplete}>
+        <Text>screentime-step</Text>
+      </TouchableOpacity>
     ),
   };
 });
@@ -101,13 +70,6 @@ jest.mock('@/components/postPurchaseOnboarding/CompleteStep', () => {
   };
 });
 
-const mockGetExtensionStatus = jest.fn();
-jest.mock('@/lib/safariWebExtension/safariWebExtensionBridge', () => ({
-  safariWebExtensionBridge: {
-    getExtensionStatus: (...args: any[]) => mockGetExtensionStatus(...args),
-  },
-}));
-
 const mockMarkCompleted = jest.fn().mockResolvedValue(undefined);
 const mockGoToNext = jest.fn();
 const mockGoToStep = jest.fn();
@@ -117,7 +79,6 @@ let mockCurrentStep = 0;
 jest.mock('@/hooks/postPurchaseOnboarding/usePostPurchaseFlow', () => ({
   usePostPurchaseFlow: () => ({
     step: mockCurrentStep,
-    safariAlreadyEnabled: false,
     goToNext: mockGoToNext,
     goToStep: mockGoToStep,
     markCompleted: mockMarkCompleted,
@@ -128,180 +89,77 @@ jest.mock('@/hooks/postPurchaseOnboarding/usePostPurchaseFlow', () => ({
 
 import PostPurchaseOnboardingScreen from '../index';
 
-import { panicNotificationTracker } from '@/lib/safariWebExtension/panicNotificationTracker';
-
 describe('PostPurchaseOnboardingScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    focusCallback = null;
-    appStateChangeListener = null;
     mockCurrentStep = 0;
-    mockGetExtensionStatus.mockResolvedValue({
-      isEnabled: false,
-      hasAllUrls: false,
-      extensionBundleId: '',
-      lastActiveAt: 0,
-      lastBlockedAt: 0,
-    });
-    panicNotificationTracker.reset();
   });
 
-  it('step === 3 で CompleteStep が描画される', () => {
-    mockCurrentStep = 3;
+  it('step === 0 で ThankYouStep が描画される', () => {
+    mockCurrentStep = 0;
+    const { getByText } = render(<PostPurchaseOnboardingScreen />);
+    expect(getByText('thankYou-step')).toBeTruthy();
+  });
+
+  it('step === 1 で ScreenTimeSetupStep が描画される', () => {
+    mockCurrentStep = 1;
+    const { getByText } = render(<PostPurchaseOnboardingScreen />);
+    expect(getByText('screentime-step')).toBeTruthy();
+  });
+
+  it('step === 2 で CompleteStep が描画される', () => {
+    mockCurrentStep = 2;
     const { getByText } = render(<PostPurchaseOnboardingScreen />);
     expect(getByText('complete-step')).toBeTruthy();
   });
 
-  it('step === 3 で logStepViewed("complete") が呼ばれる', () => {
-    mockCurrentStep = 3;
+  it('step === 0 で logStepViewed("thankYou") が呼ばれる', () => {
+    mockCurrentStep = 0;
+    render(<PostPurchaseOnboardingScreen />);
+    expect(mockLogStepViewed).toHaveBeenCalledWith('thankYou');
+  });
+
+  it('step === 1 で logStepViewed("screenTimeSetup") が呼ばれる', () => {
+    mockCurrentStep = 1;
+    render(<PostPurchaseOnboardingScreen />);
+    expect(mockLogStepViewed).toHaveBeenCalledWith('screenTimeSetup');
+  });
+
+  it('step === 2 で logStepViewed("complete") が呼ばれる', () => {
+    mockCurrentStep = 2;
     render(<PostPurchaseOnboardingScreen />);
     expect(mockLogStepViewed).toHaveBeenCalledWith('complete');
   });
 
   it('CompleteStep の onFinish で router.replace((tabs)) が呼ばれる', () => {
-    mockCurrentStep = 3;
+    mockCurrentStep = 2;
     const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
     fireEvent.press(getByTestId('complete-finish'));
     expect(mockReplace).toHaveBeenCalledTimes(1);
   });
 
-  it('step === 0 でフォーカスコールバックが登録される（auto-advance フックの存在確認）', () => {
-    mockCurrentStep = 0;
-    render(<PostPurchaseOnboardingScreen />);
-    expect(focusCallback).not.toBeNull();
-  });
-
-  it('step === 0 でフォーカスしても goToNext は呼ばれない', () => {
-    mockCurrentStep = 0;
-    render(<PostPurchaseOnboardingScreen />);
-    if (focusCallback) focusCallback();
-    expect(mockGoToNext).not.toHaveBeenCalled();
-  });
-
-  it('step === 2 でテストボタン後に AppState active + lastBlockedAt 更新で goToNext が呼ばれる', async () => {
-    mockCurrentStep = 2;
-    const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
-
-    await act(async () => {
-      fireEvent.press(getByTestId('demo-test-button'));
-    });
-
-    const startMs = Date.now();
-    mockGetExtensionStatus.mockResolvedValue({
-      isEnabled: true,
-      hasAllUrls: true,
-      extensionBundleId: '',
-      lastActiveAt: startMs / 1000 + 5,
-      lastBlockedAt: startMs / 1000 + 5,
-    });
-
-    await act(async () => {
-      appStateChangeListener?.('active');
-    });
-
-    if (focusCallback) {
-      await act(async () => {
-        focusCallback?.();
-      });
-    }
-
-    await waitFor(() => expect(mockGoToNext).toHaveBeenCalled());
-  });
-
-  it('step === 2 でテストボタン後、再フォーカス時に lastPanicNotifiedAt が起点より新しければ goToNext が呼ばれる', async () => {
-    mockCurrentStep = 2;
-    const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
-
-    await act(async () => {
-      fireEvent.press(getByTestId('demo-test-button'));
-    });
-
-    panicNotificationTracker.recordPanicNotification(Date.now() + 1000);
-
-    if (focusCallback) {
-      await act(async () => {
-        focusCallback?.();
-      });
-    }
-    await act(async () => {
-      // give evaluate's microtask chain a chance to flush
-      await Promise.resolve();
-    });
-    if (focusCallback) {
-      await act(async () => {
-        focusCallback?.();
-      });
-    }
-
-    await waitFor(() => expect(mockGoToNext).toHaveBeenCalled());
-  });
-
-  it('step === 2 でテストボタン直後の再フォーカスでは retryHint を表示しない (grace period)', async () => {
-    mockCurrentStep = 2;
-    const { getByTestId, queryByText } = render(<PostPurchaseOnboardingScreen />);
-
-    await act(async () => {
-      fireEvent.press(getByTestId('demo-test-button'));
-    });
-
-    await act(async () => {
-      appStateChangeListener?.('active');
-    });
-
-    if (focusCallback) {
-      await act(async () => {
-        focusCallback?.();
-      });
-    }
-
-    expect(queryByText('demo-retry-hint')).toBeNull();
-  });
-
   describe('右上の Skip ボタン', () => {
-    it('step 0 (ThankYou) で Skip ボタンが表示される', () => {
+    it('step < 最終のときに表示される', () => {
       mockCurrentStep = 0;
       const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
       expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
     });
 
-    it('step 1 (SafariSetup) で Skip ボタンが表示される', () => {
-      mockCurrentStep = 1;
-      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
-      expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
-    });
-
-    it('step 2 (Demo) で Skip ボタンが表示される', () => {
+    it('step === 最終のときは非表示', () => {
       mockCurrentStep = 2;
-      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
-      expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
-    });
-
-    it('step 3 (Complete) では Skip ボタンが表示されない', () => {
-      mockCurrentStep = 3;
       const { queryByTestId } = render(<PostPurchaseOnboardingScreen />);
       expect(queryByTestId('post-purchase-skip-button')).toBeNull();
     });
 
-    it('押下すると markCompleted と router.replace が呼ばれる', async () => {
-      mockCurrentStep = 1;
+    it('Skip タップで markCompleted + router.replace((tabs))', async () => {
+      mockCurrentStep = 0;
       const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
-      await act(async () => {
-        fireEvent.press(getByTestId('post-purchase-skip-button'));
-      });
-      await waitFor(() => expect(mockMarkCompleted).toHaveBeenCalled());
-      expect(mockReplace).toHaveBeenCalled();
-    });
-
-    it('押下時に logEvent("post_purchase_onboarding_skipped") が現在ステップ付きで呼ばれる', async () => {
-      mockCurrentStep = 1;
-      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
-      await act(async () => {
-        fireEvent.press(getByTestId('post-purchase-skip-button'));
-      });
-      expect(mockLogEvent).toHaveBeenCalledWith(
-        'post_purchase_onboarding_skipped',
-        expect.objectContaining({ fromStep: 1 }),
-      );
+      fireEvent.press(getByTestId('post-purchase-skip-button'));
+      // Allow async markCompleted to resolve
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(mockMarkCompleted).toHaveBeenCalled();
+      expect(mockReplace).toHaveBeenCalledTimes(1);
     });
   });
 });

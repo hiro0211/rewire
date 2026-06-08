@@ -10,11 +10,16 @@ import { AchievementSummaryCircle } from '@/components/achievements/AchievementS
 import { AchievementsHeader } from '@/components/achievements/AchievementsHeader';
 import { StellarPathTimeline } from '@/components/achievements/StellarPathTimeline';
 import { useAchievements } from '@/hooks/achievements/useAchievements';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 export default function AchievementsScreen() {
   const { achievements, summary, streak } = useAchievements();
   const { colors } = useTheme();
   const router = useRouter();
+
+  React.useEffect(() => {
+    trackEvent('achievements_opened');
+  }, []);
 
   const handleClose = () => {
     if (router.canGoBack()) {

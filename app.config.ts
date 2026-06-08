@@ -68,13 +68,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     './plugins/withFirebaseAnalyticsNoAdId',
     '@react-native-firebase/app',
     [
-      './plugins/withSafariWebExtension',
-      {
-        appleTeamId: 'KV6CYPA7JK',
-        appGroup: 'group.rewire.app.com',
-      },
-    ],
-    [
       'react-native-device-activity',
       {
         appleTeamId: 'KV6CYPA7JK',
@@ -112,15 +105,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
               {
                 targetName: 'RewireWidget',
                 bundleIdentifier: 'rewire.app.com.RewireWidget',
-                entitlements: {
-                  'com.apple.security.application-groups': [
-                    'group.rewire.app.com',
-                  ],
-                },
-              },
-              {
-                targetName: 'SafariWebExtension',
-                bundleIdentifier: 'rewire.app.com.SafariWebExtension',
                 entitlements: {
                   'com.apple.security.application-groups': [
                     'group.rewire.app.com',

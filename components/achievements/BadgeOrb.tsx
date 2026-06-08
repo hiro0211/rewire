@@ -1,6 +1,9 @@
 import { CoreOrbRenderer } from '@/components/dashboard/CoreOrbRenderer';
+import { PlanetOrbRenderer } from '@/components/dashboard/PlanetOrbRenderer';
 import { OrbGlowLayers } from '@/components/dashboard/OrbGlowLayers';
 import { OrbParticles } from '@/components/dashboard/OrbParticles';
+import { SaturnRingOverlay } from '@/components/dashboard/SaturnRingOverlay';
+import { hasPlanetTexture } from '@/constants/planets/planetTextureMap';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 import { getBadgeAnimConfig } from '@/constants/badges/badgeAnimations';
 import type { BadgeId } from '@/constants/badges/BadgeId';
@@ -17,7 +20,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { Circle, Ellipse, Path, Svg } from 'react-native-svg';
+import { Circle, Path, Svg } from 'react-native-svg';
 
 interface BadgeOrbProps {
   /** バッジ固有の3色（BADGE_DEFINITIONS[i].colors） */
@@ -64,6 +67,7 @@ export function BadgeOrb({
   const showGalaxySpiral = badgeId === 'galaxy';
   const showStarCluster = badgeId === 'starCluster';
   const showCosmos = badgeId === 'cosmos';
+  const usePlanetRenderer = hasPlanetTexture(badgeId);
 
   if (!isUnlocked) {
     // Locked: 静止ゴースト（アニメ・Skia・パーティクルなし）
@@ -101,7 +105,7 @@ export function BadgeOrb({
           />
         </View>
         {showSaturnRing && (
-          <SaturnRing size={size} color={colors.glow} containerSize={containerSize} />
+          <SaturnRingOverlay size={size} color={colors.glow} containerSize={containerSize} />
         )}
       </View>
     );
@@ -118,75 +122,9 @@ export function BadgeOrb({
       showGalaxySpiral={showGalaxySpiral}
       showStarCluster={showStarCluster}
       showCosmos={showCosmos}
+      usePlanetRenderer={usePlanetRenderer}
+      planetBadgeId={usePlanetRenderer ? badgeId : undefined}
     />
-  );
-}
-
-// ── SaturnRing ─────────────────────────────────────────────────────────────
-
-interface SaturnRingProps {
-  size: number;
-  color: string;
-  containerSize: number;
-}
-
-/**
- * 土星の環を模した楕円オーバーレイ。saturn バッジ専用。
- * orb の手前レイヤーに配置し、-20° 傾けることで奥行き感を演出する。
- */
-function SaturnRing({ size, color, containerSize }: SaturnRingProps) {
-  const ringW = size * 1.45;
-  const ringH = size * 0.32;
-  const cx = ringW / 2;
-  const cy = ringH / 2;
-
-  return (
-    <View
-      testID="saturn-ring"
-      pointerEvents="none"
-      style={[
-        styles.saturnRingContainer,
-        {
-          width: ringW,
-          height: ringH,
-          top: (containerSize - ringH) / 2,
-          left: (containerSize - ringW) / 2,
-        },
-      ]}
-    >
-      <Svg width={ringW} height={ringH}>
-        {/* 後ろ半楕円（下側）— zOrder の都合上こちらを先に描く */}
-        <Ellipse
-          cx={cx}
-          cy={cy}
-          rx={cx - 2}
-          ry={cy - 1}
-          fill="none"
-          stroke={color}
-          strokeWidth={3}
-          opacity={0.45}
-          rotation={-20}
-          originX={cx}
-          originY={cy}
-        />
-        {/* 前半楕円（上側）— より不透明にして立体感を出す */}
-        <Ellipse
-          cx={cx}
-          cy={cy}
-          rx={cx - 2}
-          ry={cy - 1}
-          fill="none"
-          stroke={color}
-          strokeWidth={2.5}
-          opacity={0.7}
-          rotation={-20}
-          originX={cx}
-          originY={cy}
-          strokeDasharray={`${Math.PI * (cx - 2)} ${Math.PI * (cx - 2)}`}
-          strokeDashoffset={Math.PI * (cx - 2) * 0.5}
-        />
-      </Svg>
-    </View>
   );
 }
 
@@ -602,6 +540,8 @@ interface UnlockedBadgeOrbProps {
   showGalaxySpiral: boolean;
   showStarCluster: boolean;
   showCosmos: boolean;
+  usePlanetRenderer: boolean;
+  planetBadgeId: BadgeId | undefined;
 }
 
 function UnlockedBadgeOrb({
@@ -614,6 +554,8 @@ function UnlockedBadgeOrb({
   showGalaxySpiral,
   showStarCluster,
   showCosmos,
+  usePlanetRenderer,
+  planetBadgeId,
 }: UnlockedBadgeOrbProps) {
   const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
@@ -657,16 +599,25 @@ function UnlockedBadgeOrb({
           pulseStyle,
         ]}
       >
-        <CoreOrbRenderer
-          colors={colors}
-          size={size}
-          time={time}
-          testID="badge-orb-canvas"
-        />
+        {usePlanetRenderer && planetBadgeId ? (
+          <PlanetOrbRenderer
+            badgeId={planetBadgeId}
+            size={size}
+            time={time}
+            orbColors={colors}
+          />
+        ) : (
+          <CoreOrbRenderer
+            colors={colors}
+            size={size}
+            time={time}
+            testID="badge-orb-canvas"
+          />
+        )}
       </Animated.View>
 
       {showSaturnRing && (
-        <SaturnRing size={size} color={glowColor} containerSize={containerSize} />
+        <SaturnRingOverlay size={size} color={glowColor} containerSize={containerSize} />
       )}
 
       {showStellarOverlay && (
@@ -718,9 +669,6 @@ const styles = StyleSheet.create({
   },
   fallbackOrb: {
     overflow: 'hidden',
-  },
-  saturnRingContainer: {
-    position: 'absolute',
   },
   stellarOverlay: {
     position: 'absolute',

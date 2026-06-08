@@ -10,13 +10,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
+import { hasPlanetTexture } from '@/constants/planets/planetTextureMap';
 import { CoreOrbRenderer } from './CoreOrbRenderer';
-import { EarthOrbRenderer } from './EarthOrbRenderer';
+import { PlanetOrbRenderer } from './PlanetOrbRenderer';
 import { OrbGlowLayers } from './OrbGlowLayers';
 import { OrbParticles } from './OrbParticles';
 import { OrbScatteredStars } from './OrbScatteredStars';
 import { OrbSoftAura } from './OrbSoftAura';
 import { OrbTapRipple } from './OrbTapRipple';
+import { SaturnRingOverlay } from './SaturnRingOverlay';
 
 interface AnimatedOrbProps {
   colors: BadgeColorTriad;
@@ -103,8 +105,9 @@ export function AnimatedOrb({ colors, chapterId, badgeId, size = 200, onPress, o
             pulseStyle,
           ]}
         >
-          {badgeId === 'earth' ? (
-            <EarthOrbRenderer
+          {hasPlanetTexture(badgeId) && badgeId ? (
+            <PlanetOrbRenderer
+              badgeId={badgeId}
               size={size}
               time={time}
               glowBoost={glowIntensity}
@@ -120,6 +123,20 @@ export function AnimatedOrb({ colors, chapterId, badgeId, size = 200, onPress, o
             />
           )}
         </Animated.View>
+
+        {/* Saturn ring overlay (orb 本体の手前、tap ripple の前) */}
+        {badgeId === 'saturn' && (
+          <View
+            pointerEvents="none"
+            style={[styles.overlay, { width: containerSize, height: containerSize }]}
+          >
+            <SaturnRingOverlay
+              size={size}
+              color={colors.glow}
+              containerSize={containerSize}
+            />
+          </View>
+        )}
 
         {/* Tap ripple ring */}
         <View

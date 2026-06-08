@@ -10,7 +10,6 @@ export interface DeletionDebugInfo {
   deviceModelId: string; // 例: "iPhone17,5"
   languageTag: string; // 例: "ja-JP"
   timezone: string; // 例: "Asia/Tokyo"
-  webExtensionStatus: string; // 例: "active" | "never" | ...
 }
 
 /** メール作成画面に渡すフィールド一式 */

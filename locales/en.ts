@@ -388,6 +388,7 @@ export const en: Translations = {
     settings: 'Settings',
     terms: 'Terms of Service',
     privacyPolicy: 'Privacy Policy',
+    credits: 'Credits',
     learn: 'Learn',
     insights: 'Insights',
     home: 'Home',
@@ -435,6 +436,7 @@ export const en: Translations = {
       subscription: 'Subscription',
       survey: 'Survey',
       support: 'Support',
+      about: 'About',
       data: 'Data Management',
     },
     labels: {
@@ -448,6 +450,7 @@ export const en: Translations = {
       contact: 'Contact Us',
       terms: 'Terms of Service',
       privacyPolicy: 'Privacy Policy',
+      credits: 'Credits',
       resetData: 'Reset Data',
       language: 'Language',
       daysFormat: '{{days}} days',
@@ -469,42 +472,6 @@ export const en: Translations = {
     streakEdit: {
       title: 'Edit Start Date',
       description: 'If you started before installing the app, you can change the start date',
-    },
-  },
-  safariWebExtension: {
-    title: 'Safari Custom Protection',
-    intro: 'When you access an adult site in Safari, Rewire intercepts with a custom page and notification.\nSet up in 4 steps.',
-    completionTitle: 'Setup Complete!',
-    completionDescription: 'When you open an adult site in Safari,\nRewire will step in',
-    step1Title: 'Settings → Apps → Safari',
-    step1Desc: 'Open Settings, go to Apps, and select Safari',
-    step2Title: 'Tap "Extensions"',
-    step2Desc: 'Find and select Extensions in Safari settings',
-    step3Title: 'Enable Rewire',
-    step3Desc: 'Turn on "Allow Extension" and "Allow in Private Browsing", then switch "All Websites" to "Allow"',
-    startSetup: 'Start Setup',
-    openSettings: 'Open Settings App',
-    openSettingsShort: 'Open Settings',
-    skipSetup: 'Set up later',
-    prev: 'Back',
-    settingsStatus: 'Safari Custom Protection',
-    setupGuide: 'Set up',
-    enabled: 'Active',
-    unknown: 'Not detected',
-    toolCardDescription: 'Automatically block adult sites',
-    alert: {
-      title: 'Safari extension not detected',
-      descriptionDisabled:
-        'We could not confirm the extension is running. Open iOS Settings → Apps → Safari → Extensions, turn on Rewire, switch "All Websites" to "Allow", and toggle "Allow in Private Browsing" on.',
-      descriptionNeedsAllUrls:
-        'The extension is on, but "All Websites" is not allowed. Switch it to "Allow" in Safari extensions settings. Remember to also enable "Allow in Private Browsing".',
-      openSettingsAction: 'Open Settings',
-    },
-    refresh: {
-      title: 'Refresh Safari extension status',
-      description:
-        'You have not used Safari for a while, so the latest status is unknown. Open any web page in Safari, return here, and tap "Recheck".',
-      recheckAction: 'Recheck',
     },
   },
   uninstallLock: {
@@ -559,24 +526,6 @@ export const en: Translations = {
       title: 'Thank you for\nupgrading to Pro!',
       description: 'Let us introduce your main Rewire features.\nTogether, we will set up the system that stops you before you see it.',
       cta: 'Get Started',
-    },
-    safariSetup: {
-      title: 'Set up Safari Blocker',
-      description: 'The moment you open an adult site in Safari, Rewire will stop it.',
-    },
-    demo: {
-      title: 'Try a real block',
-      description: 'Tap the button to open Safari with a search ready.\nFrom the results, tap one of the top adult sites to see Rewire stop it.',
-      notice: 'Rewire blocks the page the moment you tap. The site itself is never shown.',
-      testButton: 'Open search in Safari',
-      skipButton: 'Try later',
-      retryHint: 'Looks like the block did not fire. Tap one of the top result links again.',
-      confirm: {
-        title: 'Is the extension actually turned on?',
-        body: 'Make sure Rewire is enabled in Settings → Safari → Extensions. Otherwise adult content may be exposed directly.',
-        confirmButton: 'Continue',
-        openSettingsButton: 'Check in Settings',
-      },
     },
     complete: {
       title: 'You are ready! 🎉',
@@ -807,6 +756,16 @@ export const en: Translations = {
       s8Title: '8. Contact',
       s8Body: 'For inquiries regarding this Privacy Policy, please contact us at:\n\nappsupport0326@gmail.com',
     },
+    credits: {
+      updatedDate: 'Last updated: June 8, 2026',
+      intro: 'Rewire uses publicly available space imagery in-app. This page documents the source materials and their license terms.',
+      planetsTitle: 'Planet textures',
+      planetsBody: 'The equirectangular textures used for the solar-system bodies (Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Moon, and Sun) shown on the home and Achievements screens are sourced from Solar System Scope (https://www.solarsystemscope.com/textures/) under the Creative Commons Attribution 4.0 International License (CC BY 4.0). These textures were reprocessed by Solar System Scope from NASA / JPL / ESA imagery (Cassini, Voyager, MESSENGER, Mariner, Mars Global Surveyor, Hubble, Lunar Reconnaissance Orbiter, Solar Dynamics Observatory, and others).',
+      licenseTitle: 'Required attribution',
+      licenseBody: 'Planet textures by Solar System Scope (https://www.solarsystemscope.com/textures/), licensed under CC BY 4.0. Derived from NASA imagery.',
+      ccUrlLabel: 'Full CC BY 4.0 license text',
+      ccUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    },
   },
   lessons: {
     lesson1: {
@@ -872,7 +831,6 @@ export const en: Translations = {
     labelDevice: 'Device',
     labelLanguage: 'Language',
     labelTimezone: 'Timezone',
-    labelExtension: 'Safari extension status',
     unknown: 'unknown',
   },
   illustrations: {

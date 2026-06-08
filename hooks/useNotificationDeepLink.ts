@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { panicNotificationTracker } from '@/lib/safariWebExtension/panicNotificationTracker';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import {
   PANIC_NOTIFICATION_IDENTIFIER,
   PANIC_ROUTE,
@@ -13,20 +13,17 @@ function handleResponse(
 ) {
   const route = response.notification.request.content.data?.route;
   if (typeof route === 'string') {
-    if (route === PANIC_ROUTE) {
-      panicNotificationTracker.recordPanicNotification();
-    }
+    trackEvent('notification_opened', { route });
     push(route);
     return;
   }
 
-  // Fallback: Family Controls Shield Action sends notifications with
-  // categoryIdentifier set when the user taps the primary button on the
-  // iOS shield UI. Route them to the panic screen even if data.route
-  // is missing (defense in depth against config drift).
+  // Family Controls Shield Action sends notifications with categoryIdentifier
+  // set when the user taps the primary button on the iOS shield UI.
+  // Route them to the panic screen.
   const categoryId = response.notification.request.content.categoryIdentifier;
   if (categoryId === PANIC_NOTIFICATION_IDENTIFIER) {
-    panicNotificationTracker.recordPanicNotification();
+    trackEvent('notification_opened', { route: PANIC_ROUTE });
     push(PANIC_ROUTE);
   }
 }
