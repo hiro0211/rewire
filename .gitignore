@@ -59,5 +59,17 @@ google-services.json
 /ios
 /android
 
+# local build artifacts (xcodebuild archive / IPA)
+/build
+
 # Promotion project (separate repo)
 Rewire-promotion/
+
+# Analytics raw exports & generated daily reports (kept locally as a cache)
+data/analytics/
+docs/analytics/daily-metrics-*.json
+docs/analytics/daily-report-*.md
+docs/analytics/daily-report-*.json
+
+# App Store screenshot generation outputs (regenerated on demand)
+scripts/appstore/output/
