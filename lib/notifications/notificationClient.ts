@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { t } from '@/locales/i18n';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,7 +22,9 @@ export const notificationClient = {
       finalStatus = status;
     }
 
-    return finalStatus === 'granted';
+    const granted = finalStatus === 'granted';
+    trackEvent('notification_permission', { granted });
+    return granted;
   },
 
   async scheduleDailyReminder(time: string) {
@@ -43,6 +46,8 @@ export const notificationClient = {
         repeats: true,
       }
     });
+
+    trackEvent('notification_scheduled', { hour });
   },
 
   async cancelAllNotifications() {

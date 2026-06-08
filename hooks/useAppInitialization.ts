@@ -9,6 +9,7 @@ import { useReflectionStore } from '@/stores/reflectionStore';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
+import { useThemeLocaleUserProperties } from '@/hooks/tracking/useThemeLocaleUserProperties';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 
@@ -16,6 +17,7 @@ export function useAppInitialization() {
   const { loadUser, hasHydrated, user } = useUserStore();
 
   useScreenTracking();
+  useThemeLocaleUserProperties();
 
   useEffect(() => {
     loadUser();

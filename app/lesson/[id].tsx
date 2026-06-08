@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { LESSONS } from '@/constants/lessons';
 import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import * as Haptics from 'expo-haptics';
 
 export default function LessonDetailScreen() {
@@ -21,6 +22,12 @@ export default function LessonDetailScreen() {
   const { completeLesson, isCompleted } = useLearnStore();
 
   const lesson = LESSONS.find((l) => l.id === id);
+
+  React.useEffect(() => {
+    if (lesson) {
+      trackEvent('lesson_started', { lesson_id: lesson.id });
+    }
+  }, [lesson?.id]);
 
   if (!lesson) {
     return (
@@ -36,6 +43,7 @@ export default function LessonDetailScreen() {
 
   const handleComplete = async () => {
     await completeLesson(lesson.id);
+    trackEvent('lesson_completed', { lesson_id: lesson.id });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
   };

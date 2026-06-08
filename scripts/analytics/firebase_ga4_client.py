@@ -51,6 +51,9 @@ REWIRE_KEY_EVENTS: Tuple[str, ...] = (
     "onboarding_complete",
     "breathing_started",
     "breathing_completed",
+    "reflection_opened",
+    "reflection_completed",
+    "relapse_recorded",
     "panic_button_tapped",
     "panic_screen_viewed",
     "safari_demo_tapped",
@@ -63,6 +66,21 @@ REWIRE_KEY_EVENTS: Tuple[str, ...] = (
     "survey_completed",
     "post_purchase_step_viewed",
     "post_purchase_onboarding_skipped",
+    # Feature-usage events (constants/analyticsEvents.ts). Keep in sync.
+    "lesson_started",
+    "lesson_completed",
+    "quick_action_tapped",
+    "achievements_opened",
+    "badge_unlocked",
+    "plan_selected",
+    "purchase_initiated",
+    "purchase_failed",
+    "restore_tapped",
+    "restore_completed",
+    "paywall_dismissed",
+    "notification_permission",
+    "notification_scheduled",
+    "notification_opened",
 )
 
 # Day offsets at which we report cohort retention (D1 / D7 / D30 convention).

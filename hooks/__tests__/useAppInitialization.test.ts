@@ -65,6 +65,10 @@ jest.mock('@/lib/tracking/useScreenTracking', () => ({
   useScreenTracking: jest.fn(),
 }));
 
+jest.mock('@/hooks/tracking/useThemeLocaleUserProperties', () => ({
+  useThemeLocaleUserProperties: jest.fn(),
+}));
+
 const mockMarkSynced = jest.fn();
 const mockResetSync = jest.fn();
 jest.mock('@/stores/subscriptionStore', () => ({

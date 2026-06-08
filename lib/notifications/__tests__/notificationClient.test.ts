@@ -9,6 +9,11 @@ jest.mock('expo-notifications', () => ({
   scheduleNotificationAsync: jest.fn(),
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
 const mockNotifications = Notifications as jest.Mocked<typeof Notifications>;
 
 describe('notificationClient', () => {
@@ -67,6 +72,23 @@ describe('notificationClient', () => {
 
       const result = await notificationClient.requestPermissions();
       expect(result).toBe(false);
+    });
+
+    it('権限付与時に notification_permission granted=true を送信する', async () => {
+      mockNotifications.getPermissionsAsync.mockResolvedValue({ status: 'granted' } as any);
+
+      await notificationClient.requestPermissions();
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('notification_permission', { granted: true });
+    });
+
+    it('権限拒否時に notification_permission granted=false を送信する', async () => {
+      mockNotifications.getPermissionsAsync.mockResolvedValue({ status: 'undetermined' } as any);
+      mockNotifications.requestPermissionsAsync.mockResolvedValue({ status: 'denied' } as any);
+
+      await notificationClient.requestPermissions();
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('notification_permission', { granted: false });
     });
   });
 
@@ -131,6 +153,15 @@ describe('notificationClient', () => {
 
       const callArg = mockNotifications.scheduleNotificationAsync.mock.calls[0][0];
       expect(callArg.content.data).toEqual({ action: 'open_reflection' });
+    });
+
+    it('スケジュール時に notification_scheduled を hour 付きで送信する', async () => {
+      mockNotifications.cancelAllScheduledNotificationsAsync.mockResolvedValue(undefined);
+      mockNotifications.scheduleNotificationAsync.mockResolvedValue('notification-id');
+
+      await notificationClient.scheduleDailyReminder('22:00');
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('notification_scheduled', { hour: 22 });
     });
 
     it('00:00のエッジケース: hour=0, minute=0 でスケジュールされる', async () => {
