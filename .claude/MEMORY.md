@@ -2147,3 +2147,32 @@ AI画像生成ではなく **HTML/CSS → ヘッドレスChrome → PNG** のコ
 ### 未完了・次回
 - 2〜N枚目のスクショ、米国版（見出し「Quit 🌽 with Rewire」）は未着手。テンプレを流用可能。
 - ⚠️ 別件の**撮影用コード改変の戻し（本番ビルド前必須・未対応のまま）**: `app/index.tsx` の `DEV_SKIP_ONBOARDING` を false に / `lib/dev/seedDevUser.ts` の `streakStartDate`=now, `goalDays`=30 に戻す。
+
+## 2026-06-09: ブランチ整理 + リファクタリング + NASA画像1k化
+
+### 経緯
+- 長期間積み上がっていた未コミット変更（100+ファイル、5機能領域）を main にプッシュ
+- 並行してリファクタリング計画（失敗テスト修正 + デッドコード削除 + 画像最適化）を完了
+- 計画書: `~/.claude/plans/nasa-1k-partitioned-valley.md`
+
+### コミット履歴（main に直接マージ → push）
+- `cbc86c8` chore(repo): ignore generated analytics & app store outputs
+- `9807d35` refactor: drop Safari Web Extension stack and adopt Planet orb visuals（99 files, -3,379 lines net）
+- `82acd7e` feat(analytics): tracking infra + retention/locale user properties（15 files, +400 lines）
+- `e677fdf` chore: UX polish + release tooling + memory/docs（37 files, +1,536 lines net）
+- `03aa031` perf(assets): downscale NASA planet textures to 1k（-1.4MB）
+
+### 確定した事実（メモリ更新）
+- **テスト**: 300スイート / **2213テスト全通過**。以前メモリに残っていた「DashboardScreen.integration / indexRouting / BrandScreen / OnboardingScreen / ConsentStep 失敗中」記述は**全て解消済み**。今後は「失敗テストなし」が現状
+- **i18nQuality.test.ts** の失敗（`postPurchaseOnboarding.demo.description` 改行差）は demo ブロック削除で自動解決
+- **デッドファイル一掃**: Safari Web Extension スタック（modules/expo-safari-web-extension, plugins/withSafariWebExtension, lib/safariWebExtension, hooks/safariWebExtension, components/safari-web-extension, ExtensionConfirmModal, SafariExtensionAlertCard, DemoStep, SafariSetupStep, useDemoBlockDetection, useWebExtensionStatus, safari-web-extension-setup.tsx, withSafariWebExtension.test.js, 関連 locale キー safariWebExtension/postPurchaseOnboarding.{safariSetup,demo}）と Earth Orb スタック（EarthOrbRenderer, earthOrb shader, skiaEarthInit, earth-equirect.png, content-blocker/*.jpg）を削除
+
+### 永続的影響
+- **App Store サイト保護方式が再々転換**: Safari Web Extension → **Screen Time `.auto()` 復帰**（ScreenTimeSetupStep 復活）。これで全ブラウザ対応に戻った。memory/MEMORY.md 上部の `Content Blocker Integration` セクションは**古い情報**になったので注意（次回触る時に書き換える）
+- **惑星テクスチャは 1k (1024x512) が現行**。1.9MB → 508KB。Skia シェーダは uniform 駆動でコード変更不要
+- **.gitignore 追加**: `data/analytics/`, `docs/analytics/daily-*`, `scripts/appstore/output/` はキャッシュとして除外。analytics データを git に積まない方針が確立
+
+### 未完了・要対応
+- ⚠️ 撮影用コード改変の戻し（前回からの繰り越し）: `app/index.tsx` の `DEV_SKIP_ONBOARDING=false`、`lib/dev/seedDevUser.ts` の `streakStartDate`/`goalDays` を本番ビルド前に戻す
+- memory/MEMORY.md 上部の **Content Blocker Integration** セクションは Safari Web Extension 前提で書かれているが、現状は Screen Time `.auto()`。次に screen time / content blocker 系を触る前に書き換えが必要
+- memory/safari-extension-detection.md は obsolete（拡張機能自体が消えた）
