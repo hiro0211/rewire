@@ -2176,3 +2176,39 @@ AI画像生成ではなく **HTML/CSS → ヘッドレスChrome → PNG** のコ
 - ⚠️ 撮影用コード改変の戻し（前回からの繰り越し）: `app/index.tsx` の `DEV_SKIP_ONBOARDING=false`、`lib/dev/seedDevUser.ts` の `streakStartDate`/`goalDays` を本番ビルド前に戻す
 - memory/MEMORY.md 上部の **Content Blocker Integration** セクションは Safari Web Extension 前提で書かれているが、現状は Screen Time `.auto()`。次に screen time / content blocker 系を触る前に書き換えが必要
 - memory/safari-extension-detection.md は obsolete（拡張機能自体が消えた）
+
+## 2026-06-09 (続き): release-testflight ツーリングのハードニング + TestFlight build 5 アップロード
+
+### 経緯
+- 上のセッション直後に `release-testflight` で TestFlight build 5 をアップロード（buildNumber 4 → 5 に bump）
+- 実行中に **3つの構造的バグ** が連続して顕在化、その場での復旧 + tooling 修正を実施
+
+### 顕在化した3バグ
+1. **`scripts/release-testflight.sh --prebuild` は pod install を `--deployment` 固定で呼ぶ**: prebuild 直後の lockfile rewrite と非互換で必ず失敗
+2. **`~/.local/bin/release-testflight` の workspace 検出**: `ls ios/*.xcworkspace ios/*.xcodeproj` は両方揃わないと exit 1。prebuild 直後は `.xcworkspace` がまだ無いので（pod install が生成する）絶対 fail
+3. **`plugins/withWidget.js` の idempotency 欠如**: 既存 ios/ に対して prebuild を重ねがけすると `RewireWidgetViews.swift` の SourcesBuildPhase 参照が二重追加され、pod install の post_install フック (`fix_library_search_paths`) が xcodeproj save 時に `[Xcodeproj] Consistency issue` で落ちる
+
+### 修正内容（コミット `3d6cea3`）
+- **`~/.local/bin/release-testflight` を直接書き換え**（git 管理外、`~/.local/bin/release-testflight.bak.20260609` にバックアップ済）:
+  - `--prebuild` に `--clean` を追加（`expo prebuild -p ios --no-install --clean`）。ios/ を全削除してから regenerate するため、withWidget.js を含む idempotent でない config plugin のバグを全部マスク
+  - workspace 検出を **pod install の後ろに reorder**。pod install が `.xcworkspace` を生成してから検出する流れに変更
+  - SEARCH_DIR の `ls a b` チェックを `ls a || ls b` に緩和（xcodeproj だけでもOK）
+- **Rewire 側**: `scripts/release-testflight.sh` 削除、`scripts/ExportOptions.plist` 削除（global script が動的生成するため）、`package.json` の `release:testflight` を `release-testflight` 直呼びに変更、`docs/release-testflight.md` を rewrite
+
+### 検証
+- `release-testflight --prebuild --skip-upload` を smoke test → ARCHIVE SUCCEEDED + EXPORT SUCCEEDED、`build/ipa/Rewire.ipa` (41.1MB) 生成
+- Consistency issue 再発無し、`No .xcworkspace` 出ず
+
+### 永続的影響
+- 全 Expo プロジェクトで `release-testflight --prebuild` が clean prebuild になる。Rootify / ai-room1 / qibla-compass-app / takt も今後同じ global script を共有可能
+- `~/.config/appstore/credentials` で ASC creds は一元管理（既存）
+- ExportOptions.plist は `build/ExportOptions.plist` に毎回動的生成（teamID は `$APPLE_TEAM_ID` から）
+
+### 未解決・将来課題
+- ⚠️ **`plugins/withWidget.js` の idempotency 修正は未着手**。`addBuildPhase` 前に既存フェーズ check を入れるのが本筋。現在は clean prebuild で実害ゼロだが、**`--prebuild` 無しで pod install を回す devloop では再発する**ので根本修正の価値あり。Option C（EAS の `appExtensions` 設定一本化）も検討余地あり
+- TestFlight にアップロードされた build 5 (version 2.2.0) は Export Compliance / Test Information を App Store Connect 上で埋める必要あり（リリーススクリプト範囲外）
+
+### 教訓
+- 「`scripts/foo.sh` を作ったら global の同名スクリプトと重複する」パターンは要注意。コードは1箇所に集約 → 全プロジェクトで挙動を保つ
+- `set -euo pipefail` 下で `ls a b` 形式の existence check は exit code 1 の罠。`[ -e a ] || [ -e b ]` か `find` を使う
+- Config plugin の idempotency は Expo + 自作 plugin 環境では信用しない方が安全。release ビルドは常に `--clean` 推奨
