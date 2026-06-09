@@ -2,14 +2,18 @@
 
 ローカル Mac の `xcodebuild` で archive → IPA 書き出し → `altool` で TestFlight にアップロードする手順。EAS Build は使わない。
 
+実体は hiro の `~/.local/bin/release-testflight`（全 Expo プロジェクトで共用、認証は `~/.config/appstore/credentials` を参照）。本プロジェクト固有のラッパー (`scripts/release-testflight.sh`) は 2026-06-09 に削除して global に一本化した。
+
 ## ワンライナー
 
 ```bash
-npm run release:testflight
+npm run release:testflight -- --prebuild
 ```
 
-これだけで `Rewire` scheme を Release archive → IPA → TestFlight にアップロードする。
+これだけで `expo prebuild --clean` → `pod install` → `Rewire` scheme を Release archive → IPA → TestFlight にアップロードする。
 反映までは App Store Connect 側で 5〜15 分。
+
+`--` 以降は global スクリプトに透過的に渡されるので、後述の各種フラグもそのまま使える。
 
 ## 初回セットアップ（1度だけ）
 
@@ -24,7 +28,7 @@ mv ~/Downloads/AuthKey_XXXXXXXXXX.p8 ~/.config/rewire/
 chmod 600 ~/.config/rewire/AuthKey_*.p8
 ```
 
-現行値（`scripts/release-testflight.sh` にデフォルトとして埋め込み済み）:
+認証情報は `~/.config/appstore/credentials` に集約されており、全 Expo プロジェクトで共用される:
 
 | 項目 | 値 |
 | --- | --- |
@@ -40,7 +44,7 @@ chmod 600 ~/.config/rewire/AuthKey_*.p8
 ASC_KEY_ID=ABCD1234EF \
 ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
 ASC_KEY_PATH=~/.config/rewire/AuthKey_ABCD1234EF.p8 \
-npm run release:testflight
+npm run release:testflight -- --prebuild
 ```
 
 ### 2. Distribution 証明書
@@ -51,33 +55,36 @@ Xcode → Settings → Accounts → Apple ID → Team `KV6CYPA7JK` → Manage Ce
 
 ### 3. ios/ ディレクトリ
 
-`/ios` は `.gitignore` 入り＝prebuild 産物。初回または `app.config.ts` を変更した直後は:
+`/ios` は `.gitignore` 入り＝prebuild 産物。本番リリースは常に **clean prebuild** を推奨するので、毎回 `--prebuild` を付けて実行すれば良い:
 
 ```bash
-npx expo prebuild --platform ios
+npm run release:testflight -- --prebuild
 ```
 
-または release スクリプトに `--prebuild` を渡せば同等のことをしてくれる:
-
-```bash
-./scripts/release-testflight.sh --prebuild
-```
+これで `~/.local/bin/release-testflight` 内部で `expo prebuild --clean` が走り、ios/ を全削除してから再生成される。
 
 ## 通常リリースの流れ
 
 1. **build number を上げる**: `app.json` の `expo.ios.buildNumber` を 1 増やす。
    （TestFlight は同じ `(version, buildNumber)` の組み合わせを拒否する）
-2. （`app.config.ts` を変更した場合のみ）`npx expo prebuild --platform ios`
-3. `npm run release:testflight`
-4. App Store Connect → My Apps → Rewire → TestFlight → Builds で 5〜15 分後にビルドが現れる
-5. Export Compliance / Test Information を埋めて内部テスターに配布
+2. `npm run release:testflight -- --prebuild`
+3. App Store Connect → My Apps → Rewire → TestFlight → Builds で 5〜15 分後にビルドが現れる
+4. Export Compliance / Test Information を埋めて内部テスターに配布
 
 ## オプション
 
 ```bash
-./scripts/release-testflight.sh --prebuild       # expo prebuild も走らせる
-./scripts/release-testflight.sh --skip-pods      # pod install をスキップ（高速反復用）
-./scripts/release-testflight.sh --skip-upload    # IPA まで作るが altool 上げはスキップ
+npm run release:testflight -- --prebuild         # expo prebuild --clean → pod install (non-deployment) → archive → upload
+npm run release:testflight                       # ios/ 既存前提で pod install --deployment から開始
+npm run release:testflight -- --skip-pods        # pod install をスキップ（高速反復用）
+npm run release:testflight -- --skip-upload      # IPA まで作るが altool 上げはスキップ
+npm run release:testflight -- --scheme Rewire    # scheme 明示指定
+```
+
+global スクリプトを直接呼ぶことも可能（npm 経由のラップが不要なときに便利）:
+
+```bash
+release-testflight --prebuild --skip-upload
 ```
 
 ## トラブルシューティング
@@ -107,9 +114,28 @@ open ios/Rewire.xcworkspace
 
 ```bash
 ls -la ~/.config/rewire/AuthKey_*.p8   # -rw------- 1 owner であること
+cat ~/.config/appstore/credentials     # ASC_KEY_ID / ASC_ISSUER_ID / APPLE_TEAM_ID が正しいか
 ```
 
-### `pod install` が失敗する
+### `[Xcodeproj] Consistency issue: no parent for object 'RewireWidgetViews.swift': SourcesBuildPhase, SourcesBuildPhase`
+
+既存 ios/ に対して prebuild を重ねがけしたときに `plugins/withWidget.js` が duplicate な SourcesBuildPhase を作るバグ。**`--prebuild` 付きでスクリプトを呼べば** `expo prebuild --clean` が ios/ を全削除してから再生成するので自動回避される。
+
+万一それでも残るなら手動で:
+
+```bash
+rm -rf ios build && npm run release:testflight -- --prebuild
+```
+
+### `pod install --deployment` で lockfile checksum エラー
+
+```
+[!] There were changes to the lockfile in deployment mode
+```
+
+prebuild が Podfile を rewrite した直後に `--deployment` で pod install を呼ぶと出る。**`--prebuild` 付きで呼べば**スクリプトが自動的に non-deployment モードに切り替えるので発生しない。`--prebuild` 無しで手動 prebuild した場合のみ起こる。
+
+### `pod install` が他の理由で失敗する
 
 ```bash
 cd ios && pod repo update && pod install
@@ -120,10 +146,13 @@ cd ios && pod repo update && pod install
 - build number の自動 increment（明示承認の上で別タスク）
 - TestFlight のリリースノート自動入力
 - GitHub Actions 等の CI 連携
+- `plugins/withWidget.js` の idempotency バグ修正（clean prebuild で実害が消えるため先送り中、`addBuildPhase` 前に既存フェーズ check を入れるのが本筋）
 
 ## 関連ファイル
 
-- `scripts/release-testflight.sh` — 本体
-- `scripts/ExportOptions.plist` — App Store 配布用 export 設定
+- `~/.local/bin/release-testflight` — 本体（全 Expo プロジェクト共用）
+- `~/.config/appstore/credentials` — ASC 認証情報（全 Expo プロジェクト共用）
 - `eas.json` — Submit 用 ASC AppId などは流用元として保持
 - `app.json` — `expo.ios.buildNumber` をここで管理
+
+ExportOptions.plist は global スクリプトが `build/ExportOptions.plist` に毎回動的生成する（method=app-store-connect / teamID は `$APPLE_TEAM_ID` から）。
