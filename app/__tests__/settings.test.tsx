@@ -71,6 +71,13 @@ jest.mock('@/components/settings/SettingSection', () => {
   };
 });
 
+let mockDebugEnabled = true;
+jest.mock('@/constants/debug', () => ({
+  get DEBUG_MENU_ENABLED() {
+    return mockDebugEnabled;
+  },
+}));
+
 jest.mock('@/components/settings/ProfileEditModal', () => {
   const { View } = require('react-native');
   return { ProfileEditModal: () => <View /> };
@@ -113,6 +120,7 @@ import SettingsScreen from '../settings';
 describe('SettingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockDebugEnabled = true;
     mockUser = {
       nickname: 'TestUser',
       goalDays: 30,
@@ -206,7 +214,7 @@ describe('SettingsScreen', () => {
   describe('About セクション', () => {
     it('About セクション見出しが表示される', () => {
       const { getByText } = render(<SettingsScreen />);
-      expect(getByText('について')).toBeTruthy();
+      expect(getByText('アプリについて')).toBeTruthy();
     });
 
     it('クレジット項目が表示される', () => {
@@ -218,6 +226,43 @@ describe('SettingsScreen', () => {
       const { getByTestId } = render(<SettingsScreen />);
       fireEvent.press(getByTestId('setting-クレジット'));
       expect(mockPush).toHaveBeenCalledWith('/credits');
+    });
+  });
+
+  describe('デバッグセクション', () => {
+    it('DEBUG_MENU_ENABLED が true のとき「オンボーディングをもう一度見る」が表示される', () => {
+      mockDebugEnabled = true;
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('オンボーディングをもう一度見る')).toBeTruthy();
+    });
+
+    it('項目タップで router.push("/onboarding") が呼ばれる', () => {
+      mockDebugEnabled = true;
+      const { getByTestId } = render(<SettingsScreen />);
+      fireEvent.press(getByTestId('setting-オンボーディングをもう一度見る'));
+      expect(mockPush).toHaveBeenCalledWith('/onboarding');
+    });
+
+    it('「購入後オンボーディングをもう一度見る」が表示される', () => {
+      mockDebugEnabled = true;
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('購入後オンボーディングをもう一度見る')).toBeTruthy();
+    });
+
+    it('購入後オンボーディング項目タップで router.push("/post-purchase-onboarding") が呼ばれる', () => {
+      mockDebugEnabled = true;
+      const { getByTestId } = render(<SettingsScreen />);
+      fireEvent.press(
+        getByTestId('setting-購入後オンボーディングをもう一度見る'),
+      );
+      expect(mockPush).toHaveBeenCalledWith('/post-purchase-onboarding');
+    });
+
+    it('DEBUG_MENU_ENABLED が false のときは表示されない', () => {
+      mockDebugEnabled = false;
+      const { queryByText } = render(<SettingsScreen />);
+      expect(queryByText('オンボーディングをもう一度見る')).toBeNull();
+      expect(queryByText('購入後オンボーディングをもう一度見る')).toBeNull();
     });
   });
 

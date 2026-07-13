@@ -2212,3 +2212,219 @@ AI画像生成ではなく **HTML/CSS → ヘッドレスChrome → PNG** のコ
 - 「`scripts/foo.sh` を作ったら global の同名スクリプトと重複する」パターンは要注意。コードは1箇所に集約 → 全プロジェクトで挙動を保つ
 - `set -euo pipefail` 下で `ls a b` 形式の existence check は exit code 1 の罠。`[ -e a ] || [ -e b ]` か `find` を使う
 - Config plugin の idempotency は Expo + 自作 plugin 環境では信用しない方が安全。release ビルドは常に `--clean` 推奨
+
+## 2026-06-09: オンボーディングにスクリーンタイム許可フロー追加（Focusity 参考）
+
+### 作業概要
+メインオンボーディングの `features`（機能紹介）直後に2画面を新規追加し、購入後オンボーディング(PPO)のスクリーンタイム設定を一本化。
+1. **データ保護画面**（`data_protection`）— 利用データが Apple に保護され開発者は閲覧不可と伝える情報画面。共有フッターの「次へ」で進行
+2. **スクリーンタイム許可画面**（`screen_time_permission`）— マウント時に `useScreenTimeSetup().startSetup()` でネイティブ許可ダイアログを自動表示。Focusity 風に上下バウンスする誘導矢印で「続ける」ボタンへ誘導（iOS は「許可しない」を青ハイライトするため誤タップ防止）。許可→ブラウザ選択(`DeviceActivitySelectionSheetView`)→シールド適用まで実施。completed/denied/error で次ステップへ自動 advance
+
+### 重要な前提訂正（⚠️ auto-memory が古かった）
+- auto-memory(`~/.claude/projects/.../memory/MEMORY.md`)の「現行: Safari Web Extension」は**誤り**。実際は **Screen Time / Family Controls**（`react-native-device-activity` ^0.6.1）が現行。Safari Web Extension は commit `9807d35`(2026-06-09)で削除済み
+- `lib/screenTime/screenTimeBridge.ts` の `requestAuthorization()` が JS から iOS 許可ダイアログを呼べる（追加ネイティブコード不要）。`useScreenTimeSetup` フックが許可→ピッカー→シールドの全フローをオーケストレーション
+- ネイティブ許可ダイアログはアプリ View の上に別ウィンドウ表示されるため矢印を重ねられない。矢印はダイアログ下の余白に絶対配置で描画（`PermissionArrow.tsx` の `ARROW_LEFT_RATIO`/`ARROW_BOTTOM` で近似。実機で要微調整）
+
+### 新規ファイル
+- `components/onboarding/DataProtectionStep.tsx`（+ test）
+- `components/onboarding/ScreenTimePermissionStep.tsx`（+ test）— `useScreenTimeSetup` 再利用。マウント時 startSetup（useRef ガード）
+- `components/onboarding/PermissionArrow.tsx` — reanimated の withRepeat バウンス chevron-up + ヒント文言
+
+### 変更ファイル
+- `constants/onboarding.ts` — OnboardingStep union に2型、STEPS に features 直後挿入、`screen_time_permission` を NO_FOOTER_TYPES/NON_COUNTABLE_TYPES に、両型を canGoBack→false
+- `components/onboarding/OnboardingStepRenderer.tsx`（+ test）— 2 case 追加。screen_time は `onComplete={onAutoAdvance}`
+- `locales/ja.ts` / `locales/en.ts` — `onboarding.dataProtection` / `onboarding.screenTimePermission` 追加
+- PPO 一本化: `constants/postPurchaseOnboarding.ts`（steps を thankYou/complete の2つに）、`app/post-purchase-onboarding/index.tsx`（ScreenTimeSetupStep 除去、thankYou→complete 遷移時に markCompleted）、`components/postPurchaseOnboarding/ScreenTimeSetupStep.tsx` **削除**、PPO テスト2件更新
+- 回帰修正: `app/onboarding/__tests__/ConsentStep.test.tsx`（フル遷移ヘルパーに新2ステップ対応＋ScreenTimePermissionStep を auto-advance モック）
+
+### テスト/品質
+- **302 suites / 2223 tests 全通過**。変更ソースファイルの lint クリーン。新規ファイルは tsc クリーン（既存の StarryBackground/FeaturesStep 等の tsc エラーは変更前から）
+- TDD（Red→Green）で各コンポーネント実装
+
+### 要確認・次回検討
+- **課金前シールド適用の是非**: 本フローは無料(ペイウォール前)ユーザーにもコンテンツブロックを有効化。Focusity 型「価値先出し」だが CVR への影響は要観測。許可のみ取得しシールド適用は購入後に遅延させる選択肢もあり
+- **矢印位置の実機微調整**: `PermissionArrow.tsx` のオフセットは近似値。development build（Family Controls は実機のみ。`DEV_SKIP_ONBOARDING=false` に戻す）で確認し調整
+- 参考画像の「ヘルプ」ボタンは挙動未定義のため未実装
+
+## 2026-07-05: 実機検証 + 画面整理 + アップデート告知/強制更新 + ペイウォール文言修正
+
+### 作業内容
+1. **実機「No script URL provided」解消**: Metro 未起動＋Debugビルドの接続先未記録が原因。`npx expo run:ios --device "hiroakiのiPhone"` で再ビルドし解消（実機はUSB接続・要ロック解除。ロック中はインストール後の起動が `device is locked` で失敗する）
+2. **/screen-time-setup 画面（「他のブラウザを封印」）削除**: パネルは維持し設定画面のみ削除。`ContentBlockerPanel` に `useScreenTimeSetup`＋`DeviceActivitySelectionSheetView`（Modal）をインライン化。`BrowserShieldToggleCard`（未使用）も削除。`ROUTES.screenTimeSetup`／`_layout` の Stack 登録除去
+3. **設定画面にデバッグメニュー**: `constants/debug.ts` の `DEBUG_MENU_ENABLED` で「オンボーディングをもう一度見る」(`router.push('/onboarding')`) を表示。**archive 前に必ず false に戻す**（グローバル auto-memory にも記録済み）
+4. **設定「について」→「アプリについて」**（ja）
+5. **ウィジェット多言語化（根本対応）**: Swift にハードコードされていた日本語が原因。`WidgetPayload`/`WidgetData` に `locale` を追加（`resolveWidgetLocale`=localeStore 尊重・system は端末言語）、`RewireWidgetViews.swift` に `WidgetStrings`（ja/en 出し分け、旧データは ja フォールバック）、言語変更時 `resyncWidgetFromStores()`（app/settings.tsx）。ウィジェット変更はネイティブ再ビルド必須
+6. **アップデート告知モーダル**: `WhatsNewModal`＋`useWhatsNewModal`（AsyncStorage `whats_new_seen_version` vs `constants/appUpdates.ts` の `WHATS_NEW_VERSION`、既存ユーザーのみ・新規は既読記録のみ）。`(tabs)/_layout` に配線、CTA→profileタブ
+7. **強制アップデート**: `ForceUpdateModal`（閉じられない・App Store `id6759087214` へ誘導）＋`useForceUpdateGuard`＋`appConfigClient`（Firestore `appConfig/ios` の `minSupportedVersion`、フェイルオープン）＋`lib/version/compareVersions`。RootLayout に配線
+8. **ホーム画面にスクリーンタイム許可カード**: `ScreenTimePermissionCard`＋`useScreenTimePermissionCard`（承認済み以外で表示、`requestAuthorization`、AppState 復帰で自動更新）。QuickActionGrid（カレンダーボタン行）の直下
+9. **ペイウォール文言修正**: `preBenefits.features`（「Safari カスタム保護」→「全ブラウザを自動ブロック」等、翻訳調を Web リサーチに基づき修正）。`paywall.unavailableMessage` の敬体統一。ja/en 両方
+
+### 重要な注意
+- **強制アップデートは配布済み旧バージョンには効かない**（コード未搭載のため遡及不可）。今回のバージョンから機構が有効
+- **hiro の作業（GUI）**: Firebase コンソールで ①Firestore に `appConfig` コレクション → `ios` ドキュメント → `minSupportedVersion`（string）作成 ②セキュリティルールで `appConfig` の read 許可（surveys は write のみの想定のため）
+- リリース時: `WHATS_NEW_VERSION`（constants/appUpdates.ts）と app.config.ts の version を合わせて上げる。`DEBUG_MENU_ENABLED=false` に戻す
+- jest モックの罠: `jest.mock` factory で外側の jest.fn を**オブジェクトリテラルで即時参照すると TDZ で null**（クライアント側 try/catch が握りつぶす）。必ず `() => mockFn(...)` の遅延参照にする（lib/appConfig テスト参照）
+- `useScreenTimeSetup` を使う効果フックで「state 更新→依存変化→cleanup の cancelled=true」レースに注意（useWhatsNewModal は checkedRef で回避）
+
+### テスト/品質
+- **310 suites / 2272 tests 全通過**（+8 suites/+50 tests）。tsc エラー45件は全て既存ベースライン。lint 新規エラーなし
+- 未コミット状態
+
+### 次回やるべきこと
+- 実機での動作確認: 許可カード（ホーム）、アプリをブロック（プロフィール、Modal化したピッカー）、デバッグメニュー、ウィジェット言語切替（ネイティブ再ビルド済みバイナリで）
+- Firestore ルール設定後、強制アップデートの実機テスト（minSupportedVersion を現行より上に設定して確認）
+- グローバル auto-memory の MEMORY.md が197行で読み込み上限(200行)接近 — 整理は hiro に承認を得てから
+
+### 追記: オンボーディング「許可ダイアログが出ない」調査（同日）
+- **原因は iOS 仕様**: Family Controls の許可ダイアログは `notDetermined` のときに一度だけ表示。許可済み端末では `requestAuthorization` が即 approved を返し、ブラウザ選択ピッカーに直行する（hiro の実機は許可済みだったためダイアログ非表示）。新規ユーザー端末では表示される
+- 修正①: `ScreenTimePermissionStep` の mount 自動起動を「notDetermined のときのみ」に変更（許可済み端末で文脈なしにピッカーが突然開くのを防止）
+- 修正②: ホーム許可カード — 拒否済み端末では iOS が二度とダイアログを出さないため、タップ時に「設定を開く」Alert（`Linking.openSettings`）を表示（タップ前が denied かつ結果非承認のときのみ。今まさに拒否した直後は出さない）
+- 修正③: オンボーディング説明文に「許可のあと、ブロックしたいブラウザやアプリを選んでください」を明記（ja/en）
+- 再テスト方法: 設定 → スクリーンタイム → 一番下の「スクリーンタイムにアクセスできるApp」等から Rewire の許可を取り消すと notDetermined に戻せる場合がある。確実なのは別の実機/シミュレータ
+- テスト: 310 suites / 2277 tests 全通過
+
+### 追記: EXC_BAD_ACCESS クラッシュ調査（既知問題・修正見送り）2026-07-05
+- **シグネチャ**: `facebook::react::Scheduler::uiManagerDidDispatchCommand(...)::$_0::operator()()` で EXC_BAD_ACCESS（JavaScriptスレッド、実機 Xcode デバッグ中に発生）
+- **根本原因（RN 0.81 のフレームワークバグ）**: `Scheduler.cpp` の `uiManagerDidDispatchCommand`（L280）と `uiManagerDidFinishTransaction`（L254）が、遅延実行ラムダに**生ポインタ `delegate_` をキャプチャ**。Scheduler 破棄（JSリロード・サーフェス終了・アプリ終了）後にラムダが実行されると解放済み delegate を参照してクラッシュ。アプリ側コードのバグではない
+- **upstream 状況**: main には修正済み（`delegateInvalidated_` = shared_ptr<atomic<bool>> ガード + `enableSchedulerDelegateInvalidation` フラグ）。**0.81-stable（0.81.6含む）には未バックポート**。0.81.5 にはフラグ自体が存在しない
+- **修正しなかった理由**: 修正には patch-package で C++ バックポート＋`ios.buildReactNativeFromSource=true`（ios/Podfile.properties.json）への切替が必要だが、**Expo SDK 54 はプリビルド RN core（ReactNativeCore-artifacts）を使用**しており、ソースビルド化で初回+10〜20分/EASビルドも遅化。クラッシュは主にリロード/終了時競合の稀な事象のため、hiro 判断で見送り
+- **将来の解消**: Expo SDK 55+（修正入り RN）へのアップグレード時に自然解消見込み。それまで同シグネチャのクラッシュレポートは既知として扱う
+- 参考: プリビルド無効化は `ios/Podfile.properties.json` に `"ios.buildReactNativeFromSource": "true"`（Podfile L18 が RCT_USE_PREBUILT_RNCORE を制御）
+
+## 2026-07-06: ASO刷新 — App Store Connect メタデータ変更（日英・ディスクリート案）⚠️審査関連
+- **背景**: ASO無料リサーチ（Apple公式サジェストAPI・iTunes Search API・keywordtool.io無料枠）に基づき、タイトル/サブタイトル/キーワードを刷新。ガイドライン2.3.7/2.3.8/1.1.4 の原文確認済み。「オナ禁」「porn」等のセンシティブ語は**非公開のキーワード欄のみ**に置くディスクリート方針（米国最大手 QUITTR と同戦略）
+- **ASC入力済み（保存済み・「審査用に追加」は未実行。v2.3 提出時に反映）**:
+  - 日本語 名前: `Rewire: 禁欲カウンター・ポルノブロッカー`（旧: Rewire）
+  - 日本語 サブタイトル: `アダルトサイトを全ブラウザでブロック`（旧: ポルノをやめるアプリ）
+  - 日本語 キーワード: `オナ禁,タイマー,依存症,スマホ依存,ドーパミン,デトックス,やめる,自制心,衝動,集中力,悪習慣,深呼吸,瞑想,回復,習慣,記録,我慢,中毒,制限,禁止`（77/100）
+  - 英語(US) 名前: `Rewire: Adult Site Blocker`（旧: Rewire- Reset & Focus）
+  - 英語(US) サブタイトル: `Addiction Recovery Day Tracker`（旧: Quit the habit, reboot focus）
+  - 英語(US) キーワード: `porn,quit,nofap,dopamine,detox,streak,counter,habit,willpower,urge,relapse,filter,website,safari`（96/100、旧: reboot,dopamine detox,self control,streak,recovery,abstinence,urge,blocker,addiction,willpower）
+- **リサーチ要点**: JP主要検索=オナ禁タイマー/カウンター・禁欲カウンター（最大手12,508件）・ポルノブロッカー。US=「porn」系はサジェスト完全抑制、「nofap」「adult content blocker」「dopamine detox」はサジェストあり。QUITTR(32,618件)は公開メタデータにporn不使用。日米とも「Rewire」名の競合アプリ複数あり（ブランド名単独タイトルは埋没リスク）
+- **注意**: 「nofap」はNoFap LLCの商標 → キーワード欄限定を維持。万一2.3.7/2.3.8でメタデータリジェクトされたら該当語差し替えのみで再提出可（バイナリ不要）
+- **未対応**: プロモーションテキスト（170字・日英とも空欄）— 審査なしで随時設定可能。概要文は今回未変更
+
+## 2026-07-06: スクリーンタイム許可フローを課金後（PPO）へ移動＋ピッカー撤去
+- **方針（hiro 指示）**: ①オンボーディングの Choose Activities（ブラウザ/アプリ選択ピッカー）は不要 ②スクリーンタイム許可モーダルは課金ユーザーのみ（ペイウォール後）に表示 ③アプリ別ブロックはプロフィールの「アプリをブロック」からのみ
+- **課金前オンボーディング**: `data_protection` / `screen_time_permission` ステップを完全削除（constants/onboarding.ts の union・STEPS・NO_FOOTER_TYPES・NON_COUNTABLE_TYPES・canGoBack、OnboardingStepRenderer の case、ConsentStep.test の遷移ヘルパー）
+- **PPO（課金後）**: `thankYou → dataProtection → screenTime → complete` の4ステップに拡張（constants/postPurchaseOnboarding.ts）。logStepViewed は POST_PURCHASE_STEPS[step] 参照に変更
+- **新ステップ実装**（components/postPurchaseOnboarding/ に移設）:
+  - `DataProtectionStep`（onNext ボタン付きに改修、旧オンボーディング版は共有フッター依存だった）
+  - `ScreenTimePermissionStep`（**ピッカーなし**。`useScreenTimeSetup` の新関数 `startWebFilterSetup` を使用 = 許可→`applyAppShield(t, false)`（自動Webフィルターのみ、Layer1）→markShielded→completed。notDetermined のときだけマウント時自動起動）
+  - `PermissionArrow` は components/ui/ へ移動
+- **locale**: `onboarding.dataProtection`/`onboarding.screenTimePermission` → `postPurchaseOnboarding.*` へ移動。説明文は「許可すると、すべてのブラウザで保護が有効になります」に更新（ピッカー言及を削除）
+- **削除**: components/onboarding/{DataProtectionStep,ScreenTimePermissionStep}.tsx + 各テスト
+- テスト: **310 suites / 2284 tests 全通過**、変更ファイル lint クリーン、tsc は既存ベースライン45件のみ
+- 未コミット状態
+- 注意: PPO の Skip は全ステップで markCompleted → tabs 遷移（許可スキップ可能）。ホーム画面の許可カード（昨日実装）が未許可ユーザーのリカバリー導線として機能する
+
+### 追記: ブロッカーOFF時の深呼吸ゲート実装（2026-07-06）
+- **仕様**: プロフィールのコンテンツブロッカー電源ボタン（ON→OFF操作）で即オフにせず、閉じられない深呼吸モーダルを強制表示。3回の呼吸サイクル（吸6s→止4s→吐6s、BREATHING_CONFIG 再利用）完了後にのみ「本当にオフにしますか？」確認（保護を続ける=gradient / オフにする=ghost）。確認で clearAppShield+markCleared
+- **新規**: `hooks/screenTime/useBreathingGate.ts`（SOSの useBreathingEngine とは別実装: 画面遷移なし・フェーズ毎の単発ハプティクスのみ）、`components/screen-time/BreathingGateModal.tsx`（BreathingCircle を scale 0.6 で再利用、onRequestClose 無効・オーバーレイタップ不可・×なし）
+- **変更**: ContentBlockerPanel（enabled 時の power press → gateVisible、handleGateConfirm/Cancel 分離）、locale ja/en（contentBlocker.breathingGate）
+- **学び**: `app/__tests__/indexRouting.test.tsx` は本番設定ガード — `DEV_PREVIEW_POST_PURCHASE=true` のままだと正しく fail する（dev フラグ戻し忘れ検知として機能）。PPO プレビュー確認後にフラグを false へ復帰済み
+- renderHook で initialProps を使う場合はコールバック引数に明示型注釈（`(props: { active: boolean }) =>`）が必要（unknown 推論で tsc エラー）
+- テスト: **312 suites / 2302 tests 全通過**、tsc ベースライン45、lint クリーン。未コミット
+
+### 追記: 深呼吸ゲートを全画面デザインに変更（hiro フィードバック反映）
+- カード型モーダル → **SOS呼吸画面（app/breathing）と同一の全画面デザイン**に変更（ダークグラデーション #0f172a→#1e293b、BreathingText/BreathingCircle/BreathingTimer をそのまま再利用、StatusBar hidden、fullScreen presentation）
+- **×ボタンは右上**（既存呼吸画面は左上だが、hiro 指定で右上）。呼吸中・確認画面のいつでも×で中断可能（中断＝オフにしない）。Android back（onRequestClose）も同じくキャンセル
+- 3回完了後のみ「本当にオフにしますか？」（保護を続ける=gradient / オフにする=ghost）を全画面中央に表示
+- locale の breathingGate.title/subtitle は不要になり削除（confirm系のみ残存）
+- テスト: 312 suites / 2302 tests 全通過
+
+### 追記: 振り返りシートの宇宙UI背景化（2026-07-06、プラン承認済み）
+- ReflectionSheet の背景を BlurView+単色 → `StarryBackground`（`gradients.background` トークン＋星40個 twinkle、ダークのみ星表示）に置換。シートの角丸40+overflow:hidden がクリップ。背景は ReflectionStepContainer の外側（ステップ遷移で星の位相が飛ばない）
+- `StarryBackground` を components/onboarding/ → **components/ui/** へ移動（宇宙装飾ファミリーに統一、7ファイルの import/jest.mock パス更新: brand.tsx, onboarding/goal.tsx, BrandScreen.routing/locale, brandRouting, goal, goalAnalytics テスト）
+- オーバーレイ `'#000'`×0.6 → `colors.overlay` トークン（アルファ込みのため opacity=progress に変更、他モーダルと統一）
+- expo-blur は ReflectionSheet から除去（不透明グラデ下のブラーは無意味）。テストの expo-blur モックも削除
+- テスト: **312 suites / 2306 tests 全通過**（+4: starry-background/gradient色/星のダーク表示/ライト非表示）、tsc ベースライン45、lint 新規エラーなし。未コミット
+
+## 2026-07-08: 購入後オンボーディング（PPO）フロー再設計 — ブロックボタン自己起動＋触覚＋トースト（プラン承認済み）
+- **背景**: 購入直後に唐突に個人情報の話とスクリーンタイム許可を迫る流れだった。「なぜ許可が必要か」を先に説明し、最後にユーザー自身がブロックボタンを押して保護を開始する体験へ変更
+- **新フロー（4→6ステップ）**: ThankYou → **ScreenTimeIntro（新規: 許可の理由説明）** → DataProtection（既存維持） → ScreenTimePermission（**許可のみ取得に変更**） → **BlockerActivation（新規: 全画面ブロックボタン）** → Complete（既存維持→tabs）
+  - `constants/postPurchaseOnboarding.ts`: `POST_PURCHASE_STEPS` 6要素、`TOTAL=6`、`BLOCKER_ACTIVATION_ADVANCE_DELAY_MS=1800` 追加。`app/post-purchase-onboarding/index.tsx` は step===0〜5 のハードコード分岐（データ駆動でない点は従来通り）
+- **ブロックボタン体験の共通化（PR1）**:
+  - `components/ui/Toast.tsx`（表示のみ、RN Animated フェード、`!visible && !rendered` で即描画）＋ `hooks/ui/useToast.ts`（show/hide＋自動消滅タイマー＋unmount クリーンアップ、既定1800ms）
+  - `components/screen-time/BlockerPowerButton.tsx`（ContentBlockerPanel の円形パワーボタンUIを抽出。ACTIVE=#3DD68C/INACTIVE=#FF3B3B を export。testID prop で既存 testID 維持）
+  - `hooks/screenTime/useShieldActivation.ts`（OFF→ON ロジック共通化: **busyRef で同一レンダー内二重起動ガード**＋`impactAsync(Heavy)`押下→認可フォールバック→`applyAppShield(t,!!selectionToken)`→`markShielded`→`notificationAsync(Success)`→boolean）
+  - `ContentBlockerPanel` は power ボタンを `BlockerPowerButton` に、ON分岐を `useShieldActivation.activate()` に委譲、成功時 `toast.show()`。OFF用に `isClearing` state 分離。ON成功時トースト表示（`contentBlocker.activatedToast`）。既存13テスト無変更で通過（useTheme モックに `shadows:{sheet:{}}` 追加のみ）
+- **許可のみ化**: `hooks/screenTime/useScreenTimeSetup.ts` の `startWebFilterSetup` → **`requestPermission`** にリネームし applyAppShield/markShielded を削除（許可のみ）。呼び出し元は ScreenTimePermissionStep のみ。→ 次の BlockerActivation でボタンOFF(赤)スタート、押下で ON(緑)
+- **BlockerActivation（PR2）**: `hooks/postPurchaseOnboarding/useBlockerActivationStep.ts`（押下→activate→analytics `post_purchase_blocker_activated`→toast→`advanceTimerRef` で1.8秒後 onComplete、成功後の再押下無視、unmount クリーンアップ）＋ `components/postPurchaseOnboarding/BlockerActivationStep.tsx`（表示のみ、testID=`blocker-activation-power-button`/`blocker-activation-toast`）。右上スキップは既存 `step < TOTAL-1` 判定で step4 も表示
+- **設定デバッグ再表示（PR3）**: `lib/routing/routes.ts` に `postPurchaseOnboarding: route('/post-purchase-onboarding')` 追加。`app/settings.tsx` デバッグ節に「購入後オンボーディングをもう一度見る」追加（icon=sparkles-outline）。`usePaywallOrchestration.ts:62`・`app/index.tsx` の生文字列を ROUTES 参照に統一
+- **ロケール**: ja/en に `postPurchaseOnboarding.screenTimeIntro.{title,description,cta}`・`blockerActivation.{title,description}`、`contentBlocker.activatedToast`（「これでポルノサイトのブロックが完了しました！」）、`settings.labels.replayPostPurchaseOnboarding` 追加。`screenTimePermission.description` を「許可すると保護が有効」→「ダイアログで続けるをタップ」に更新（自動適用しなくなるため）
+- **リスク**: 新フローは step4/5 をスキップすると「許可済み・ブロック未適用」になる（`post_purchase_onboarding_skipped {fromStep}` と新規イベントで監視推奨）。`post_purchase_step_viewed` の step 名に screenTimeIntro/blockerActivation 追加＋既存名のインデックス位置変化（イベント名自体は互換）
+- **テスト**: **319 suites / 2345 tests 全通過**（TDD 全ステップ Red→Green）。新規テスト7＋既存テスト6更新。lint 新規エラーゼロ（test の import/first 警告は jest.mock 先行の既存慣習）。tsc: 変更ファイルに新規エラーなし（`usePostPurchaseFlow.ts:41` の既存エラーは非変更）
+- **未検証**: iOS 実機/dev build でのランタイム E2E（Screen Time/Family Controls はネイティブ・実機必須のため hiro のビルドが必要）。DataProtection/CompleteStep は削除せず維持
+- 未コミット状態
+
+## 2026-07-10
+- 定期タスク: デイリー分析パイプライン実行（2026-07-09分）
+- ASC APIから3レポート取得成功、ファネル分析実行、docs/analytics/daily-report-2026-07-09.md 生成
+- 結果: インプレッション71（前日98から減少）、PV率4.2%（前日7.1%）、DL 0件継続。ボトルネックはDL率（0% vs ベンチマーク30%）
+- 注意: TikTokチャネルのデータなし。DLゼロが継続中のためプロダクトページ改善が急務
+- 変更ファイル: data/analytics/2026-07-09/*.tsv, docs/analytics/daily-report-2026-07-09.md, daily-metrics-2026-07-09.json
+
+## 2026-07-11（定期タスク: rewire-daily-analytics）
+- 作業内容: ASC APIから2026-07-10分のデータ取得（5レポート）→ ファネル分析 → 日次レポート生成
+- 結果: インプレッション119（前日71から+68%）、ページビュー6（5.0%）、DL 0件。ボトルネックはDL率（0% vs 基準30%）
+- 未完了/次回: DL 0が3日以上継続。プロダクトページ改善（スクリーンショット・プレビュー動画・説明文冒頭）が最優先課題
+- 変更ファイル: docs/analytics/daily-report-2026-07-10.md, daily-metrics-2026-07-10.json, data/analytics/2026-07-10/*.tsv
+
+## 2026-07-12（日次レポートのメール整形: Focusity形式へ移植）
+- 課題: 「Rewire 日次レポート」メールの表が Gmail で崩れて読みづらい。原因は mailer.py の markdown_to_html がパイプ表を丸ごと <pre> にダンプしていたため
+- 対応: Focusity(ScreenCity) の scripts/analytics/html_report.py を参考に、Rewire 用の決定論的インラインCSS HTMLレンダラを新規実装
+  - 新規: scripts/analytics/html_report.py … build_html(payload, target_date, insights_md=None) / headline(payload)。asc/revenuecat/firebase ペイロードから本物の <table> を生成。色分けセル(⚠️/警告色)、RevenueCat期間の日本語化(P28D→過去28日)、GA4イベント名の日本語化(生IDは用語集のみ)、TL;DR バナー、用語集・注記。データ表は決定論的に生成し、LLMの横断分析/改善提案のみ insights_md から抽出してHTML化
+  - 変更: mailer.py に html_body 引数を追加（Focusityと同型。html_body優先、無ければ従来のmarkdown_to_htmlにフォールバック）
+  - 変更: send_daily.py … build_html で html_body を組み立て send_email へ渡す。--date YYYY-MM-DD 追加（過去日の再送用）。dry-run時は daily-report-<date>.html を書き出し
+  - 変更: data_loader.py に find_metrics_for_date() 追加（-corrected 優先）
+- TDD: 先にテストを書いてRed→実装でGreen。test_html_report.py 新規、test_mailer.py / test_send_daily.py / test_data_loader.py 追記。全 163 passed（従来144+新規19）
+- 再送: 2026-07-10 分を新フォーマットで再送信済み（Resend, message id aa05ff5a-...）。Gmail着弾確認済（スニペットに |---| ダンプなし）。再送はASCはJSON実データ、RevenueCatは当時のメール記載値(MRR$8/28日・トライアル5・サブスク2・新規37・稼働45)、firebaseは当時と同じGA4 invalid_scope エラーを忠実に再現し、横断分析/改善提案は元の daily-report-2026-07-10-agent.md を流用
+- 未完了/次回:
+  - 変更は未コミット（ユーザー指示待ち）。scripts/analytics/{html_report.py,mailer.py,send_daily.py,data_loader.py} と tests、docs/analytics/daily-report-2026-07-10.html
+  - GA4(Firebase)は invalid_scope で取得失敗が継続中。GOOGLE_APPLICATION_CREDENTIALS のスコープ修正が別途必要（今回は未対応）
+  - 以降の日次cronは自動的に新HTMLフォーマットで送信される（send_daily.py 経由）
+
+## 2026-07-12（続き: 日次レポートをFocusityと同一構成へ再設計）
+- 要望: RewireのメールをFocusityと「全く同じ構成」（セクション順・見出し・表レイアウト）にし、中身だけRewireの数値に。ユーザーがFocusity 2026-07-11メール全文をフォーマット見本として提示
+- 対応: scripts/analytics/html_report.py を Focusity版の構成に完全準拠で作り直し（決定論的・LLMナラティブ廃止）。セクション順:
+  1.今日の要点[項目|値|前日比] 2.サマリー（前日vs直近7日平均）[指標|前日|7日平均|変化] 3.回復ファンネル（SOS）※Focusityの集中ファンネル相当 4.収益ファンネル（ペイウォール→購入）※建築とクラフト相当 5.オンボーディング（初回設定） 6.振り返り・記録※タブ利用相当 7.共有 8.収益（RevenueCat）※Rewire固有 9.リテンション（継続率） 10.全イベント発火状況（計測ギャップ検出）[イベント|回数|人数|種別] 11.App Store取得（媒体別・ASC） 12.用語集 13.注記
+  - Focusityのドメイン（集中/建築/クラフト/タブ）→Rewireのドメイン（SOS呼吸/ペイウォール/オンボ/振り返り）にマッピング。中身のイベントはREWIRE_KEY_EVENTS
+  - 横断分析/改善提案（前turnで追加したLLMナラティブ）は Focusity準拠のため削除。build_htmlのinsights_md引数は後方互換で残すが未使用
+  - GA4取得失敗時は各firebaseセクションが「取得できませんでした」フォールバック行に degrade（Focustyと同様）。ASC/RevenueCatは常に表示
+- send_daily.py: firebaseに retention（fetch_ga4_retention→summarize_retention）と all_events（fetch_all_events）を追加取得しマージ（各soft-fail）。→リテンション/全イベントもGA4復旧時に埋まる
+- TDD: test_html_report.py 全面刷新（Focusity構成の順序・表形状を検証）、test_send_daily.py 追記。全 168 passed
+- 再送: 2026-07-11分を新構成で送信済（Resend message id e4db5920-...）。Gmail着弾確認。ASCは実データ(表示218/PV12/タップ2/DL0)、RevenueCatはライブ取得(MRR$8/サブスク2/トライアル5/新規37/稼働45)、GA4は invalid_scope で fallback表示
+- ⚠️GA4 invalid_scope の原因特定: RewireのGOOGLE_APPLICATION_CREDENTIALSが ~/.config/gcloud/application_default_credentials.json（type=authorized_user のADC）を指しており、analyticsスコープを付与できず invalid_scope。Focusityは service_account JSON(/Users/arimurahiroaki/.config/firebase/focusity-ga4-sa.json, focusity-analytics-reader@...)を使用。修正=RewireもSA JSONを ~/.config/firebase/ga4-sa.json に置きGA4プロパティにViewer付与→envのGOOGLE_APPLICATION_CREDENTIALSをそこへ。手順はrewireのSETUP_FIREBASE.md既載（ユーザー作業、コンソール操作のため未実施）
+- 未完了/次回: 変更未コミット。GA4のSA認証修正はユーザー作業待ち。次回日次cronから自動で新構成HTMLで送信される
+
+## 2026-07-12（続き2: 横断分析・改善提案（従来データ）をFocusity構成の上に復活）
+- 要望: 「現状のこの項目に追加して」、RevenueCatのデータと「今まで通りメールに出力していたデータ」もGmailレポートに入れてほしい
+- 原因判明: send_daily.py は今も generate_report()（Claude, `claude -p`）で従来形式（App Storeファンネル/収益/ユーザー活動/横断分析/改善提案）の文章を生成しmarkdownファイルには保存していたが、直前のFocusity構成書き換えで html_report.build_html の insights_md 引数が「受け取るが未使用」になっており、横断分析・改善提案がメールから消えていた（＝「今まで通り出力していたデータ」が欠落していた原因）
+- 対応: html_report.py に _insights_section/_render_markdown_block/_inline/_NARRATIVE_HEADINGS を再実装し、build_html内で _asc_section の後・_glossary の前に _insights_section(insights_md) を追加。これでFocusity準拠の決定論的テーブル群（今日の要点〜App Store取得）＋横断分析＋改善提案＋用語集/注記、という構成になった。RevenueCatは前回追加済みのセクション8（収益(RevenueCat)）がそのまま残る
+- TDD: test_html_report.py に insights_md有無のテスト追加（narrativeの位置がASC後・用語集前であることも検証）、test_send_daily.py に narrative がhtml_bodyまで流れることを検証するテスト追加。全171 passed
+- 実パイプラインで確認: `python3 -m scripts.analytics.send_daily --date 2026-07-11 --dry-run` で実際にClaude呼び出し→横断分析/改善提案生成→HTML化を確認（Chromeで目視、位置・整形とも正しい）。その後 `--date 2026-07-11`（dry-run無し）で実送信し、Gmail着弾確認（message id b687e1b5-...）
+- 未完了/次回: 変更は未コミット。GA4 invalid_scope は引き続き未修正（前回メモ参照: FocusityのSA JSONを流用するかRewire専用SAを作る）
+
+## 2026-07-13（定期タスク: rewire-daily-analytics）
+
+### 作業内容
+- ASC API から 2026-07-12 分のデータ取得（8レポート成功）
+- ファネル分析実行 → docs/analytics/daily-report-2026-07-12.md / daily-metrics-2026-07-12.json 生成
+
+### 結果概要
+- インプレッション 269（前日 218 から +23%）、ページビュー 24（PV率 8.9%、前日 5.5% から改善だがベンチマーク未達）
+- レポート上ダウンロード 0 だが、TSV内の実データは 2026-07-10 付（ASCの約2日ラグ）。07-10 実績: 初回DL 1件、自動更新 3件
+- トライアル・課金 0
+
+### 注意事項・発見した問題
+- analyze_funnel.py は対象日でフィルタするため、ASCのデータラグ（DL系レポートは~2日遅れ）により Downloads が常に 0 と表示される可能性が高い。日付ラグを考慮した集計ロジックの修正を検討すべき
+- サンドボックスから実行する場合 HOME 環境変数の指定が必要（~/.config/asc 解決のため）
+
+### 次回やるべきこと
+- analyze_funnel.py のデータラグ対応（DL/購入系はレポート日付ではなくTSV内日付で集計）
+- プロダクトページ改善（スクリーンショット・プレビュー動画・説明文冒頭）
+
+### 変更ファイル
+- data/analytics/2026-07-12/*.tsv（新規取得）
+- docs/analytics/daily-report-2026-07-12.md, daily-metrics-2026-07-12.json

@@ -16,7 +16,10 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
 }));
 
 import { usePostPurchaseFlow } from '../usePostPurchaseFlow';
-import { TOTAL_POST_PURCHASE_STEPS } from '@/constants/postPurchaseOnboarding';
+import {
+  TOTAL_POST_PURCHASE_STEPS,
+  POST_PURCHASE_STEPS,
+} from '@/constants/postPurchaseOnboarding';
 
 describe('usePostPurchaseFlow', () => {
   beforeEach(() => {
@@ -53,10 +56,10 @@ describe('usePostPurchaseFlow', () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     act(() => {
-      result.current.logStepViewed('screenTimeSetup');
+      result.current.logStepViewed('thankYou');
     });
 
-    expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'screenTimeSetup' });
+    expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'thankYou' });
   });
 
   it('logStepViewed("complete") を許可する（型/値の互換性）', () => {
@@ -69,11 +72,22 @@ describe('usePostPurchaseFlow', () => {
     expect(mockLogEvent).toHaveBeenCalledWith('post_purchase_step_viewed', { step: 'complete' });
   });
 
-  it('TOTAL_POST_PURCHASE_STEPS は 3 (thankYou / screenTimeSetup / complete)', () => {
-    expect(TOTAL_POST_PURCHASE_STEPS).toBe(3);
+  it('TOTAL_POST_PURCHASE_STEPS は 6', () => {
+    expect(TOTAL_POST_PURCHASE_STEPS).toBe(6);
   });
 
-  it('goToNext で step は最大 TOTAL_POST_PURCHASE_STEPS - 1 (=2) で頭打ち', async () => {
+  it('POST_PURCHASE_STEPS の順序: thankYou→screenTimeIntro→dataProtection→screenTime→blockerActivation→complete', () => {
+    expect(POST_PURCHASE_STEPS).toEqual([
+      'thankYou',
+      'screenTimeIntro',
+      'dataProtection',
+      'screenTime',
+      'blockerActivation',
+      'complete',
+    ]);
+  });
+
+  it('goToNext で step は最大 TOTAL_POST_PURCHASE_STEPS - 1 (=5) で頭打ち', async () => {
     const { result } = renderHook(() => usePostPurchaseFlow());
 
     await act(async () => {
@@ -83,7 +97,7 @@ describe('usePostPurchaseFlow', () => {
     });
 
     expect(result.current.step).toBe(TOTAL_POST_PURCHASE_STEPS - 1);
-    expect(result.current.step).toBe(2);
+    expect(result.current.step).toBe(5);
   });
 
   it('safariAlreadyEnabled の auto-skip フィールドは廃止された（戻り値に含まれない）', () => {

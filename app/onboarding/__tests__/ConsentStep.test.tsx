@@ -57,6 +57,7 @@ jest.mock('@/components/onboarding/AnalyzingStep', () => {
   };
 });
 
+
 jest.mock('@react-native-picker/picker', () => {
   const { View, Text } = require('react-native');
   const Picker = ({ children }: any) => <View testID="picker">{children}</View>;
@@ -86,7 +87,8 @@ import OnboardingScreen from '../../onboarding/index';
  * Navigate from welcome to consent step.
  * With mocked empty assessment/education, the steps are:
  *   0:welcome → 1:analyzing → 2:score_result → 3:symptom_select →
- *   4:damage_intro → 5:features → 6:nickname → 7:consent → 8:notification → 9:last_viewed_date
+ *   4:damage_intro → 5:features → 6:nickname → 7:consent →
+ *   8:notification → 9:last_viewed_date
  */
 function navigateToConsent(utils: ReturnType<typeof render>) {
   const { getByText, getByPlaceholderText } = utils;

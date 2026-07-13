@@ -1,13 +1,15 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
+  Modal,
+  Platform,
+  Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { DeviceActivitySelectionSheetView } from 'react-native-device-activity';
 import {
   SPACING,
   FONT_SIZE,
@@ -19,12 +21,14 @@ import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { useScreenTimeStore } from '@/stores/screenTimeStore';
 import { screenTimeBridge } from '@/lib/screenTime/screenTimeBridge';
-
-const ACTIVE_COLOR = '#3DD68C';
-const INACTIVE_COLOR = '#FF3B3B';
+import { useScreenTimeSetup } from '@/hooks/screenTime/useScreenTimeSetup';
+import { useShieldActivation } from '@/hooks/screenTime/useShieldActivation';
+import { useToast } from '@/hooks/ui/useToast';
+import { Toast } from '@/components/ui/Toast';
+import { BlockerPowerButton } from './BlockerPowerButton';
+import { BreathingGateModal } from './BreathingGateModal';
 
 export function ContentBlockerPanel() {
-  const router = useRouter();
   const { colors } = useTheme();
   const { t } = useLocale();
 
@@ -33,49 +37,71 @@ export function ContentBlockerPanel() {
   const selectionApplicationCount = useScreenTimeStore(
     (s) => s.selectionApplicationCount,
   );
-  const markShielded = useScreenTimeStore((s) => s.markShielded);
   const markCleared = useScreenTimeStore((s) => s.markCleared);
 
-  const [isBusy, setIsBusy] = useState(false);
+  // オンにする処理（許可フォールバック＋シールド適用＋触覚）は共通フックに委譲する
+  const { isBusy: isActivating, activate } = useShieldActivation();
+  const toast = useToast();
+  // オフにする処理は深呼吸ゲート確認後にこのパネル内で行う
+  const [isClearing, setIsClearing] = useState(false);
+  const isBusy = isActivating || isClearing;
+
+  // ブラウザ/アプリ選択ピッカーはこのパネル内で完結させる（専用の設定画面は廃止）
+  const {
+    step,
+    pendingSelection,
+    startSetup,
+    handlePickerChange,
+    finalizePicker,
+    cancelPicker,
+  } = useScreenTimeSetup();
+
+  // オフ操作の前に深呼吸ゲート（3回呼吸→確認）を挟む
+  const [gateVisible, setGateVisible] = useState(false);
+
+  // 許可拒否・エラーはネイティブ Alert で通知する
+  useEffect(() => {
+    if (step === 'denied') {
+      Alert.alert(
+        t('screenTime.deniedTitle'),
+        t('screenTime.deniedDescription'),
+      );
+    } else if (step === 'error') {
+      Alert.alert(t('screenTime.errorTitle'), t('screenTime.errorDescription'));
+    }
+  }, [step, t]);
 
   const handlePowerPress = useCallback(async () => {
     if (isBusy) return;
-    setIsBusy(true);
-    try {
-      const hasSelection = !!selectionToken;
-      if (enabled) {
-        const ok = screenTimeBridge.clearAppShield(hasSelection);
-        if (ok) await markCleared();
-      } else {
-        const status = screenTimeBridge.getAuthorizationStatus();
-        if (status !== 'approved') {
-          const result = await screenTimeBridge.requestAuthorization();
-          if (result.status !== 'approved') {
-            router.push('/screen-time-setup');
-            return;
-          }
-        }
-        const ok = screenTimeBridge.applyAppShield(t, hasSelection);
-        if (ok) await markShielded();
-      }
-    } finally {
-      setIsBusy(false);
+    if (enabled) {
+      // 即オフにせず、深呼吸ゲートを通してから確認する
+      setGateVisible(true);
+      return;
     }
-  }, [
-    isBusy,
-    enabled,
-    selectionToken,
-    router,
-    t,
-    markShielded,
-    markCleared,
-  ]);
+    const ok = await activate();
+    if (ok) toast.show();
+  }, [isBusy, enabled, activate, toast]);
+
+  const handleGateConfirm = useCallback(async () => {
+    setGateVisible(false);
+    if (isClearing) return;
+    setIsClearing(true);
+    try {
+      const ok = screenTimeBridge.clearAppShield(!!selectionToken);
+      if (ok) await markCleared();
+    } finally {
+      setIsClearing(false);
+    }
+  }, [isClearing, selectionToken, markCleared]);
+
+  const handleGateCancel = useCallback(() => {
+    setGateVisible(false);
+  }, []);
 
   const handleBlockApps = useCallback(() => {
-    router.push('/screen-time-setup');
-  }, [router]);
+    void startSetup();
+  }, [startSetup]);
 
-  const statusColor = enabled ? ACTIVE_COLOR : INACTIVE_COLOR;
   const powerLabel = enabled
     ? t('contentBlocker.statusActive')
     : t('contentBlocker.statusInactive');
@@ -99,25 +125,12 @@ export function ContentBlockerPanel() {
         {powerDescription}
       </Text>
 
-      <TouchableOpacity
+      <BlockerPowerButton
         testID="content-blocker-power-button"
-        style={[
-          styles.powerButton,
-          {
-            backgroundColor: statusColor,
-            shadowColor: statusColor,
-          },
-        ]}
+        enabled={enabled}
+        isBusy={isBusy}
         onPress={handlePowerPress}
-        disabled={isBusy}
-        activeOpacity={0.8}
-      >
-        {isBusy ? (
-          <ActivityIndicator color="#FFFFFF" size="large" />
-        ) : (
-          <Ionicons name="power" size={56} color="#FFFFFF" />
-        )}
-      </TouchableOpacity>
+      />
 
       <TouchableOpacity
         style={[styles.actionRow, { borderColor: colors.surfaceHighlight }]}
@@ -144,6 +157,55 @@ export function ContentBlockerPanel() {
         </View>
         <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
       </TouchableOpacity>
+
+      <BreathingGateModal
+        visible={gateVisible}
+        onConfirm={handleGateConfirm}
+        onCancel={handleGateCancel}
+      />
+
+      {step === 'picking' && Platform.OS === 'ios' && (
+        <Modal
+          transparent
+          animationType="slide"
+          onRequestClose={() => {
+            if (pendingSelection) {
+              void finalizePicker();
+            } else {
+              cancelPicker();
+            }
+          }}
+        >
+          <View style={styles.pickerOverlay} testID="screen-time-picker-overlay">
+            <DeviceActivitySelectionSheetView
+              style={styles.pickerSheet}
+              familyActivitySelection={
+                pendingSelection?.familyActivitySelection ?? null
+              }
+              onSelectionChange={(event) => {
+                const sel = event.nativeEvent.familyActivitySelection ?? '';
+                const count =
+                  (event.nativeEvent.applicationCount ?? 0) +
+                  (event.nativeEvent.categoryCount ?? 0);
+                handlePickerChange(sel, count);
+              }}
+              onDismissRequest={() => {
+                if (pendingSelection) {
+                  void finalizePicker();
+                } else {
+                  cancelPicker();
+                }
+              }}
+            />
+          </View>
+        </Modal>
+      )}
+
+      <Toast
+        visible={toast.visible}
+        message={t('contentBlocker.activatedToast')}
+        testID="content-blocker-toast"
+      />
     </View>
   );
 }
@@ -171,18 +233,6 @@ const styles = StyleSheet.create({
     lineHeight: LINE_HEIGHT.body,
     textAlign: 'center',
     marginBottom: SPACING.lg,
-  },
-  powerButton: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOpacity: 0.6,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 0 },
-    marginVertical: SPACING.lg,
-    elevation: 8,
   },
   actionRow: {
     flexDirection: 'row',
@@ -212,5 +262,20 @@ const styles = StyleSheet.create({
   actionSubtitle: {
     fontSize: FONT_SIZE.sm,
     marginTop: 2,
+  },
+  pickerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  pickerSheet: {
+    flex: 1,
+    marginTop: 80,
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
 });

@@ -1,18 +1,40 @@
 import { createWidgetPayload } from '../widgetPayload';
 
 describe('createWidgetPayload', () => {
-  it('全フィールドが正しい形で返る', () => {
+  it('全フィールドが正しい形で返る（locale含む）', () => {
     const payload = createWidgetPayload({
       streakStartDate: '2026-02-20T00:00:00Z',
       goalDays: 90,
       relapseCount: 3,
+      locale: 'en',
     });
     expect(payload).toEqual({
       streakStartDate: '2026-02-20T00:00:00Z',
       goalDays: 90,
       relapseCount: 3,
+      locale: 'en',
       updatedAt: expect.any(String),
     });
+  });
+
+  it('locale がそのまま維持される（ja）', () => {
+    const payload = createWidgetPayload({
+      streakStartDate: '2026-02-20',
+      goalDays: 30,
+      relapseCount: 0,
+      locale: 'ja',
+    });
+    expect(payload.locale).toBe('ja');
+  });
+
+  it('locale がそのまま維持される（en）', () => {
+    const payload = createWidgetPayload({
+      streakStartDate: '2026-02-20',
+      goalDays: 30,
+      relapseCount: 0,
+      locale: 'en',
+    });
+    expect(payload.locale).toBe('en');
   });
 
   it('null streakStartDate が維持される', () => {
@@ -20,6 +42,7 @@ describe('createWidgetPayload', () => {
       streakStartDate: null,
       goalDays: 30,
       relapseCount: 0,
+      locale: 'ja',
     });
     expect(payload.streakStartDate).toBeNull();
     expect(payload.goalDays).toBe(30);
@@ -31,6 +54,7 @@ describe('createWidgetPayload', () => {
       streakStartDate: '2026-01-01',
       goalDays: 0,
       relapseCount: 0,
+      locale: 'ja',
     });
     expect(payload.goalDays).toBe(0);
   });
@@ -40,6 +64,7 @@ describe('createWidgetPayload', () => {
       streakStartDate: '2025-01-01',
       goalDays: 365,
       relapseCount: 999,
+      locale: 'ja',
     });
     expect(payload.relapseCount).toBe(999);
   });
@@ -50,23 +75,26 @@ describe('createWidgetPayload', () => {
       streakStartDate: '2026-02-20',
       goalDays: 30,
       relapseCount: 0,
+      locale: 'ja',
     });
     const after = new Date().toISOString();
     expect(payload.updatedAt >= before).toBe(true);
     expect(payload.updatedAt <= after).toBe(true);
   });
 
-  it('JSON.stringify → parse のラウンドトリップ', () => {
+  it('JSON.stringify → parse のラウンドトリップ（locale含む）', () => {
     const payload = createWidgetPayload({
       streakStartDate: '2026-02-20T00:00:00Z',
       goalDays: 90,
       relapseCount: 5,
+      locale: 'en',
     });
     const json = JSON.stringify(payload);
     const parsed = JSON.parse(json);
     expect(parsed.streakStartDate).toBe('2026-02-20T00:00:00Z');
     expect(parsed.goalDays).toBe(90);
     expect(parsed.relapseCount).toBe(5);
+    expect(parsed.locale).toBe('en');
     expect(parsed.updatedAt).toBeDefined();
   });
 
@@ -75,6 +103,7 @@ describe('createWidgetPayload', () => {
       streakStartDate: null,
       goalDays: 30,
       relapseCount: 0,
+      locale: 'ja',
     });
     const json = JSON.stringify(payload);
     expect(json).toContain('"streakStartDate":null');
@@ -85,8 +114,8 @@ describe('createWidgetPayload', () => {
       streakStartDate: '2026-02-27',
       goalDays: 30,
       relapseCount: 0,
+      locale: 'ja',
     });
-    // ローカル午前0時をUTCに変換した値と一致すること
     const expected = new Date('2026-02-27T00:00:00').toISOString();
     expect(payload.streakStartDate).toBe(expected);
   });
@@ -96,12 +125,18 @@ describe('createWidgetPayload', () => {
       streakStartDate: '2026-02-27T04:57:00.000Z',
       goalDays: 30,
       relapseCount: 0,
+      locale: 'ja',
     });
     expect(payload.streakStartDate).toBe('2026-02-27T04:57:00.000Z');
   });
 
   it('毎回新しいオブジェクトを返す（ミューテーションなし）', () => {
-    const input = { streakStartDate: '2026-01-01', goalDays: 30, relapseCount: 0 };
+    const input = {
+      streakStartDate: '2026-01-01',
+      goalDays: 30,
+      relapseCount: 0,
+      locale: 'ja' as const,
+    };
     const a = createWidgetPayload(input);
     const b = createWidgetPayload(input);
     expect(a).not.toBe(b);

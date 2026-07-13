@@ -72,11 +72,6 @@ jest.mock('@/components/screen-time/ContentBlockerPanel', () => {
   return { ContentBlockerPanel: () => <View testID="content-blocker-panel" /> };
 });
 
-jest.mock('@/components/screen-time/UninstallLockCard', () => {
-  const { View } = require('react-native');
-  return { UninstallLockCard: () => <View testID="uninstall-lock-card" /> };
-});
-
 import ProfileScreen from '../profile';
 
 describe('ProfileScreen', () => {
@@ -100,18 +95,22 @@ describe('ProfileScreen', () => {
     expect(getByTestId('achievements-link-card')).toBeTruthy();
   });
 
-  it('iOS では ContentBlockerPanel と UninstallLockCard が描画される', () => {
+  it('iOS では ContentBlockerPanel が描画される', () => {
     Platform.OS = 'ios';
     const { getByTestId } = render(<ProfileScreen />);
     expect(getByTestId('content-blocker-panel')).toBeTruthy();
-    expect(getByTestId('uninstall-lock-card')).toBeTruthy();
   });
 
-  it('Android では ContentBlockerPanel と UninstallLockCard は非表示', () => {
+  it('UninstallLockCard は描画されない（削除済み）', () => {
+    Platform.OS = 'ios';
+    const { queryByTestId } = render(<ProfileScreen />);
+    expect(queryByTestId('uninstall-lock-card')).toBeNull();
+  });
+
+  it('Android では ContentBlockerPanel は非表示', () => {
     Platform.OS = 'android';
     const { queryByTestId } = render(<ProfileScreen />);
     expect(queryByTestId('content-blocker-panel')).toBeNull();
-    expect(queryByTestId('uninstall-lock-card')).toBeNull();
   });
 
   it('Safari 関連 UI は描画されない（削除済み）', () => {

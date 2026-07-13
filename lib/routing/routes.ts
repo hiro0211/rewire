@@ -20,13 +20,14 @@ export function routeWithParams(
 
 export const ROUTES = {
   tabs: route('/(tabs)'),
+  profileTab: route('/(tabs)/profile'),
   onboarding: route('/onboarding'),
   onboardingGoal: route('/onboarding/goal'),
   onboardingBenefits: route('/onboarding/benefits'),
   paywall: route('/paywall'),
+  postPurchaseOnboarding: route('/post-purchase-onboarding'),
   streak: route('/streak'),
   brand: route('/brand'),
-  screenTimeSetup: route('/screen-time-setup'),
   settings: route('/settings'),
   terms: route('/terms'),
   privacyPolicy: route('/privacy-policy'),

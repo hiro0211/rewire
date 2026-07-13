@@ -92,11 +92,28 @@ export function useScreenTimeSetup() {
     setStep('idle');
   }, []);
 
+  // 購入後オンボーディング用: スクリーンタイムの許可のみを取得する。
+  // 実際のブロック開始（フィルター適用）はユーザーがブロックボタンを押したときに行うため、
+  // ここでは applyAppShield/markShielded を呼ばない。
+  const requestPermission = useCallback(async () => {
+    setIsLoading(true);
+    setStep('requesting');
+    try {
+      const result = await screenTimeBridge.requestAuthorization();
+      setStep(result.status === 'approved' ? 'completed' : 'denied');
+    } catch {
+      setStep('error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     step,
     isLoading,
     pendingSelection,
     startSetup,
+    requestPermission,
     handlePickerChange,
     finalizePicker,
     cancelPicker,

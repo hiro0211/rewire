@@ -4,8 +4,8 @@ import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/ed
 export const FEATURES = [
   {
     icon: 'shield-checkmark-outline' as const,
-    titleKey: 'onboarding.features.safariBlocker',
-    descriptionKey: 'onboarding.features.safariBlockerDesc',
+    titleKey: 'onboarding.features.blocker',
+    descriptionKey: 'onboarding.features.blockerDesc',
   },
   {
     icon: 'analytics-outline' as const,

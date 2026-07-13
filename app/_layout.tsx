@@ -9,6 +9,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { FONT_WEIGHT } from '@/constants/theme';
 import { useNotificationDeepLink } from '@/hooks/useNotificationDeepLink';
 import { useDeletionFeedbackQuickAction } from '@/hooks/feedback/useDeletionFeedbackQuickAction';
+import { useForceUpdateGuard } from '@/hooks/useForceUpdateGuard';
+import { ForceUpdateModal } from '@/components/common/ForceUpdateModal';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -18,6 +20,7 @@ export default function RootLayout() {
   const { t } = useLocale();
   useNotificationDeepLink();
   useDeletionFeedbackQuickAction();
+  const { isUpdateRequired } = useForceUpdateGuard();
 
   if (!hasHydrated) {
     return null;
@@ -68,9 +71,9 @@ export default function RootLayout() {
           <Stack.Screen name="privacy-policy" options={{ headerShown: true, title: t('nav.privacyPolicy') }} />
           <Stack.Screen name="credits" options={{ headerShown: true, title: t('nav.credits') }} />
           <Stack.Screen name="survey" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-          <Stack.Screen name="screen-time-setup" options={{ headerShown: false }} />
           <Stack.Screen name="post-purchase-onboarding/index" options={{ headerShown: false, gestureEnabled: false }} />
         </Stack>
+        <ForceUpdateModal visible={isUpdateRequired} />
       </ThemeProvider>
     </SafeAreaProvider>
   );

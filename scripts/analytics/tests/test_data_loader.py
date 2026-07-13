@@ -2,6 +2,8 @@
 import json
 from datetime import date
 
+import pytest
+
 
 class TestFindLatestMetrics:
     """Selects the most recent metrics JSON, preferring -corrected suffix."""
@@ -85,3 +87,32 @@ class TestFindMatchingReport:
 
         report = find_matching_report(tmp_path, date(2026, 5, 23))
         assert report is None
+
+
+class TestFindMetricsForDate:
+    """Loads a specific day's metrics JSON, preferring the -corrected variant."""
+
+    def test_loads_the_requested_date(self, tmp_path):
+        from scripts.analytics.data_loader import find_metrics_for_date
+
+        (tmp_path / "daily-metrics-2026-07-10.json").write_text(
+            json.dumps({"date": "2026-07-10", "metrics": {"impressions": 119}}))
+        result = find_metrics_for_date(tmp_path, date(2026, 7, 10))
+        assert result.date == date(2026, 7, 10)
+        assert result.metrics["metrics"]["impressions"] == 119
+
+    def test_prefers_corrected_variant(self, tmp_path):
+        from scripts.analytics.data_loader import find_metrics_for_date
+
+        (tmp_path / "daily-metrics-2026-07-10.json").write_text(
+            json.dumps({"date": "2026-07-10", "metrics": {"impressions": 1}}))
+        (tmp_path / "daily-metrics-2026-07-10-corrected.json").write_text(
+            json.dumps({"date": "2026-07-10", "metrics": {"impressions": 119}}))
+        result = find_metrics_for_date(tmp_path, date(2026, 7, 10))
+        assert result.metrics["metrics"]["impressions"] == 119
+
+    def test_raises_when_absent(self, tmp_path):
+        from scripts.analytics.data_loader import find_metrics_for_date
+
+        with pytest.raises(FileNotFoundError):
+            find_metrics_for_date(tmp_path, date(2026, 7, 10))

@@ -8,7 +8,7 @@ import { useLocale } from '@/hooks/useLocale';
 import { GOAL_OPTIONS } from '@/constants/goals';
 import { Button } from '@/components/ui/Button';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
-import { StarryBackground } from '@/components/onboarding/StarryBackground';
+import { StarryBackground } from '@/components/ui/StarryBackground';
 import { useUserStore } from '@/stores/userStore';
 import { notificationClient } from '@/lib/notifications/notificationClient';
 import { format } from 'date-fns/format';

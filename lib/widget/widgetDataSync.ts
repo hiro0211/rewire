@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { createWidgetPayload, type WidgetDataInput } from './widgetPayload';
+import { resolveWidgetLocale } from './resolveWidgetLocale';
 import { logger } from '../logger';
 
 function getNativeModule(): {
@@ -19,7 +20,7 @@ export async function syncWidgetData(input: WidgetDataInput): Promise<void> {
   try {
     const mod = getNativeModule();
     if (!mod) return;
-    const payload = createWidgetPayload(input);
+    const payload = createWidgetPayload({ ...input, locale: resolveWidgetLocale() });
     await mod.syncData(JSON.stringify(payload));
     await mod.reloadTimelines();
   } catch (error) {

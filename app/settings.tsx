@@ -16,6 +16,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { SUPPORT_EMAIL } from '@/constants/support';
+import { DEBUG_MENU_ENABLED } from '@/constants/debug';
+import { resyncWidgetFromStores } from '@/lib/widget/resyncWidget';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
 import { useLocale } from '@/hooks/useLocale';
@@ -160,6 +162,22 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
+        {DEBUG_MENU_ENABLED && (
+          <SettingSection title={t('settings.sections.debug')}>
+            <SettingItem
+              label={t('settings.labels.replayOnboarding')}
+              icon="refresh-outline"
+              onPress={() => router.push(ROUTES.onboarding)}
+            />
+            <SettingItem
+              label={t('settings.labels.replayPostPurchaseOnboarding')}
+              icon="sparkles-outline"
+              onPress={() => router.push(ROUTES.postPurchaseOnboarding)}
+              isLast
+            />
+          </SettingSection>
+        )}
+
         <Text style={[styles.version, { color: colors.textSecondary }]}>Version {Constants.expoConfig?.version ?? '1.0.0'}</Text>
       </ScrollView>
 
@@ -194,6 +212,8 @@ export default function SettingsScreen() {
         onSelect={(pref) => {
           useLocaleStore.getState().setLocalePreference(pref);
           setLocalePickerVisible(false);
+          // 言語変更を即座にウィジェットへ反映する
+          void resyncWidgetFromStores();
         }}
         onClose={() => setLocalePickerVisible(false)}
       />

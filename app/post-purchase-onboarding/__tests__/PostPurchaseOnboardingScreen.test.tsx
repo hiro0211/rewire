@@ -42,18 +42,55 @@ jest.mock('@/hooks/useLocale', () => ({
 }));
 
 jest.mock('@/components/postPurchaseOnboarding/ThankYouStep', () => {
-  const { Text } = require('react-native');
+  const { Text, TouchableOpacity } = require('react-native');
   return {
-    ThankYouStep: () => <Text>thankYou-step</Text>,
+    ThankYouStep: ({ onNext }: { onNext: () => void }) => (
+      <TouchableOpacity testID="thankyou-next" onPress={onNext}>
+        <Text>thankYou-step</Text>
+      </TouchableOpacity>
+    ),
   };
 });
 
-jest.mock('@/components/postPurchaseOnboarding/ScreenTimeSetupStep', () => {
+jest.mock('@/components/postPurchaseOnboarding/ScreenTimeIntroStep', () => {
   const { Text, TouchableOpacity } = require('react-native');
   return {
-    ScreenTimeSetupStep: ({ onComplete }: { onComplete: () => void }) => (
-      <TouchableOpacity testID="screentime-complete" onPress={onComplete}>
-        <Text>screentime-step</Text>
+    ScreenTimeIntroStep: ({ onNext }: { onNext: () => void }) => (
+      <TouchableOpacity testID="screen-time-intro-next" onPress={onNext}>
+        <Text>screenTimeIntro-step</Text>
+      </TouchableOpacity>
+    ),
+  };
+});
+
+jest.mock('@/components/postPurchaseOnboarding/DataProtectionStep', () => {
+  const { Text, TouchableOpacity } = require('react-native');
+  return {
+    DataProtectionStep: ({ onNext }: { onNext: () => void }) => (
+      <TouchableOpacity testID="data-protection-next" onPress={onNext}>
+        <Text>dataProtection-step</Text>
+      </TouchableOpacity>
+    ),
+  };
+});
+
+jest.mock('@/components/postPurchaseOnboarding/BlockerActivationStep', () => {
+  const { Text, TouchableOpacity } = require('react-native');
+  return {
+    BlockerActivationStep: ({ onComplete }: { onComplete: () => void }) => (
+      <TouchableOpacity testID="blocker-activation-complete" onPress={onComplete}>
+        <Text>blockerActivation-step</Text>
+      </TouchableOpacity>
+    ),
+  };
+});
+
+jest.mock('@/components/postPurchaseOnboarding/ScreenTimePermissionStep', () => {
+  const { Text, TouchableOpacity } = require('react-native');
+  return {
+    ScreenTimePermissionStep: ({ onComplete }: { onComplete: () => void }) => (
+      <TouchableOpacity testID="screen-time-complete" onPress={onComplete}>
+        <Text>screenTime-step</Text>
       </TouchableOpacity>
     ),
   };
@@ -101,38 +138,78 @@ describe('PostPurchaseOnboardingScreen', () => {
     expect(getByText('thankYou-step')).toBeTruthy();
   });
 
-  it('step === 1 で ScreenTimeSetupStep が描画される', () => {
+  it('step === 1 で ScreenTimeIntroStep が描画される', () => {
     mockCurrentStep = 1;
     const { getByText } = render(<PostPurchaseOnboardingScreen />);
-    expect(getByText('screentime-step')).toBeTruthy();
+    expect(getByText('screenTimeIntro-step')).toBeTruthy();
   });
 
-  it('step === 2 で CompleteStep が描画される', () => {
+  it('step === 2 で DataProtectionStep が描画される', () => {
     mockCurrentStep = 2;
+    const { getByText } = render(<PostPurchaseOnboardingScreen />);
+    expect(getByText('dataProtection-step')).toBeTruthy();
+  });
+
+  it('step === 3 で ScreenTimePermissionStep が描画される', () => {
+    mockCurrentStep = 3;
+    const { getByText } = render(<PostPurchaseOnboardingScreen />);
+    expect(getByText('screenTime-step')).toBeTruthy();
+  });
+
+  it('step === 4 で BlockerActivationStep が描画される', () => {
+    mockCurrentStep = 4;
+    const { getByText } = render(<PostPurchaseOnboardingScreen />);
+    expect(getByText('blockerActivation-step')).toBeTruthy();
+  });
+
+  it('step === 5 で CompleteStep が描画される', () => {
+    mockCurrentStep = 5;
     const { getByText } = render(<PostPurchaseOnboardingScreen />);
     expect(getByText('complete-step')).toBeTruthy();
   });
 
-  it('step === 0 で logStepViewed("thankYou") が呼ばれる', () => {
+  it.each([
+    [0, 'thankYou'],
+    [1, 'screenTimeIntro'],
+    [2, 'dataProtection'],
+    [3, 'screenTime'],
+    [4, 'blockerActivation'],
+    [5, 'complete'],
+  ])('step === %i で logStepViewed("%s") が呼ばれる', (stepIndex, name) => {
+    mockCurrentStep = stepIndex as number;
+    render(<PostPurchaseOnboardingScreen />);
+    expect(mockLogStepViewed).toHaveBeenCalledWith(name);
+  });
+
+  it('ThankYouStep の onNext で markCompleted が呼ばれる', async () => {
     mockCurrentStep = 0;
-    render(<PostPurchaseOnboardingScreen />);
-    expect(mockLogStepViewed).toHaveBeenCalledWith('thankYou');
+    const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+    fireEvent.press(getByTestId('thankyou-next'));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockMarkCompleted).toHaveBeenCalled();
   });
 
-  it('step === 1 で logStepViewed("screenTimeSetup") が呼ばれる', () => {
-    mockCurrentStep = 1;
-    render(<PostPurchaseOnboardingScreen />);
-    expect(mockLogStepViewed).toHaveBeenCalledWith('screenTimeSetup');
+  it('ScreenTimePermissionStep の onComplete で markCompleted が呼ばれる', async () => {
+    mockCurrentStep = 3;
+    const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+    fireEvent.press(getByTestId('screen-time-complete'));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockMarkCompleted).toHaveBeenCalled();
   });
 
-  it('step === 2 で logStepViewed("complete") が呼ばれる', () => {
-    mockCurrentStep = 2;
-    render(<PostPurchaseOnboardingScreen />);
-    expect(mockLogStepViewed).toHaveBeenCalledWith('complete');
+  it('BlockerActivationStep の onComplete で markCompleted が呼ばれる', async () => {
+    mockCurrentStep = 4;
+    const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+    fireEvent.press(getByTestId('blocker-activation-complete'));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockMarkCompleted).toHaveBeenCalled();
   });
 
   it('CompleteStep の onFinish で router.replace((tabs)) が呼ばれる', () => {
-    mockCurrentStep = 2;
+    mockCurrentStep = 5;
     const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
     fireEvent.press(getByTestId('complete-finish'));
     expect(mockReplace).toHaveBeenCalledTimes(1);
@@ -145,8 +222,14 @@ describe('PostPurchaseOnboardingScreen', () => {
       expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
     });
 
-    it('step === 最終のときは非表示', () => {
-      mockCurrentStep = 2;
+    it('blockerActivation ステップ（step=4）でも表示される', () => {
+      mockCurrentStep = 4;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      expect(getByTestId('post-purchase-skip-button')).toBeTruthy();
+    });
+
+    it('step === 最終（step=5）のときは非表示', () => {
+      mockCurrentStep = 5;
       const { queryByTestId } = render(<PostPurchaseOnboardingScreen />);
       expect(queryByTestId('post-purchase-skip-button')).toBeNull();
     });

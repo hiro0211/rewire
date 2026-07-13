@@ -45,7 +45,7 @@ jest.mock('@react-native-picker/picker', () => {
   };
 });
 
-jest.mock('@/components/onboarding/StarryBackground', () => {
+jest.mock('@/components/ui/StarryBackground', () => {
   const React = require('react');
   const { View } = require('react-native');
   return {

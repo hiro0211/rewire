@@ -9,10 +9,16 @@ import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { StarryOverlay } from '@/components/ui/StarryOverlay';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { ThankYouStep } from '@/components/postPurchaseOnboarding/ThankYouStep';
-import { ScreenTimeSetupStep } from '@/components/postPurchaseOnboarding/ScreenTimeSetupStep';
+import { ScreenTimeIntroStep } from '@/components/postPurchaseOnboarding/ScreenTimeIntroStep';
+import { DataProtectionStep } from '@/components/postPurchaseOnboarding/DataProtectionStep';
+import { ScreenTimePermissionStep } from '@/components/postPurchaseOnboarding/ScreenTimePermissionStep';
+import { BlockerActivationStep } from '@/components/postPurchaseOnboarding/BlockerActivationStep';
 import { CompleteStep } from '@/components/postPurchaseOnboarding/CompleteStep';
 import { usePostPurchaseFlow } from '@/hooks/postPurchaseOnboarding/usePostPurchaseFlow';
-import { TOTAL_POST_PURCHASE_STEPS } from '@/constants/postPurchaseOnboarding';
+import {
+  POST_PURCHASE_STEPS,
+  TOTAL_POST_PURCHASE_STEPS,
+} from '@/constants/postPurchaseOnboarding';
 import { ROUTES } from '@/lib/routing/routes';
 
 const TRANSITION_DURATION = 150;
@@ -28,9 +34,7 @@ export default function PostPurchaseOnboardingScreen() {
   const { step, logStepViewed } = flow;
 
   useEffect(() => {
-    const stepName =
-      step === 0 ? 'thankYou' : step === 1 ? 'screenTimeSetup' : 'complete';
-    logStepViewed(stepName);
+    logStepViewed(POST_PURCHASE_STEPS[step]);
   }, [step, logStepViewed]);
 
   const animateTransition = (direction: number, after: () => void) => {
@@ -51,11 +55,7 @@ export default function PostPurchaseOnboardingScreen() {
 
   const { goToNext, markCompleted, logEvent } = flow;
 
-  const handleAdvance = () => {
-    animateTransition(-1, () => goToNext());
-  };
-
-  const handleScreenTimeComplete = async () => {
+  const handleAdvance = async () => {
     await markCompleted();
     animateTransition(-1, () => goToNext());
   };
@@ -100,8 +100,11 @@ export default function PostPurchaseOnboardingScreen() {
 
         <Animated.View style={[styles.content, { transform: [{ translateX }] }]}>
           {step === 0 && <ThankYouStep onNext={handleAdvance} />}
-          {step === 1 && <ScreenTimeSetupStep onComplete={handleScreenTimeComplete} />}
-          {step === 2 && <CompleteStep onFinish={handleFinishComplete} />}
+          {step === 1 && <ScreenTimeIntroStep onNext={handleAdvance} />}
+          {step === 2 && <DataProtectionStep onNext={handleAdvance} />}
+          {step === 3 && <ScreenTimePermissionStep onComplete={handleAdvance} />}
+          {step === 4 && <BlockerActivationStep onComplete={handleAdvance} />}
+          {step === 5 && <CompleteStep onFinish={handleFinishComplete} />}
         </Animated.View>
       </SafeAreaWrapper>
     </AuroraBackground>

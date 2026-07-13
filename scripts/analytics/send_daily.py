@@ -8,17 +8,28 @@ Pipeline:
   5. Persist the rendered Markdown next to the source JSON
 
 Usage:
-    python3 -m scripts.analytics.send_daily [--dry-run]
+    python3 -m scripts.analytics.send_daily [--date YYYY-MM-DD] [--dry-run]
 """
 import argparse
 import logging
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Optional
 
 from scripts.analytics.config import load_config
-from scripts.analytics.data_loader import find_latest_metrics, find_matching_report
-from scripts.analytics.firebase_ga4_client import fetch_ga4_snapshot
+from scripts.analytics.data_loader import (
+    find_latest_metrics,
+    find_matching_report,
+    find_metrics_for_date,
+)
+from scripts.analytics.firebase_ga4_client import (
+    fetch_all_events,
+    fetch_ga4_retention,
+    fetch_ga4_snapshot,
+    summarize_retention,
+)
+from scripts.analytics.html_report import build_html
 from scripts.analytics.mailer import send_email
 from scripts.analytics.report_generator import generate_report
 from scripts.analytics.revenuecat_client import fetch_overview
@@ -29,7 +40,8 @@ DEFAULT_ANALYTICS_DIR = Path(__file__).resolve().parent.parent.parent / "docs" /
 logger = logging.getLogger(__name__)
 
 
-def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
+def run(dry_run: bool = False, date_str: Optional[str] = None,
+        analytics_dir: Optional[Path] = None) -> int:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -44,7 +56,10 @@ def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
         return 2
 
     try:
-        latest = find_latest_metrics(target_dir)
+        if date_str:
+            latest = find_metrics_for_date(target_dir, date.fromisoformat(date_str))
+        else:
+            latest = find_latest_metrics(target_dir)
     except FileNotFoundError as e:
         logger.error("No metrics available: %s", e)
         return 3
@@ -77,11 +92,33 @@ def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
                 credentials_path=cfg.google_application_credentials,
                 target_date=latest.date,
             )
+            # Enrich with cohort retention + the unfiltered event scan so the
+            # リテンション / 全イベント sections mirror Focusity. Each is a
+            # separate GA4 call and soft-fails on its own — a flaky cohort query
+            # must not take down the basics/events table.
+            try:
+                retention = fetch_ga4_retention(
+                    property_id=cfg.ga4_property_id,
+                    credentials_path=cfg.google_application_credentials,
+                    end_date=latest.date,
+                )
+                ga4_snapshot["retention_summary"] = summarize_retention(retention)
+            except RuntimeError as e:
+                logger.warning("GA4 retention fetch failed; continuing: %s", e)
+            try:
+                ga4_snapshot["all_events"] = fetch_all_events(
+                    property_id=cfg.ga4_property_id,
+                    credentials_path=cfg.google_application_credentials,
+                    target_date=latest.date,
+                )
+            except RuntimeError as e:
+                logger.warning("GA4 all-events fetch failed; continuing: %s", e)
             payload["firebase"] = ga4_snapshot
             logger.info(
-                "GA4 snapshot fetched: %d events, %d screens",
+                "GA4 snapshot fetched: %d events, %d screens, %d all-events",
                 len(ga4_snapshot.get("events", {})),
                 len(ga4_snapshot.get("top_screens", [])),
+                len(ga4_snapshot.get("all_events", [])),
             )
         except RuntimeError as e:
             logger.warning("GA4 fetch failed; continuing without: %s", e)
@@ -102,8 +139,16 @@ def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
     rendered_path.write_text(markdown, encoding="utf-8")
     logger.info("Wrote %s", rendered_path)
 
+    # HTML part: the Gmail-friendly inline-CSS document. Data tables are built
+    # deterministically from the payload; only the LLM's 横断分析 / 改善提案
+    # narrative is lifted from the Markdown so the email stays readable.
+    html_body = build_html(payload, latest.date, insights_md=markdown)
+
     if dry_run:
-        logger.info("--dry-run: skipping email send. Generated body:\n\n%s", markdown)
+        html_path = target_dir / f"daily-report-{latest.date.isoformat()}.html"
+        html_path.write_text(html_body, encoding="utf-8")
+        logger.info("--dry-run: skipping email send. Wrote HTML preview to %s", html_path)
+        logger.info("--dry-run: plain-text body:\n\n%s", markdown)
         return 0
 
     try:
@@ -113,6 +158,7 @@ def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
             recipient=cfg.report_to_email,
             subject=f"Rewire 日次レポート {latest.date.isoformat()}",
             markdown_body=markdown,
+            html_body=html_body,
         )
     except RuntimeError as e:
         logger.error("Email send failed: %s", e)
@@ -125,12 +171,16 @@ def run(dry_run: bool = False, analytics_dir: Optional[Path] = None) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Send Rewire daily analytics email")
     parser.add_argument(
+        "--date",
+        help="Target date YYYY-MM-DD (default: latest daily-metrics file).",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Render the report but do not call Resend.",
+        help="Render the report (writes an HTML preview) but do not call Resend.",
     )
     args = parser.parse_args()
-    sys.exit(run(dry_run=args.dry_run))
+    sys.exit(run(dry_run=args.dry_run, date_str=args.date))
 
 
 if __name__ == "__main__":

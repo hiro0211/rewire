@@ -41,7 +41,7 @@ jest.mock('@/components/common/SafeAreaWrapper', () => {
   return { SafeAreaWrapper: ({ children }: any) => <View>{children}</View> };
 });
 
-jest.mock('@/components/onboarding/StarryBackground', () => {
+jest.mock('@/components/ui/StarryBackground', () => {
   const { View } = require('react-native');
   return { StarryBackground: ({ children }: any) => <View>{children}</View> };
 });

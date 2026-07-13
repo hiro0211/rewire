@@ -161,4 +161,5 @@ describe('OnboardingStepRenderer', () => {
     );
     expect(getByTestId('transition-step')).toBeTruthy();
   });
+
 });

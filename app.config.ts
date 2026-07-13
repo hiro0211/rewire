@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Rewire',
   slug: 'rewire',
-  version: '2.2.0',
+  version: '2.3.0',
   icon: './assets/images/icon.png',
   orientation: 'portrait',
   scheme: 'rewire',

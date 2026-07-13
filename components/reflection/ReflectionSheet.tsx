@@ -14,9 +14,9 @@ import Animated, {
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
+import { StarryBackground } from '@/components/ui/StarryBackground';
 import { useReflectionSheet } from '@/hooks/reflection/useReflectionSheet';
 import { RADIUS, SPACING } from '@/constants/theme';
 import { ReflectionStepContainer } from './ReflectionStepContainer';
@@ -30,7 +30,7 @@ const ANIM_DURATION = 400;
 const EASING = Easing.bezier(0.25, 1, 0.5, 1);
 
 export function ReflectionSheet() {
-  const { colors, isDark } = useTheme();
+  const { colors, gradients, isDark } = useTheme();
   const router = useRouter();
   const visible = useReflectionSheet((s) => s.visible);
   const step = useReflectionSheet((s) => s.step);
@@ -72,8 +72,9 @@ export function ReflectionSheet() {
     }
   }, [visible, mounted, progress]);
 
+  // colors.overlay はアルファ込みトークンなので opacity はそのまま progress を使う
   const overlayStyle = useAnimatedStyle(() => ({
-    opacity: progress.value * 0.6,
+    opacity: progress.value,
   }));
 
   const sheetStyle = useAnimatedStyle(() => ({
@@ -111,7 +112,7 @@ export function ReflectionSheet() {
     >
       <View style={styles.root}>
         <Animated.View
-          style={[styles.overlay, overlayStyle, { backgroundColor: '#000' }]}
+          style={[styles.overlay, overlayStyle, { backgroundColor: colors.overlay }]}
           pointerEvents={visible ? 'auto' : 'none'}
         >
           <Pressable
@@ -122,23 +123,22 @@ export function ReflectionSheet() {
         </Animated.View>
 
         <Animated.View style={[styles.sheet, sheetStyle]}>
-          {isDark ? (
-            <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
-          ) : null}
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: isDark ? colors.surfaceGlass : colors.surface },
-            ]}
-          />
-          <View style={[styles.handleContainer]}>
-            <View style={[styles.handle, { backgroundColor: colors.textSecondary }]} />
-          </View>
-          <TouchableOpacity activeOpacity={1} style={styles.content}>
-            <ReflectionStepContainer stepKey={step}>
-              {renderStep()}
-            </ReflectionStepContainer>
-          </TouchableOpacity>
+          {/* シートの角丸 + overflow:hidden が星空をクリップする。
+              背景はステップ遷移の外側に置き、再マウントで星の位相が飛ばないようにする */}
+          <StarryBackground
+            gradientColors={[...gradients.background]}
+            showStars={isDark}
+            twinkle
+          >
+            <View style={[styles.handleContainer]}>
+              <View style={[styles.handle, { backgroundColor: colors.textSecondary }]} />
+            </View>
+            <TouchableOpacity activeOpacity={1} style={styles.content}>
+              <ReflectionStepContainer stepKey={step}>
+                {renderStep()}
+              </ReflectionStepContainer>
+            </TouchableOpacity>
+          </StarryBackground>
         </Animated.View>
       </View>
     </Modal>

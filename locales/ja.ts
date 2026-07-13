@@ -25,6 +25,15 @@ export const ja = {
     cosmic: '宇宙',
   },
   dashboard: {
+    screenTimePermissionCard: {
+      title: 'スクリーンタイムの許可が必要です',
+      description: 'アプリのブロック機能を使うには、スクリーンタイムを許可してください。',
+      allow: '許可する',
+      deniedTitle: 'スクリーンタイムが許可されていません',
+      deniedMessage: '設定アプリの「スクリーンタイム」から、Rewire のアクセスを許可してください。',
+      openSettings: '設定を開く',
+      later: 'あとで',
+    },
     greeting: 'おかえりなさい',
     todayReview: '今日の振り返り',
     completed: '完了済み',
@@ -122,8 +131,8 @@ export const ja = {
     },
     features: {
       sectionTitle: 'Rewireでできること',
-      safariBlocker: 'Safariポルノブロッカー',
-      safariBlockerDesc: 'Safariでアダルトサイトを開く前に、Rewireの画面に切り替えて踏みとどまらせます',
+      blocker: 'ポルノブロッカー',
+      blockerDesc: 'Safari も Chrome も、アダルトサイトを開く前に自動でブロック',
       dailyReview: '毎日の振り返り',
       dailyReviewDesc: '衝動やストレスを記録して自分を客観視',
       breathingExercise: '呼吸エクササイズ',
@@ -340,11 +349,11 @@ export const ja = {
       },
     },
     features: {
-      streakTracking: { title: 'ストリーク記録', description: '継続日数を可視化してモチベーションを維持' },
-      screenTime: { title: 'Safari カスタム保護', description: 'Safariでアダルトサイトを開くと Rewire が割り込んで止める' },
-      sosBreathing: { title: 'SOS呼吸法', description: '衝動が来たら深呼吸でピークをやり過ごす' },
-      dailyCheckin: { title: 'デイリーチェックイン', description: '毎日の振り返りで行動パターンを自覚する' },
-      widget: { title: 'ウィジェット対応', description: 'アプリを開かずホーム画面で経過時間をチェック' },
+      streakTracking: { title: 'ストリーク記録', description: '続いた日数をひと目で確認。やる気が続く' },
+      screenTime: { title: '全ブラウザを自動ブロック', description: 'Safari も Chrome も、アダルトサイトを開く前に止める' },
+      sosBreathing: { title: 'SOS呼吸法', description: '衝動が来たら、深呼吸で波をやり過ごす' },
+      dailyCheckin: { title: 'デイリーチェックイン', description: '毎日の振り返りで、自分のパターンに気づく' },
+      widget: { title: 'ウィジェット対応', description: 'アプリを開かずに、ホーム画面で経過時間を確認' },
     },
   },
   articles: {
@@ -422,8 +431,9 @@ export const ja = {
       subscription: 'サブスクリプション',
       survey: 'アンケート',
       support: 'サポート',
-      about: 'について',
+      about: 'アプリについて',
       data: 'データ管理',
+      debug: 'デバッグ',
     },
     labels: {
       nickname: 'ニックネーム',
@@ -441,6 +451,8 @@ export const ja = {
       language: '言語',
       daysFormat: '{{days}}日',
       rateApp: 'アプリを評価する',
+      replayOnboarding: 'オンボーディングをもう一度見る',
+      replayPostPurchaseOnboarding: '購入後オンボーディングをもう一度見る',
     },
     alerts: {
       notificationRequired: '通知許可が必要です',
@@ -481,6 +493,13 @@ export const ja = {
     blockApps: 'アプリをブロック',
     blockAppsCount: '%{count}個のアプリ/カテゴリ',
     blockAppsNone: '未選択（タップして追加）',
+    activatedToast: 'これでポルノサイトのブロックが完了しました！',
+    breathingGate: {
+      confirmTitle: '本当にオフにしますか？',
+      confirmDescription: 'オフにすると、アダルトサイトのブロックが解除されます。',
+      keepProtection: '保護を続ける',
+      turnOff: 'オフにする',
+    },
   },
   screenTime: {
     title: '他のブラウザを封印',
@@ -507,11 +526,47 @@ export const ja = {
     shieldPrimaryButton: 'Rewireを開く',
     shieldSecondaryButton: '閉じる',
   },
+  appUpdate: {
+    whatsNew: {
+      title: 'ブロック機能が新しくなりました',
+      body: 'サイトブロックの設定が、ボタンひとつに変わりました。Safari の拡張機能は不要になり、Chrome を含むすべてのブラウザでアダルトサイトをまとめてブロックできます。',
+      hint: 'プロフィールタブの「コンテンツブロッカー」からいつでも変更できます。',
+      tryNow: 'さっそく試す',
+      later: 'あとで',
+    },
+    forceUpdate: {
+      title: 'アップデートが必要です',
+      body: 'このバージョンのサポートは終了しました。ブロック機能の仕組みが新しくなったため、引き続き使うには最新バージョンへのアップデートをお願いします。',
+      openAppStore: 'App Store でアップデート',
+    },
+  },
   postPurchaseOnboarding: {
     thankYou: {
       title: 'プランを購入いただき\nありがとうございます！',
       description: 'Rewireのメイン機能をご紹介します。\n一緒に、見る前に止める仕組みを整えましょう。',
       cta: 'はじめる',
+    },
+    screenTimeIntro: {
+      title: 'この端末でポルノを\n見られなくします',
+      description:
+        'そのために、次の画面でスクリーンタイムの許可をお願いします。許可すると、Safari や Chrome などすべてのブラウザでポルノサイトをブロックできるようになります。',
+      cta: '次へ',
+    },
+    dataProtection: {
+      title: 'データは安全に守られます',
+      description:
+        'あなたがどのアプリを使っているかなどのデータは Apple に保護され、私たちは閲覧できませんのでご安心ください',
+    },
+    screenTimePermission: {
+      title: 'スクリーンタイムへのアクセスを許可',
+      description:
+        'Rewire はポルノサイトをブロックするためにスクリーンタイムを使います。表示されるダイアログで「続ける」をタップしてください。',
+      enableButton: 'スクリーンタイムを有効にする',
+      arrowHint: '「続ける」をタップ',
+    },
+    blockerActivation: {
+      title: '最後の仕上げです',
+      description: '下のボタンを押して、\nポルノサイトのブロックを開始しましょう。',
     },
     complete: {
       title: '準備完了！🎉',
@@ -637,11 +692,11 @@ export const ja = {
   },
   paywall: {
     unavailableTitle: 'いま、つながりません',
-    unavailableMessage: '少し時間をおいて、もう一度ためしてみて。',
+    unavailableMessage: '少し時間をおいて、もう一度お試しください。',
     tryLater: 'あとで試す',
     tagline: '自分を、取り戻そう。',
-    headline: '意志力の問題じゃない。\nポルノを自動ブロック。',
-    subHeadline: '見ないを、習慣にする。\n意志じゃなく、仕組みで。',
+    headline: '意志力の問題じゃない。\nポルノを、自動でブロック。',
+    subHeadline: 'Safari も Chrome も、見る前に止まる。\n意志じゃなく、仕組みで続く。',
     startFree: '無料で始める',
     cancelAnytime: 'いつでも解約できます',
     billingAnnual: '3日間無料、そのあと {{price}}／年',
@@ -675,11 +730,11 @@ export const ja = {
     startFreeTrial: '無料トライアルを始める',
     trialAutoRenew: 'トライアル終了後、自動で課金されます。',
     features: {
-      blocker: { title: 'Safari で、見る前に止める', description: '拡張機能が、見る一歩手前でブロック。' },
-      widget: { title: 'ウィジェットで、ひと目で確認', description: 'ロック画面のままでも、続いた時間が見える。' },
-      sos: { title: '衝動がきたら、深呼吸でリセット', description: '触覚ガイドの呼吸で、1 分で波を流す。' },
-      reflection: { title: '毎日1分、振り返りの習慣', description: '決めた時刻に通知。タップひとつで完了。' },
-      badges: { title: '18のバッジ、宇宙までの旅', description: '月から惑星、恒星、そして宇宙へ。' },
+      blocker: { title: '全ブラウザで、見る前に止める', description: 'どのブラウザで開いても、アダルトサイトを自動でブロック。' },
+      widget: { title: '続いた日数を、ひと目で', description: 'ロック画面のまま、今日までの積み重ねが見える。' },
+      sos: { title: '衝動がきたら、ひと呼吸', description: '触覚ガイドの呼吸で、1分あれば波は引く。' },
+      reflection: { title: '1日1分の、振り返り', description: '決めた時刻に通知。タップひとつで完了。' },
+      badges: { title: '月から宇宙まで、18の節目', description: '続けた日が、星の旅になる。' },
     },
     reviews: {
       sectionTitle: 'ユーザーの声',

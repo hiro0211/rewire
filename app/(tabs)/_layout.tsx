@@ -1,15 +1,21 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { BlurTabBar } from '@/components/ui/BlurTabBar';
 import { FONT_WEIGHT } from '@/constants/theme';
+import { WhatsNewModal } from '@/components/common/WhatsNewModal';
+import { useWhatsNewModal } from '@/hooks/useWhatsNewModal';
+import { ROUTES } from '@/lib/routing/routes';
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const { t } = useLocale();
+  const router = useRouter();
+  const whatsNew = useWhatsNewModal();
 
   return (
+    <>
     <Tabs
       tabBar={(props) => <BlurTabBar {...props} />}
       sceneContainerStyle={{ backgroundColor: colors.background }}
@@ -66,5 +72,14 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    <WhatsNewModal
+      visible={whatsNew.visible}
+      onTryNow={() => {
+        whatsNew.dismiss();
+        router.push(ROUTES.profileTab);
+      }}
+      onDismiss={whatsNew.dismiss}
+    />
+    </>
   );
 }

@@ -7,6 +7,7 @@ import { StatsRow } from '@/components/dashboard/StatsRow';
 import { SegmentedStreakCard } from '@/components/dashboard/SegmentedStreakCard';
 import { ShareWidgetCard } from '@/components/dashboard/ShareWidgetCard';
 import { QuickActionGrid } from '@/components/dashboard/QuickActionGrid';
+import { ScreenTimePermissionCard } from '@/components/dashboard/ScreenTimePermissionCard';
 import { SOSButton } from '@/components/dashboard/SOSButton';
 import { useUserStore } from '@/stores/userStore';
 import { useCheckinStore } from '@/stores/checkinStore';
@@ -128,9 +129,21 @@ export default function DashboardScreen() {
   const quickActionAnim = useEntranceAnimation({ delay: 200 });
   const sosAnim = useEntranceAnimation({ delay: 300 });
 
+  // ⚠️ TEMP DEBUG (freeze investigation): remove after diagnosis
+  console.log('[HOME-DEBUG] render', {
+    reflectionSheetVisible,
+    surveyModalVisible,
+    reviewModalVisible,
+    celebratingStreak,
+    pendingCelebrationStreak,
+    shouldShowSurvey,
+    shouldShowReview,
+  });
+
   return (
     <SafeAreaWrapper>
       <ScrollView
+        onTouchStart={() => console.log('[HOME-DEBUG] ScrollView touch START reached')}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingTop: SPACING.xxxl },
@@ -170,6 +183,8 @@ export default function DashboardScreen() {
         <Animated.View style={quickActionAnim.animatedStyle}>
           <QuickActionGrid />
         </Animated.View>
+
+        <ScreenTimePermissionCard />
 
       </ScrollView>
 

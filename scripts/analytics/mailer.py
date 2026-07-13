@@ -74,8 +74,14 @@ def send_email(
     recipient: str,
     subject: str,
     markdown_body: str,
+    html_body: Optional[str] = None,
 ) -> Optional[str]:
     """Send a single email via Resend. Returns the Resend message ID on 2xx.
+
+    ``markdown_body`` is always the plain-text part. ``html_body``, when given,
+    is used verbatim as the HTML part (a prebuilt, Gmail-friendly document from
+    ``html_report.build_html``); otherwise we fall back to the minimal in-house
+    ``markdown_to_html`` (which renders tables as a ``<pre>`` block).
 
     Raises:
         RuntimeError: on non-2xx response from Resend.
@@ -85,7 +91,7 @@ def send_email(
         "to": recipient,
         "subject": subject,
         "text": markdown_body,
-        "html": markdown_to_html(markdown_body),
+        "html": html_body if html_body is not None else markdown_to_html(markdown_body),
     }
     headers = {
         "Authorization": f"Bearer {api_key}",

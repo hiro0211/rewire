@@ -33,6 +33,15 @@ export const en: Translations = {
     cosmic: 'Cosmic',
   },
   dashboard: {
+    screenTimePermissionCard: {
+      title: 'Screen Time Permission Needed',
+      description: 'Allow Screen Time access to block adult sites on this device.',
+      allow: 'Allow',
+      deniedTitle: 'Screen Time Access Is Off',
+      deniedMessage: 'Open Settings and allow Rewire under Screen Time.',
+      openSettings: 'Open Settings',
+      later: 'Later',
+    },
     greeting: 'Welcome back',
     todayReview: "Today's Check-in",
     completed: 'Completed',
@@ -136,8 +145,8 @@ export const en: Translations = {
     },
     features: {
       sectionTitle: 'What Rewire Can Do',
-      safariBlocker: 'Safari Porn Blocker',
-      safariBlockerDesc: 'The moment you open an adult site in Safari, Rewire takes over the screen to stop you in your tracks',
+      blocker: 'Porn Blocker',
+      blockerDesc: 'Blocks adult sites before they open — in Safari, Chrome, and every other browser',
       dailyReview: 'Daily Check-in',
       dailyReviewDesc: 'Track urges and stress to understand your patterns',
       breathingExercise: 'Breathing Exercise',
@@ -354,8 +363,8 @@ export const en: Translations = {
       },
     },
     features: {
-      streakTracking: { title: 'Streak Tracking', description: 'Visualize your progress to stay motivated' },
-      screenTime: { title: 'Safari Custom Protection', description: 'Rewire intercepts when you open adult sites in Safari' },
+      streakTracking: { title: 'Streak Tracking', description: 'See your progress at a glance and stay motivated' },
+      screenTime: { title: 'Blocks Every Browser', description: 'Stops adult sites before they open — in Safari, Chrome, and more' },
       sosBreathing: { title: 'SOS Breathing', description: 'Ride out urge peaks with deep breathing' },
       dailyCheckin: { title: 'Daily Check-in', description: 'Reflect daily to understand your behavior patterns' },
       widget: { title: 'Widget Support', description: 'Check your streak from the home screen' },
@@ -438,6 +447,7 @@ export const en: Translations = {
       support: 'Support',
       about: 'About',
       data: 'Data Management',
+      debug: 'Debug',
     },
     labels: {
       nickname: 'Nickname',
@@ -455,6 +465,8 @@ export const en: Translations = {
       language: 'Language',
       daysFormat: '{{days}} days',
       rateApp: 'Rate this App',
+      replayOnboarding: 'Watch Onboarding Again',
+      replayPostPurchaseOnboarding: 'Watch Post-Purchase Onboarding Again',
     },
     alerts: {
       notificationRequired: 'Notification Permission Required',
@@ -495,6 +507,13 @@ export const en: Translations = {
     blockApps: 'Block Apps',
     blockAppsCount: '%{count} app(s) / categories',
     blockAppsNone: 'None (tap to add)',
+    activatedToast: 'Porn sites are now blocked!',
+    breathingGate: {
+      confirmTitle: 'Really turn it off?',
+      confirmDescription: 'Turning this off removes the adult-site block.',
+      keepProtection: 'Keep Protection',
+      turnOff: 'Turn Off',
+    },
   },
   screenTime: {
     title: 'Lock other browsers',
@@ -521,11 +540,47 @@ export const en: Translations = {
     shieldPrimaryButton: 'Open Rewire',
     shieldSecondaryButton: 'Close',
   },
+  appUpdate: {
+    whatsNew: {
+      title: 'Blocking Just Got Simpler',
+      body: 'Site blocking now takes a single tap. No Safari extension needed — block adult sites across every browser, including Chrome.',
+      hint: 'You can change this anytime from the Content Blocker on the Profile tab.',
+      tryNow: 'Try It Now',
+      later: 'Later',
+    },
+    forceUpdate: {
+      title: 'Update Required',
+      body: 'This version is no longer supported. Please update to the latest version to keep using Rewire.',
+      openAppStore: 'Update on the App Store',
+    },
+  },
   postPurchaseOnboarding: {
     thankYou: {
       title: 'Thank you for\nupgrading to Pro!',
       description: 'Let us introduce your main Rewire features.\nTogether, we will set up the system that stops you before you see it.',
       cta: 'Get Started',
+    },
+    screenTimeIntro: {
+      title: 'Make porn unwatchable\non this device',
+      description:
+        'To do that, we will ask for Screen Time permission on the next screen. It lets Rewire block porn sites across every browser, including Safari and Chrome.',
+      cta: 'Next',
+    },
+    dataProtection: {
+      title: 'Your data is safe',
+      description:
+        'Data about which apps you use is protected by Apple — we can never see it. Rest assured.',
+    },
+    screenTimePermission: {
+      title: 'Allow Screen Time access',
+      description:
+        'Rewire uses Screen Time to block porn sites. Tap "Continue" on the dialog that appears.',
+      enableButton: 'Enable Screen Time',
+      arrowHint: 'Tap "Continue"',
+    },
+    blockerActivation: {
+      title: 'One last step',
+      description: 'Press the button below to\nstart blocking porn sites.',
     },
     complete: {
       title: 'You are ready! 🎉',
@@ -654,8 +709,8 @@ export const en: Translations = {
     unavailableMessage: 'Could not connect to the subscription service.\nPlease try again later.',
     tryLater: 'Try Later',
     tagline: 'Take back control.',
-    headline: "It's not about willpower.\nAuto-block porn.",
-    subHeadline: 'Make "not watching" a habit.\nNot willpower — system.',
+    headline: "It's not about willpower.\nPorn, auto-blocked.",
+    subHeadline: 'Safari, Chrome — stopped before you look.\nNot willpower. A system that lasts.',
     startFree: 'Start Free',
     cancelAnytime: 'Cancel anytime',
     billingAnnual: '3-day free trial, then {{price}} /year',
@@ -689,11 +744,11 @@ export const en: Translations = {
     startFreeTrial: 'Start Free Trial',
     trialAutoRenew: 'After the free trial ends, subscription charges will be automatically applied.',
     features: {
-      blocker: { title: 'Stops it in Safari', description: 'The extension blocks it one step before you tap.' },
-      widget: { title: 'See it at a glance — widget', description: 'Your streak, visible even from the lock screen.' },
-      sos: { title: 'Urge hit? Breathe and reset.', description: 'Haptic-guided breathing — one minute to let the wave pass.' },
+      blocker: { title: 'Stops it before you look — any browser', description: 'Whatever browser you open, adult sites are blocked automatically.' },
+      widget: { title: 'Your streak, at a glance', description: 'See how far you’ve come, right from the lock screen.' },
+      sos: { title: 'Urge hit? Take a breath.', description: 'Haptic-guided breathing — a minute, and the wave passes.' },
       reflection: { title: 'One minute a day to reflect', description: 'A tap at your chosen time — done.' },
-      badges: { title: '18 badges, a journey to the cosmos', description: 'Moon, planets, stars, and beyond.' },
+      badges: { title: 'From the moon to the cosmos — 18 milestones', description: 'Each day you keep going becomes a journey among the stars.' },
     },
     reviews: {
       sectionTitle: 'What Users Say',

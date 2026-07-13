@@ -18,11 +18,7 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
-jest.mock('expo-blur', () => {
-  const { View } = require('react-native');
-  return { BlurView: ({ children, ...p }: any) => <View {...p}>{children}</View> };
-});
-
+let mockIsDark = true;
 jest.mock('@/hooks/useTheme', () => ({
   useTheme: () => ({
     colors: {
@@ -38,13 +34,14 @@ jest.mock('@/hooks/useTheme', () => ({
       borderGlass: 'rgba(255,255,255,0.08)',
     },
     gradients: {
+      background: ['#0A0A0F', '#1a1a3e', '#2d1b4e'],
       button: ['#8B5CF6', '#6D28D9'],
       sos: ['#EF4444', '#991B1B'],
       glass: ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'],
     },
     glow: { purple: 'rgba(139,92,246,0.3)', danger: 'rgba(239,68,68,0.3)' },
     shadows: { small: {}, medium: {}, glowCard: {}, sheet: {} },
-    isDark: true,
+    isDark: mockIsDark,
   }),
 }));
 
@@ -102,6 +99,7 @@ import { ReflectionSheet } from '../ReflectionSheet';
 describe('ReflectionSheet', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsDark = true;
     mockState = {
       visible: true,
       step: 1,
@@ -199,5 +197,33 @@ describe('ReflectionSheet', () => {
     fireEvent.press(getByTestId('reflection-sheet-overlay'));
 
     expect(mockClose).toHaveBeenCalled();
+  });
+
+  describe('宇宙UI背景', () => {
+    it('シートに星空背景が描画される', () => {
+      const { getByTestId } = render(<ReflectionSheet />);
+      expect(getByTestId('starry-background')).toBeTruthy();
+    });
+
+    it('星空グラデーションにテーマの gradients.background が使われる', () => {
+      const { getByTestId } = render(<ReflectionSheet />);
+      expect(getByTestId('starry-gradient').props.colors).toEqual([
+        '#0A0A0F',
+        '#1a1a3e',
+        '#2d1b4e',
+      ]);
+    });
+
+    it('ダークモードでは星が表示される', () => {
+      mockIsDark = true;
+      const { getByTestId } = render(<ReflectionSheet />);
+      expect(getByTestId('star-dot-0')).toBeTruthy();
+    });
+
+    it('ライトモードでは星を表示しない', () => {
+      mockIsDark = false;
+      const { queryByTestId } = render(<ReflectionSheet />);
+      expect(queryByTestId('star-dot-0')).toBeNull();
+    });
   });
 });

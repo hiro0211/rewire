@@ -59,7 +59,7 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
     }
     const hasCompleted = useUserStore.getState().user?.hasCompletedPostPurchaseOnboarding ?? false;
     if (Platform.OS === 'ios' && !hasCompleted) {
-      router.replace('/post-purchase-onboarding');
+      router.replace(ROUTES.postPurchaseOnboarding);
     } else {
       router.replace(ROUTES.tabs);
     }

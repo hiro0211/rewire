@@ -63,6 +63,39 @@ class TestSendEmail:
         assert "<h1>Title</h1>" in payload["html"]
         assert "body text" in payload["html"]
 
+    def test_prefers_explicit_html_body_over_markdown_conversion(self):
+        from scripts.analytics.mailer import send_email
+
+        prebuilt = "<!DOCTYPE html><html><body><table></table></body></html>"
+        with patch("requests.post", return_value=self._mock_resend()) as mock_post:
+            send_email(
+                api_key="re_test",
+                sender="X <t@e.com>",
+                recipient="me@e.com",
+                subject="s",
+                markdown_body="| a | b |\n|---|---|\n| 1 | 2 |",
+                html_body=prebuilt,
+            )
+        payload = mock_post.call_args.kwargs["json"]
+        # HTML part is the prebuilt document verbatim; text part stays Markdown.
+        assert payload["html"] == prebuilt
+        assert payload["text"] == "| a | b |\n|---|---|\n| 1 | 2 |"
+        assert "<pre>" not in payload["html"]
+
+    def test_falls_back_to_markdown_html_when_no_html_body(self):
+        from scripts.analytics.mailer import send_email
+
+        with patch("requests.post", return_value=self._mock_resend()) as mock_post:
+            send_email(
+                api_key="re_test",
+                sender="X <t@e.com>",
+                recipient="me@e.com",
+                subject="s",
+                markdown_body="# Title\n\nbody",
+            )
+        payload = mock_post.call_args.kwargs["json"]
+        assert "<h1>Title</h1>" in payload["html"]
+
     def test_returns_resend_message_id_on_success(self):
         from scripts.analytics.mailer import send_email
 

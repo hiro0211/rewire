@@ -176,4 +176,46 @@ describe('useScreenTimeSetup', () => {
     expect(result.current.step).toBe('idle');
     expect(result.current.pendingSelection).toBeNull();
   });
+
+  describe('requestPermission（PPO用: 許可のみ取得。フィルター適用はしない）', () => {
+    it('成功: 許可→completed。applyAppShield/markShielded を呼ばない（ブロック開始はユーザー操作に委ねる）', async () => {
+      mockRequestAuthorization.mockResolvedValue({ status: 'approved' });
+
+      const { result } = renderHook(() => useScreenTimeSetup());
+
+      await act(async () => {
+        await result.current.requestPermission();
+      });
+
+      expect(result.current.step).toBe('completed');
+      expect(mockApplyAppShield).not.toHaveBeenCalled();
+      expect(mockMarkShielded).not.toHaveBeenCalled();
+      expect(mockPersistSelection).not.toHaveBeenCalled();
+    });
+
+    it('認可拒否時はdeniedに遷移し、shieldを適用しない', async () => {
+      mockRequestAuthorization.mockResolvedValue({ status: 'denied' });
+
+      const { result } = renderHook(() => useScreenTimeSetup());
+
+      await act(async () => {
+        await result.current.requestPermission();
+      });
+
+      expect(result.current.step).toBe('denied');
+      expect(mockApplyAppShield).not.toHaveBeenCalled();
+    });
+
+    it('requestAuthorization がthrowしたらerrorに遷移', async () => {
+      mockRequestAuthorization.mockRejectedValue(new Error('boom'));
+
+      const { result } = renderHook(() => useScreenTimeSetup());
+
+      await act(async () => {
+        await result.current.requestPermission();
+      });
+
+      expect(result.current.step).toBe('error');
+    });
+  });
 });

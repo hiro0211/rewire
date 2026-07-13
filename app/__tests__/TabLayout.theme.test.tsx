@@ -37,8 +37,17 @@ jest.mock('expo-router', () => {
         },
       },
     ),
+    useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   };
 });
+
+jest.mock('@/hooks/useWhatsNewModal', () => ({
+  useWhatsNewModal: () => ({ visible: false, dismiss: jest.fn() }),
+}));
+
+jest.mock('@/components/common/WhatsNewModal', () => ({
+  WhatsNewModal: () => null,
+}));
 
 jest.mock('@expo/vector-icons/Ionicons', () => () => null);
 

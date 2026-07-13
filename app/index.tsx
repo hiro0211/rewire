@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/userStore';
 import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { seedDevUser } from '@/lib/dev/seedDevUser';
+import { ROUTES } from '@/lib/routing/routes';
 
 // ブランド画面を常に表示する（dev clientでもスキップしない）
 // ⚠️ 本番運用設定: false。ローカルでオンボーディングをスキップしたい場合のみ一時的に true にする。
@@ -33,7 +34,7 @@ export default function Index() {
   }
 
   if (DEV_PREVIEW_POST_PURCHASE) {
-    return <Redirect href="/post-purchase-onboarding" />;
+    return <Redirect href={ROUTES.postPurchaseOnboarding} />;
   }
 
   if (DEV_SKIP_ONBOARDING) {

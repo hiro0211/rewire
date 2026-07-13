@@ -13,6 +13,11 @@ jest.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
+const mockResolveWidgetLocale = jest.fn(() => 'ja');
+jest.mock('../resolveWidgetLocale', () => ({
+  resolveWidgetLocale: () => mockResolveWidgetLocale(),
+}));
+
 import { syncWidgetData, clearWidgetData } from '../widgetDataSync';
 
 describe('syncWidgetData', () => {
@@ -112,6 +117,28 @@ describe('syncWidgetData', () => {
     const json = JSON.parse(mockSyncData.mock.calls[0][0]);
     expect(json.updatedAt).toBeDefined();
     expect(typeof json.updatedAt).toBe('string');
+  });
+
+  it('解決した locale を JSON に含める（en）', async () => {
+    mockResolveWidgetLocale.mockReturnValueOnce('en');
+    await syncWidgetData({
+      streakStartDate: '2026-02-20',
+      goalDays: 30,
+      relapseCount: 0,
+    });
+    const json = JSON.parse(mockSyncData.mock.calls[0][0]);
+    expect(json.locale).toBe('en');
+  });
+
+  it('解決した locale を JSON に含める（ja）', async () => {
+    mockResolveWidgetLocale.mockReturnValueOnce('ja');
+    await syncWidgetData({
+      streakStartDate: '2026-02-20',
+      goalDays: 30,
+      relapseCount: 0,
+    });
+    const json = JSON.parse(mockSyncData.mock.calls[0][0]);
+    expect(json.locale).toBe('ja');
   });
 });
 

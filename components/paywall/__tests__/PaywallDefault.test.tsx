@@ -50,11 +50,11 @@ describe('PaywallDefault', () => {
 
   it('機能カードが表示される', () => {
     const { getByText } = render(<PaywallDefault {...defaultProps} />);
-    expect(getByText('Safari で、見る前に止める')).toBeTruthy();
-    expect(getByText('ウィジェットで、ひと目で確認')).toBeTruthy();
-    expect(getByText('衝動がきたら、深呼吸でリセット')).toBeTruthy();
-    expect(getByText('毎日1分、振り返りの習慣')).toBeTruthy();
-    expect(getByText('18のバッジ、宇宙までの旅')).toBeTruthy();
+    expect(getByText('全ブラウザで、見る前に止める')).toBeTruthy();
+    expect(getByText('続いた日数を、ひと目で')).toBeTruthy();
+    expect(getByText('衝動がきたら、ひと呼吸')).toBeTruthy();
+    expect(getByText('1日1分の、振り返り')).toBeTruthy();
+    expect(getByText('月から宇宙まで、18の節目')).toBeTruthy();
   });
 
   it('CTAボタンに「無料で始める」と表示される', () => {

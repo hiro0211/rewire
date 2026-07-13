@@ -1,4 +1,4 @@
-import { StarryBackground } from '@/components/onboarding/StarryBackground';
+import { StarryBackground } from '@/components/ui/StarryBackground';
 import { ShootingStars } from '@/components/ui/ShootingStars';
 import {
   BRAND_CATCHPHRASE_KEYS,

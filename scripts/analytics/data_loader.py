@@ -57,6 +57,25 @@ def find_latest_metrics(analytics_dir: Path) -> LatestMetrics:
     return LatestMetrics(date=latest_date, metrics=payload, source_path=source)
 
 
+def find_metrics_for_date(analytics_dir: Path, target: date) -> LatestMetrics:
+    """Return the daily-metrics JSON for a specific date, preferring -corrected.
+
+    Used by ``send_daily --date`` to re-render a past day's report.
+
+    Raises:
+        FileNotFoundError: when no metrics file exists for ``target``.
+    """
+    date_str = target.isoformat()
+    for suffix in ("-corrected", ""):
+        path = Path(analytics_dir) / f"daily-metrics-{date_str}{suffix}.json"
+        if path.is_file():
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            return LatestMetrics(date=target, metrics=payload, source_path=path)
+    raise FileNotFoundError(
+        f"No daily-metrics-{date_str}.json found under {analytics_dir}"
+    )
+
+
 def find_matching_report(analytics_dir: Path, target: date) -> Optional[str]:
     """Return the Markdown report for a date, preferring -corrected suffix."""
     date_str = target.isoformat()

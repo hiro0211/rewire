@@ -1,7 +1,10 @@
+import type { SupportedLocale } from '@/types/i18n';
+
 export interface WidgetPayload {
   streakStartDate: string | null;
   goalDays: number;
   relapseCount: number;
+  locale: SupportedLocale;
   updatedAt: string;
 }
 
@@ -11,6 +14,10 @@ export interface WidgetDataInput {
   relapseCount: number;
 }
 
+export interface WidgetPayloadInput extends WidgetDataInput {
+  locale: SupportedLocale;
+}
+
 function normalizeDate(date: string | null): string | null {
   if (!date) return null;
   if (date.includes('T')) return date;
@@ -18,11 +25,12 @@ function normalizeDate(date: string | null): string | null {
   return d.toISOString();
 }
 
-export function createWidgetPayload(input: WidgetDataInput): WidgetPayload {
+export function createWidgetPayload(input: WidgetPayloadInput): WidgetPayload {
   return {
     streakStartDate: normalizeDate(input.streakStartDate),
     goalDays: input.goalDays,
     relapseCount: input.relapseCount,
+    locale: input.locale,
     updatedAt: new Date().toISOString(),
   };
 }
