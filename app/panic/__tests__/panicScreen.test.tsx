@@ -89,7 +89,7 @@ describe('PanicScreen', () => {
   it('赤ボタン押下で /breathing に遷移する', () => {
     const { getByTestId } = render(<PanicScreen />);
     fireEvent.press(getByTestId('panic-action-thinking'));
-    expect(mockPush).toHaveBeenCalledWith('/breathing');
+    expect(mockPush).toHaveBeenCalledWith('/breathing?source=sos');
   });
 
   it('紺ボタン押下で /recovery に遷移する', () => {

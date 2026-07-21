@@ -23,7 +23,7 @@ export function QuickActionGrid() {
         <GlassCircle
           iconName="leaf-outline"
           label={t('quickAction.breathe')}
-          onPress={() => handle('breathe', () => router.push('/breathing'))}
+          onPress={() => handle('breathe', () => router.push('/breathing?source=quick_action'))}
           testID="qa-breathe"
         />
         <GlassCircle

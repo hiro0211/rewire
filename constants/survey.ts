@@ -1,6 +1,10 @@
 import type { SurveyQuestion } from '@/types/survey';
 
-export const SURVEY_QUESTIONS: SurveyQuestion[] = [
+/**
+ * Asked at the very start of onboarding — a brand-new user can answer all of
+ * these without having used the app yet.
+ */
+export const ONBOARDING_SURVEY_QUESTIONS: SurveyQuestion[] = [
   {
     id: 'age_range',
     questionKey: 'survey.ageRange.question',
@@ -19,7 +23,10 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     type: 'choice',
     options: [
       { labelKey: 'survey.discoveryChannel.appStore', value: 'app_store' },
-      { labelKey: 'survey.discoveryChannel.sns', value: 'sns' },
+      { labelKey: 'survey.discoveryChannel.tiktok', value: 'tiktok' },
+      { labelKey: 'survey.discoveryChannel.instagram', value: 'instagram' },
+      { labelKey: 'survey.discoveryChannel.youtube', value: 'youtube' },
+      { labelKey: 'survey.discoveryChannel.x', value: 'x' },
       { labelKey: 'survey.discoveryChannel.referral', value: 'referral' },
       { labelKey: 'survey.discoveryChannel.webSearch', value: 'web_search' },
       { labelKey: 'survey.discoveryChannel.other', value: 'other' },
@@ -40,6 +47,13 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     required: true,
     otherTextId: 'motivation_other_text',
   },
+];
+
+/**
+ * Asked from the 3-day-old survey prompt — these ask what changed since the
+ * user started, so they only make sense after real usage.
+ */
+export const FEEDBACK_SURVEY_QUESTIONS: SurveyQuestion[] = [
   {
     id: 'perceived_change',
     questionKey: 'survey.perceivedChange.question',
@@ -60,6 +74,12 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
     type: 'text_input',
     required: false,
   },
+];
+
+/** Backward compatibility: every survey question across both sets. */
+export const SURVEY_QUESTIONS: SurveyQuestion[] = [
+  ...ONBOARDING_SURVEY_QUESTIONS,
+  ...FEEDBACK_SURVEY_QUESTIONS,
 ];
 
 export const TOTAL_SURVEY_QUESTIONS = SURVEY_QUESTIONS.length;

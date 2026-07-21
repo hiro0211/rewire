@@ -37,6 +37,24 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
+jest.mock('../PlanetOrbRenderer', () => {
+  const { View } = require('react-native');
+  return {
+    PlanetOrbRenderer: (props: any) => (
+      <View testID={`planet-orb-${props.badgeId}`} {...props} />
+    ),
+  };
+});
+
+jest.mock('../CosmicFieldRenderer', () => {
+  const { View } = require('react-native');
+  return {
+    CosmicFieldRenderer: (props: any) => (
+      <View testID={`cosmic-field-${props.badgeId}`} {...props} />
+    ),
+  };
+});
+
 import { StaticOrb } from '../StaticOrb';
 import type { BadgeColorTriad } from '@/constants/badges/BadgeColorTriad';
 
@@ -65,5 +83,30 @@ describe('StaticOrb', () => {
     );
     expect(getByTestId('static-orb-canvas')).toBeTruthy();
     expect(queryByTestId('static-orb-fallback')).toBeNull();
+  });
+
+  it('badgeId なしのとき CoreOrbRenderer（static-orb-canvas）を描画する', () => {
+    const { getByTestId, queryByTestId } = render(
+      <StaticOrb colors={testColors} size={100} />
+    );
+    expect(getByTestId('static-orb-canvas')).toBeTruthy();
+    expect(queryByTestId('planet-orb-earth')).toBeNull();
+    expect(queryByTestId('cosmic-field-nebula')).toBeNull();
+  });
+
+  it('badgeId="earth"（惑星）のとき PlanetOrbRenderer を描画する', () => {
+    const { getByTestId, queryByTestId } = render(
+      <StaticOrb colors={testColors} size={100} badgeId="earth" />
+    );
+    expect(getByTestId('planet-orb-earth')).toBeTruthy();
+    expect(queryByTestId('static-orb-canvas')).toBeNull();
+  });
+
+  it('badgeId="nebula"（宇宙）のとき CosmicFieldRenderer を描画する', () => {
+    const { getByTestId, queryByTestId } = render(
+      <StaticOrb colors={testColors} size={100} badgeId="nebula" />
+    );
+    expect(getByTestId('cosmic-field-nebula')).toBeTruthy();
+    expect(queryByTestId('static-orb-canvas')).toBeNull();
   });
 });

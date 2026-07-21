@@ -95,6 +95,169 @@ _EVENT_TO_METRIC = {
     "active subscriptions": "active_subscriptions",
 }
 
+# --- Per-report routing -----------------------------------------------------
+#
+# Every ASC report carries its own discriminator column, and the same value can
+# mean different things depending on which report it came from ("Voluntary
+# churn" is a daily flow in the event report but a standing population in the
+# state report). Routing on the report file stem — which is what
+# `load_tsv_data` keys on — means the meaning is read from the file identity
+# rather than guessed from the columns.
+
+# app_downloads_standard.tsv. Updates are not acquisitions, so "Auto-update"
+# and friends are deliberately unmapped.
+_DOWNLOAD_TYPE_TO_METRIC = {
+    "first-time download": "app_units",
+    "redownload": "redownloads",
+}
+
+# app_store_subscription_event_report_standard.tsv — the daily FLOW of
+# subscription events. A renewal is recurring revenue from an existing
+# subscriber, so it is kept out of paid_conversions: folding it in would
+# inflate trial_to_paid_rate without bound.
+_SUBSCRIPTION_EVENT_TO_METRIC = {
+    "free trial start activation": "trial_starts",
+    "full price from free trial": "paid_conversions",
+    "full price subscription start reactivation": "paid_conversions",
+    "full price renewal": "renewals",
+    "voluntary churn from free trial": "cancellations",
+    "voluntary churn from full price": "cancellations",
+    "involuntary churn": "cancellations",
+}
+
+# app_store_subscription_state_report_standard.tsv — a SNAPSHOT of the current
+# subscriber population. Churn here is everyone standing in a churned state,
+# not the churns that happened today; summing it with the event report above
+# would double-count every cancellation.
+_SUBSCRIPTION_STATE_TO_METRIC = {
+    "free trial": "active_subscriptions",
+    "full price": "active_subscriptions",
+    "introductory price": "active_subscriptions",
+    "voluntary churn": "churned_subscriptions",
+    "involuntary churn": "churned_subscriptions",
+}
+
+# retention_messaging.tsv — the win-back offer shown while cancelling. Its
+# "Page views" are views of that offer, NOT App Store product page views, and
+# its "Cancels" overlap the event report's churn rows.
+_RETENTION_MESSAGING_TO_METRIC = {
+    "page views": "retention_message_views",
+    "cancels": "retention_message_cancels",
+}
+
+# report stem -> (discriminator column, value -> metric key)
+_REPORT_ROUTES = {
+    "app_downloads_standard": ("Download Type", _DOWNLOAD_TYPE_TO_METRIC),
+    "app_store_subscription_event_report_standard": (
+        "Event Name", _SUBSCRIPTION_EVENT_TO_METRIC,
+    ),
+    "app_store_subscription_state_report_standard": (
+        "State Metric", _SUBSCRIPTION_STATE_TO_METRIC,
+    ),
+    "retention_messaging": ("Event", _RETENTION_MESSAGING_TO_METRIC),
+    "app_store_discovery_and_engagement_standard": ("Event", _EVENT_TO_METRIC),
+}
+
+# "Detailed" variants are privacy-thresholded SUBSETS of their standard
+# counterpart, not additional data. Verified against 2026-07-17: for every
+# territory the detailed impression count was <= standard, and detailed carried
+# only the "App Store search" source. They are excluded from totals and used
+# only for dimensional breakdowns.
+_SUBSET_REPORTS = frozenset({
+    "app_store_discovery_and_engagement_detailed",
+    "app_store_subscription_event_report_detailed",
+    "app_store_subscription_state_report_detailed",
+    "app_downloads_detailed",
+})
+
+
+# app_store_purchases_standard.tsv is wide, not discriminator-keyed: every row
+# is one purchase slice with its own numeric columns. It is the only
+# Apple-side source of proceeds and paying users.
+_PURCHASE_COLUMN_TO_METRIC = {
+    "Purchases": "purchases",
+    "Paying Users": "paying_users",
+    "Proceeds in USD": "proceeds_usd",
+    "Sales in USD": "sales_usd",
+}
+
+_PURCHASES_REPORT = "app_store_purchases_standard"
+
+# Reports the pipeline expects Apple to deliver each day. Anything absent is
+# unmeasured, which is not the same as zero — see `detect_missing_reports`.
+EXPECTED_REPORTS = (
+    "app_store_discovery_and_engagement_standard",
+    "app_downloads_standard",
+    "app_store_subscription_event_report_standard",
+    "app_store_subscription_state_report_standard",
+    _PURCHASES_REPORT,
+)
+
+# Which metrics go dark when a given report fails to arrive.
+_REPORT_TO_METRICS = {
+    "app_store_discovery_and_engagement_standard": (
+        "impressions", "product_page_views", "taps",
+    ),
+    "app_downloads_standard": ("app_units", "redownloads"),
+    "app_store_subscription_event_report_standard": (
+        "trial_starts", "paid_conversions", "renewals", "cancellations",
+    ),
+    "app_store_subscription_state_report_standard": (
+        "active_subscriptions", "churned_subscriptions",
+    ),
+    _PURCHASES_REPORT: (
+        "purchases", "paying_users", "proceeds_usd", "sales_usd",
+    ),
+}
+
+
+def detect_missing_reports(data: dict) -> list:
+    """Return the expected reports Apple did not deliver for this date."""
+    return [name for name in EXPECTED_REPORTS if name not in data]
+
+
+def unmeasured_metrics(missing_reports) -> set:
+    """Return the metrics that cannot be measured given ``missing_reports``.
+
+    These must render as 未取得 rather than 0, or a delivery gap reads as a
+    collapse in performance.
+    """
+    unmeasured = set()
+    for report in missing_reports:
+        unmeasured.update(_REPORT_TO_METRICS.get(report, ()))
+    return unmeasured
+
+
+def days_to_purchase(rows) -> list:
+    """Days between install and purchase for each row that records both.
+
+    ``App Download Date`` lets Apple answer "how long until they paid?"
+    directly, with no BigQuery cohort reconstruction. Rows missing or
+    malforming either date are skipped rather than guessed at.
+    """
+    spans = []
+    for row in rows:
+        installed = str(row.get("App Download Date", "")).strip()
+        purchased = str(row.get("Date", "")).strip()
+        if not installed or not purchased:
+            continue
+        try:
+            delta = date.fromisoformat(purchased) - date.fromisoformat(installed)
+        except ValueError:
+            continue
+        spans.append(delta.days)
+    return spans
+
+
+def _routed_metric_key(stem: str, row: dict) -> Optional[str]:
+    """Return the metric key for ``row`` under ``stem``'s routing, if any."""
+    route = _REPORT_ROUTES.get(stem)
+    if route is None:
+        return None
+    column, mapping = route
+    return mapping.get(str(row.get(column, "")).strip().lower())
+
+
 # Legacy wide-format column names — retained so synthetic test fixtures
 # (and any hypothetical future wide-format reports) keep working.
 _WIDE_COLUMN_MAPPINGS = {
@@ -115,14 +278,32 @@ def _empty_metrics() -> dict:
         "impressions": 0,
         "product_page_views": 0,
         "app_units": 0,
+        "redownloads": 0,
         "taps": 0,
         "sessions": 0,
         "active_devices": 0,
         "trial_starts": 0,
         "paid_conversions": 0,
+        "renewals": 0,
         "cancellations": 0,
         "active_subscriptions": 0,
+        "churned_subscriptions": 0,
+        "retention_message_views": 0,
+        "retention_message_cancels": 0,
+        "purchases": 0,
+        "paying_users": 0,
+        "proceeds_usd": 0.0,
+        "sales_usd": 0.0,
     }
+
+
+def _coerce_amount(raw) -> Optional[float]:
+    if raw is None:
+        return None
+    try:
+        return float(str(raw).replace(",", "").replace("$", ""))
+    except (ValueError, TypeError):
+        return None
 
 
 def _coerce_count(raw) -> Optional[int]:
@@ -143,15 +324,44 @@ def _event_metric_key(event_value) -> Optional[str]:
 def extract_metrics(data: dict) -> dict:
     """Aggregate funnel metrics from loaded TSV rows.
 
-    Handles both formats so tests using either layout stay valid:
-      - long format (real ASC reports): rows with ``Event`` + ``Counts``.
-      - wide format (legacy fixtures): one column per metric.
+    Recognised ASC reports are routed by file stem (see ``_REPORT_ROUTES``) so
+    each discriminator column is read with its own report's meaning, and
+    "detailed" subset reports are skipped to avoid double-counting.
+
+    Unrecognised names fall back to the permissive legacy behaviour, which
+    handles both:
+      - long format: rows with ``Event`` + ``Counts``.
+      - wide format (synthetic fixtures): one column per metric.
     """
     metrics = _empty_metrics()
 
-    for _filename, rows in data.items():
+    for filename, rows in data.items():
+        stem = str(filename)
+        if stem in _SUBSET_REPORTS:
+            continue
+        is_routed = stem in _REPORT_ROUTES
+
+        if stem == _PURCHASES_REPORT:
+            for row in rows:
+                for column, metric_key in _PURCHASE_COLUMN_TO_METRIC.items():
+                    amount = _coerce_amount(row.get(column))
+                    if amount is None:
+                        continue
+                    # Counts stay integral; only the USD columns are money.
+                    metrics[metric_key] += (
+                        amount if metric_key.endswith("_usd") else int(amount)
+                    )
+            continue
+
         for row in rows:
-            if "Event" in row and "Counts" in row:
+            if is_routed:
+                metric_key = _routed_metric_key(stem, row)
+                if metric_key is None:
+                    continue
+                count = _coerce_count(row.get("Counts"))
+                if count is not None:
+                    metrics[metric_key] += count
+            elif "Event" in row and "Counts" in row:
                 metric_key = _event_metric_key(row["Event"])
                 if metric_key is None:
                     continue
@@ -213,8 +423,28 @@ def extract_metrics_by_source(data: dict) -> dict:
         )
         return bucket
 
-    for _filename, rows in data.items():
+    for filename, rows in data.items():
+        stem = str(filename)
+        if stem in _SUBSET_REPORTS:
+            continue
+        is_routed = stem in _REPORT_ROUTES
+
         for row in rows:
+            # Resolve the metric first: a routed row that maps to nothing
+            # attributable (a retention-message view, an auto-update) must not
+            # even create a source bucket, or the 媒体別 table sprouts empty
+            # "Unknown" channels.
+            if is_routed:
+                metric_key = _routed_metric_key(stem, row)
+                if metric_key not in _SOURCE_METRIC_KEYS:
+                    continue
+            elif "Event" in row and "Counts" in row:
+                metric_key = _event_metric_key(row["Event"])
+                if metric_key not in _SOURCE_METRIC_KEYS:
+                    continue
+            else:
+                metric_key = None
+
             raw_source = "Unknown"
             for col in source_columns:
                 if col in row and row[col]:
@@ -223,11 +453,8 @@ def extract_metrics_by_source(data: dict) -> dict:
             source = _normalize_source(raw_source)
             bucket = _bucket_for(source)
 
-            if "Event" in row and "Counts" in row:
-                metric_key = _event_metric_key(row["Event"])
-                if metric_key not in _SOURCE_METRIC_KEYS:
-                    continue
-                count = _coerce_count(row["Counts"])
+            if metric_key is not None:
+                count = _coerce_count(row.get("Counts"))
                 if count is not None:
                     bucket[metric_key] += count
             else:
@@ -476,6 +703,8 @@ def main():
     funnel = calculate_funnel(metrics)
     sources = extract_metrics_by_source(data)
     bottleneck = identify_bottleneck(funnel)
+    missing_reports = detect_missing_reports(data)
+    purchase_spans = days_to_purchase(data.get(_PURCHASES_REPORT, []))
 
     # Generate report
     report = generate_daily_report(target_date, metrics, funnel, sources, bottleneck)
@@ -500,6 +729,11 @@ def main():
             "gap": bottleneck[1],
         } if bottleneck[0] else None,
         "sources": sources,
+        # Delivery gaps travel with the data so downstream renderers can show
+        # 未取得 instead of a zero that reads as a performance collapse.
+        "missing_reports": missing_reports,
+        "unmeasured_metrics": sorted(unmeasured_metrics(missing_reports)),
+        "days_to_purchase": purchase_spans,
     }
     json_output = json.dumps(result, indent=2, ensure_ascii=False)
 

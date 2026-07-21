@@ -12,6 +12,7 @@ jest.spyOn(AppState, 'addEventListener').mockImplementation((event, handler) => 
 const mockLoadUser = jest.fn();
 const mockLoadThemePreference = jest.fn();
 const mockLoadLocalePreference = jest.fn();
+const mockLoadDebugSettings = jest.fn();
 const mockUpdateUser = jest.fn().mockResolvedValue(undefined);
 
 let mockHasHydrated = false;
@@ -42,7 +43,8 @@ jest.mock('expo-splash-screen', () => ({
 }));
 
 jest.mock('@/lib/tracking/analyticsClient', () => ({
-  analyticsClient: { setUserProperty: jest.fn() },
+  // App launch now also logs `app_open { days_since_install }`.
+  analyticsClient: { setUserProperty: jest.fn(), logEvent: jest.fn() },
 }));
 
 jest.mock('@/lib/subscription/subscriptionClient', () => ({
@@ -87,6 +89,12 @@ jest.mock('@/stores/reflectionStore', () => ({
   },
 }));
 
+jest.mock('@/stores/debugStore', () => ({
+  useDebugStore: {
+    getState: () => ({ loadDebugSettings: mockLoadDebugSettings }),
+  },
+}));
+
 import { useAppInitialization } from '../useAppInitialization';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
@@ -113,6 +121,11 @@ describe('useAppInitialization', () => {
   it('初期化時にloadThemePreferenceが呼ばれる', () => {
     renderHook(() => useAppInitialization());
     expect(mockLoadThemePreference).toHaveBeenCalled();
+  });
+
+  it('初期化時にloadDebugSettingsが呼ばれる', () => {
+    renderHook(() => useAppInitialization());
+    expect(mockLoadDebugSettings).toHaveBeenCalled();
   });
 
   describe('トラッキング無効化', () => {

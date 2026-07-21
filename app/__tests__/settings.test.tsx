@@ -78,6 +78,13 @@ jest.mock('@/constants/debug', () => ({
   },
 }));
 
+const mockSetDebugEnabled = jest.fn();
+let mockDebugStoreEnabled = false;
+jest.mock('@/stores/debugStore', () => ({
+  useDebugStore: (selector: any) =>
+    selector({ enabled: mockDebugStoreEnabled, setEnabled: mockSetDebugEnabled }),
+}));
+
 jest.mock('@/components/settings/ProfileEditModal', () => {
   const { View } = require('react-native');
   return { ProfileEditModal: () => <View /> };
@@ -263,6 +270,30 @@ describe('SettingsScreen', () => {
       const { queryByText } = render(<SettingsScreen />);
       expect(queryByText('オンボーディングをもう一度見る')).toBeNull();
       expect(queryByText('購入後オンボーディングをもう一度見る')).toBeNull();
+    });
+
+    it('全解放トグルが表示される', () => {
+      mockDebugEnabled = true;
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('全バッジ解放＋オンボスキップ')).toBeTruthy();
+    });
+
+    it('全解放トグルを操作すると setEnabled が呼ばれる', () => {
+      mockDebugEnabled = true;
+      mockDebugStoreEnabled = false;
+      const { getByTestId } = render(<SettingsScreen />);
+      fireEvent(
+        getByTestId('toggle-全バッジ解放＋オンボスキップ'),
+        'onValueChange',
+        true,
+      );
+      expect(mockSetDebugEnabled).toHaveBeenCalledWith(true);
+    });
+
+    it('DEBUG_MENU_ENABLED が false のとき全解放トグルも表示されない', () => {
+      mockDebugEnabled = false;
+      const { queryByText } = render(<SettingsScreen />);
+      expect(queryByText('全バッジ解放＋オンボスキップ')).toBeNull();
     });
   });
 

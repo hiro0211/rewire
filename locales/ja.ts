@@ -286,7 +286,12 @@ export const ja = {
     discoveryChannel: {
       question: 'このアプリをどこで知りましたか？',
       appStore: 'App Store検索',
+      // 旧回答値。Firestore の過去ドキュメントが 'sns' を持つため残す
       sns: 'SNS(TikTok・Instagram等)',
+      tiktok: 'TikTok',
+      instagram: 'Instagram',
+      youtube: 'YouTube',
+      x: 'X（旧Twitter）',
       referral: '友人・知人の紹介',
       webSearch: 'ウェブ検索',
       other: 'その他',
@@ -453,6 +458,7 @@ export const ja = {
       rateApp: 'アプリを評価する',
       replayOnboarding: 'オンボーディングをもう一度見る',
       replayPostPurchaseOnboarding: '購入後オンボーディングをもう一度見る',
+      debugUnlockAll: '全バッジ解放＋オンボスキップ',
     },
     alerts: {
       notificationRequired: '通知許可が必要です',
@@ -802,8 +808,10 @@ export const ja = {
       intro: 'Rewire は、公開されている宇宙画像をアプリ内で活用しています。本ページでは、その提供元とライセンス情報を明記します。',
       planetsTitle: '惑星テクスチャ',
       planetsBody: 'ホーム画面および「達成」画面で使用している太陽系の天体（Mercury / Venus / Earth / Mars / Jupiter / Saturn / Uranus / Neptune / Moon / Sun）の正距円筒図法テクスチャは、Solar System Scope（https://www.solarsystemscope.com/textures/）が提供する素材を、Creative Commons Attribution 4.0 International（CC BY 4.0）ライセンスのもとで利用しています。これらのテクスチャは NASA / JPL / ESA 等が公開する観測データ（Cassini, Voyager, MESSENGER, Mariner, Mars Global Surveyor, Hubble, Lunar Reconnaissance Orbiter, Solar Dynamics Observatory 等）をもとに Solar System Scope が再加工したものです。',
+      cosmicTitle: '深宇宙の画像',
+      cosmicBody: '惑星以外の天体バッジ（星屑・星雲・原始星・白色矮星・恒星系・星団・銀河・宇宙）には、NASA / ESA / CSA / STScI が運用する James Webb 宇宙望遠鏡（JWST）および Hubble 宇宙望遠鏡の実写画像を使用しています。具体的には Carina 星雲の Cosmic Cliffs、原始星 L1527、Southern Ring 星雲、Wolf-Rayet 140、散開星団 Westerlund 2、Phantom Galaxy (M74)、Webb First Deep Field、いて座スタークラウド等です。これらの画像は ESA/Webb（https://esawebb.org/）および ESA/Hubble（https://esahubble.org/）が Creative Commons Attribution 4.0 International（CC BY 4.0）ライセンスのもとで公開しているものを、アプリ内表示用に加工して利用しています。',
       licenseTitle: 'ライセンス表記',
-      licenseBody: 'Planet textures by Solar System Scope (https://www.solarsystemscope.com/textures/), licensed under CC BY 4.0. Derived from NASA imagery.',
+      licenseBody: 'Planet textures by Solar System Scope (https://www.solarsystemscope.com/textures/), licensed under CC BY 4.0. Derived from NASA imagery.\n\nDeep-sky images: NASA, ESA, CSA, STScI (ESA/Webb) and ESA/Hubble, licensed under CC BY 4.0.',
       ccUrlLabel: 'CC BY 4.0 ライセンス全文',
       ccUrl: 'https://creativecommons.org/licenses/by/4.0/',
     },

@@ -15,6 +15,7 @@ export interface OnboardingFormState {
 export function canAdvanceStep(stepIndex: number, state: OnboardingFormState): boolean {
   const cs = STEPS[stepIndex];
   switch (cs.type) {
+    case 'onboarding_survey_choice':
     case 'assessment_choice':
     case 'assessment_yesno':
     case 'assessment_picker':

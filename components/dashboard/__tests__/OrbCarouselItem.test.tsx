@@ -67,11 +67,21 @@ jest.mock('../PlanetOrbRenderer', () => {
   };
 });
 
+jest.mock('../CosmicFieldRenderer', () => {
+  const { View } = require('react-native');
+  return {
+    CosmicFieldRenderer: (props: any) => (
+      <View testID={`cosmic-field-${props.badgeId}`} {...props} />
+    ),
+  };
+});
+
 import { OrbCarouselItem } from '../OrbCarouselItem';
 import { BADGE_DEFINITIONS } from '@/constants/badges/BADGE_DEFINITIONS';
 
 const planetesimal = BADGE_DEFINITIONS.find((b) => b.id === 'mars')!;
 const earthBadge = BADGE_DEFINITIONS.find((b) => b.id === 'earth')!;
+const nebulaBadge = BADGE_DEFINITIONS.find((b) => b.id === 'nebula')!;
 
 function getFlatStyle(node: any) {
   return Array.isArray(node.props.style)
@@ -275,5 +285,46 @@ describe('OrbCarouselItem', () => {
     );
     expect(getByTestId('planet-orb-fallback-mars')).toBeTruthy();
     expect(queryByTestId('orb-canvas')).toBeNull();
+  });
+
+  it('inactive + unlocked の惑星バッジは StaticOrb に badgeId が渡り実写が出る', () => {
+    const { getByTestId } = render(
+      <OrbCarouselItem
+        badge={planetesimal}
+        itemWidth={280}
+        activeOrbSize={120}
+        isActive={false}
+        currentDays={100}
+      />
+    );
+    // StaticOrb（実体）が mock PlanetOrbRenderer を描画する
+    expect(getByTestId('planet-orb-fallback-mars')).toBeTruthy();
+  });
+
+  it('inactive + unlocked の宇宙バッジは StaticOrb で CosmicFieldRenderer が出る', () => {
+    const { getByTestId } = render(
+      <OrbCarouselItem
+        badge={nebulaBadge}
+        itemWidth={280}
+        activeOrbSize={120}
+        isActive={false}
+        currentDays={100}
+      />
+    );
+    expect(getByTestId('cosmic-field-nebula')).toBeTruthy();
+  });
+
+  it('locked のとき StaticOrb に badgeId は渡らずゴースト（実写なし）', () => {
+    const { queryByTestId } = render(
+      <OrbCarouselItem
+        badge={planetesimal}
+        itemWidth={280}
+        activeOrbSize={120}
+        isActive={false}
+        currentDays={0}
+      />
+    );
+    expect(queryByTestId('planet-orb-fallback-mars')).toBeNull();
+    expect(queryByTestId('cosmic-field-mars')).toBeNull();
   });
 });

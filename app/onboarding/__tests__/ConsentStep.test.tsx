@@ -86,9 +86,9 @@ import OnboardingScreen from '../../onboarding/index';
 /**
  * Navigate from welcome to consent step.
  * With mocked empty assessment/education, the steps are:
- *   0:welcome → 1:analyzing → 2:score_result → 3:symptom_select →
- *   4:damage_intro → 5:features → 6:nickname → 7:consent →
- *   8:notification → 9:last_viewed_date
+ *   0:welcome → 1-3:onboarding_survey_choice → 4:analyzing → 5:score_result →
+ *   6:symptom_select → 7:damage_intro → 8:features → 9:nickname → 10:consent →
+ *   11:notification → 12:last_viewed_date
  */
 function navigateToConsent(utils: ReturnType<typeof render>) {
   const { getByText, getByPlaceholderText } = utils;
@@ -96,6 +96,12 @@ function navigateToConsent(utils: ReturnType<typeof render>) {
   // Welcome → "チェックを始める"
   act(() => {
     fireEvent.press(getByText('チェックを始める'));
+    jest.advanceTimersByTime(500);
+  });
+
+  // Onboarding survey (3 questions) → skippable, skip past all of them at once
+  act(() => {
+    fireEvent.press(getByText('スキップ'));
     jest.advanceTimersByTime(500);
   });
 

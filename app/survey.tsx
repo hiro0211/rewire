@@ -14,7 +14,7 @@ import { SurveyCompletionStep } from '@/components/survey/SurveyCompletionStep';
 import { useSurveyForm } from '@/hooks/survey/useSurveyForm';
 import { useSurveyNavigation } from '@/hooks/survey/useSurveyNavigation';
 import { useSurveySubmit } from '@/hooks/survey/useSurveySubmit';
-import { SURVEY_QUESTIONS } from '@/constants/survey';
+import { FEEDBACK_SURVEY_QUESTIONS } from '@/constants/survey';
 
 export default function SurveyScreen() {
   const form = useSurveyForm();
@@ -79,7 +79,7 @@ export default function SurveyScreen() {
             </View>
           </TouchableOpacity>
           <Text style={[styles.stepCounter, { color: colors.textSecondary }]}>
-            {`${nav.step + 1}/${SURVEY_QUESTIONS.length}`}
+            {`${nav.step + 1}/${FEEDBACK_SURVEY_QUESTIONS.length}`}
           </Text>
         </View>
         <ProgressBar progress={nav.progress} height={4} variant="gradient" />

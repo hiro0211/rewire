@@ -56,7 +56,8 @@ jest.mock('@/hooks/feedback/useDeletionFeedbackQuickAction', () => ({
 
 // Mock tracking/subscription
 jest.mock('@/lib/tracking/analyticsClient', () => ({
-  analyticsClient: { setUserProperty: jest.fn() },
+  // App launch now also logs `app_open { days_since_install }`.
+  analyticsClient: { setUserProperty: jest.fn(), logEvent: jest.fn() },
 }));
 jest.mock('@/lib/tracking/useScreenTracking', () => ({
   useScreenTracking: jest.fn(),

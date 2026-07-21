@@ -119,7 +119,8 @@
       "Bash(cd ios && pod install:*)",
       "Bash(plutil:*)",
       "Bash(echo \"\")",
-      "Bash(cat)"
+      "Bash(cat)",
+      "Bash(/usr/bin/sips -g pixelWidth -g pixelHeight assets/images/planets/*.webp)"
     ]
   }
 }

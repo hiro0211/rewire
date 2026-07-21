@@ -5,6 +5,9 @@ import { ActivityIndicator, View } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { seedDevUser } from '@/lib/dev/seedDevUser';
 import { ROUTES } from '@/lib/routing/routes';
+import { DEBUG_MENU_ENABLED } from '@/constants/debug';
+import { useDebugStore } from '@/stores/debugStore';
+import { useDebugUnlockAll } from '@/hooks/debug/useDebugUnlockAll';
 
 // ブランド画面を常に表示する（dev clientでもスキップしない）
 // ⚠️ 本番運用設定: false。ローカルでオンボーディングをスキップしたい場合のみ一時的に true にする。
@@ -17,13 +20,21 @@ export default function Index() {
   const { colors } = useTheme();
   const [didSeed, setDidSeed] = useState(false);
 
+  // 設定画面のデバッグトグル（二重ゲート済み）でもオンボーディングをスキップできる。
+  const debugSkip = useDebugUnlockAll();
+  const debugHasHydrated = useDebugStore((s) => s.hasHydrated);
+  const skipOnboarding = DEV_SKIP_ONBOARDING || debugSkip;
+
   useEffect(() => {
-    if (!DEV_SKIP_ONBOARDING || !hasHydrated || user || didSeed) return;
+    if (!skipOnboarding || !hasHydrated || user || didSeed) return;
     seedDevUser().finally(() => setDidSeed(true));
-  }, [hasHydrated, user, didSeed]);
+  }, [skipOnboarding, hasHydrated, user, didSeed]);
 
   const isWaiting =
-    !hasHydrated || (DEV_SKIP_ONBOARDING && !user);
+    !hasHydrated ||
+    // デバッグフラグは AsyncStorage 復元後に判定する（dev のみ。prod は DEBUG_MENU_ENABLED=false で待たない）
+    (DEBUG_MENU_ENABLED && !debugHasHydrated) ||
+    (skipOnboarding && !user);
 
   if (isWaiting) {
     return (
@@ -37,7 +48,7 @@ export default function Index() {
     return <Redirect href={ROUTES.postPurchaseOnboarding} />;
   }
 
-  if (DEV_SKIP_ONBOARDING) {
+  if (skipOnboarding) {
     return <Redirect href="/(tabs)" />;
   }
 

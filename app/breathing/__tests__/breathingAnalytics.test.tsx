@@ -5,11 +5,15 @@ const mockLogEvent = jest.fn();
 jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: {
     logEvent: (...args: any[]) => mockLogEvent(...args),
+    // Completing a session now also records the activation milestone, which
+    // sets user properties.
+    setUserProperty: jest.fn(),
   },
 }));
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), replace: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock('@/hooks/breathing/useBreathingEngine', () => ({

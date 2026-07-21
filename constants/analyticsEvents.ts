@@ -5,8 +5,10 @@
  * names and params are type-checked at the call site (no stray string typos).
  *
  * NOTE: when adding an event here, also add its name to `REWIRE_KEY_EVENTS` in
- * `scripts/analytics/firebase_ga4_client.py` (separate language — manual sync)
- * so the daily report picks it up.
+ * `scripts/analytics/firebase_ga4_client.py` so the daily report picks it up.
+ * The sync crosses a language boundary, so it is enforced by
+ * `scripts/analytics/tests/test_event_registry_sync.py` rather than by hand —
+ * that suite fails on an event fired but unlisted, or listed but never fired.
  *
  * Use `undefined` as the param type for events that carry no params.
  */

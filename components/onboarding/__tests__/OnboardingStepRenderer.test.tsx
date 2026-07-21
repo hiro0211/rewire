@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { OnboardingStepRenderer } from '../OnboardingStepRenderer';
 
 jest.mock('@/components/onboarding/steps/WelcomeStep', () => ({
@@ -48,6 +48,17 @@ jest.mock('@/components/onboarding/AssessmentChoiceStep', () => ({
   AssessmentChoiceStep: () => {
     const { Text } = require('react-native');
     return <Text testID="choice-step">AssessmentChoiceStep</Text>;
+  },
+}));
+
+jest.mock('@/components/onboarding/OnboardingSurveyChoiceStep', () => ({
+  OnboardingSurveyChoiceStep: ({ question, onSelect }: any) => {
+    const { Text } = require('react-native');
+    return (
+      <Text testID="onboarding-survey-step" onPress={() => onSelect('tiktok')}>
+        {question.id}
+      </Text>
+    );
   },
 }));
 
@@ -122,6 +133,7 @@ const defaultProps = {
     setLastViewedDay: jest.fn(),
   },
   onAssessmentAnswer: jest.fn(),
+  onSurveyAnswer: jest.fn(),
   onPickerSelect: jest.fn(),
   onAutoAdvance: jest.fn(),
 };
@@ -153,6 +165,30 @@ describe('OnboardingStepRenderer', () => {
       <OnboardingStepRenderer currentStep={{ type: 'analyzing' }} {...defaultProps} />,
     );
     expect(getByTestId('analyzing-step')).toBeTruthy();
+  });
+
+  it('onboarding_survey_choice タイプで OnboardingSurveyChoiceStep をレンダリングする', () => {
+    const { getByTestId } = render(
+      <OnboardingStepRenderer
+        currentStep={{ type: 'onboarding_survey_choice', questionId: 'discovery_channel' }}
+        {...defaultProps}
+      />,
+    );
+    expect(getByTestId('onboarding-survey-step')).toBeTruthy();
+    expect(getByTestId('onboarding-survey-step').props.children).toBe('discovery_channel');
+  });
+
+  it('onboarding_survey_choice の選択で onSurveyAnswer が questionId 付きで呼ばれる', () => {
+    const onSurveyAnswer = jest.fn();
+    const { getByTestId } = render(
+      <OnboardingStepRenderer
+        currentStep={{ type: 'onboarding_survey_choice', questionId: 'discovery_channel' }}
+        {...defaultProps}
+        onSurveyAnswer={onSurveyAnswer}
+      />,
+    );
+    fireEvent.press(getByTestId('onboarding-survey-step'));
+    expect(onSurveyAnswer).toHaveBeenCalledWith('discovery_channel', 'tiktok');
   });
 
   it('damage_intro タイプで TransitionSlideStep をレンダリングする', () => {

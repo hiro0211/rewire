@@ -19,6 +19,21 @@ describe('canAdvanceStep', () => {
     expect(canAdvanceStep(idx, baseState)).toBe(true);
   });
 
+  describe('onboarding_survey_choice ステップ', () => {
+    const idx = STEPS.findIndex((s) => s.type === 'onboarding_survey_choice');
+
+    it('回答がない場合は進めない（スキップでのみ通過できる）', () => {
+      expect(canAdvanceStep(idx, baseState)).toBe(false);
+    });
+
+    it('回答がある場合は進める', () => {
+      const step = STEPS[idx];
+      if (step.type !== 'onboarding_survey_choice') throw new Error('unexpected');
+      const state = { ...baseState, answers: { [step.questionId]: '25-34' } };
+      expect(canAdvanceStep(idx, state)).toBe(true);
+    });
+  });
+
   describe('assessment ステップ', () => {
     it('回答がない場合は進めない', () => {
       const idx = STEPS.findIndex((s) => s.type === 'assessment_choice');

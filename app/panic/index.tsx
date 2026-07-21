@@ -59,7 +59,7 @@ export default function PanicScreen() {
 
         <View style={styles.actionButtonsWrapper}>
           <PanicActionButtons
-            onThinkingOfWatching={() => router.push('/breathing')}
+            onThinkingOfWatching={() => router.push('/breathing?source=sos')}
             onWatchedPorn={() => router.push('/recovery')}
           />
         </View>

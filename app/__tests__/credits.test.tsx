@@ -39,4 +39,41 @@ describe('CreditsScreen', () => {
     const { getByTestId } = render(<CreditsScreen />);
     expect(getByTestId('credits-cc-link')).toBeTruthy();
   });
+
+  it('深宇宙の画像 見出しが表示される', () => {
+    const { getByText } = render(<CreditsScreen />);
+    expect(getByText('深宇宙の画像')).toBeTruthy();
+  });
+
+  it('ESA/Webb・ESA/Hubble への帰属が含まれる', () => {
+    const { getAllByText } = render(<CreditsScreen />);
+    expect(getAllByText(/ESA/).length).toBeGreaterThan(0);
+  });
+});
+
+describe('docs/asset-credits.md', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const md = fs.readFileSync(
+    path.resolve(__dirname, '../../docs/asset-credits.md'),
+    'utf8',
+  );
+
+  it.each([
+    'stardust',
+    'nebula',
+    'protostar',
+    'whiteDwarf',
+    'stellarSystem',
+    'starCluster',
+    'galaxy',
+    'cosmos',
+  ])('%s-field.webp のクレジット行がある', (name) => {
+    expect(md).toContain(`${name}-field.webp`);
+  });
+
+  it('ESA/Webb と ESA/Hubble の帰属が記載されている', () => {
+    expect(md).toMatch(/ESA\/Webb/);
+    expect(md).toMatch(/ESA\/Hubble/);
+  });
 });

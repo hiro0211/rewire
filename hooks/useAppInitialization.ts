@@ -6,10 +6,12 @@ import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
+import { useDebugStore } from '@/stores/debugStore';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
 import { useThemeLocaleUserProperties } from '@/hooks/tracking/useThemeLocaleUserProperties';
+import { useAppOpenTracking } from '@/hooks/tracking/useAppOpenTracking';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 
@@ -18,12 +20,16 @@ export function useAppInitialization() {
 
   useScreenTracking();
   useThemeLocaleUserProperties();
+  // Seeded from createdAt so users who installed before this shipped get a real
+  // install date rather than looking like a fresh install on upgrade day.
+  useAppOpenTracking(user?.createdAt ?? null);
 
   useEffect(() => {
     loadUser();
     useThemeStore.getState().loadThemePreference();
     useLocaleStore.getState().loadLocalePreference();
     useReflectionStore.getState().loadReflectionState();
+    useDebugStore.getState().loadDebugSettings();
     // Why: configure は userStore 復元に依存しないので並列に先行させる。
     // hydration 後の同期 useEffect で再度呼ばれるが subscriptionClient が Promise で集約するため安全。
     subscriptionClient.initialize().catch((e) => {

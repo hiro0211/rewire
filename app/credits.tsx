@@ -30,6 +30,9 @@ export default function CreditsScreen() {
         <SectionTitle color={colors.text}>{t('legal.credits.planetsTitle')}</SectionTitle>
         <Paragraph color={colors.textSecondary}>{t('legal.credits.planetsBody')}</Paragraph>
 
+        <SectionTitle color={colors.text}>{t('legal.credits.cosmicTitle')}</SectionTitle>
+        <Paragraph color={colors.textSecondary}>{t('legal.credits.cosmicBody')}</Paragraph>
+
         <SectionTitle color={colors.text}>{t('legal.credits.licenseTitle')}</SectionTitle>
         <Paragraph color={colors.textSecondary}>{t('legal.credits.licenseBody')}</Paragraph>
 

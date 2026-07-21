@@ -93,7 +93,11 @@ function OrbCarouselItemComponent({
               transform: [{ scale: staticScale }],
             }}
           >
-            <StaticOrb colors={badge.colors} size={activeOrbSize} />
+            <StaticOrb
+              colors={badge.colors}
+              size={activeOrbSize}
+              badgeId={isUnlocked ? badge.id : undefined}
+            />
           </View>
         )}
       </View>

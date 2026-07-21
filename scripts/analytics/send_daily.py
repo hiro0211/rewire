@@ -19,9 +19,11 @@ from typing import Optional
 
 from scripts.analytics.config import load_config
 from scripts.analytics.data_loader import (
+    STALENESS_THRESHOLD_DAYS,
     find_latest_metrics,
     find_matching_report,
     find_metrics_for_date,
+    staleness_days,
 )
 from scripts.analytics.firebase_ga4_client import (
     fetch_all_events,
@@ -67,7 +69,18 @@ def run(dry_run: bool = False, date_str: Optional[str] = None,
     logger.info("Using metrics from %s (%s)", latest.source_path.name, latest.date)
     existing = find_matching_report(target_dir, latest.date)
 
-    payload: dict = {"asc": latest.metrics}
+    # Measure how far behind the aggregated ASC data is. The 08:00 job used to
+    # email whatever a later job had aggregated the previous day, so the report
+    # could silently describe a different date than its own subject line.
+    age = staleness_days(latest.date)
+    if age > STALENESS_THRESHOLD_DAYS:
+        logger.warning(
+            "Metrics are stale: %s is %d days old (threshold %d). "
+            "Aggregation may not have run — the email will say so.",
+            latest.date, age, STALENESS_THRESHOLD_DAYS,
+        )
+
+    payload: dict = {"asc": latest.metrics, "staleness_days": age}
     if cfg.has_revenuecat:
         try:
             overview = fetch_overview(

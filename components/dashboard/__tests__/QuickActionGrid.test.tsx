@@ -61,7 +61,7 @@ describe('QuickActionGrid', () => {
   it('呼吸ボタンタップで /breathing に遷移する', () => {
     render(<QuickActionGrid />);
     fireEvent.press(screen.getByTestId('qa-breathe'));
-    expect(mockPush).toHaveBeenCalledWith('/breathing');
+    expect(mockPush).toHaveBeenCalledWith('/breathing?source=quick_action');
     expect(mockTrackEvent).toHaveBeenCalledWith('quick_action_tapped', { action: 'breathe' });
   });
 

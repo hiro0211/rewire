@@ -1,0 +1,117 @@
+import React from 'react';
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
+import { useTheme } from '@/hooks/useTheme';
+import { useLocale } from '@/hooks/useLocale';
+import type { SurveyQuestion } from '@/types/survey';
+
+interface OnboardingSurveyChoiceStepProps {
+  question: SurveyQuestion;
+  selectedValue: string | undefined;
+  onSelect: (value: string) => void;
+}
+
+/**
+ * Onboarding survey question (age / discovery channel / motivation).
+ *
+ * Mirrors `AssessmentChoiceStep` visually, minus the "Question #n" counter —
+ * these questions are optional and not part of the scored assessment.
+ */
+export function OnboardingSurveyChoiceStep({
+  question,
+  selectedValue,
+  onSelect,
+}: OnboardingSurveyChoiceStepProps) {
+  const { colors } = useTheme();
+  const { t } = useLocale();
+
+  return (
+    <View style={styles.container}>
+      <Text testID="survey-question-heading" style={[styles.question, { color: colors.text }]}>
+        {t(question.questionKey)}
+      </Text>
+
+      <View style={styles.options}>
+        {question.options?.map((option, index) => {
+          const selected = selectedValue === option.value;
+          return (
+            <TouchableOpacity
+              key={option.value}
+              testID={`option-pill-${index}`}
+              style={[
+                styles.option,
+                { backgroundColor: colors.pillBackground, borderColor: colors.pillBorder },
+                selected && { borderColor: colors.selectedPillBorder, backgroundColor: 'rgba(0, 180, 216, 0.1)' },
+              ]}
+              onPress={() => onSelect(option.value)}
+              activeOpacity={0.7}
+            >
+              <View
+                style={[styles.badge, { backgroundColor: colors.selectedPillBorder }, selected && { backgroundColor: colors.success }]}
+                testID={selected ? `badge-checkmark-${index}` : undefined}
+              >
+                {selected ? (
+                  <Ionicons name="checkmark" size={16} color={colors.contrastText} />
+                ) : (
+                  <Text style={[styles.badgeText, { color: colors.contrastText }]}>{index + 1}</Text>
+                )}
+              </View>
+              <Text
+                style={[
+                  styles.optionText,
+                  { color: colors.text },
+                  selected && { color: colors.selectedPillBorder },
+                ]}
+              >
+                {t(option.labelKey)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  question: {
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.bold,
+    textAlign: 'left',
+    marginBottom: 40,
+  },
+  options: {
+    width: '100%',
+    gap: 16,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  badge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    fontSize: 14,
+    fontWeight: FONT_WEIGHT.bold,
+  },
+  optionText: {
+    fontSize: FONT_SIZE.md,
+    flex: 1,
+  },
+});

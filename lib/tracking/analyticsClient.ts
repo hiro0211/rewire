@@ -78,4 +78,17 @@ export const analyticsClient = {
       logger.warn('Analytics', 'setUserProperty failed:', error);
     }
   },
+
+  /** Sets several user properties in a single call. */
+  async setUserProperties(props: Record<string, string | null>): Promise<void> {
+    if (!analyticsModule) {
+      if (__DEV__) logger.debug('Analytics', 'setUserProperties (no-op):', props);
+      return;
+    }
+    try {
+      await analyticsModule().setUserProperties(props);
+    } catch (error) {
+      logger.warn('Analytics', 'setUserProperties failed:', error);
+    }
+  },
 };

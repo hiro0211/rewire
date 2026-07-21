@@ -20,6 +20,15 @@ jest.mock('../PlanetOrbRenderer', () => {
   };
 });
 
+jest.mock('../CosmicFieldRenderer', () => {
+  const { View } = require('react-native');
+  return {
+    CosmicFieldRenderer: (props: Record<string, unknown>) => (
+      <View testID={`cosmic-field-${props.badgeId}`} {...props} />
+    ),
+  };
+});
+
 jest.mock('../SaturnRingOverlay', () => {
   const { View } = require('react-native');
   return {
@@ -114,11 +123,21 @@ describe('AnimatedOrb', () => {
     expect(screen.queryByTestId('orb-canvas')).toBeNull();
   });
 
-  it.each(['galaxy', 'cosmos', 'starCluster', 'stardust', 'nebula'] as const)(
-    '抽象バッジ %s では CoreOrbRenderer を描画する',
+  it.each([
+    'stardust',
+    'nebula',
+    'protostar',
+    'whiteDwarf',
+    'stellarSystem',
+    'starCluster',
+    'galaxy',
+    'cosmos',
+  ] as const)(
+    '宇宙バッジ %s では CosmicFieldRenderer を描画する（CoreOrbRenderer ではない）',
     (id) => {
       render(<AnimatedOrb colors={testColors} chapterId="cosmic" badgeId={id} />);
-      expect(screen.getByTestId('orb-canvas')).toBeTruthy();
+      expect(screen.getByTestId(`cosmic-field-${id}`)).toBeTruthy();
+      expect(screen.queryByTestId('orb-canvas')).toBeNull();
     },
   );
 

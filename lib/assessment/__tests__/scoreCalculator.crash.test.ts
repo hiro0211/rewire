@@ -1,9 +1,30 @@
 import { calculateScore, getScoreLevel } from '../scoreCalculator';
+import { ONBOARDING_SURVEY_QUESTIONS } from '@/constants/survey';
+import { ASSESSMENT_QUESTIONS } from '@/constants/assessment';
 
 describe('scoreCalculator crash prevention', () => {
   describe('calculateScore', () => {
     it('空のanswers → 0', () => {
       expect(calculateScore({})).toBe(0);
+    });
+
+    it('オンボーディング調査の回答はスコアに影響しない（answersを共有しているため）', () => {
+      const surveyAnswers = {
+        age_range: '25-34',
+        discovery_channel: 'tiktok',
+        motivation: 'self_control',
+      };
+      expect(calculateScore(surveyAnswers)).toBe(0);
+      expect(calculateScore({ startAge: 'under12', ...surveyAnswers })).toBe(
+        calculateScore({ startAge: 'under12' })
+      );
+    });
+
+    it('調査質問のidは assessment 質問のidと衝突しない', () => {
+      const assessmentIds = ASSESSMENT_QUESTIONS.map((q) => q.id);
+      ONBOARDING_SURVEY_QUESTIONS.forEach((q) => {
+        expect(assessmentIds).not.toContain(q.id);
+      });
     });
 
     it('存在しないquestionIdの回答 → クラッシュしない', () => {

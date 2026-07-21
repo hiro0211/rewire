@@ -12,6 +12,7 @@ import { LocalePickerModal } from '@/components/settings/LocalePickerModal';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useLocaleStore } from '@/stores/localeStore';
+import { useDebugStore } from '@/stores/debugStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
@@ -31,6 +32,8 @@ export default function SettingsScreen() {
   const { t } = useLocale();
   const themePreference = useThemeStore((s) => s.themePreference);
   const localePreference = useLocaleStore((s) => s.localePreference);
+  const debugUnlockAll = useDebugStore((s) => s.enabled);
+  const setDebugUnlockAll = useDebugStore((s) => s.setEnabled);
 
   const [isProfileModalVisible, closeProfileModal] = useState(false);
   const [isTimePickerVisible, setTimePickerVisible] = useState(false);
@@ -164,6 +167,13 @@ export default function SettingsScreen() {
 
         {DEBUG_MENU_ENABLED && (
           <SettingSection title={t('settings.sections.debug')}>
+            <SettingItem
+              label={t('settings.labels.debugUnlockAll')}
+              icon="planet-outline"
+              type="toggle"
+              toggleValue={debugUnlockAll}
+              onToggle={setDebugUnlockAll}
+            />
             <SettingItem
               label={t('settings.labels.replayOnboarding')}
               icon="refresh-outline"

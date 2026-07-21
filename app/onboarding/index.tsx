@@ -19,17 +19,20 @@ import { useOnboardingForm } from '@/hooks/onboarding/useOnboardingForm';
 import { useOnboardingNavigation } from '@/hooks/onboarding/useOnboardingNavigation';
 import { useOnboardingAnimation } from '@/hooks/onboarding/useOnboardingAnimation';
 import { useOnboardingStepTracking } from '@/hooks/onboarding/useOnboardingStepTracking';
+import { pickOnboardingSurveyAnswers } from '@/lib/onboarding/onboardingSurveyAnswers';
 import {
   STEPS,
   NO_FOOTER_TYPES,
   NON_COUNTABLE_TYPES,
   FEATURES_STEP_INDEX,
   EDUCATION_START_INDEX,
+  SURVEY_SKIP_TARGET_INDEX,
   STEP_COUNTER_MAP,
   TOTAL_COUNTABLE_STEPS,
   canGoBack,
   isEducationStep,
   isAssessmentStep,
+  isOnboardingSurveyStep,
 } from '@/constants/onboarding';
 
 export default function OnboardingScreen() {
@@ -38,6 +41,7 @@ export default function OnboardingScreen() {
   useOnboardingStepTracking(nav.step);
   const router = useRouter();
   const autoAdvancingRef = useRef(false);
+  const surveySkippedRef = useRef(false);
   const { colors } = useTheme();
   const { t } = useLocale();
 
@@ -88,6 +92,9 @@ export default function OnboardingScreen() {
           notifyTime: form.notifyTime,
           lastViewedDate,
           selectedSymptoms: JSON.stringify(form.selectedSymptoms),
+          surveyAnswers: JSON.stringify(
+            pickOnboardingSurveyAnswers(form.answers, surveySkippedRef.current)
+          ),
         },
       });
     }
@@ -99,7 +106,8 @@ export default function OnboardingScreen() {
     }
   };
 
-  const handleAssessmentAnswer = (questionId: string, value: string) => {
+  /** Records the answer and auto-advances (assessment + onboarding survey). */
+  const handleQuestionAnswer = (questionId: string, value: string) => {
     if (autoAdvancingRef.current) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     form.setAnswer(questionId, value);
@@ -124,8 +132,23 @@ export default function OnboardingScreen() {
   const currentStep = nav.currentStep;
   const showFooter = !NO_FOOTER_TYPES.has(currentStep.type);
   const isNextDisabled = !canAdvanceAt(nav.step);
-  const showSkip = isEducationStep(currentStep) || isAssessmentStep(currentStep);
-  const skipTarget = isAssessmentStep(currentStep) ? EDUCATION_START_INDEX : FEATURES_STEP_INDEX;
+  const showSkip =
+    isEducationStep(currentStep) ||
+    isAssessmentStep(currentStep) ||
+    isOnboardingSurveyStep(currentStep);
+  const skipTarget = isOnboardingSurveyStep(currentStep)
+    ? SURVEY_SKIP_TARGET_INDEX
+    : isAssessmentStep(currentStep)
+      ? EDUCATION_START_INDEX
+      : FEATURES_STEP_INDEX;
+
+  const handleSkip = () => {
+    // Skipping the survey means the answers are never submitted.
+    if (isOnboardingSurveyStep(currentStep)) {
+      surveySkippedRef.current = true;
+    }
+    animateTransition(-1, () => nav.goToStep(skipTarget));
+  };
   const footerButtonTitle = currentStep.type === 'score_result' ? t('checkin.checkSymptoms') : t('common.next');
 
   return (
@@ -149,7 +172,7 @@ export default function OnboardingScreen() {
             )}
             {showSkip ? (
               <TouchableOpacity
-                onPress={() => animateTransition(-1, () => nav.goToStep(skipTarget))}
+                onPress={handleSkip}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Text style={[styles.skipText, { color: colors.textSecondary }]}>{t('common.skip')}</Text>
@@ -173,7 +196,8 @@ export default function OnboardingScreen() {
             <OnboardingStepRenderer
               currentStep={currentStep}
               form={form}
-              onAssessmentAnswer={handleAssessmentAnswer}
+              onAssessmentAnswer={handleQuestionAnswer}
+              onSurveyAnswer={handleQuestionAnswer}
               onPickerSelect={handlePickerSelect}
               onAutoAdvance={handleAutoAdvance}
             />

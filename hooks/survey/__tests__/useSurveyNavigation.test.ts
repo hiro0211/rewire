@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useSurveyNavigation } from '../useSurveyNavigation';
-import { SURVEY_QUESTIONS } from '@/constants/survey';
+import { FEEDBACK_SURVEY_QUESTIONS } from '@/constants/survey';
 
 describe('useSurveyNavigation', () => {
   it('初期ステップは0', () => {
@@ -10,7 +10,17 @@ describe('useSurveyNavigation', () => {
 
   it('currentQuestionが最初の質問を返す', () => {
     const { result } = renderHook(() => useSurveyNavigation());
-    expect(result.current.currentQuestion).toEqual(SURVEY_QUESTIONS[0]);
+    expect(result.current.currentQuestion).toEqual(FEEDBACK_SURVEY_QUESTIONS[0]);
+  });
+
+  it('3日後プロンプトのフローはフィードバック2問だけを辿る', () => {
+    const { result } = renderHook(() => useSurveyNavigation());
+    expect(result.current.currentQuestion.id).toBe('perceived_change');
+    act(() => {
+      result.current.goToNextStep();
+    });
+    expect(result.current.currentQuestion.id).toBe('free_text');
+    expect(result.current.isLastStep).toBe(true);
   });
 
   it('goToNextStepでステップが進む', () => {
@@ -19,7 +29,7 @@ describe('useSurveyNavigation', () => {
       result.current.goToNextStep();
     });
     expect(result.current.step).toBe(1);
-    expect(result.current.currentQuestion).toEqual(SURVEY_QUESTIONS[1]);
+    expect(result.current.currentQuestion).toEqual(FEEDBACK_SURVEY_QUESTIONS[1]);
   });
 
   it('goToPreviousStepでステップが戻る', () => {
@@ -43,7 +53,7 @@ describe('useSurveyNavigation', () => {
 
   it('最後のステップでisLastStepがtrueになる', () => {
     const { result } = renderHook(() => useSurveyNavigation());
-    for (let i = 0; i < SURVEY_QUESTIONS.length - 1; i++) {
+    for (let i = 0; i < FEEDBACK_SURVEY_QUESTIONS.length - 1; i++) {
       act(() => {
         result.current.goToNextStep();
       });
@@ -57,7 +67,7 @@ describe('useSurveyNavigation', () => {
     act(() => {
       result.current.goToNextStep();
     });
-    const expected = 1 / (SURVEY_QUESTIONS.length - 1);
+    const expected = 1 / (FEEDBACK_SURVEY_QUESTIONS.length - 1);
     expect(result.current.progress).toBeCloseTo(expected);
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { BREATHING_CONFIG } from '@/constants/breathing';
 
@@ -17,6 +17,9 @@ export const useBreathingEngine = () => {
   const [cycleCount, setCycleCount] = useState(0);
   const cycleCountRef = useRef(0);
   const router = useRouter();
+  // Forwarded to the completion screen so activation can be attributed to the
+  // entry point that produced it (SOS vs quick action vs recovery list).
+  const { source } = useLocalSearchParams<{ source?: string }>();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hapticTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
@@ -93,12 +96,15 @@ export const useBreathingEngine = () => {
     if (phase === 'complete') {
       const navTimer = setTimeout(() => {
         if (mountedRef.current) {
-          router.replace('/breathing/ask');
+          router.replace({
+            pathname: '/breathing/ask',
+            params: source ? { source } : {},
+          });
         }
       }, 1000);
       return () => clearTimeout(navTimer);
     }
-  }, [phase]);
+  }, [phase, source]);
 
   const stopSession = useCallback(() => {
     if (timerRef.current) {

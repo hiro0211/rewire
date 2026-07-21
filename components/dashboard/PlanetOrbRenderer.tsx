@@ -4,10 +4,9 @@ import { getPlanetTexture } from '@/constants/planets/planetTextureMap';
 import { useTheme } from '@/hooks/useTheme';
 import { skiaPlanetInit } from '@/lib/dashboard/skiaPlanetInit';
 
-import React, { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React from 'react';
 import { useDerivedValue, type SharedValue } from 'react-native-reanimated';
-import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
+import { OrbGradientFallback } from './OrbGradientFallback';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let useImage: (source: any) => any = () => null;
@@ -45,8 +44,6 @@ export function PlanetOrbRenderer({
   testID,
 }: PlanetOrbRendererProps) {
   const { isDark } = useTheme();
-  const stableId = useRef(Math.random().toString(36).slice(2, 8)).current;
-  const fallbackGradId = `planet-fallback-grad-${stableId}`;
 
   const planetImage = useImage(getPlanetTexture(badgeId));
   const config = getPlanetShaderConfig(badgeId);
@@ -95,36 +92,11 @@ export function PlanetOrbRenderer({
     );
   }
 
-  const [c1, c2, c3] = orbColors;
-
   return (
-    <View
+    <OrbGradientFallback
+      size={size}
+      colors={orbColors}
       testID={testID ?? 'planet-orb-fallback'}
-      style={[styles.fallbackOrb, { width: size, height: size }]}
-    >
-      <Svg width="100%" height="100%">
-        <Defs>
-          <RadialGradient
-            id={fallbackGradId}
-            cx="50%"
-            cy="50%"
-            rx="50%"
-            ry="50%"
-          >
-            <Stop offset="0" stopColor={c1} stopOpacity="1" />
-            <Stop offset="0.4" stopColor={c2} stopOpacity="1" />
-            <Stop offset="0.75" stopColor={c3} stopOpacity="0.8" />
-            <Stop offset="0.95" stopColor={c3} stopOpacity="0" />
-          </RadialGradient>
-        </Defs>
-        <Circle cx="50%" cy="50%" r="50%" fill={`url(#${fallbackGradId})`} />
-      </Svg>
-    </View>
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  fallbackOrb: {
-    overflow: 'hidden',
-  },
-});

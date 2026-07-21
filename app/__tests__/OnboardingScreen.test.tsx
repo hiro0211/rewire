@@ -69,19 +69,74 @@ describe('OnboardingScreen', () => {
     expect(getByTestId('aurora-container')).toBeTruthy();
   });
 
-  it('"チェックを始める" を押すと次のステップに遷移する', () => {
+  it('"チェックを始める" を押すと最初のオンボーディング調査の質問に遷移する', () => {
     const { getByText } = render(<OnboardingScreen />);
     act(() => {
       fireEvent.press(getByText('チェックを始める'));
       jest.advanceTimersByTime(500);
     });
+    expect(getByText('あなたの年齢を教えてください')).toBeTruthy();
+  });
+
+  it('調査ステップにはスキップ操作がある', () => {
+    const { getByText } = render(<OnboardingScreen />);
+    act(() => {
+      fireEvent.press(getByText('チェックを始める'));
+      jest.advanceTimersByTime(500);
+    });
+    expect(getByText('スキップ')).toBeTruthy();
+  });
+
+  it('調査をスキップすると assessment の1問目へ進む', () => {
+    const { getByText } = render(<OnboardingScreen />);
+    act(() => {
+      fireEvent.press(getByText('チェックを始める'));
+      jest.advanceTimersByTime(500);
+    });
+    act(() => {
+      fireEvent.press(getByText('スキップ'));
+      jest.advanceTimersByTime(500);
+    });
     expect(getByText('Question #1')).toBeTruthy();
+  });
+
+  it('調査の選択肢を選ぶと次の調査質問に自動で進む', () => {
+    const { getByText } = render(<OnboardingScreen />);
+    act(() => {
+      fireEvent.press(getByText('チェックを始める'));
+      jest.advanceTimersByTime(500);
+    });
+    act(() => {
+      fireEvent.press(getByText('25〜34歳'));
+      jest.advanceTimersByTime(1000);
+    });
+    expect(getByText('このアプリをどこで知りましたか？')).toBeTruthy();
+  });
+
+  it('discovery_channel でSNSがプラットフォーム別に表示される', () => {
+    const { getByText } = render(<OnboardingScreen />);
+    act(() => {
+      fireEvent.press(getByText('チェックを始める'));
+      jest.advanceTimersByTime(500);
+    });
+    act(() => {
+      fireEvent.press(getByText('25〜34歳'));
+      jest.advanceTimersByTime(1000);
+    });
+    expect(getByText('TikTok')).toBeTruthy();
+    expect(getByText('Instagram')).toBeTruthy();
+    expect(getByText('YouTube')).toBeTruthy();
+    expect(getByText('X（旧Twitter）')).toBeTruthy();
   });
 
   it('assessment ステップで "Question #" フォーマットが使われる', () => {
     const { getByText } = render(<OnboardingScreen />);
     act(() => {
       fireEvent.press(getByText('チェックを始める'));
+      jest.advanceTimersByTime(500);
+    });
+    act(() => {
+      fireEvent.press(getByText('スキップ'));
       jest.advanceTimersByTime(500);
     });
     expect(getByText(/Question #/)).toBeTruthy();

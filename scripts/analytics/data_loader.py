@@ -15,6 +15,21 @@ from typing import Optional
 _METRICS_RE = re.compile(r"^daily-metrics-(\d{4}-\d{2}-\d{2})(-corrected)?\.json$")
 _REPORT_BASENAME = "daily-report-{date}{suffix}.md"
 
+# ASC data lands 24-48h behind, so metrics two days old are expected. Anything
+# older means aggregation did not run and the email would silently describe a
+# different day than the one in its subject line.
+STALENESS_THRESHOLD_DAYS = 2
+
+
+def staleness_days(metrics_date: date, reference: Optional[date] = None) -> int:
+    """Days between ``metrics_date`` and ``reference`` (default: today)."""
+    return ((reference or date.today()) - metrics_date).days
+
+
+def is_stale(metrics_date: date, reference: Optional[date] = None) -> bool:
+    """Whether ``metrics_date`` is too old to present as the current report."""
+    return staleness_days(metrics_date, reference) > STALENESS_THRESHOLD_DAYS
+
 
 @dataclass(frozen=True)
 class LatestMetrics:

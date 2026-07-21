@@ -2428,3 +2428,215 @@ AI画像生成ではなく **HTML/CSS → ヘッドレスChrome → PNG** のコ
 ### 変更ファイル
 - data/analytics/2026-07-12/*.tsv（新規取得）
 - docs/analytics/daily-report-2026-07-12.md, daily-metrics-2026-07-12.json
+
+## 2026-07-15: 日次レポートのGA4取得失敗（GA4認証エラー）を根本修正
+### 症状
+- Resend配信の日次レポートで「共有/リテンション/全イベント発火状況」が「⚠️取得できませんでした（GA4認証エラー）」。RevenueCat/App Storeは正常。
+- 実行ログ: `google.auth.exceptions.RefreshError: ('invalid_scope: Bad Request', ...)` → GA4 fetch failed 503。7/4まで遡って全レポートがfirebaseデータ無し＝ADC作成時(6/20)から一度も動いていない設定ミス。
+
+### 根本原因
+- `~/.config/rewire/.env.analytics` の `GOOGLE_APPLICATION_CREDENTIALS` が **ユーザーOAuth ADC**（`~/.config/gcloud/application_default_credentials.json`, type=authorized_user）を指していた。
+- `gcloud auth application-default login` をスコープ指定なしで作ったため `analytics.readonly`（機密スコープ）が未付与 → GA4クライアントがそのスコープでトークン更新を要求すると `invalid_scope`。
+- 再ログインで `--scopes` に analytics.readonly を足そうとしたが、Googleが gcloud 共有OAuthクライアント経由の機密スコープを **「このアプリはブロックされます」** で拒否 → ADC(ユーザー認証)は行き止まり。
+- 補足: メール文言「GA4認証エラー」は `html_report.py:275` の固定フォールバック文言（実エラーとは無関係）。判断は生ログで行うこと。
+
+### 修正（ADC→サービスアカウントに切替）
+- 既存SA `focusity-analytics-reader@focusity-df205.iam.gserviceaccount.com`（`~/.config/firebase/focusity-ga4-sa.json`）を流用。
+- **hiroがGA4管理→プロパティ(526015389=rewire-4a491)のアクセス管理でこのSAを閲覧者(Viewer)に追加**（GA4プロパティ権限はGCPプロジェクトと独立なので流用可）。
+- `.env.analytics` の `GOOGLE_APPLICATION_CREDENTIALS` を上記SA JSONに変更（バックアップ: `.env.analytics.bak-ga4fix`）。
+- 検証: SA読み取りテスト成功（7日で1067イベント）→ `send_daily --dry-run` で `GA4 snapshot fetched: 8 events, 10 screens, 16 all-events` → 本送信成功（message id 725823f9-...）。
+
+### 利点/後始末
+- SAはユーザーADCの7日リフレッシュ失効・同意画面ブロックが無く、cron(毎朝8時 launchd `com.rewire.analytics-daily`)に適した堅牢な方式。
+- 未使用になったADC `~/.config/gcloud/application_default_credentials.json`(6/20) は削除してよい（任意）。
+- レポート側の別課題(修正対象外): App Store Downloads 0%（Imp221→PV21→DL0）が現在の最大ボトルネック。
+
+### 変更ファイル
+- `~/.config/rewire/.env.analytics`（GOOGLE_APPLICATION_CREDENTIALS を SA に変更）
+
+## 2026-07-18: バージョンを 2.4.0 に更新（ビルド番号 1 維持）
+- 依頼: 「version2.4に変えてビルドナンバーを1にしてください」。「2.4」は既存の3桁スキーム（2.3.0）に合わせ **2.4.0** と解釈。
+- **変更ファイル**（gitソース・オブ・トゥルースのみ）:
+  - `app.config.ts`: `version` 2.3.0 → 2.4.0
+  - `app.json`: `version` 2.3.0 → 2.4.0（`ios.buildNumber` は既に "1" のため据え置き）
+- **据え置き**: `constants/appUpdates.ts` の `WHATS_NEW_VERSION = '2.3.0'` は変更せず（新機能お知らせモーダル用で、大きな機能刷新の告知時のみ上げる設計。バージョン番号更新とは独立）。
+- **重要（ビルド反映）**: `ios/` `android/` は **.gitignore 済みの prebuild 生成物**。実ビルドに 2.4.0 を反映するには EAS Build（`production` はクラウドで prebuild するため自動反映）か、ローカルは `npx expo prebuild -p ios --clean` 後に release-testflight。
+- **ビルド番号の注意**: eas.json `production` は `autoIncrement: true`（EASでは自動加算されうる）。`release-testflight`（`npm run release:testflight`）は実行時に必ず +1 する仕様。build 1 で TestFlight に出したい場合はこの自動加算挙動に留意。
+- **リリース前チェック（未実施・要対応）**: `app/index.tsx` の `DEV_SKIP_ONBOARDING` を false、`constants/debug.ts` の `DEBUG_MENU_ENABLED` を false に戻すこと。
+- テスト影響なし（`app.config.ts`/`app.json` の version を読むテストは存在しない。`nativeApplicationVersion` 参照テストは独自モック値）。未コミット。
+
+## 2026-07-18: 日次アナリティクスレポート改善 Phase 0 — ASC集計バグ修正 + データ品質ガード
+依頼: 「個人開発の数字を全部AIエージェントに届けさせたい。Resendで詳細に送りたい。現状をリサーチして改善。目的は離脱ポイントとリテンション改善」。
+計画書: `~/.claude/plans/linear-honking-cat.md`（Phase 0〜3、hiro承認済み）。
+
+### 🚨 最重要発見: ASC集計が商用ファネルを丸ごと落としていた（長期間、毎朝誤報）
+`analyze_funnel.py:extract_metrics` は `Event` 列を持つ行しか読まなかった。しかし実際の判別列はレポートごとに違う:
+- `app_downloads_standard.tsv` → **`Download Type`**（DLはここ。`Event` 列なし）
+- `app_store_subscription_event_report_standard.tsv` → **`Event Name`**（フロー）
+- `app_store_subscription_state_report_standard.tsv` → **`State Metric`**（スナップショット）
+結果、**DL/トライアル/課金転換/有効サブスクが常に0**。「DL 0が最大のボトルネック」という過去の分析はバグの誤読だった。
+
+**さらに2件の集計汚染も発見・修正:**
+1. **detailed を standard に加算＝二重計上**。実データ検証で detailed ⊂ standard を確認（全テリトリーで det≤std、detailedは"App Store search"のみ＝プライバシー閾値によるサブセット）。→ detailed は totals から除外、breakdown専用に。
+2. **`retention_messaging.tsv` の混入**。サブスク引き留めオファーの "Page views"/"Cancels" が product_page_views / cancellations に加算されていた。→ 別指標へ分離。
+
+**2026-07-17 の実際の補正結果:**
+| 指標 | 修正前 | 修正後 |
+|---|---|---|
+| impressions | 1,016 | **606** |
+| product_page_views | 42 | **35** |
+| app_units | 0 | **4** |
+| paid_conversions | 0 | **1** |
+| active_subscriptions | 0 | **12** |
+| page_view_rate | 4.1% | **5.8%** |
+| download_rate | 0% | **11.4%** |
+
+### 🆕 未使用だった `app_store_purchases_standard.tsv` を取り込み
+Apple側の収益真実（`Proceeds in USD` / `Sales in USD` / `Paying Users`）が完全に捨てられていた。加えて **`App Download Date` 列があり、購入日との差＝インストールから課金までの日数が BigQuery なしで出せる**（`days_to_purchase()` 実装済み）。※現状Appleがこの列を空で返す行が多く実測値は未取得。埋まり次第自動で機能する。
+
+### データ品質ガード（0と未取得を区別）
+- 2026-07-15 は ASC が discovery レポート自体を未配信 → 「impressions 0」と報告されていた（＝誰も見ていない、と読める誤報）。
+- `detect_missing_reports()` / `unmeasured_metrics()` を追加し JSON に同梱。`html_report._data_quality_banner()` がメール冒頭に「⚠️ データ品質の注意」を表示。
+- **鮮度ガード**: `data_loader.staleness_days()` / `is_stale()`（閾値2日）。send_daily が payload に載せ、古い場合バナー表示＋WARNINGログ。
+
+### launchd 実行チェーンの修正（メールが最大4日古かった）
+`main.py` はTSVをDLするだけで集計しない。集計する `analyze_funnel.py` は別の9:00ジョブだったため、8:00のメールは前日以前のJSONを読んでいた（7/18送信メールは7/14データ）。
+`~/Library/LaunchAgents/com.rewire.analytics-daily.plist` を修正:
+```
+main.py || true ; analyze_funnel.py --output docs/analytics/ || true ; send_daily.py
+```
+`&&` → `;` + `|| true` に変更した理由: **どこかが失敗してもメールは必ず出す**（データ品質バナーが欠損を説明する）。以前は途中失敗で無音だった。
+バックアップ: scratchpad の `com.rewire.analytics-daily.plist.bak`。`launchctl bootout`→`bootstrap` で再読込済み。
+**⚠️ 未確認**: 9:00の Claude Code スケジュールタスクが冗長になった。停止するか要判断。
+
+### イベント整合性 + ドリフト防止テスト
+- `safari_demo_tapped` / `safari_demo_skipped` は**アプリ側に発火箇所が存在しない**（永久0で「未発火⚠️29件」を汚染）→ REWIRE_KEY_EVENTS と html_report から削除。
+- 実装済みだが未登録の4件を追加: `post_purchase_blocker_activated`, `review_prompt_feedback_tapped`, `review_prompt_dismissed`, `survey_prompt_dismissed`。
+- **新規** `scripts/analytics/tests/test_event_registry_sync.py`: TSソースを正規表現でパースし、①型定義済み全イベントが allowlist にある ②発火する全イベントが allowlist にある ③allowlist に発火しないイベントが無い、を検証。手動同期のドリフトが今後テストで落ちる。
+
+### 計測基盤の前提確認（Phase 1 に直結）
+- **GA4カスタムディメンション登録が完全にゼロ**（Metadata API に直接問い合わせて確認。property `526015389`）。→ **全イベントパラメータが不可視**。オンボは27ステップあり `onboarding_step_viewed{step_index}` を正しく送っているのに、レポートでは「57回」という1数字にしかならず**どのステップで落ちたか原理的に取得不能**。
+- リテンションは28日ローリングコホート1本のみ → D30は構造的にN/A。
+
+### 変更ファイル
+- `scripts/analytics/analyze_funnel.py`（レポート別ルーティング、purchases取込、欠損検出、days_to_purchase）
+- `scripts/analytics/data_loader.py`（staleness_days / is_stale）
+- `scripts/analytics/send_daily.py`（鮮度計測→payload、WARNINGログ）
+- `scripts/analytics/html_report.py`（_data_quality_banner、safari_demo除去）
+- `scripts/analytics/firebase_ga4_client.py`（REWIRE_KEY_EVENTS 整合）
+- `constants/analyticsEvents.ts`（同期がテストで担保される旨にコメント更新）
+- 新規テスト: `tests/test_event_registry_sync.py`、既存3ファイルにテスト追加
+- `~/Library/LaunchAgents/com.rewire.analytics-daily.plist`
+- 再集計済み: `docs/analytics/daily-metrics-2026-07-{15,16,17}.json` + 対応 .md
+
+### テスト
+Python **215 passed**（+23）。JS `npx jest lib/tracking constants` **204 passed**。エンドツーエンド `send_daily --dry-run` 成功、HTML にバナー表示を確認。未コミット。
+
+### ⚠️ `app-analytics` スキルとの矛盾（要対応）
+`~/.claude/skills/app-analytics/SKILL.md` の "Hard Rules" は「`analyze_funnel.py is buggy` と書くな」「TSVを読み直して検算するな、その衝動がバグだ」と明記している。**しかし今回、実際に analyze_funnel.py がバグっており、TSVを読み直したからこそ発見できた。** このルールは正しい発見を抑圧する方向に働いていたため、スキル側の記述を更新すべき。
+
+### 次回（Phase 1 以降）
+1. **hiroのGUI作業（最優先・遡及しないため早いほど良い）**: GA4カスタムディメンション登録 / BigQuery Export 有効化。手順書 `docs/analytics/{ga4-custom-dimensions-setup,bigquery-export-setup}.md` は未作成。
+2. アクティベーション計測実装（発火の定義 = **オンボ完了→呼吸完遂**、hiro決定済み）: `lib/tracking/installDate.ts` 新規、`activation_reached{days_since_install,path}` / `app_open{days_since_install}` 追加、`retentionUserProperties.ts` 拡張。※アプリのリリースが必要。
+3. Phase 2/3: オンボ27ステップファネル、週次コホート×D0-28マトリクス、離脱日分布、真のリテンション比較、課金導線経路別CVR、レポート構成の並べ替え。
+
+## 2026-07-19: 日次レポート改善 Phase 1 — アクティベーション計測 + 計測基盤の手順書
+計画書: `~/.claude/plans/linear-honking-cat.md`。Phase 0 は前日完了（ASC集計バグ修正）。
+
+### hiro のGUI作業用 手順書を2本作成（⚠️ 未実施・最優先）
+**どちらも遡及しません。実施が遅れた分だけ分析可能期間が後ろにずれます。**
+- `docs/analytics/ga4-custom-dimensions-setup.md` — 登録28項目（イベント24 + ユーザー4）。優先度別に色分け済み。
+  - 🔴最優先5件: `step_index`（27ステップのどこで落ちたか）, `step_type`, `source`（課金導線の経路別CVR）, `days_since_install`, `path`
+  - 🔵ユーザースコープ: `current_streak` / `relapse_count`（**既に送信済みだが未登録のため現在まったく見えていない**）, `is_activated`, `activation_day`
+  - 上限はイベント50/ユーザー25なので余裕あり。反映は24〜48時間後。登録確認用のスクリプトも同梱。
+- `docs/analytics/bigquery-export-setup.md` — Firebase → BigQuery リンク手順。
+  - **Rewire の Firebase プロジェクトは `rewire-4a491`**。一方 GA4読み取りSAは **Focusity プロジェクト（`focusity-df205`）** のもので、GA4プロパティ単位の権限付与によるクロスプロジェクト構成。→ BigQuery は `rewire-4a491` に出力されるため、既存SAに `rewire-4a491` 側で BigQuery データ閲覧者 + **ジョブユーザー**（クエリ実行には別途必要）の付与が要る。新しい鍵の発行は不要。
+  - ⚠️ **Spark(無料)プランだと BigQuery サンドボックスのテーブルが60日で自動削除**される。D30や月次コホートをやるなら Blaze 推奨（現規模なら無料枠内で請求0円）。予算アラート手順も記載。
+  - ストリーミングExportは有料かつ不要 → **必ずOFF**。
+
+### アクティベーション（発火）計測を実装 — TDD
+発火の定義（hiro決定）= **オンボ完了 → 呼吸完遂**。`breathing_completed` 到達を発火とする。
+- **`lib/tracking/installDate.ts`（新規）**: `ensureInstallDate(seedIso, now)` / `daysSinceInstall(now)`。
+  - **重要**: 既存ユーザーは `user.createdAt` を seed に使う。これが無いと**アップデート日に全員が新規インストール扱いになり、全リテンションカーブがリセットされる**。
+  - 暦日で数える（経過24h単位ではない）。23時インストール→翌朝1時起動は Day1。リテンションコホートの定義に合わせた。
+- **`lib/tracking/activation.ts`（新規）**: `trackActivation(path, now)` / `isActivated()` / `getActivationDay()`。
+  - **1ユーザー1回のみ発火**。毎回発火させると単なる利用回数カウンタになり、真のリテンションの分母が壊れる。
+  - `activation_reached { path, days_since_install }` + ユーザープロパティ `is_activated` / `activation_day`。
+  - インストール日未保存でも発火はする（既存ユーザーの初回起動を落とさない）。
+- **`hooks/tracking/useAppOpenTracking.ts`（新規）**: 起動ごとに `app_open { days_since_install }` + ユーザープロパティ。
+  - GA4の `session_start` は「その日アクティブだった」しか言えず**ライフサイクル上の何日目かが分からない**。これが離脱日ヒストグラムの土台になる。
+  - `useRef` で同一起動の二重発火を防止。
+
+### 到達経路の属性付け（`path`）
+呼吸画面は複数経路から入るが source を持っていなかったため、ルーターパラメータで引き回すようにした:
+- `app/panic/index.tsx` → `/breathing?source=sos`
+- `components/dashboard/QuickActionGrid.tsx` → `/breathing?source=quick_action`
+- `hooks/breathing/useBreathingEngine.ts` が `useLocalSearchParams` で受けて `/breathing/ask` へ forward
+- `app/breathing/ask.tsx` が受けて `trackActivation(path)` に渡す。未知値は `'other'` に正規化。
+
+### 変更ファイル
+- 新規: `lib/tracking/installDate.ts`, `lib/tracking/activation.ts`, `hooks/tracking/useAppOpenTracking.ts` + 各テスト（10/10/4件）
+- 新規: `docs/analytics/ga4-custom-dimensions-setup.md`, `docs/analytics/bigquery-export-setup.md`
+- 変更: `lib/storage/asyncStorageClient.ts`（StorageKey に `analytics_install_date` / `analytics_activation` 追加）, `hooks/useAppInitialization.ts`, `app/breathing/ask.tsx`, `hooks/breathing/useBreathingEngine.ts`, `app/panic/index.tsx`, `components/dashboard/QuickActionGrid.tsx`, `scripts/analytics/firebase_ga4_client.py`（REWIRE_KEY_EVENTS に `activation_reached` / `app_open`）
+- テストのモック追記（自分の変更に追従）: `breathingAnalytics`（setUserProperty追加）, `useBreathingEngine`/`breathingAnalytics`（useLocalSearchParams追加）, `useAppInitialization`/`RootLayout.theme`（logEvent追加）, `panicScreen`/`QuickActionGrid`（ルート文字列にsource付与）
+
+### テスト
+JS **322スイート / 2369テスト全通過**、Python **215通過**。tsc は自分の変更ファイルでエラー0（既存45件は全て未変更ファイル）。eslint エラー0。未コミット。
+
+### ⚠️ 次にやること（順序に意味あり）
+1. **hiro: GA4カスタムディメンション登録 + BigQuery Export**（手順書2本の通り）。**これが終わらないと Phase 2/3 のデータが存在しない。**
+2. **アプリのリリースが必要**: `activation_reached` / `app_open` は新規イベントなので、TestFlight配信 → ユーザーが更新するまで数値ゼロ。ビルド前に `DEV_SKIP_ONBOARDING=false`（app/index.tsx:7）と `DEBUG_MENU_ENABLED=false`（constants/debug.ts）へ戻すこと。
+3. Phase 2/3（データ取得層 + レポート再設計）: オンボ27ステップファネル、週次コホート×D0-28、離脱日分布、真のリテンション比較（発火済み分母）、課金導線経路別CVR、全イベント表を末尾へ降格。
+
+## 2026-07-20
+- 定期タスク `rewire-daily-analytics` を実行。ASC APIからのデータ取得（7レポート）と funnel 分析が正常完了。
+- 出力: docs/analytics/daily-report-2026-07-19.md / daily-metrics-2026-07-19.json
+- 【要注意・未解決】Apple の App Downloads レポートは約2日遅延している。
+  - data/analytics/2026-07-19/app_downloads_standard.tsv の中身は全て Date=2026-07-17（5件）。
+  - discovery_and_engagement は 07-16/17/18 の3日分が混在。
+  - このため analyze_funnel.py が「Downloads=0、DL率0.0%、ボトルネック=Download Rate」と誤検出している。
+  - 07-18 のレポートでも同じ理由で units=0 と誤記録済み。
+- 次回やるべきこと: analyze_funnel.py で TSV の Date 列によるフィルタ（対象日のみ集計）を追加する。TDD で失敗テストから着手すること。
+
+## 2026-07-20
+
+### アンケートのオンボーディング分割＋流入元の計測整備（branch: feature/onboarding-survey-split・未コミット）
+- **背景**: 流入元アンケートが2ヶ月で回答1件だけだった。原因は「アカウント作成3日後のプロンプトでしか出さない」設計（`features/survey/surveyPromptEligibility.ts`）。
+- **やったこと**:
+  1. `constants/survey.ts` を `ONBOARDING_SURVEY_QUESTIONS`（年齢・流入元・きっかけ）と `FEEDBACK_SURVEY_QUESTIONS`（変化の実感・自由記述）に分割。`SURVEY_QUESTIONS` は両者の連結で後方互換維持。
+     - 「変化を感じますか」は未使用状態では答えられないので冒頭に出さない、が分割の理由。
+  2. `discovery_channel` の `sns` を **tiktok / instagram / youtube / x** に分割（Focusityと同粒度に）。**locales の `sns` ラベルは削除しない**（Firestoreの既存ドキュメントが値 `sns` を持つため）。
+  3. `surveyService.submitOnboardingSurvey` を追加。Firestore に加えて **Analytics にも送る**（`onboarding_survey_completed` イベント＋`setUserProperties`）。従来は回答がFirestoreにしか無くGA4のディメンションにできなかった。`free_text` はAnalyticsに送らない（自由記述はFirestoreのみ）。
+  4. オンボーディング歩数機（`constants/onboarding.ts` の `STEPS`）の `welcome` 直後に survey 3問を挿入。スキップ可（`SURVEY_SKIP_TARGET_INDEX`）。スキップ時は Firestore もAnalyticsも送らない。
+  5. 送信は `app/onboarding/goal.tsx` の `setUser` 後（userIdが確定するのがここのため）。失敗してもオンボーディングは止めない。
+- **テスト**: 326 suites / 2438 tests green（作業前は322/2369）。tsc は既存エラーのみ（`app/survey.tsx` の2件は main にも存在）。
+- **注意**: オンボーディングとフィードバックで **Firestore `surveys` に別ドキュメント**が作られる（従来は1ユーザー1ドキュメントに5問）。集計時は部分ドキュメント前提で書くこと。現状 `surveys` を読む解析コードは無い。
+- **BigQuery**: rewire-4a491 の BigQuery エクスポートを有効化（Google Analytics・毎日・広告IDなし・US）。データセットは初回エクスポート時に自動生成。**遡及しないので有効化日以降のみ**。
+
+## 2026-07-21
+
+### 非惑星バッジに ESA/Webb・ESA/Hubble 実写を導入（branch: feature/onboarding-survey-split・未コミット）
+- **背景**: 18バッジ中、実写テクスチャを持つのは惑星10個だけ。残る8個（stardust=Day0 / nebula=Day1 / protostar=Day3 / whiteDwarf / stellarSystem / starCluster / galaxy / cosmos）は汎用手続きシェーダー `ORB_SHADER`（FBMノイズ球）で描かれ「どれも似たようなぼんやりした玉」。最も離脱しやすい Day 0〜3 が最も地味だった。
+- **方針**: 惑星経路（球面マッピング=固い球）と**並列**に「宇宙フィールド」経路（平面センタークロップ + ソフト放射状マスク + 輝度キーで黒い夜空を透過=発光する雲）を新設。惑星バッジは一切変更していない。
+- **画像**: ESA配信のNASA/ESA/CSA/STScI実写、全て **CC BY 4.0**。`scripts/fetch_cosmic_textures.sh` が curl→sips(寸法)→`cwebp -crop`(センタークロップ)→resize→webp。出力 `assets/images/cosmic/{id}-field.webp` 8枚 **計248KB**（予算 8枚<400KB / 画像総計<890KB を fs テストでガード）。stardust は星密度が高くWebP圧縮が効かないので384px、starCluster 448px、他512px。
+  - stardust=Sagittarius Star Cloud(opo9828d), nebula=Cosmic Cliffs(weic2205a), protostar=L1527(weic2219a), whiteDwarf=Southern Ring(weic2207b), stellarSystem=WR140(WR140a), starCluster=Westerlund2(heic1509a), galaxy=Phantom Galaxy M74(potm2208a), cosmos=Webb First Deep Field(weic2209a)
+- **新規ファイル**: `constants/cosmic/cosmicTextureMap.ts`(COSMIC_BADGE_IDS/hasCosmicTexture/getCosmicTexture=switch+リテラルrequire), `cosmicFieldConfig.ts`(バッジ別 zoom/rotationSpeed/driftSpeed/coreBrightness/edgeSoftness/tintStrength), `constants/shaders/cosmicField.ts`(COSMIC_FIELD_SHADER), `lib/dashboard/createSkiaShaderModules.ts`(skiaPlanetInit/skiaCosmicInit 共通ブート), `lib/dashboard/skiaCosmicInit.ts`, `components/dashboard/CosmicFieldRenderer.tsx`, `components/dashboard/OrbGradientFallback.tsx`(SVGフォールバック抽出=惑星と共有)
+- **変更ファイル**: `AnimatedOrb.tsx`/`StaticOrb.tsx`/`BadgeOrb.tsx` を3分岐化(planet→cosmic→core)。`StaticOrb` に `badgeId?` 追加し `OrbCarouselItem` が `badgeId={isUnlocked ? badge.id : undefined}` を渡す→カルーセルの非アクティブ項目でも実写、lockedはゴースト維持。`PlanetOrbRenderer.tsx` はSVGフォールバックを `OrbGradientFallback` に置換。ロケール ja/en に `legal.credits.cosmicTitle/cosmicBody`、`app/credits.tsx` に深宇宙セクション、`docs/asset-credits.md` に8行の表。
+- **BadgeOrb のオーバーレイ抑止**: `StellarSystemOverlay`/`GalaxySpiral`/`StarClusterOverlay`/`CosmosOverlay` は実写と競合するため `&& !useCosmicRenderer` で抑止（常にfalse=実質デッド、コードは残置=撤退用）。**Phase 6別PRで約250行削除予定**。`SaturnRingOverlay` は惑星経路なので残す。
+- **ライトモード**: cosmic は `COSMIC_LIGHT_MODE_ENABLED=true`(CosmicFieldRenderer先頭)で `isDark` を外した。輝度キーで黒背景を透過するのでライトでも成立。撤退はこのフラグを false に。**惑星側の isDark は未変更**。
+- **テスト**: 332 suites / 2557 tests 全green（作業前 326/2438、TDDで約90追加）。lint 0 errors（`any` disable の unused warning はsibling PlanetOrbRendererと同じ既存パターン）。tsc は既存エラーのみ（AnimatedOrb の delayPressIn 等は元から）。
+- **未実施＝hiro側の実機確認（Phase 4/6）**: development build(ダークモード)でカルーセルを Day0 から横スクロールし18バッジ目視、`cosmicFieldConfig` の zoom/coreBrightness/tintStrength を1バッジずつ調整。ライトモード確認。achievements画面(`StellarPathTimeline`)のメモリ実測（未達ユーザーはlocked=LinearGradientなので軽い）。問題なければ Phase 6 で4オーバーレイ削除。
+- **注意**: 新規に `CosmicFieldRenderer` を使うテストは `jest.mock('../CosmicFieldRenderer')` が必要（AnimatedOrb/StaticOrb/OrbCarouselItem で追加済み）。BadgeOrb.test は実体のフォールバック(`cosmic-field-fallback`)を使う。18バッジがplanet/cosmicどちらか一方を必ず持つ不変条件は `constants/badges/__tests__/badgeTextureCoverage.test.ts` が担保。
+
+### デバッグフラグ「全バッジ解放＋オンボスキップ」（同 branch・未コミット）
+- **要望**: オンボーディングスキップON＋全惑星（全バッジ）アンロックを1つのデバッグフラグにまとめ、設定画面でトグル。
+- **設計（本番安全のため二重ゲート）**: 効果は必ず `DEBUG_MENU_ENABLED`(コンパイル時) **かつ** `debugStore.enabled`(ランタイム永続) の両方が true のときだけ発火。`hooks/debug/useDebugUnlockAll.ts`(`DEBUG_MENU_ENABLED && enabled`) が単一の真実源。→ リリースビルド(DEBUG_MENU_ENABLED=false)ではAsyncStorageにenabled=trueが残っていても一切無効。
+- **新規**: `stores/debugStore.ts`(enabled/hasHydrated/setEnabled/loadDebugSettings、AsyncStorageキー `'debug'`), `hooks/debug/useDebugUnlockAll.ts`, `constants/debug.ts` に `DEBUG_UNLOCK_DAYS=100000`。`lib/storage/asyncStorageClient.ts` の StorageKey に `'debug'` 追加。
+- **配線**: 
+  - `app/index.tsx`: `skipOnboarding = DEV_SKIP_ONBOARDING || useDebugUnlockAll()`。ON時はseedDevUser→`/(tabs)`。待機条件に `DEBUG_MENU_ENABLED && !debugHasHydrated` を追加(dev限定、prodは待たない)。
+  - `components/dashboard/StatsRow.tsx`: `currentDays = debugUnlockAll ? DEBUG_UNLOCK_DAYS : stopwatch.days` → ホームカルーセルが全バッジ実写表示。
+  - `hooks/achievements/useAchievements.ts`: `effectiveStreak = debugUnlockAll ? DEBUG_UNLOCK_DAYS : streak` → 実績画面が18/18解放。
+  - `hooks/useAppInitialization.ts`: 起動時に `loadDebugSettings()`。
+  - `app/settings.tsx`: デバッグセクションに toggle SettingItem(`settings.labels.debugUnlockAll`、icon `planet-outline`)。ja「全バッジ解放＋オンボスキップ」/ en「Unlock all + skip onboarding」。
+- **重要（hiroの操作が必要）**: トグルは `DEBUG_MENU_ENABLED` が true のときだけ表示・作動する。現状 `constants/debug.ts` の `DEBUG_MENU_ENABLED=false` のまま(=リリース安全)。**ローカルで使うには hiro が `DEBUG_MENU_ENABLED=true` に変更する必要がある。TestFlight/Archive 前に false に戻すこと**(既存ルール)。DEBUG_MENU_ENABLED は勝手に変更していない。
+- **テスト**: 338 suites / 2578 tests green。新規テスト: debugStore(8), useDebugUnlockAll(gated含む3), indexRouting.debug(2), StatsRow.debug(2), useAchievements(2), useAppInitialization(+1), settings(+3)。tsc 新規エラーなし、lint 0 errors。

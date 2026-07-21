@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaWrapper } from '@/components/common/SafeAreaWrapper';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/hooks/useTheme';
@@ -10,9 +10,19 @@ import { useBreathStore } from '@/stores/breathStore';
 import { useUserStore } from '@/stores/userStore';
 import * as Crypto from 'expo-crypto';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackActivation, type ActivationPath } from '@/lib/tracking/activation';
+
+const ACTIVATION_PATHS: readonly ActivationPath[] = ['sos', 'quick_action', 'onboarding'];
+
+function toActivationPath(source: string | undefined): ActivationPath {
+  return ACTIVATION_PATHS.includes(source as ActivationPath)
+    ? (source as ActivationPath)
+    : 'other';
+}
 
 export default function BreathingAskScreen() {
   const router = useRouter();
+  const { source } = useLocalSearchParams<{ source?: string }>();
   const { addSession } = useBreathStore();
   const { user } = useUserStore();
   const { colors } = useTheme();
@@ -20,6 +30,9 @@ export default function BreathingAskScreen() {
 
   const handleResponse = async (resolved: boolean) => {
     analyticsClient.logEvent('breathing_completed', { urge_resolved: resolved });
+    // Completing a breathing session is the activation milestone — the first
+    // time the app actually delivered its core value. Fires once per user.
+    void trackActivation(toActivationPath(source));
     if (user) {
         await addSession({
             id: Crypto.randomUUID(),

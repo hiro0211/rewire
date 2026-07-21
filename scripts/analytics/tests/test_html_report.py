@@ -237,3 +237,40 @@ def test_headline_ok_when_downloads_flow():
 def test_headline_warns_on_firebase_fetch_failure():
     h = headline({"asc": _asc(), "firebase_error": "boom"})
     assert h["level"] == "warn"
+
+
+class TestDataQualityBanners:
+    """Delivery gaps must be visible in the email, not silently rendered as 0."""
+
+    def test_stale_data_produces_a_warning_banner(self):
+        payload = {"asc": _asc(), "staleness_days": 4}
+        html = build_html(payload, date(2026, 7, 18))
+        assert "4日前" in html
+        assert "古い" in html
+
+    def test_fresh_data_produces_no_staleness_warning(self):
+        payload = {"asc": _asc(), "staleness_days": 1}
+        html = build_html(payload, date(2026, 7, 12))
+        assert "古い" not in html
+
+    def test_missing_report_is_named_in_the_email(self):
+        asc = _asc(missing_reports=["app_store_discovery_and_engagement_standard"],
+                   unmeasured_metrics=["impressions", "product_page_views", "taps"])
+        html = build_html({"asc": asc}, date(2026, 7, 16))
+        assert "未取得" in html
+
+    def test_unmeasured_metrics_are_not_shown_as_zero(self):
+        asc = _asc(
+            metrics={"impressions": 0, "product_page_views": 0, "app_units": 3,
+                     "taps": 0, "trial_starts": 0, "paid_conversions": 1},
+            missing_reports=["app_store_discovery_and_engagement_standard"],
+            unmeasured_metrics=["impressions", "product_page_views", "taps"],
+        )
+        html = build_html({"asc": asc}, date(2026, 7, 16))
+        # The headline must not claim zero impressions when none were delivered.
+        assert "未取得" in html
+
+    def test_no_data_quality_keys_renders_cleanly(self):
+        html = build_html({"asc": _asc()}, date(2026, 7, 11))
+        assert "未取得" not in html
+        assert "古い" not in html

@@ -98,4 +98,26 @@ describe('analyticsClient (Firebase Analytics, no IDFA)', () => {
       expect(mockSetUserProperties).toHaveBeenCalledWith({ goal_days: null });
     });
   });
+
+  describe('setUserProperties', () => {
+    it('複数のプロパティを1回の呼び出しでまとめて送る', async () => {
+      await analyticsClient.setUserProperties({
+        discovery_channel: 'tiktok',
+        age_range: '25-34',
+      });
+      expect(mockSetUserProperties).toHaveBeenCalledTimes(1);
+      expect(mockSetUserProperties).toHaveBeenCalledWith({
+        discovery_channel: 'tiktok',
+        age_range: '25-34',
+      });
+    });
+
+    it('失敗しても throw せず warn する', async () => {
+      mockSetUserProperties.mockRejectedValue(new Error('boom'));
+      await expect(
+        analyticsClient.setUserProperties({ discovery_channel: 'tiktok' })
+      ).resolves.toBeUndefined();
+      expect(logger.warn).toHaveBeenCalled();
+    });
+  });
 });

@@ -156,8 +156,8 @@ const STELLAR_SYSTEM_COLORS: BadgeColorTriad = {
   glow: '#B8F5F7',
 };
 
-describe('StellarSystemOverlay 特殊描画', () => {
-  it('badgeId="stellarSystem" のとき stellar-system-overlay が描画される', () => {
+describe('宇宙フィールド描画: stellarSystem', () => {
+  it('unlocked のとき cosmic-field-fallback を描画し SVG overlay は抑止する', () => {
     render(
       <BadgeOrb
         colors={STELLAR_SYSTEM_COLORS}
@@ -166,53 +166,22 @@ describe('StellarSystemOverlay 特殊描画', () => {
         badgeId="stellarSystem"
       />,
     );
-    expect(screen.getByTestId('stellar-system-overlay')).toBeTruthy();
-  });
-
-  it('badgeId="stellarSystem" のとき軌道円（orbital-ring）が複数描画される', () => {
-    render(
-      <BadgeOrb
-        colors={STELLAR_SYSTEM_COLORS}
-        isUnlocked
-        chapterId="stellar"
-        badgeId="stellarSystem"
-      />,
-    );
-    const orbitalRings = screen.getAllByTestId('orbital-ring');
-    expect(orbitalRings.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('badgeId="stellarSystem" のとき惑星ドット（planet-dot）が軌道数と同数描画される', () => {
-    render(
-      <BadgeOrb
-        colors={STELLAR_SYSTEM_COLORS}
-        isUnlocked
-        chapterId="stellar"
-        badgeId="stellarSystem"
-      />,
-    );
-    const rings = screen.getAllByTestId('orbital-ring');
-    const dots = screen.getAllByTestId('planet-dot');
-    expect(dots.length).toBe(rings.length);
-  });
-
-  it('badgeId="saturn" のとき stellar-system-overlay は描画されない', () => {
-    render(
-      <BadgeOrb
-        colors={SATURN_COLORS}
-        isUnlocked
-        chapterId="outerPlanets"
-        badgeId="saturn"
-      />,
-    );
+    expect(screen.getByTestId('cosmic-field-fallback')).toBeTruthy();
     expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
+    expect(screen.queryByTestId('badge-orb-canvas')).toBeNull();
   });
 
-  it('badgeId なしのとき stellar-system-overlay は描画されない', () => {
+  it('locked のとき従来のゴースト（badge-orb-locked-gradient）を維持する', () => {
     render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
+      <BadgeOrb
+        colors={STELLAR_SYSTEM_COLORS}
+        isUnlocked={false}
+        chapterId="stellar"
+        badgeId="stellarSystem"
+      />,
     );
-    expect(screen.queryByTestId('stellar-system-overlay')).toBeNull();
+    expect(screen.getByTestId('badge-orb-locked-gradient')).toBeTruthy();
+    expect(screen.queryByTestId('cosmic-field-fallback')).toBeNull();
   });
 });
 
@@ -224,8 +193,8 @@ const STAR_CLUSTER_COLORS: BadgeColorTriad = {
   glow: '#BAE6FD',
 };
 
-describe('StarClusterOverlay 特殊描画', () => {
-  it('badgeId="starCluster" のとき star-cluster-overlay が描画される', () => {
+describe('宇宙フィールド描画: starCluster', () => {
+  it('unlocked のとき cosmic-field-fallback を描画し SVG overlay は抑止する', () => {
     render(
       <BadgeOrb
         colors={STAR_CLUSTER_COLORS}
@@ -234,39 +203,9 @@ describe('StarClusterOverlay 特殊描画', () => {
         badgeId="starCluster"
       />,
     );
-    expect(screen.getByTestId('star-cluster-overlay')).toBeTruthy();
-  });
-
-  it('badgeId="starCluster" のとき周辺小球（star-cluster-satellite）が5個以上描画される', () => {
-    render(
-      <BadgeOrb
-        colors={STAR_CLUSTER_COLORS}
-        isUnlocked
-        chapterId="cosmic"
-        badgeId="starCluster"
-      />,
-    );
-    const satellites = screen.getAllByTestId('star-cluster-satellite');
-    expect(satellites.length).toBeGreaterThanOrEqual(5);
-  });
-
-  it('badgeId="galaxy" のとき star-cluster-overlay は描画されない', () => {
-    render(
-      <BadgeOrb
-        colors={GALAXY_COLORS}
-        isUnlocked
-        chapterId="cosmic"
-        badgeId="galaxy"
-      />,
-    );
+    expect(screen.getByTestId('cosmic-field-fallback')).toBeTruthy();
     expect(screen.queryByTestId('star-cluster-overlay')).toBeNull();
-  });
-
-  it('badgeId なしのとき star-cluster-overlay は描画されない', () => {
-    render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
-    );
-    expect(screen.queryByTestId('star-cluster-overlay')).toBeNull();
+    expect(screen.queryByTestId('badge-orb-canvas')).toBeNull();
   });
 });
 
@@ -278,8 +217,8 @@ const COSMOS_COLORS: BadgeColorTriad = {
   glow: '#FFE4E8',
 };
 
-describe('CosmosOverlay 特殊描画', () => {
-  it('badgeId="cosmos" のとき cosmos-overlay が描画される', () => {
+describe('宇宙フィールド描画: cosmos', () => {
+  it('unlocked のとき cosmic-field-fallback を描画し SVG overlay は抑止する', () => {
     render(
       <BadgeOrb
         colors={COSMOS_COLORS}
@@ -288,39 +227,9 @@ describe('CosmosOverlay 特殊描画', () => {
         badgeId="cosmos"
       />,
     );
-    expect(screen.getByTestId('cosmos-overlay')).toBeTruthy();
-  });
-
-  it('badgeId="cosmos" のとき光点（cosmos-particle）が20個以上描画される', () => {
-    render(
-      <BadgeOrb
-        colors={COSMOS_COLORS}
-        isUnlocked
-        chapterId="cosmic"
-        badgeId="cosmos"
-      />,
-    );
-    const particles = screen.getAllByTestId('cosmos-particle');
-    expect(particles.length).toBeGreaterThanOrEqual(20);
-  });
-
-  it('badgeId="galaxy" のとき cosmos-overlay は描画されない', () => {
-    render(
-      <BadgeOrb
-        colors={COSMOS_COLORS}
-        isUnlocked
-        chapterId="cosmic"
-        badgeId="galaxy"
-      />,
-    );
+    expect(screen.getByTestId('cosmic-field-fallback')).toBeTruthy();
     expect(screen.queryByTestId('cosmos-overlay')).toBeNull();
-  });
-
-  it('badgeId なしのとき cosmos-overlay は描画されない', () => {
-    render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
-    );
-    expect(screen.queryByTestId('cosmos-overlay')).toBeNull();
+    expect(screen.queryByTestId('badge-orb-canvas')).toBeNull();
   });
 });
 
@@ -396,8 +305,8 @@ const GALAXY_COLORS: BadgeColorTriad = {
   glow: '#E9D5FF',
 };
 
-describe('GalaxySpiral 特殊描画', () => {
-  it('badgeId="galaxy" のとき galaxy-spiral が描画される', () => {
+describe('宇宙フィールド描画: galaxy', () => {
+  it('unlocked のとき cosmic-field-fallback を描画し SVG overlay は抑止する', () => {
     render(
       <BadgeOrb
         colors={GALAXY_COLORS}
@@ -406,38 +315,36 @@ describe('GalaxySpiral 特殊描画', () => {
         badgeId="galaxy"
       />,
     );
-    expect(screen.getByTestId('galaxy-spiral')).toBeTruthy();
-  });
-
-  it('badgeId="galaxy" のとき渦巻きアーム（galaxy-spiral-arm）が2本描画される', () => {
-    render(
-      <BadgeOrb
-        colors={GALAXY_COLORS}
-        isUnlocked
-        chapterId="cosmic"
-        badgeId="galaxy"
-      />,
-    );
-    const arms = screen.getAllByTestId('galaxy-spiral-arm');
-    expect(arms.length).toBe(2);
-  });
-
-  it('badgeId="cosmos" のとき galaxy-spiral は描画されない', () => {
-    render(
-      <BadgeOrb
-        colors={GALAXY_COLORS}
-        isUnlocked
-        chapterId="cosmic"
-        badgeId="cosmos"
-      />,
-    );
+    expect(screen.getByTestId('cosmic-field-fallback')).toBeTruthy();
     expect(screen.queryByTestId('galaxy-spiral')).toBeNull();
+    expect(screen.queryByTestId('badge-orb-canvas')).toBeNull();
   });
+});
 
-  it('badgeId なしのとき galaxy-spiral は描画されない', () => {
-    render(
-      <BadgeOrb colors={MOCK_COLORS} isUnlocked chapterId="innerPlanets" />,
-    );
-    expect(screen.queryByTestId('galaxy-spiral')).toBeNull();
-  });
+describe('宇宙フィールド描画: 全 cosmic バッジ網羅', () => {
+  it.each([
+    ['stardust', 'birth'],
+    ['nebula', 'birth'],
+    ['protostar', 'birth'],
+    ['whiteDwarf', 'stellar'],
+    ['stellarSystem', 'stellar'],
+    ['starCluster', 'cosmic'],
+    ['galaxy', 'cosmic'],
+    ['cosmos', 'cosmic'],
+  ] as const)(
+    'unlocked の %s は cosmic-field-fallback を描画し CoreOrbRenderer は使わない',
+    (id, chapter) => {
+      render(
+        <BadgeOrb
+          colors={MOCK_COLORS}
+          isUnlocked
+          chapterId={chapter}
+          badgeId={id}
+        />,
+      );
+      expect(screen.getByTestId('cosmic-field-fallback')).toBeTruthy();
+      expect(screen.queryByTestId('badge-orb-canvas')).toBeNull();
+      expect(screen.queryByTestId('planet-orb-fallback')).toBeNull();
+    },
+  );
 });

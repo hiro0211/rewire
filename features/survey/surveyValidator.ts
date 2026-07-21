@@ -1,12 +1,20 @@
-import { REQUIRED_SURVEY_QUESTIONS } from '@/constants/survey';
 import { t } from '@/locales/i18n';
+import type { SurveyQuestion } from '@/types/survey';
 
 type ValidationResult = { ok: true } | { ok: false; error: string };
 
 export const surveyValidator = {
-  validate(answers: Record<string, string>): ValidationResult {
-    const missing = REQUIRED_SURVEY_QUESTIONS.filter(
-      (q) => !answers[q.id] || answers[q.id].trim() === ''
+  /**
+   * Validates `answers` against the required questions of the given question
+   * set, so the onboarding submission is not blocked by feedback questions
+   * (and vice versa).
+   */
+  validate(
+    answers: Record<string, string>,
+    questions: SurveyQuestion[]
+  ): ValidationResult {
+    const missing = questions.filter(
+      (q) => q.required && (!answers[q.id] || answers[q.id].trim() === '')
     );
 
     if (missing.length > 0) {

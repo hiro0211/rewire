@@ -116,3 +116,38 @@ class TestFindMetricsForDate:
 
         with pytest.raises(FileNotFoundError):
             find_metrics_for_date(tmp_path, date(2026, 7, 10))
+
+
+class TestStaleness:
+    """The email must never present old ASC data as if it were yesterday's.
+
+    The 08:00 job downloads TSVs but used to leave aggregation to a separate
+    09:00 job, so `find_latest_metrics` returned whatever the *previous* run
+    had produced. The 2026-07-18 send carried 2026-07-14 data with no warning.
+    """
+
+    def test_yesterdays_data_is_fresh(self):
+        from scripts.analytics.data_loader import staleness_days
+
+        assert staleness_days(date(2026, 7, 17), reference=date(2026, 7, 18)) == 1
+
+    def test_four_day_old_data_is_stale(self):
+        from scripts.analytics.data_loader import staleness_days
+
+        assert staleness_days(date(2026, 7, 14), reference=date(2026, 7, 18)) == 4
+
+    def test_fresh_data_is_not_flagged(self):
+        from scripts.analytics.data_loader import is_stale
+
+        assert is_stale(date(2026, 7, 17), reference=date(2026, 7, 18)) is False
+
+    def test_data_older_than_threshold_is_flagged(self):
+        from scripts.analytics.data_loader import is_stale
+
+        assert is_stale(date(2026, 7, 15), reference=date(2026, 7, 18)) is True
+
+    def test_threshold_boundary_is_not_stale(self):
+        # ASC's own 24-48h lag means 2 days behind is normal, not a fault.
+        from scripts.analytics.data_loader import is_stale
+
+        assert is_stale(date(2026, 7, 16), reference=date(2026, 7, 18)) is False

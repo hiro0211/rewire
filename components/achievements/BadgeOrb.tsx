@@ -1,8 +1,10 @@
 import { CoreOrbRenderer } from '@/components/dashboard/CoreOrbRenderer';
 import { PlanetOrbRenderer } from '@/components/dashboard/PlanetOrbRenderer';
+import { CosmicFieldRenderer } from '@/components/dashboard/CosmicFieldRenderer';
 import { OrbGlowLayers } from '@/components/dashboard/OrbGlowLayers';
 import { OrbParticles } from '@/components/dashboard/OrbParticles';
 import { SaturnRingOverlay } from '@/components/dashboard/SaturnRingOverlay';
+import { hasCosmicTexture } from '@/constants/cosmic/cosmicTextureMap';
 import { hasPlanetTexture } from '@/constants/planets/planetTextureMap';
 import type { ChapterId } from '@/constants/badges/BadgeChapter';
 import { getBadgeAnimConfig } from '@/constants/badges/badgeAnimations';
@@ -62,12 +64,15 @@ export function BadgeOrb({
     colors.outer,
   ];
 
-  const showSaturnRing = badgeId === 'saturn';
-  const showStellarOverlay = badgeId === 'stellarSystem';
-  const showGalaxySpiral = badgeId === 'galaxy';
-  const showStarCluster = badgeId === 'starCluster';
-  const showCosmos = badgeId === 'cosmos';
   const usePlanetRenderer = hasPlanetTexture(badgeId);
+  const useCosmicRenderer = hasCosmicTexture(badgeId);
+
+  const showSaturnRing = badgeId === 'saturn';
+  // 実写（CosmicFieldRenderer）と競合するため、cosmic 描画時は SVG オーバーレイを抑止する。
+  const showStellarOverlay = badgeId === 'stellarSystem' && !useCosmicRenderer;
+  const showGalaxySpiral = badgeId === 'galaxy' && !useCosmicRenderer;
+  const showStarCluster = badgeId === 'starCluster' && !useCosmicRenderer;
+  const showCosmos = badgeId === 'cosmos' && !useCosmicRenderer;
 
   if (!isUnlocked) {
     // Locked: 静止ゴースト（アニメ・Skia・パーティクルなし）
@@ -124,6 +129,8 @@ export function BadgeOrb({
       showCosmos={showCosmos}
       usePlanetRenderer={usePlanetRenderer}
       planetBadgeId={usePlanetRenderer ? badgeId : undefined}
+      useCosmicRenderer={useCosmicRenderer}
+      cosmicBadgeId={useCosmicRenderer ? badgeId : undefined}
     />
   );
 }
@@ -542,6 +549,8 @@ interface UnlockedBadgeOrbProps {
   showCosmos: boolean;
   usePlanetRenderer: boolean;
   planetBadgeId: BadgeId | undefined;
+  useCosmicRenderer: boolean;
+  cosmicBadgeId: BadgeId | undefined;
 }
 
 function UnlockedBadgeOrb({
@@ -556,6 +565,8 @@ function UnlockedBadgeOrb({
   showCosmos,
   usePlanetRenderer,
   planetBadgeId,
+  useCosmicRenderer,
+  cosmicBadgeId,
 }: UnlockedBadgeOrbProps) {
   const { time, pulseStyle } = useOrbBreathing(chapterConfig);
 
@@ -604,6 +615,14 @@ function UnlockedBadgeOrb({
             badgeId={planetBadgeId}
             size={size}
             time={time}
+            orbColors={colors}
+          />
+        ) : useCosmicRenderer && cosmicBadgeId ? (
+          <CosmicFieldRenderer
+            badgeId={cosmicBadgeId}
+            size={size}
+            time={time}
+            glowColor={glowColor}
             orbColors={colors}
           />
         ) : (

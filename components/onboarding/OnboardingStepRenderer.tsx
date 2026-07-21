@@ -1,11 +1,13 @@
 import React from 'react';
 import { ASSESSMENT_QUESTIONS, MAX_SCORE } from '@/constants/assessment';
 import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/education';
+import { ONBOARDING_SURVEY_QUESTIONS } from '@/constants/survey';
 import { calculateScore } from '@/lib/assessment/scoreCalculator';
 import { getDaysInMonth, clampDay } from '@/lib/date/datePickerUtils';
 import { TOTAL_QUESTIONS } from '@/constants/onboarding';
 import type { OnboardingStep } from '@/constants/onboarding';
 import { AssessmentChoiceStep } from './AssessmentChoiceStep';
+import { OnboardingSurveyChoiceStep } from './OnboardingSurveyChoiceStep';
 import { AssessmentPickerStep } from './AssessmentPickerStep';
 import { AssessmentYesNoStep } from './AssessmentYesNoStep';
 import { ScoreResultStep } from './ScoreResultStep';
@@ -45,6 +47,7 @@ interface Props {
   currentStep: OnboardingStep;
   form: OnboardingForm;
   onAssessmentAnswer: (questionId: string, value: string) => void;
+  onSurveyAnswer: (questionId: string, value: string) => void;
   onPickerSelect: (questionId: string, value: string) => void;
   onAutoAdvance: () => void;
 }
@@ -53,12 +56,23 @@ export function OnboardingStepRenderer({
   currentStep,
   form,
   onAssessmentAnswer,
+  onSurveyAnswer,
   onPickerSelect,
   onAutoAdvance,
 }: Props) {
   switch (currentStep.type) {
     case 'welcome':
       return <WelcomeStep onStart={onAutoAdvance} />;
+    case 'onboarding_survey_choice': {
+      const question = ONBOARDING_SURVEY_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
+      return (
+        <OnboardingSurveyChoiceStep
+          question={question}
+          selectedValue={form.answers[currentStep.questionId]}
+          onSelect={(value) => onSurveyAnswer(currentStep.questionId, value)}
+        />
+      );
+    }
     case 'assessment_choice': {
       const question = ASSESSMENT_QUESTIONS.find((q) => q.id === currentStep.questionId)!;
       return (

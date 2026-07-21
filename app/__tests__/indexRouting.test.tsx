@@ -15,6 +15,12 @@ jest.mock('@/hooks/useTheme', () => ({
   }),
 }));
 
+// 本番設定を検証するテストなのでデバッグメニューは無効固定。
+// （constants/debug.ts の DEBUG_MENU_ENABLED はローカル確認で true にすることがある）
+jest.mock('@/constants/debug', () => ({
+  DEBUG_MENU_ENABLED: false,
+}));
+
 let mockHasHydrated = true;
 let mockUser: { id: string } | null = { id: 'u' };
 jest.mock('@/stores/userStore', () => ({

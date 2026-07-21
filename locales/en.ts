@@ -300,7 +300,12 @@ export const en: Translations = {
     discoveryChannel: {
       question: 'How did you find this app?',
       appStore: 'App Store search',
+      // Legacy answer value — kept because old Firestore documents carry 'sns'
       sns: 'Social media (TikTok, Instagram, etc.)',
+      tiktok: 'TikTok',
+      instagram: 'Instagram',
+      youtube: 'YouTube',
+      x: 'X (formerly Twitter)',
       referral: 'Friend or acquaintance',
       webSearch: 'Web search',
       other: 'Other',
@@ -467,6 +472,7 @@ export const en: Translations = {
       rateApp: 'Rate this App',
       replayOnboarding: 'Watch Onboarding Again',
       replayPostPurchaseOnboarding: 'Watch Post-Purchase Onboarding Again',
+      debugUnlockAll: 'Unlock all + skip onboarding',
     },
     alerts: {
       notificationRequired: 'Notification Permission Required',
@@ -816,8 +822,10 @@ export const en: Translations = {
       intro: 'Rewire uses publicly available space imagery in-app. This page documents the source materials and their license terms.',
       planetsTitle: 'Planet textures',
       planetsBody: 'The equirectangular textures used for the solar-system bodies (Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Moon, and Sun) shown on the home and Achievements screens are sourced from Solar System Scope (https://www.solarsystemscope.com/textures/) under the Creative Commons Attribution 4.0 International License (CC BY 4.0). These textures were reprocessed by Solar System Scope from NASA / JPL / ESA imagery (Cassini, Voyager, MESSENGER, Mariner, Mars Global Surveyor, Hubble, Lunar Reconnaissance Orbiter, Solar Dynamics Observatory, and others).',
+      cosmicTitle: 'Deep-sky images',
+      cosmicBody: 'The non-planet badges (stardust, nebula, protostar, white dwarf, stellar system, star cluster, galaxy, and cosmos) use real imagery from the James Webb Space Telescope (JWST) and the Hubble Space Telescope, operated by NASA, ESA, CSA and STScI — specifically the Cosmic Cliffs in the Carina Nebula, protostar L1527, the Southern Ring Nebula, Wolf-Rayet 140, the star cluster Westerlund 2, the Phantom Galaxy (M74), Webb\'s First Deep Field, and the Sagittarius Star Cloud. These images are published by ESA/Webb (https://esawebb.org/) and ESA/Hubble (https://esahubble.org/) under the Creative Commons Attribution 4.0 International License (CC BY 4.0), and are processed for in-app display.',
       licenseTitle: 'Required attribution',
-      licenseBody: 'Planet textures by Solar System Scope (https://www.solarsystemscope.com/textures/), licensed under CC BY 4.0. Derived from NASA imagery.',
+      licenseBody: 'Planet textures by Solar System Scope (https://www.solarsystemscope.com/textures/), licensed under CC BY 4.0. Derived from NASA imagery.\n\nDeep-sky images: NASA, ESA, CSA, STScI (ESA/Webb) and ESA/Hubble, licensed under CC BY 4.0.',
       ccUrlLabel: 'Full CC BY 4.0 license text',
       ccUrl: 'https://creativecommons.org/licenses/by/4.0/',
     },

@@ -14,14 +14,22 @@ import { notificationClient } from '@/lib/notifications/notificationClient';
 import { format } from 'date-fns/format';
 import * as Crypto from 'expo-crypto';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { surveyService } from '@/features/survey/surveyService';
 import { logger } from '@/lib/logger';
 
 export default function GoalSettingScreen() {
-  const { nickname, consentGivenAt, notifyTime: notifyTimeParam, lastViewedDate: lastViewedDateParam } = useLocalSearchParams<{
+  const {
+    nickname,
+    consentGivenAt,
+    notifyTime: notifyTimeParam,
+    lastViewedDate: lastViewedDateParam,
+    surveyAnswers: surveyAnswersParam,
+  } = useLocalSearchParams<{
     nickname: string;
     consentGivenAt: string;
     notifyTime: string;
     lastViewedDate: string;
+    surveyAnswers: string;
   }>();
   const [selectedGoal, setSelectedGoal] = useState(30);
   const { setUser } = useUserStore();
@@ -36,6 +44,24 @@ export default function GoalSettingScreen() {
   const resolvedLastViewedDate = Array.isArray(lastViewedDateParam)
     ? lastViewedDateParam[0]
     : lastViewedDateParam || null;
+
+  /**
+   * Submits the onboarding survey answers collected at the start of onboarding.
+   * Skipped users carry no answers, so nothing is sent. Never rethrows: a failed
+   * survey submission must not block finishing onboarding.
+   */
+  const submitOnboardingSurvey = async () => {
+    const raw = Array.isArray(surveyAnswersParam) ? surveyAnswersParam[0] : surveyAnswersParam;
+    if (!raw) return;
+
+    try {
+      const answers = JSON.parse(raw) as Record<string, string>;
+      if (!answers || Object.keys(answers).length === 0) return;
+      await surveyService.submitOnboardingSurvey(answers);
+    } catch (error) {
+      logger.warn('Goal', 'submitOnboardingSurvey failed:', error);
+    }
+  };
 
   const handleFinish = async () => {
     try {
@@ -53,6 +79,9 @@ export default function GoalSettingScreen() {
       };
 
       await setUser(newUser);
+
+      // After setUser so the survey document carries the real user id.
+      await submitOnboardingSurvey();
 
       const granted = await notificationClient.requestPermissions();
       if (granted) {

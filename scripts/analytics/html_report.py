@@ -90,8 +90,6 @@ EVENT_JP = {
     "relapse_recorded": "再発の記録",
     "panic_button_tapped": "パニックボタン押下",
     "panic_screen_viewed": "パニック画面表示",
-    "safari_demo_tapped": "Safariデモ起動",
-    "safari_demo_skipped": "Safariデモをスキップ",
     "recovery_trigger_selected": "回復トリガー選択",
     "share_tapped": "共有（シェア）",
     "review_prompt_shown": "レビュー依頼表示",
@@ -336,6 +334,71 @@ def _banner(h: dict) -> str:
             f'{glyph} {_esc(h["text"])}</div>')
 
 
+_REPORT_LABELS_JA = {
+    "app_store_discovery_and_engagement_standard": "App Store 表示・エンゲージメント",
+    "app_downloads_standard": "ダウンロード",
+    "app_store_subscription_event_report_standard": "サブスクリプション イベント",
+    "app_store_subscription_state_report_standard": "サブスクリプション 状態",
+    "app_store_purchases_standard": "購入・売上",
+}
+
+_METRIC_LABELS_JA = {
+    "impressions": "表示回数",
+    "product_page_views": "ページ閲覧",
+    "taps": "タップ",
+    "app_units": "新規DL",
+    "redownloads": "再DL",
+    "trial_starts": "トライアル開始",
+    "paid_conversions": "課金転換",
+    "renewals": "更新",
+    "cancellations": "解約",
+    "active_subscriptions": "有効サブスク",
+    "churned_subscriptions": "解約済み",
+    "purchases": "購入数",
+    "paying_users": "課金ユーザー",
+    "proceeds_usd": "収益(USD)",
+    "sales_usd": "売上(USD)",
+}
+
+
+def _data_quality_banner(payload: dict) -> str:
+    """Warn about stale or undelivered data before any number is read.
+
+    A missing ASC report renders as 0 everywhere downstream, which reads as a
+    collapse in performance rather than a delivery gap — and the LLM then
+    writes analysis explaining the "drop". Both failures are surfaced here.
+    """
+    notes = []
+
+    stale = payload.get("staleness_days")
+    if isinstance(stale, int) and stale > 2:
+        notes.append(
+            f"集計データが{stale}日前のものです（通常は1〜2日前）。"
+            f"集計ジョブが動いていない可能性があります — 数値は古い日付のものです。"
+        )
+
+    asc = payload.get("asc") or {}
+    missing = asc.get("missing_reports") or []
+    unmeasured = asc.get("unmeasured_metrics") or []
+    if missing:
+        names = "・".join(_REPORT_LABELS_JA.get(m, m) for m in missing)
+        affected = "・".join(_METRIC_LABELS_JA.get(m, m) for m in unmeasured)
+        detail = f"（{affected} は0ではなく未取得）" if affected else ""
+        notes.append(f"Apple から未配信のレポートがあります: {names}{detail}")
+
+    if not notes:
+        return ""
+
+    items = "".join(
+        f'<div style="padding:2px 0;">・{_esc(n)}</div>' for n in notes
+    )
+    return (f'<div style="background-color:{ATT_BG};color:{ATT_INK};'
+            f'border-left:4px solid {AMBER};padding:12px 20px;font-size:13px;'
+            f'line-height:1.6;border-radius:4px;margin:4px 0 8px 0;">'
+            f'<div style="font-weight:700;padding-bottom:4px;">'
+            f'⚠️ データ品質の注意</div>{items}</div>')
+
+
 def _title(target_date: date) -> str:
     d = _esc(target_date.isoformat())
     return (f'<div style="font-size:20px;font-weight:800;color:{INK};padding:4px 0 2px 0;">'
@@ -449,8 +512,6 @@ def _onboarding_section(payload: dict) -> str:
     pairs = [
         ("初回設定ステップ表示", f"{_count(fb, 'onboarding_step_viewed')} 回"),
         ("初回設定完了", f"{c} 回 / {u} 人"),
-        ("Safariデモ起動", f"{_count(fb, 'safari_demo_tapped')} 回"),
-        ("Safariデモをスキップ", f"{_count(fb, 'safari_demo_skipped')} 回"),
     ]
     out.append(_kv_table(pairs))
     return "".join(out)
@@ -754,6 +815,7 @@ def build_html(payload: dict, target_date: date,
     h = headline(payload)
     inner = "".join([
         _title(target_date),
+        _data_quality_banner(payload),
         _banner(h),
         _highlights_section(payload),
         _summary_section(payload),

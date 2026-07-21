@@ -219,6 +219,303 @@ class TestExtractMetricsLongFormat:
         assert metrics["product_page_views"] == 5
 
 
+class TestExtractMetricsReportRouting:
+    """Each ASC report carries its own discriminator column and its own meaning.
+
+    `extract_metrics` originally read only rows with an ``Event`` column, so the
+    entire commerce half of the funnel was silently dropped: downloads live in
+    ``app_downloads_standard`` under ``Download Type``, subscription flow lives
+    in the event report under ``Event Name``, and the subscription snapshot
+    lives in the state report under ``State Metric``. Verified against real
+    2026-07-17 TSVs, which reported 4 downloads and 1 paid start as 0 / 0.
+
+    Routing is keyed on the report filename (``load_tsv_data`` uses the file
+    stem) because the file identity — not the column — determines the meaning.
+    Unrecognised names keep the permissive legacy behaviour so synthetic
+    fixtures stay valid.
+    """
+
+    def test_first_time_download_counts_as_app_units(self):
+        data = {
+            "app_downloads_standard": [
+                {"Download Type": "First-time download", "Counts": "3"},
+                {"Download Type": "First-time download", "Counts": "1"},
+            ]
+        }
+        assert extract_metrics(data)["app_units"] == 4
+
+    def test_redownload_is_tracked_separately_from_app_units(self):
+        data = {
+            "app_downloads_standard": [
+                {"Download Type": "First-time download", "Counts": "5"},
+                {"Download Type": "Redownload", "Counts": "2"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["app_units"] == 5
+        assert metrics["redownloads"] == 2
+
+    def test_auto_update_is_not_a_download(self):
+        data = {
+            "app_downloads_standard": [
+                {"Download Type": "Auto-update", "Counts": "99"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["app_units"] == 0
+        assert metrics["redownloads"] == 0
+
+    def test_free_trial_start_activation_counts_as_trial_start(self):
+        data = {
+            "app_store_subscription_event_report_standard": [
+                {"Event Name": "Free trial start activation", "Counts": "7"},
+            ]
+        }
+        assert extract_metrics(data)["trial_starts"] == 7
+
+    def test_full_price_from_free_trial_counts_as_paid_conversion(self):
+        data = {
+            "app_store_subscription_event_report_standard": [
+                {"Event Name": "Full price from free trial", "Counts": "2"},
+                {"Event Name": "Full price subscription start reactivation", "Counts": "1"},
+            ]
+        }
+        assert extract_metrics(data)["paid_conversions"] == 3
+
+    def test_renewal_is_not_counted_as_a_new_paid_conversion(self):
+        # A renewal is recurring revenue from an existing subscriber. Folding it
+        # into paid_conversions would inflate trial_to_paid_rate without bound.
+        data = {
+            "app_store_subscription_event_report_standard": [
+                {"Event Name": "Full price renewal", "Counts": "50"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["paid_conversions"] == 0
+        assert metrics["renewals"] == 50
+
+    def test_voluntary_churn_events_count_as_cancellations(self):
+        data = {
+            "app_store_subscription_event_report_standard": [
+                {"Event Name": "Voluntary churn from free trial", "Counts": "4"},
+                {"Event Name": "Voluntary churn from full price", "Counts": "1"},
+            ]
+        }
+        assert extract_metrics(data)["cancellations"] == 5
+
+    def test_state_report_active_states_count_as_active_subscriptions(self):
+        data = {
+            "app_store_subscription_state_report_standard": [
+                {"State Metric": "Free trial", "Counts": "3"},
+                {"State Metric": "Full price", "Counts": "2"},
+            ]
+        }
+        assert extract_metrics(data)["active_subscriptions"] == 5
+
+    def test_state_report_churn_does_not_inflate_cancellations(self):
+        # The state report is a snapshot of everyone currently in a churned
+        # state; the event report is the flow of churns that happened that day.
+        # Summing both would double-count every cancellation.
+        data = {
+            "app_store_subscription_state_report_standard": [
+                {"State Metric": "Voluntary churn", "Counts": "800"},
+                {"State Metric": "Full price", "Counts": "2"},
+            ],
+            "app_store_subscription_event_report_standard": [
+                {"Event Name": "Voluntary churn from full price", "Counts": "1"},
+            ],
+        }
+        metrics = extract_metrics(data)
+        assert metrics["cancellations"] == 1
+        assert metrics["active_subscriptions"] == 2
+        assert metrics["churned_subscriptions"] == 800
+
+    def test_detailed_discovery_report_is_excluded_from_totals(self):
+        # The detailed report is a privacy-thresholded SUBSET of standard
+        # (verified 2026-07-17: every territory det <= std, and detailed carried
+        # only "App Store search"). Summing both double-counts impressions.
+        data = {
+            "app_store_discovery_and_engagement_standard": [
+                {"Event": "Impression", "Counts": "606"},
+                {"Event": "Page view", "Counts": "35"},
+            ],
+            "app_store_discovery_and_engagement_detailed": [
+                {"Event": "Impression", "Counts": "410"},
+                {"Event": "Page view", "Counts": "5"},
+            ],
+        }
+        metrics = extract_metrics(data)
+        assert metrics["impressions"] == 606
+        assert metrics["product_page_views"] == 35
+
+    def test_detailed_state_report_is_excluded_from_totals(self):
+        data = {
+            "app_store_subscription_state_report_standard": [
+                {"State Metric": "Full price", "Counts": "2"},
+            ],
+            "app_store_subscription_state_report_detailed": [
+                {"State Metric": "Full price", "Counts": "2"},
+            ],
+        }
+        assert extract_metrics(data)["active_subscriptions"] == 2
+
+    def test_retention_messaging_page_views_are_not_product_page_views(self):
+        # These are views of the subscription retention offer shown during
+        # cancellation, not App Store product page views.
+        data = {
+            "retention_messaging": [
+                {"Event": "Page views", "Counts": "2"},
+                {"Event": "Cancels", "Counts": "1"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["product_page_views"] == 0
+        assert metrics["retention_message_views"] == 2
+
+    def test_retention_messaging_cancels_do_not_double_count_cancellations(self):
+        data = {
+            "retention_messaging": [
+                {"Event": "Cancels", "Counts": "1"},
+            ],
+            "app_store_subscription_event_report_standard": [
+                {"Event Name": "Voluntary churn from full price", "Counts": "1"},
+            ],
+        }
+        metrics = extract_metrics(data)
+        assert metrics["cancellations"] == 1
+        assert metrics["retention_message_cancels"] == 1
+
+
+class TestPurchasesReport:
+    """`app_store_purchases_standard.tsv` was being discarded entirely.
+
+    It is the only source of Apple-side revenue truth (proceeds, paying users)
+    and it carries ``App Download Date``, which gives days-from-install-to-
+    purchase without needing BigQuery.
+    """
+
+    def test_purchases_and_revenue_are_collected(self):
+        data = {
+            "app_store_purchases_standard": [
+                {"Purchase Type": "In-app purchase", "Purchases": "1",
+                 "Proceeds in USD": "3.57", "Sales in USD": "4.20",
+                 "Paying Users": "1"},
+                {"Purchase Type": "In-app purchase", "Purchases": "2",
+                 "Proceeds in USD": "7.14", "Sales in USD": "8.40",
+                 "Paying Users": "2"},
+            ]
+        }
+        metrics = extract_metrics(data)
+        assert metrics["purchases"] == 3
+        assert metrics["paying_users"] == 3
+        assert metrics["proceeds_usd"] == pytest.approx(10.71)
+        assert metrics["sales_usd"] == pytest.approx(12.60)
+
+    def test_purchases_do_not_leak_into_app_units(self):
+        data = {
+            "app_store_purchases_standard": [
+                {"Purchase Type": "In-app purchase", "Purchases": "5",
+                 "Proceeds in USD": "0", "Sales in USD": "0",
+                 "Paying Users": "5"},
+            ]
+        }
+        assert extract_metrics(data)["app_units"] == 0
+
+    def test_days_from_install_to_purchase(self):
+        from scripts.analytics.analyze_funnel import days_to_purchase
+
+        rows = [
+            {"Date": "2026-07-14", "App Download Date": "2026-07-14",
+             "Purchases": "1"},
+            {"Date": "2026-07-14", "App Download Date": "2026-07-07",
+             "Purchases": "1"},
+            {"Date": "2026-07-14", "App Download Date": "", "Purchases": "1"},
+        ]
+        assert days_to_purchase(rows) == [0, 7]
+
+    def test_days_to_purchase_ignores_malformed_dates(self):
+        from scripts.analytics.analyze_funnel import days_to_purchase
+
+        rows = [
+            {"Date": "2026-07-14", "App Download Date": "not-a-date",
+             "Purchases": "1"},
+            {"Date": "2026-07-14", "App Download Date": "2026-07-10",
+             "Purchases": "1"},
+        ]
+        assert days_to_purchase(rows) == [4]
+
+
+class TestMissingReportDetection:
+    """A report Apple did not deliver must not be rendered as a zero.
+
+    2026-07-15 arrived with no discovery report at all; the pipeline reported
+    "impressions 0", which reads as "nobody saw the app" rather than "no data".
+    """
+
+    def test_reports_absent_from_the_payload_are_listed(self):
+        from scripts.analytics.analyze_funnel import detect_missing_reports
+
+        data = {
+            "app_downloads_standard": [],
+            "app_store_subscription_state_report_standard": [],
+        }
+        missing = detect_missing_reports(data)
+        assert "app_store_discovery_and_engagement_standard" in missing
+
+    def test_no_missing_reports_when_all_present(self):
+        from scripts.analytics.analyze_funnel import (
+            EXPECTED_REPORTS, detect_missing_reports,
+        )
+
+        data = {name: [] for name in EXPECTED_REPORTS}
+        assert detect_missing_reports(data) == []
+
+    def test_metrics_flag_which_are_unmeasured(self):
+        from scripts.analytics.analyze_funnel import unmeasured_metrics
+
+        # Discovery missing => impressions/page views/taps are unknown, not zero.
+        unmeasured = unmeasured_metrics(
+            ["app_store_discovery_and_engagement_standard"]
+        )
+        assert "impressions" in unmeasured
+        assert "product_page_views" in unmeasured
+        assert "taps" in unmeasured
+        assert "app_units" not in unmeasured
+
+
+class TestExtractMetricsRealFixture:
+    """End-to-end against the real 2026-07-17 report set.
+
+    These are the numbers the daily email should have carried. It shipped
+    impressions=1016 / app_units=0 / paid_conversions=0 instead.
+    """
+
+    FIXTURE_DATE = "2026-07-17"
+
+    @pytest.fixture
+    def real_data(self):
+        base = Path(__file__).resolve().parents[3] / "data" / "analytics" / self.FIXTURE_DATE
+        if not base.exists():
+            pytest.skip(f"No local ASC data for {self.FIXTURE_DATE}")
+        return load_tsv_data(base)
+
+    def test_impressions_come_from_standard_only(self, real_data):
+        assert extract_metrics(real_data)["impressions"] == 606
+
+    def test_product_page_views_exclude_detailed_and_retention(self, real_data):
+        assert extract_metrics(real_data)["product_page_views"] == 35
+
+    def test_downloads_are_no_longer_zero(self, real_data):
+        assert extract_metrics(real_data)["app_units"] == 4
+
+    def test_paid_conversion_is_no_longer_zero(self, real_data):
+        assert extract_metrics(real_data)["paid_conversions"] == 1
+
+    def test_download_rate_reflects_real_downloads(self, real_data):
+        funnel = calculate_funnel(extract_metrics(real_data))
+        assert funnel["download_rate"] == pytest.approx(4 / 35, abs=0.0001)
+
+
 class TestExtractMetricsBySourceLongFormat:
     """The per-source breakdown must also handle long-format Event rows."""
 
@@ -238,6 +535,61 @@ class TestExtractMetricsBySourceLongFormat:
         assert result["App Store Search"]["product_page_views"] == 4
         assert result["App Store Browse"]["impressions"] == 10
         assert result["App Store Browse"].get("taps", 0) == 1
+
+
+class TestExtractMetricsBySourceRouting:
+    """The per-channel table needs the same report routing as the totals.
+
+    Without it the 媒体別 breakdown double-counted impressions from the detailed
+    report and showed 0 downloads for every channel, because downloads live
+    under ``Download Type`` rather than ``Event``.
+    """
+
+    def test_downloads_are_attributed_to_their_source(self):
+        from scripts.analytics.analyze_funnel import extract_metrics_by_source
+
+        data = {
+            "app_downloads_standard": [
+                {"Download Type": "First-time download", "Counts": "3",
+                 "Source Type": "App Store search"},
+                {"Download Type": "First-time download", "Counts": "1",
+                 "Source Type": "App Store browse"},
+                {"Download Type": "Auto-update", "Counts": "50",
+                 "Source Type": "App Store search"},
+            ]
+        }
+        result = extract_metrics_by_source(data)
+        assert result["App Store Search"]["app_units"] == 3
+        assert result["App Store Browse"]["app_units"] == 1
+
+    def test_detailed_report_is_excluded_from_per_source_totals(self):
+        from scripts.analytics.analyze_funnel import extract_metrics_by_source
+
+        data = {
+            "app_store_discovery_and_engagement_standard": [
+                {"Event": "Impression", "Counts": "594",
+                 "Source Type": "App Store search"},
+            ],
+            "app_store_discovery_and_engagement_detailed": [
+                {"Event": "Impression", "Counts": "410",
+                 "Source Type": "App Store search"},
+            ],
+        }
+        result = extract_metrics_by_source(data)
+        assert result["App Store Search"]["impressions"] == 594
+
+    def test_retention_messaging_does_not_create_a_source_bucket(self):
+        from scripts.analytics.analyze_funnel import extract_metrics_by_source
+
+        data = {
+            "retention_messaging": [
+                {"Event": "Page views", "Counts": "2"},
+            ]
+        }
+        result = extract_metrics_by_source(data)
+        assert all(
+            b.get("product_page_views", 0) == 0 for b in result.values()
+        ), result
 
 
 class TestLoadTsvData:

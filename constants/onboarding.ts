@@ -1,5 +1,6 @@
 import { ASSESSMENT_QUESTIONS } from '@/constants/assessment';
 import { EDUCATION_SLIDES, DAMAGE_SLIDES, RECOVERY_SLIDES } from '@/constants/education';
+import { ONBOARDING_SURVEY_QUESTIONS } from '@/constants/survey';
 
 export const FEATURES = [
   {
@@ -21,6 +22,7 @@ export const FEATURES = [
 
 export type OnboardingStep =
   | { type: 'welcome' }
+  | { type: 'onboarding_survey_choice'; questionId: string }
   | { type: 'assessment_choice'; questionId: string }
   | { type: 'assessment_picker'; questionId: string }
   | { type: 'assessment_yesno'; questionId: string }
@@ -39,6 +41,9 @@ export type OnboardingStep =
 
 export const STEPS: OnboardingStep[] = [
   { type: 'welcome' },
+  ...ONBOARDING_SURVEY_QUESTIONS.map(
+    (q): OnboardingStep => ({ type: 'onboarding_survey_choice' as const, questionId: q.id })
+  ),
   ...ASSESSMENT_QUESTIONS.map((q): OnboardingStep => {
     if (q.type === 'choice') return { type: 'assessment_choice' as const, questionId: q.id };
     if (q.type === 'picker') return { type: 'assessment_picker' as const, questionId: q.id };
@@ -63,6 +68,7 @@ export const TOTAL_QUESTIONS = ASSESSMENT_QUESTIONS.length;
 /** Steps that don't show the default footer button */
 export const NO_FOOTER_TYPES = new Set([
   'welcome',
+  'onboarding_survey_choice',
   'assessment_choice',
   'assessment_yesno',
   'analyzing',
@@ -70,6 +76,9 @@ export const NO_FOOTER_TYPES = new Set([
 
 /** Non-countable step types (excluded from step counter) */
 export const NON_COUNTABLE_TYPES = new Set([
+  // The onboarding survey is optional/skippable, so it must not inflate the
+  // "n/m" counter shown on the required steps.
+  'onboarding_survey_choice',
   'education',
   'damage_intro',
   'damage',
@@ -126,5 +135,21 @@ export function isAssessmentStep(cs: OnboardingStep): boolean {
   return cs.type === 'assessment_choice' || cs.type === 'assessment_picker' || cs.type === 'assessment_yesno';
 }
 
+/** Check if current step is an onboarding survey question (for skip button) */
+export function isOnboardingSurveyStep(cs: OnboardingStep): boolean {
+  return cs.type === 'onboarding_survey_choice';
+}
+
 /** Find the index of the first education slide (assessment skip target) */
 export const EDUCATION_START_INDEX = STEPS.findIndex((s) => s.type === 'education');
+
+/** Find the index of the first assessment question */
+export const ASSESSMENT_START_INDEX = STEPS.findIndex((s) => isAssessmentStep(s));
+
+/**
+ * Step right after the last onboarding survey question (survey skip target).
+ * Derived from the survey steps themselves so skipping always lands just past
+ * the survey, whatever follows it.
+ */
+export const SURVEY_SKIP_TARGET_INDEX =
+  STEPS.reduce((last, s, i) => (isOnboardingSurveyStep(s) ? i : last), -1) + 1;

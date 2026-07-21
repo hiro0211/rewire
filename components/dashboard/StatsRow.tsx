@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { SPACING } from '@/constants/theme';
+import { DEBUG_UNLOCK_DAYS } from '@/constants/debug';
 import { useDashboardStats } from '@/hooks/dashboard/useDashboardStats';
+import { useDebugUnlockAll } from '@/hooks/debug/useDebugUnlockAll';
 import { useUserStore } from '@/stores/userStore';
 import { OrbCarousel } from './OrbCarousel';
 import { StreakEditModal } from './StreakEditModal';
@@ -9,9 +11,11 @@ import { StreakEditModal } from './StreakEditModal';
 export function StatsRow() {
   const { stopwatch, streakStartDate } = useDashboardStats();
   const { updateUser } = useUserStore();
+  const debugUnlockAll = useDebugUnlockAll();
   const [editModalVisible, setEditModalVisible] = useState(false);
 
-  const streakDays = stopwatch.days ?? 0;
+  // デバッグ全解放時はストリークを最大扱いにして全バッジを実写で表示する。
+  const streakDays = debugUnlockAll ? DEBUG_UNLOCK_DAYS : stopwatch.days ?? 0;
 
   const openEdit = useCallback(() => setEditModalVisible(true), []);
   const closeEdit = useCallback(() => setEditModalVisible(false), []);

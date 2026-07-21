@@ -11,8 +11,10 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 import { hasPlanetTexture } from '@/constants/planets/planetTextureMap';
+import { hasCosmicTexture } from '@/constants/cosmic/cosmicTextureMap';
 import { CoreOrbRenderer } from './CoreOrbRenderer';
 import { PlanetOrbRenderer } from './PlanetOrbRenderer';
+import { CosmicFieldRenderer } from './CosmicFieldRenderer';
 import { OrbGlowLayers } from './OrbGlowLayers';
 import { OrbParticles } from './OrbParticles';
 import { OrbScatteredStars } from './OrbScatteredStars';
@@ -105,12 +107,21 @@ export function AnimatedOrb({ colors, chapterId, badgeId, size = 200, onPress, o
             pulseStyle,
           ]}
         >
-          {hasPlanetTexture(badgeId) && badgeId ? (
+          {badgeId && hasPlanetTexture(badgeId) ? (
             <PlanetOrbRenderer
               badgeId={badgeId}
               size={size}
               time={time}
               glowBoost={glowIntensity}
+              orbColors={orbColors}
+            />
+          ) : badgeId && hasCosmicTexture(badgeId) ? (
+            <CosmicFieldRenderer
+              badgeId={badgeId}
+              size={size}
+              time={time}
+              glowBoost={glowIntensity}
+              glowColor={colors.glow}
               orbColors={orbColors}
             />
           ) : (

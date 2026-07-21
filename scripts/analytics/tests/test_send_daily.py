@@ -365,3 +365,37 @@ class TestSendDailyOrchestration:
         # Failure should be visible to Claude as an explicit error marker so
         # it can call out the gap in the report.
         assert "revenuecat_error" in passed
+
+
+class TestStalenessPropagation:
+    """The renderer can only warn about stale data if send_daily measures it."""
+
+    def test_staleness_is_measured_against_today_and_passed_to_the_renderer(
+        self, tmp_path
+    ):
+        from scripts.analytics import send_daily
+
+        latest = _latest(tmp_path)  # 2026-05-23
+        with patch.object(send_daily, "load_config", return_value=_config()), \
+             patch.object(send_daily, "find_latest_metrics", return_value=latest), \
+             patch.object(send_daily, "find_matching_report", return_value=None), \
+             patch.object(send_daily, "generate_report", return_value="# body"), \
+             patch.object(send_daily, "staleness_days", return_value=4), \
+             patch.object(send_daily, "build_html", return_value="<html></html>") as mock_html:
+            send_daily.run(dry_run=True, analytics_dir=tmp_path)
+
+        payload = mock_html.call_args[0][0]
+        assert payload["staleness_days"] == 4
+
+    def test_stale_data_is_logged_as_a_warning(self, tmp_path, caplog):
+        from scripts.analytics import send_daily
+
+        latest = _latest(tmp_path)
+        with patch.object(send_daily, "load_config", return_value=_config()), \
+             patch.object(send_daily, "find_latest_metrics", return_value=latest), \
+             patch.object(send_daily, "find_matching_report", return_value=None), \
+             patch.object(send_daily, "generate_report", return_value="# body"), \
+             patch.object(send_daily, "staleness_days", return_value=9):
+            send_daily.run(dry_run=True, analytics_dir=tmp_path)
+
+        assert any("stale" in r.message.lower() for r in caplog.records)

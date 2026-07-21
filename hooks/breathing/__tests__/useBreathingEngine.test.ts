@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: jest.fn(), back: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock('expo-haptics', () => ({
