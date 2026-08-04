@@ -34,6 +34,7 @@ jest.mock('@/stores/localeStore', () => {
   };
 });
 
+import { usePaywallStore } from '@/stores/paywallStore';
 import { BrandScreen, BRAND_HARD_TIMEOUT_MS } from '../brand';
 import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
@@ -49,6 +50,8 @@ describe('BrandScreen ルーティング分岐', () => {
     (global as any).__DEV__ = false;
     // デフォルトで subscriptionSynced=true にして既存テストの期待値を維持
     useSubscriptionStore.getState().markSynced();
+    // 未表示（＝クールダウン明け）を既定にして既存テストの期待値を維持
+    usePaywallStore.setState({ lastShownAt: null, hasHydrated: true });
   });
 
   afterEach(() => {
@@ -90,6 +93,48 @@ describe('BrandScreen ルーティング分岐', () => {
     render(<BrandScreen />);
     act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
     expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
+  });
+
+  describe('起動時ペイウォールのクールダウン', () => {
+    it('クールダウン中は非Proでも /(tabs) に進む', () => {
+      // 毎起動で押し売りしない。実測で1端末が15回見せられていた
+      mockUser = { nickname: 'Test', isPro: false };
+      usePaywallStore.setState({ lastShownAt: new Date().toISOString(), hasHydrated: true });
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
+
+    it('クールダウンが明けていれば従来どおり /paywall に進む', () => {
+      const longAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      mockUser = { nickname: 'Test', isPro: false };
+      usePaywallStore.setState({ lastShownAt: longAgo, hasHydrated: true });
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
+    });
+
+    it('クールダウン状態の読み込みが終わるまで遷移しない', () => {
+      // 未ハイドレートのまま判定すると「未記録＝表示」と誤読して毎回出てしまう
+      mockUser = { nickname: 'Test', isPro: false };
+      usePaywallStore.setState({ lastShownAt: null, hasHydrated: false });
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+      expect(mockReplace).not.toHaveBeenCalled();
+    });
+
+    it('読み込み完了後に再判定して遷移する', () => {
+      mockUser = { nickname: 'Test', isPro: false };
+      usePaywallStore.setState({ lastShownAt: null, hasHydrated: false });
+      render(<BrandScreen />);
+      act(() => { jest.advanceTimersByTime(TIMINGS.navigate); });
+
+      act(() => {
+        usePaywallStore.setState({ lastShownAt: null, hasHydrated: true });
+      });
+
+      expect(mockReplace).toHaveBeenCalledWith({ pathname: '/paywall', params: { source: 'returning' } });
+    });
   });
 
   it('isPro=true → /(tabs)（ダッシュボードへ直接遷移）', () => {

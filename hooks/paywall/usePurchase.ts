@@ -5,13 +5,14 @@ import { t } from '@/locales/i18n';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 import { logger } from '@/lib/logger';
 import { trackEvent } from '@/lib/tracking/trackEvent';
+import { PRO_ENTITLEMENT_ID } from '@/constants/subscription';
 
-const ENTITLEMENT_KEY = 'Rewire Pro';
 
 interface UsePurchaseOptions {
   package: any;
   plan?: string;
-  onPurchaseCompleted: () => void;
+  /** 購入完了。どのプランが売れたかを計測に載せるため plan を受け取る。 */
+  onPurchaseCompleted: (plan: string) => void;
   onRestoreCompleted: () => void;
 }
 
@@ -28,8 +29,21 @@ export function usePurchase({ package: pkg, plan, onPurchaseCompleted, onRestore
     setPurchasing(true);
     try {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
-      if (customerInfo.entitlements.active[ENTITLEMENT_KEY]) {
-        onPurchaseCompleted();
+      if (customerInfo.entitlements.active[PRO_ENTITLEMENT_ID]) {
+        onPurchaseCompleted(plan ?? 'unknown');
+      } else {
+        // 決済は通ったのに権利が付いていない（RevenueCat 側の entitlement 識別子
+        // 不一致が典型）。ここで黙って抜けると、支払ったのに何も起きない画面に
+        // なり、計測にも何も残らない。
+        logger.error('Purchase', 'entitlement missing after successful purchase', {
+          expected: PRO_ENTITLEMENT_ID,
+          active: Object.keys(customerInfo.entitlements.active ?? {}),
+        });
+        trackEvent('purchase_failed', { reason: 'entitlement_missing', cancelled: false });
+        const keys = getPurchaseErrorKeys({});
+        if (keys) {
+          Alert.alert(t(keys.titleKey), t(keys.messageKey));
+        }
       }
     } catch (error: any) {
       const isCancelled =
@@ -63,7 +77,7 @@ export function usePurchase({ package: pkg, plan, onPurchaseCompleted, onRestore
     setPurchasing(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
-      const success = !!customerInfo.entitlements.active[ENTITLEMENT_KEY];
+      const success = !!customerInfo.entitlements.active[PRO_ENTITLEMENT_ID];
       trackEvent('restore_completed', { success });
       if (success) {
         onRestoreCompleted();

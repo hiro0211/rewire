@@ -12,6 +12,8 @@
  *
  * Use `undefined` as the param type for events that carry no params.
  */
+import type { PaywallSource } from './analytics/paywallSource';
+
 export interface AnalyticsEventParams {
   // --- Lessons ---
   lesson_started: { lesson_id: string };
@@ -23,12 +25,17 @@ export interface AnalyticsEventParams {
   badge_unlocked: { badge_id: string; chapter: string };
 
   // --- Paywall depth ---
+  // source は3イベントで同じ語彙を共有する（constants/analytics/paywallSource.ts）。
+  // これがないと BigQuery で「どの導線が購入に繋がったか」を結合できない。
+  benefits_screen_viewed: { source: PaywallSource };
+  paywall_viewed: { source: PaywallSource; offering: string };
   plan_selected: { plan: string };
   purchase_initiated: { plan: string };
   purchase_failed: { reason: string; cancelled: boolean };
   restore_tapped: undefined;
   restore_completed: { success: boolean };
-  paywall_dismissed: { source: string };
+  paywall_dismissed: { source: PaywallSource };
+  pro_purchase_completed: { source: PaywallSource; plan: string; offering: string };
 
   // --- Notifications ---
   notification_permission: { granted: boolean };

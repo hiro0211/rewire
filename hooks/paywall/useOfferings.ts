@@ -5,6 +5,19 @@ import { Purchases } from '@/lib/subscription/purchasesModule';
 type PaywallState = 'loading' | 'ready' | 'unavailable';
 type OfferingType = 'default' | 'discount' | 'trial';
 
+/**
+ * 実際に買える商品が1つでも入っているか。
+ *
+ * offering オブジェクトの有無だけで ready にすると、中身が空のときに
+ * ペイウォールは正常表示されるのに購入ボタンで「プランの取得に失敗しました」
+ * に落ちる。買えない画面を見せるくらいなら unavailable にして再試行を促す。
+ * `availablePackages` が undefined で来る形状もあるため annual/monthly も見る。
+ */
+function hasPurchasablePackage(offering: any): boolean {
+  if (offering.availablePackages?.length > 0) return true;
+  return Boolean(offering.annual ?? offering.monthly);
+}
+
 export function useOfferings(offeringType: OfferingType) {
   const [paywallState, setPaywallState] = useState<PaywallState>('loading');
   const [currentOffering, setCurrentOffering] = useState<any>(null);
@@ -47,7 +60,7 @@ export function useOfferings(offeringType: OfferingType) {
           targetOffering = offerings.current;
         }
 
-        if (targetOffering) {
+        if (targetOffering && hasPurchasablePackage(targetOffering)) {
           setCurrentOffering(targetOffering);
           setPaywallState('ready');
         } else {
@@ -59,6 +72,7 @@ export function useOfferings(offeringType: OfferingType) {
     })();
     return () => { mounted = false; };
   }, [offeringType, paywallKey]);
+
 
   const retry = useCallback(() => {
     setPaywallState('loading');

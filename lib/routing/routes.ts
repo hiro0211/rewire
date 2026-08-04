@@ -11,8 +11,12 @@ function route<T extends string>(path: T): Href {
   return path as unknown as Href;
 }
 
+/**
+ * ROUTES の定数（`Href` にキャスト済み）とパス文字列リテラルの両方を受けられる。
+ * 実体はどちらも文字列なので、呼び出し側で `as any` を書かせないための受け口。
+ */
 export function routeWithParams(
-  pathname: string,
+  pathname: string | Href,
   params: Record<string, string>,
 ): Href {
   return { pathname, params } as unknown as Href;

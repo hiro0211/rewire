@@ -22,6 +22,7 @@ export type StorageKey =
   | 'whats_new_seen_version'
   | 'analytics_install_date'
   | 'analytics_activation'
+  | 'paywall_cooldown'
   | 'debug';
 
 const SENSITIVE_KEYS: StorageKey[] = ['checkins', 'recoveries', 'breath_sessions'];

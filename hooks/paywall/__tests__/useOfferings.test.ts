@@ -39,4 +39,20 @@ describe('useOfferings', () => {
     const { result } = renderHook(() => useOfferings('default'));
     await waitFor(() => expect(result.current.paywallState).toBe('unavailable'));
   });
+
+  it('購入可能なパッケージが空の offering は unavailable にする', async () => {
+    // offering オブジェクトの有無しか見ていなかったため、中身が空でも ready になり、
+    // ペイウォールは正常表示されるのに購入ボタンで「プランの取得に失敗」に落ちていた
+    mockGetOfferings.mockResolvedValue({ current: { availablePackages: [] } });
+    const { result } = renderHook(() => useOfferings('default'));
+    await waitFor(() => expect(result.current.paywallState).toBe('unavailable'));
+  });
+
+  it('availablePackages が無くても annual があれば ready にする', async () => {
+    // 一部の Offering 形状では availablePackages が undefined で来る
+    const mockOffering = { annual: { product: { price: 5400 } } };
+    mockGetOfferings.mockResolvedValue({ current: mockOffering });
+    const { result } = renderHook(() => useOfferings('default'));
+    await waitFor(() => expect(result.current.paywallState).toBe('ready'));
+  });
 });

@@ -16,7 +16,7 @@ import { extractOfferingPackages } from '@/hooks/paywall/useOfferingPackages';
 interface PaywallTrialProps {
   offering: any;
   onDismiss: () => void;
-  onPurchaseCompleted: () => void;
+  onPurchaseCompleted: (plan: string) => void;
   onRestoreCompleted: () => void;
 }
 

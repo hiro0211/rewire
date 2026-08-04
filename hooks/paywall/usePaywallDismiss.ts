@@ -4,11 +4,13 @@ import { useUserStore } from '@/stores/userStore';
 import { discountExpiry } from '@/lib/paywall/discountExpiry';
 import { ROUTES, routeWithParams } from '@/lib/routing/routes';
 import { trackEvent } from '@/lib/tracking/trackEvent';
+import { PAYWALL_SOURCE, type PaywallSource } from '@/constants/analytics/paywallSource';
 
 type OfferingType = 'default' | 'discount' | 'trial';
 
 interface UsePaywallDismissOptions {
-  isFromOnboarding: boolean;
+  /** 表示元の導線。`paywall_viewed` と同じ値を受け取り、同じ語彙で計測する。 */
+  source: PaywallSource;
   offeringType: OfferingType;
   setOfferingType: (type: OfferingType) => void;
   setDiscountRemainingSeconds: (seconds: number) => void;
@@ -17,7 +19,7 @@ interface UsePaywallDismissOptions {
 }
 
 export function usePaywallDismiss({
-  isFromOnboarding,
+  source,
   offeringType,
   setOfferingType,
   setDiscountRemainingSeconds,
@@ -26,12 +28,17 @@ export function usePaywallDismiss({
 }: UsePaywallDismissOptions) {
   const router = useRouter();
   const { user } = useUserStore();
+  const isFromOnboarding = source === PAYWALL_SOURCE.ONBOARDING;
 
   const handleDismiss = useCallback(async () => {
-    trackEvent('paywall_dismissed', { source: isFromOnboarding ? 'onboarding' : 'direct' });
+    trackEvent('paywall_dismissed', { source });
     if (isFromOnboarding) {
-      // paywall を閉じたらベネフィット画面へ戻す
-      router.replace(ROUTES.onboardingBenefits);
+      // paywall を閉じたらベネフィット画面へ戻す。
+      // source を明示しないと戻り先で `benefits_screen_viewed { source: 'unknown' }`
+      // になり、オンボーディング中の往復が計測から消える。
+      router.replace(
+        routeWithParams(ROUTES.onboardingBenefits, { source: PAYWALL_SOURCE.ONBOARDING }),
+      );
       // --- Discount/Trial cascade disabled for Guideline 5.6 ---
       // if (offeringType === 'default') {
       //   const remaining = await discountExpiry.getRemainingSeconds();
@@ -50,7 +57,7 @@ export function usePaywallDismiss({
     } else {
       router.replace(ROUTES.tabs);
     }
-  }, [isFromOnboarding, router]);
+  }, [isFromOnboarding, source, router]);
 
   // --- Trial sheet disabled for Guideline 5.6 ---
   const handleTrialSheetDismiss = useCallback(() => {

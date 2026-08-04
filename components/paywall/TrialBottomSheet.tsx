@@ -13,7 +13,7 @@ interface TrialBottomSheetProps {
   visible: boolean;
   offering: any;
   onDismiss: () => void;
-  onPurchaseCompleted: () => void;
+  onPurchaseCompleted: (plan: string) => void;
   onRestoreCompleted: () => void;
 }
 

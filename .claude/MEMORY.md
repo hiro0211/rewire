@@ -2640,3 +2640,24 @@ JS **322スイート / 2369テスト全通過**、Python **215通過**。tsc は
   - `app/settings.tsx`: デバッグセクションに toggle SettingItem(`settings.labels.debugUnlockAll`、icon `planet-outline`)。ja「全バッジ解放＋オンボスキップ」/ en「Unlock all + skip onboarding」。
 - **重要（hiroの操作が必要）**: トグルは `DEBUG_MENU_ENABLED` が true のときだけ表示・作動する。現状 `constants/debug.ts` の `DEBUG_MENU_ENABLED=false` のまま(=リリース安全)。**ローカルで使うには hiro が `DEBUG_MENU_ENABLED=true` に変更する必要がある。TestFlight/Archive 前に false に戻すこと**(既存ルール)。DEBUG_MENU_ENABLED は勝手に変更していない。
 - **テスト**: 338 suites / 2578 tests green。新規テスト: debugStore(8), useDebugUnlockAll(gated含む3), indexRouting.debug(2), StatsRow.debug(2), useAchievements(2), useAppInitialization(+1), settings(+3)。tsc 新規エラーなし、lint 0 errors。
+
+### 宇宙バッジの3D立体モーション（同 branch・未コミット）
+- **背景**: 実機で確認したら惑星（球面マッピング）は3Dに見えるのに、宇宙バッジ（galaxy/cosmos/starCluster/星雲系）は平面画像が静止して見え2D的だった（`rotationSpeed` 0.003〜0.012 が遅すぎ＋奥行き手がかり無し）。ユーザー要望「火星のような3Dモデル感」。球体でない天体に球面回転は不自然なので**天体ごとに最適化**する方針をユーザー承認。
+- **実装**: `COSMIC_FIELD_SHADER` に `motionMode` uniform を追加し1本のシェーダーで4モード分岐（マスク/ティント/グロー等のエピローグは全モード共通）:
+  - `parallax`(0): 明るさ=奥行きの2.5D視差（nebula/protostar）
+  - `disk`(1): 傾けた円盤として自転（galaxy/stellarSystem）
+  - `sphere`(2): planetOrb の球面投影を流用して回転、要 `tx="repeat"`（starCluster/stardust/whiteDwarf）
+  - `flythrough`(3): 回転せず進むズームping-pong＋視差（cosmos）
+- **変更**: `constants/shaders/cosmicField.ts`（4分岐＋新uniform: motionMode/tilt/zoomRate/zoomMax/parallaxStrength/swaySpeed）、`constants/cosmic/cosmicFieldConfig.ts`（`motionMode` + パラメータ + `motionModeToFloat()`、rotationSpeed を 0.06〜0.15 に引上げ）、`components/dashboard/CosmicFieldRenderer.tsx`（新uniform渡し＋ `tx = motionMode==='sphere' ? 'repeat' : 'clamp'`）。惑星系は無変更。
+- **テスト**: 338 suites / 2609 tests green。lint 0 errors、tsc 新規エラーなし。TDDで config/shader/renderer 各テスト追加。`indexRouting.test.tsx`（本番設定）に `jest.mock('@/constants/debug', ()=>({DEBUG_MENU_ENABLED:false}))` を追加（DEBUG_MENU_ENABLED を実機用に true にしても本番テストが決定的に緑になるよう修正）。
+- **未完（hiro のタップが必要）**: 実機での見栄え確認・パラメータ微調整。シミュレーターは私からタップ/スワイプ/トグル操作ができないため未検証（アプリはクラッシュせず起動＝SkSLはコンパイル可）。手順: 設定→デバッグ→「全バッジ解放＋オンボスキップ」ON → ホームのオーブを横スワイプで galaxy/cosmos/starCluster を確認 → `cosmicFieldConfig.ts` の tilt/rotationSpeed/zoomRate/parallaxStrength を fast-refresh で調整。特に disk の tilt（円が空きすぎない）と各回転速度（速すぎない）を詰める。
+- **⚠️ 現在 `constants/debug.ts` の `DEBUG_MENU_ENABLED=true`**（実機確認のため私が変更）。**TestFlight/Archive 前に false に戻すこと**（既存ルール）。debugStore の default enabled は false に戻済み（一時的に true にして検証を試みたが celebration 画面で阻まれ revert）。
+- **バージョン**: app.config.ts / app.json は既に version 2.4.0、app.json buildNumber "1"（当セッション開始時点で既に未コミット変更として存在）。追加変更は不要だった。
+
+### バージョン 2.4.0 — ネイティブ側の焼き込み修正（重要）
+- **訂正**: 「app.config.ts/app.json が 2.4.0 なので追加不要」は誤りだった。Xcode Archive は**ネイティブプロジェクトの値**を使うため、Organizer で **2.3.0 (1)** のままだった。
+- **原因**: `ios/` は Expo prebuild 生成（git 管理外・xcodegen ではない）。前回 prebuild 時の 2.3.0 が焼き込まれ、その後の app.config.ts 2.4.0 が反映されていなかった（prebuild 未再実行）。
+- **修正**: `ios/Rewire/Info.plist` の `CFBundleShortVersionString` を 2.4.0 に、`ios/Rewire.xcodeproj/project.pbxproj` の `MARKETING_VERSION`（10箇所＝app＋拡張全部）を 2.4.0 に。`CFBundleVersion`/`CURRENT_PROJECT_VERSION` は 1 のまま（＝ビルド番号1）。app.config.ts も 2.4.0 なので将来の prebuild とも整合。
+- **手順の学び**: バージョン変更後は Xcode Archive 前に `expo prebuild` を再実行するか、ネイティブ（Info.plist + pbxproj MARKETING_VERSION）を直接更新する必要がある。app.config.ts だけ変えても Archive には効かない。
+- **要再Archive**: Organizer の既存 2.3.0 アーカイブは変わらない。新規 Archive で 2.4.0 (1) になる。
+- **DEBUG_MENU_ENABLED は false に戻した**（Archive 直前だったため release-safe に）。sim で3D確認を続ける場合のみ一時的に true へ。

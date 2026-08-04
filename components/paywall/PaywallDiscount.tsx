@@ -20,7 +20,7 @@ interface PaywallDiscountProps {
   offering: any;
   initialSeconds?: number;
   onDismiss: () => void;
-  onPurchaseCompleted: () => void;
+  onPurchaseCompleted: (plan: string) => void;
   onRestoreCompleted: () => void;
 }
 

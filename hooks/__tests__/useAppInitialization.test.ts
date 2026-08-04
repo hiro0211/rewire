@@ -43,8 +43,9 @@ jest.mock('expo-splash-screen', () => ({
 }));
 
 jest.mock('@/lib/tracking/analyticsClient', () => ({
-  // App launch now also logs `app_open { days_since_install }`.
-  analyticsClient: { setUserProperty: jest.fn(), logEvent: jest.fn() },
+  // App launch now also logs `app_open { days_since_install }` and stamps the
+  // User-ID via `useAnalyticsUserId`.
+  analyticsClient: { setUserProperty: jest.fn(), logEvent: jest.fn(), setUserId: jest.fn() },
 }));
 
 jest.mock('@/lib/subscription/subscriptionClient', () => ({

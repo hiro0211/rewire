@@ -44,6 +44,7 @@ jest.mock('@/stores/localeStore', () => {
 import { BrandScreen } from '../brand';
 import { BRAND_CATCHPHRASE_KEYS, BRAND_TIMING_CONFIG, calculateBrandTimings } from '@/constants/brandConfig';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
+import { usePaywallStore } from '@/stores/paywallStore';
 
 const TIMINGS = calculateBrandTimings(BRAND_TIMING_CONFIG, BRAND_CATCHPHRASE_KEYS.length);
 
@@ -57,6 +58,8 @@ describe('BrandScreen routing', () => {
     (global as any).__DEV__ = false;
     // 既存テストは「サブスク同期済み」の前提で paywall/tabs を期待している
     useSubscriptionStore.getState().markSynced();
+    // 起動時ペイウォールのクールダウン未記録（＝表示する）を既定にする
+    usePaywallStore.setState({ lastShownAt: null, hasHydrated: true });
   });
 
   afterEach(() => {

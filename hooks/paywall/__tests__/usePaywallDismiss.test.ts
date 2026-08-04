@@ -47,7 +47,7 @@ describe('usePaywallDismiss', () => {
 
     const { result } = renderHook(() =>
       usePaywallDismiss({
-        isFromOnboarding: true,
+        source: 'onboarding',
         offeringType: 'default',
         setOfferingType,
         setDiscountRemainingSeconds: jest.fn(),
@@ -60,8 +60,12 @@ describe('usePaywallDismiss', () => {
       await result.current.handleDismiss();
     });
 
-    // ベネフィット画面へ戻る
-    expect(mockReplace).toHaveBeenCalledWith('/onboarding/benefits');
+    // ベネフィット画面へ戻る。source を持たせないと戻り先で導線が unknown に落ち、
+    // 「ペイウォールを閉じて戻ってきた人」を後から数えられなくなる
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/onboarding/benefits',
+      params: { source: 'onboarding' },
+    });
     // cascade しない
     expect(setOfferingType).not.toHaveBeenCalled();
     expect(setShowTrialSheet).not.toHaveBeenCalled();
@@ -71,7 +75,7 @@ describe('usePaywallDismiss', () => {
   it('非オンボーディング時の dismiss で /(tabs) へ遷移する', async () => {
     const { result } = renderHook(() =>
       usePaywallDismiss({
-        isFromOnboarding: false,
+        source: 'returning',
         offeringType: 'default',
         setOfferingType: jest.fn(),
         setDiscountRemainingSeconds: jest.fn(),
@@ -91,7 +95,7 @@ describe('usePaywallDismiss', () => {
   it('オンボーディング時の dismiss で paywall_dismissed source=onboarding を送信する', async () => {
     const { result } = renderHook(() =>
       usePaywallDismiss({
-        isFromOnboarding: true,
+        source: 'onboarding',
         offeringType: 'default',
         setOfferingType: jest.fn(),
         setDiscountRemainingSeconds: jest.fn(),
@@ -107,10 +111,12 @@ describe('usePaywallDismiss', () => {
     expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'onboarding' });
   });
 
-  it('非オンボーディング時の dismiss で paywall_dismissed source=direct を送信する', async () => {
+  it('起動時ペイウォールの dismiss で paywall_dismissed source=returning を送信する', async () => {
+    // paywall_viewed 側は 'returning' を送っているので、dismissed も同じ語彙に揃える
+    // （以前は 'direct' で、同じ導線が2つの名前に割れていた）
     const { result } = renderHook(() =>
       usePaywallDismiss({
-        isFromOnboarding: false,
+        source: 'returning',
         offeringType: 'default',
         setOfferingType: jest.fn(),
         setDiscountRemainingSeconds: jest.fn(),
@@ -123,6 +129,6 @@ describe('usePaywallDismiss', () => {
       await result.current.handleDismiss();
     });
 
-    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'direct' });
+    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'returning' });
   });
 });

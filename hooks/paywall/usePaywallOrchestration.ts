@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/stores/userStore';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { usePaywallStore } from '@/stores/paywallStore';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { logger } from '@/lib/logger';
+import { PAYWALL_SOURCE, toPaywallSource } from '@/constants/analytics/paywallSource';
 import { ROUTES } from '@/lib/routing/routes';
 import { useOfferings } from './useOfferings';
 import { usePaywallDismiss } from './usePaywallDismiss';
@@ -18,7 +20,9 @@ interface UsePaywallOrchestrationOptions {
 export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptions) {
   const router = useRouter();
   const { updateUser } = useUserStore();
-  const isFromOnboarding = source === 'onboarding';
+  // 生のルートパラメータを語彙に丸めてから、表示・離脱・購入の3イベントで共有する
+  const paywallSource = toPaywallSource(source);
+  const isFromOnboarding = paywallSource === PAYWALL_SOURCE.ONBOARDING;
 
   // Guideline 5.6対応: offeringType は常に 'default' のまま（discount/trial は無効化）
   const [offeringType, setOfferingType] = useState<OfferingType>('default');
@@ -35,11 +39,14 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
   });
 
   useEffect(() => {
-    analyticsClient.logEvent('paywall_viewed', { source: source || 'unknown', offering: offeringType });
+    trackEvent('paywall_viewed', { source: paywallSource, offering: offeringType });
+    // 起動時ペイウォールのクールダウンは「最後に見せた時刻」起点。オンボーディング
+    // 経由の表示も数えることで、入った直後にもう一度出すのを防ぐ。
+    usePaywallStore.getState().markLaunchPaywallShown();
   }, [offeringType]);
 
   const { handleDismiss, handleTrialSheetDismiss } = usePaywallDismiss({
-    isFromOnboarding,
+    source: paywallSource,
     offeringType,
     setOfferingType,
     setDiscountRemainingSeconds,
@@ -50,9 +57,9 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
     },
   });
 
-  const handlePurchaseCompleted = useCallback(async () => {
+  const handlePurchaseCompleted = useCallback(async (plan: string) => {
     try {
-      analyticsClient.logEvent('pro_purchase_completed', { offering: offeringType });
+      trackEvent('pro_purchase_completed', { source: paywallSource, plan, offering: offeringType });
       await updateUser({ isPro: true });
     } catch (e) {
       logger.error('Paywall', 'updateUser failed after purchase:', e);
@@ -63,7 +70,7 @@ export function usePaywallOrchestration({ source }: UsePaywallOrchestrationOptio
     } else {
       router.replace(ROUTES.tabs);
     }
-  }, [offeringType, updateUser, router]);
+  }, [offeringType, paywallSource, updateUser, router]);
 
   const handleRestoreCompleted = useCallback(async () => {
     try {

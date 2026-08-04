@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { logger } from '@/lib/logger';
+import { PRO_ENTITLEMENT_ID } from '@/constants/subscription';
 import type {
   SubscriptionClient,
   SubscriptionStatus,
@@ -23,7 +24,7 @@ if (!isExpoGo) {
 const REVENUECAT_API_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_IOS ?? '';
 const REVENUECAT_API_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID ?? '';
 
-const ENTITLEMENT_ID = 'Rewire Pro';
+const ENTITLEMENT_ID = PRO_ENTITLEMENT_ID;
 
 const FREE_STATUS: SubscriptionStatus = {
   isActive: false,
@@ -72,17 +73,28 @@ export const subscriptionClient: SubscriptionClient = {
       try {
         const apiKey =
           Platform.OS === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
-        if (!apiKey) return;
+        if (!apiKey) {
+          // 無言で抜けると、ペイウォールが unavailable になる以外の手がかりが
+          // 残らない。Android は eas.json にキーが無く実際にここへ落ちる。
+          logger.warn('Subscription', 'RevenueCat API key is not configured', {
+            platform: Platform.OS,
+          });
+          return;
+        }
         Purchases.setLogLevel(LOG_LEVEL.ERROR);
         await Purchases.configure({ apiKey });
         _isInitialized = true;
       } catch (error) {
         logger.error('Subscription', 'initialize failed:', error);
         _isInitialized = false;
-      } finally {
-        _initPromise = null;
       }
-    })();
+    })().finally(() => {
+      // クリアは代入の後（マイクロタスク）で行う。IIFE 内の finally に置くと、
+      // await を1つも通らない経路（APIキー未設定など）では IIFE が同期完了し、
+      // その後の代入で null が上書きされて `_initPromise` が永久に残る。
+      // そうなると以降の initialize() が古い Promise を返し続け、再試行が死ぬ。
+      _initPromise = null;
+    });
 
     return _initPromise;
   },

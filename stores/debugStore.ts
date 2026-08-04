@@ -24,7 +24,7 @@ interface DebugData {
 }
 
 export const useDebugStore = create<DebugState & DebugActions>((set) => ({
-  enabled: true,
+  enabled: false,
   hasHydrated: false,
 
   setEnabled: async (enabled) => {

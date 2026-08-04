@@ -8,10 +8,13 @@ import { useLocaleStore } from '@/stores/localeStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
 import { useDebugStore } from '@/stores/debugStore';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
+import { usePaywallStore } from '@/stores/paywallStore';
+import { PRO_ENTITLEMENT_ID } from '@/constants/subscription';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
 import { useThemeLocaleUserProperties } from '@/hooks/tracking/useThemeLocaleUserProperties';
 import { useAppOpenTracking } from '@/hooks/tracking/useAppOpenTracking';
+import { useAnalyticsUserId } from '@/hooks/tracking/useAnalyticsUserId';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 
@@ -20,6 +23,9 @@ export function useAppInitialization() {
 
   useScreenTracking();
   useThemeLocaleUserProperties();
+  // Without this the BigQuery `user_id` column is NULL on every row, leaving
+  // only the device-scoped `user_pseudo_id` — which resets on reinstall.
+  useAnalyticsUserId(user?.id ?? null);
   // Seeded from createdAt so users who installed before this shipped get a real
   // install date rather than looking like a fresh install on upgrade day.
   useAppOpenTracking(user?.createdAt ?? null);
@@ -30,6 +36,8 @@ export function useAppInitialization() {
     useLocaleStore.getState().loadLocalePreference();
     useReflectionStore.getState().loadReflectionState();
     useDebugStore.getState().loadDebugSettings();
+    // brand.tsx がこの値の hydration を待ってから起動時ペイウォールを出すか決める
+    usePaywallStore.getState().loadLaunchPaywallState();
     // Why: configure は userStore 復元に依存しないので並列に先行させる。
     // hydration 後の同期 useEffect で再度呼ばれるが subscriptionClient が Promise で集約するため安全。
     subscriptionClient.initialize().catch((e) => {
@@ -90,7 +98,7 @@ export function useAppInitialization() {
 
       if (cancelled) return;
       const listener = (info: { entitlements: { active: Record<string, unknown> } }) => {
-        const isPro = typeof info.entitlements.active['Rewire Pro'] !== 'undefined';
+        const isPro = typeof info.entitlements.active[PRO_ENTITLEMENT_ID] !== 'undefined';
         const currentUser = useUserStore.getState().user;
         if (!currentUser) return;
         if (currentUser.isPro === isPro) return;

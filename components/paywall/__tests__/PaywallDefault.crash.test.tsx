@@ -29,8 +29,8 @@ describe('PaywallDefault crash prevention', () => {
 
   it('offering.annual=undefined, offering.monthly=undefined → デフォルト値表示', () => {
     const { getByText } = render(<PaywallDefault {...baseProps} offering={{}} />);
-    // デフォルト値（¥2,500）でフォールバック
-    expect(getByText('3日間無料、そのあと ¥2,500／年')).toBeTruthy();
+    // デフォルト値（¥5,400）でフォールバック
+    expect(getByText('3日間無料、そのあと ¥5,400／年')).toBeTruthy();
   });
 
   it('offering.annual=null → デフォルト値でレンダリング', () => {

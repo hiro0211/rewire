@@ -35,9 +35,9 @@ describe('PaywallDiscount crash prevention', () => {
     expect(() => render(<PaywallDiscount {...baseProps} offering={undefined} />)).not.toThrow();
   });
 
-  it('offering.annual=undefined → デフォルト値（¥2,500）で表示', () => {
+  it('offering.annual=undefined → デフォルト値（¥5,400）で表示', () => {
     const { getByText } = render(<PaywallDiscount {...baseProps} offering={{}} />);
-    expect(getByText(/2,500/)).toBeTruthy();
+    expect(getByText(/5,400/)).toBeTruthy();
   });
 
   it('offering.annual.product=null → デフォルト価格で表示', () => {

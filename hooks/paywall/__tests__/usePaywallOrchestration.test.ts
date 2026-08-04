@@ -29,6 +29,18 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: { logEvent: jest.fn() },
 }));
 
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+}));
+
+const mockMarkLaunchPaywallShown = jest.fn();
+jest.mock('@/stores/paywallStore', () => ({
+  usePaywallStore: {
+    getState: () => ({ markLaunchPaywallShown: mockMarkLaunchPaywallShown }),
+  },
+}));
+
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace, push: jest.fn(), back: jest.fn() }),
@@ -95,7 +107,7 @@ describe('usePaywallOrchestration', () => {
 
       const { result } = renderHook(() => usePaywallOrchestration({ source: 'onboarding' }));
       await act(async () => {
-        await result.current.handlePurchaseCompleted();
+        await result.current.handlePurchaseCompleted('annual');
       });
 
       expect(mockReplace).toHaveBeenCalledWith('/post-purchase-onboarding');
@@ -107,10 +119,45 @@ describe('usePaywallOrchestration', () => {
 
       const { result } = renderHook(() => usePaywallOrchestration({ source: 'onboarding' }));
       await act(async () => {
-        await result.current.handlePurchaseCompleted();
+        await result.current.handlePurchaseCompleted('annual');
       });
 
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)');
+    });
+
+    it('購入完了イベントに導線(source)と購入プランが載る', async () => {
+      // これが無いと BigQuery で「どの導線が購入に繋がったか」を復元できない
+      Platform.OS = 'ios';
+      useUserStore.setState({ user: { ...BASE_USER, hasCompletedPostPurchaseOnboarding: true } });
+
+      const { result } = renderHook(() => usePaywallOrchestration({ source: 'returning' }));
+      await act(async () => {
+        await result.current.handlePurchaseCompleted('annual');
+      });
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('pro_purchase_completed', {
+        source: 'returning',
+        plan: 'annual',
+        offering: 'default',
+      });
+    });
+
+    it('ペイウォール表示時にクールダウンの起点を記録する', async () => {
+      // オンボーディング直後の表示も数えることで、入った直後の再表示を防ぐ
+      renderHook(() => usePaywallOrchestration({ source: 'onboarding' }));
+      await act(async () => {});
+
+      expect(mockMarkLaunchPaywallShown).toHaveBeenCalled();
+    });
+
+    it('表示イベントの source が語彙外なら unknown に丸められる', async () => {
+      renderHook(() => usePaywallOrchestration({ source: 'settings' }));
+      await act(async () => {});
+
+      expect(mockTrackEvent).toHaveBeenCalledWith('paywall_viewed', {
+        source: 'unknown',
+        offering: 'default',
+      });
     });
 
     it('Android では常に tabs に遷移する', async () => {
@@ -119,7 +166,7 @@ describe('usePaywallOrchestration', () => {
 
       const { result } = renderHook(() => usePaywallOrchestration({ source: 'onboarding' }));
       await act(async () => {
-        await result.current.handlePurchaseCompleted();
+        await result.current.handlePurchaseCompleted('annual');
       });
 
       expect(mockReplace).toHaveBeenCalledWith('/(tabs)');

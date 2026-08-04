@@ -120,7 +120,17 @@
       "Bash(plutil:*)",
       "Bash(echo \"\")",
       "Bash(cat)",
-      "Bash(/usr/bin/sips -g pixelWidth -g pixelHeight assets/images/planets/*.webp)"
+      "Bash(/usr/bin/sips -g pixelWidth -g pixelHeight assets/images/planets/*.webp)",
+      "Bash(awk '{s+=$5; if\\($5>max\\)max=$5; if\\(min==\"\"||$5<min\\)min=$5; n++} END {print \"count=\"n, \"avg=\"s/n, \"min=\"min, \"max=\"max}')",
+      "Bash(python3 -)",
+      "Bash(awk '{print $1}')",
+      "Bash(python3 -c ' *)",
+      "Bash(exit 1)",
+      "Bash(awk -F: '{s+=$2} END {print s}')",
+      "Bash(xargs -0 file)",
+      "Bash(xxd)",
+      "Bash(xargs -0 -I{} sh -c 'printf \"%s \" \"{}\"; sips -g hasAlpha -g pixelWidth -g pixelHeight \"{}\" 2>/dev/null | tail -3 | tr \"\\\\n\" \" \"; echo')",
+      "Bash(node -e \"console.log\\('react-native-purchases', require\\('/Users/arimurahiroaki/rewire/node_modules/react-native-purchases/package.json'\\).version\\); console.log\\('@react-native-firebase/analytics', require\\('/Users/arimurahiroaki/rewire/node_modules/@react-native-firebase/analytics/package.json'\\).version\\)\")"
     ]
   }
 }

@@ -10,8 +10,8 @@ describe('extractOfferingPackages', () => {
     const result = extractOfferingPackages(null);
     expect(result.annualPackage).toBeNull();
     expect(result.monthlyPackage).toBeNull();
-    expect(result.annualPrice).toBe(2500);
-    expect(result.monthlyPrice).toBe(500);
+    expect(result.annualPrice).toBe(5400);
+    expect(result.monthlyPrice).toBe(680);
     expect(result.currencyCode).toBe('JPY');
   });
 
@@ -24,7 +24,7 @@ describe('extractOfferingPackages', () => {
     expect(result.annualPrice).toBe(2800);
   });
 
-  it('offering.annual が無い場合 availablePackages[0] にフォールバック', () => {
+  it('offering.annual が無い場合 availablePackages から ANNUAL を検索する', () => {
     const pkg = makePackage('ANNUAL', 3000, 'USD');
     const offering = { annual: null, monthly: null, availablePackages: [pkg] };
 
@@ -32,6 +32,16 @@ describe('extractOfferingPackages', () => {
     expect(result.annualPackage).toBe(pkg);
     expect(result.annualPrice).toBe(3000);
     expect(result.currencyCode).toBe('USD');
+  });
+
+  it('年額が存在しないとき、先頭の月額を年額として扱わない', () => {
+    // 以前は availablePackages[0] を無条件に年額扱いしていたため、
+    // 「年額の価格を表示して月額を購入させる」不整合が起きうる状態だった
+    const monthly = makePackage('MONTHLY', 680);
+    const offering = { annual: null, monthly: null, availablePackages: [monthly] };
+
+    const result = extractOfferingPackages(offering);
+    expect(result.annualPackage).toBeNull();
   });
 
   it('offering.monthly から monthlyPackage を取得する', () => {
@@ -64,7 +74,7 @@ describe('extractOfferingPackages', () => {
     };
 
     const result = extractOfferingPackages(offering);
-    expect(result.annualPrice).toBe(2500);
+    expect(result.annualPrice).toBe(5400);
     expect(result.currencyCode).toBe('JPY');
   });
 });

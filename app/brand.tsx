@@ -8,6 +8,9 @@ import {
 import { FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
 import { useUserStore } from '@/stores/userStore';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
+import { usePaywallStore } from '@/stores/paywallStore';
+import { shouldShowLaunchPaywall } from '@/lib/paywall/launchPaywallCooldown';
+import { PAYWALL_SOURCE } from '@/constants/analytics/paywallSource';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useLocale } from '@/hooks/useLocale';
 import * as Haptics from 'expo-haptics';
@@ -38,6 +41,7 @@ function BrandScreenAnimated() {
   const router = useRouter();
   const { user } = useUserStore();
   const subscriptionSynced = useSubscriptionStore((s) => s.subscriptionSynced);
+  const paywallCooldownHydrated = usePaywallStore((s) => s.hasHydrated);
   const { t } = useLocale();
 
   const catchphrases = BRAND_CATCHPHRASE_KEYS.map((key) => t(key));
@@ -69,8 +73,16 @@ function BrandScreenAnimated() {
       return;
     }
     if (synced) {
+      const { lastShownAt, hasHydrated } = usePaywallStore.getState();
+      // 未読込のまま判定すると「未記録＝表示する」と誤読して毎回出てしまう
+      if (!hasHydrated) return;
+
       navigatedRef.current = true;
-      router.replace(routeWithParams('/paywall', { source: 'returning' }));
+      if (shouldShowLaunchPaywall(lastShownAt, new Date())) {
+        router.replace(routeWithParams('/paywall', { source: PAYWALL_SOURCE.RETURNING }));
+      } else {
+        router.replace(ROUTES.tabs);
+      }
       return;
     }
     // 未同期 → 待機
@@ -137,7 +149,7 @@ function BrandScreenAnimated() {
     if (animationDoneRef.current) {
       tryNavigate();
     }
-  }, [subscriptionSynced, user?.isPro, tryNavigate]);
+  }, [subscriptionSynced, user?.isPro, paywallCooldownHydrated, tryNavigate]);
 
   return (
     <View style={styles.content}>

@@ -74,6 +74,65 @@ describe('usePurchase', () => {
       expect(result.current.purchasing).toBe(false);
     });
 
+    it('購入成功時に onPurchaseCompleted へ購入プランを渡す', async () => {
+      // pro_purchase_completed に plan を載せるため、成功時にどのプランだったかを伝える
+      mockPurchasePackage.mockResolvedValue({
+        customerInfo: { entitlements: { active: { 'Rewire Pro': {} } } },
+      });
+
+      const { result } = renderUsePurchase();
+      await act(async () => {
+        await result.current.handlePurchase();
+      });
+
+      expect(onPurchaseCompleted).toHaveBeenCalledWith('annual');
+    });
+
+    describe('決済は成功したのに Pro 権利が付いていない場合', () => {
+      // RevenueCat 側の entitlement 識別子がアプリ側の定数と一致しないと起きる。
+      // 以前は else が無く、アラートも計測も出ずに画面が無反応になっていた。
+      const noEntitlement = { customerInfo: { entitlements: { active: {} } } };
+
+      it('onPurchaseCompleted を呼ばない', async () => {
+        mockPurchasePackage.mockResolvedValue(noEntitlement);
+        const { result } = renderUsePurchase();
+        await act(async () => {
+          await result.current.handlePurchase();
+        });
+        expect(onPurchaseCompleted).not.toHaveBeenCalled();
+      });
+
+      it('purchase_failed を entitlement_missing で送信する', async () => {
+        mockPurchasePackage.mockResolvedValue(noEntitlement);
+        const { result } = renderUsePurchase();
+        await act(async () => {
+          await result.current.handlePurchase();
+        });
+        expect(mockTrackEvent).toHaveBeenCalledWith('purchase_failed', {
+          reason: 'entitlement_missing',
+          cancelled: false,
+        });
+      });
+
+      it('ユーザーにアラートを表示する', async () => {
+        mockPurchasePackage.mockResolvedValue(noEntitlement);
+        const { result } = renderUsePurchase();
+        await act(async () => {
+          await result.current.handlePurchase();
+        });
+        expect(Alert.alert).toHaveBeenCalled();
+      });
+
+      it('原因調査のため logger.error を残す', async () => {
+        mockPurchasePackage.mockResolvedValue(noEntitlement);
+        const { result } = renderUsePurchase();
+        await act(async () => {
+          await result.current.handlePurchase();
+        });
+        expect(mockLoggerError).toHaveBeenCalled();
+      });
+    });
+
     it('ユーザーキャンセル時にアラートを表示しない', async () => {
       mockPurchasePackage.mockRejectedValue({ userCancelled: true });
 
