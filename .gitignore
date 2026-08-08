@@ -70,6 +70,8 @@ data/analytics/
 docs/analytics/daily-metrics-*.json
 docs/analytics/daily-report-*.md
 docs/analytics/daily-report-*.json
+# 生成物。端末IDを含むためコミットしない（build_dashboard.py で再生成できる）
+docs/analytics/dashboard-*.html
 
 # App Store screenshot generation outputs (regenerated on demand)
 scripts/appstore/output/

@@ -3,4 +3,7 @@ PyJWT[crypto]>=2.10
 cryptography>=46.0
 python-dotenv>=1.0
 google-analytics-data>=0.18
+# Raw GA4 event log for the per-user dashboard. The GA4 Data API only returns
+# pre-aggregated numbers, so per-user and per-step analysis needs BigQuery.
+google-cloud-bigquery>=3.25
 pytest>=8.0
