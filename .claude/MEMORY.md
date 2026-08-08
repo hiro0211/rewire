@@ -2661,3 +2661,155 @@ JS **322スイート / 2369テスト全通過**、Python **215通過**。tsc は
 - **手順の学び**: バージョン変更後は Xcode Archive 前に `expo prebuild` を再実行するか、ネイティブ（Info.plist + pbxproj MARKETING_VERSION）を直接更新する必要がある。app.config.ts だけ変えても Archive には効かない。
 - **要再Archive**: Organizer の既存 2.3.0 アーカイブは変わらない。新規 Archive で 2.4.0 (1) になる。
 - **DEBUG_MENU_ENABLED は false に戻した**（Archive 直前だったため release-safe に）。sim で3D確認を続ける場合のみ一時的に true へ。
+
+## 2026-08-04: BigQuery 実測に基づくペイウォール導線＋計測基盤の修正（branch: feature/onboarding-survey-split・未コミット）
+
+### 発端: BigQuery Export は「稼働済みだが完全に未活用」だった
+- データセット `rewire-4a491.analytics_526015389`（**US ロケーション**）に events_20260719〜 が日次で蓄積されている（hiro が 2026-07-20 に有効化済み）。
+- **アプリにもスクリプトにも BigQuery を読むコードは1行も無い。** `scripts/analytics/` は GA4 Data API のみ。
+- **レポート用SA `focusity-analytics-reader@focusity-df205` に `rewire-4a491` の BigQuery 権限が無い**（403）。現状 hiro の個人 ADC（`~/.config/gcloud/application_default_credentials.json`）でしか読めない。→ 自動化には IAM 付与（BigQuery データ閲覧者＋**ジョブユーザー**）が必要。
+
+### 実測で判明した数字（15日 / 38端末 / インストール30）
+- **リテンション: D1復帰2人・一度でも再訪3人（10%）。90%が初日で消えている。**
+- ファネル: first_open 30 → オンボ完了 22 → paywall表示 25 → 購入開始 5 → **購入成功 0**
+- `purchase_failed` 内訳（RevenueCat エラーコードは `node_modules/@revenuecat/purchases-typescript-internal/dist/errors.d.ts:5-37` 参照）: `1`=PURCHASE_CANCELLED 5件 / `10`=NETWORK_ERROR 1件 / `3`=PURCHASE_NOT_ALLOWED 1件。**技術的失敗は7件中2件だけで、主因はユーザーのキャンセル。**
+- `user_id` が**全36イベント・全行 NULL**（`setUserId` 未呼び出し）
+- paywall の直前画面は LAG で復元不可（59件すべて NULL）
+- `paywall_dismissed → benefits_screen_viewed(source=unknown)` が **23回/15人**（オンボ完了22人の68%）
+- 起動時ペイウォールを **1端末が15回** 表示されていた（`/brand` を16回通過）
+- **`in_app_purchase` の自動収集は無い**（36イベント中0件）。両プランに3日間無料トライアルあり（月¥680 / 年¥5,400）なので「購入成功0」＝**トライアル開始0**。
+
+### 実装（TDD、Red→Green を1件ずつ確認）
+**Phase 1 — 計測の整合性 + setUserId**
+- 新規 `constants/analytics/paywallSource.ts`: `PAYWALL_SOURCE`(onboarding/returning/unknown) + `toPaywallSource()`（配列・未知値を丸める）。**以前は viewed=`onboarding|returning`、dismissed=`onboarding|direct` と語彙が割れて JOIN できなかった。**
+- `constants/analyticsEvents.ts` に `paywall_viewed` / `benefits_screen_viewed` / `pro_purchase_completed` を追加し `trackEvent()` 経由に移行。**`pro_purchase_completed` に `source` と `plan` を追加＝導線別CVRの本丸。**
+- `usePaywallDismiss` のシグネチャを `isFromOnboarding: boolean` → `source: PaywallSource` に変更。
+- `usePurchase` の `onPurchaseCompleted` が `(plan: string) => void` に（4コンポーネントに型を伝播）。
+- 新規 `hooks/tracking/useAnalyticsUserId.ts` を `useAppInitialization` に配線 → `user_id` が埋まる。
+
+**Phase 2 — params 消失の修復**（ハードペイウォール設計は hiro の意向で維持）
+- `usePaywallDismiss` が `routeWithParams(ROUTES.onboardingBenefits, { source: 'onboarding' })` で戻す。
+- `benefits.tsx` の nickname/goalDays を **params ではなく userStore から**取得（params はフォールバック）。→「User さん / 30日」に化ける表示バグが構造的に解消。
+
+**Phase 3 — 起動時ペイウォールの頻度制限（7日）**
+- 新規 `constants/paywall/launchPaywall.ts`（`LAUNCH_PAYWALL_COOLDOWN_DAYS=7`）、`lib/paywall/launchPaywallCooldown.ts`（純関数、未記録/壊れた値/未来日時は**表示側に倒す**）、`stores/paywallStore.ts`（AsyncStorage キー `'paywall_cooldown'`）。
+- `app/brand.tsx` はクールダウン中なら `/(tabs)` へ。`hasHydrated` を待機条件に追加（未読込で判定すると「未記録＝表示」と誤読するため）。
+- 表示記録は `usePaywallOrchestration` の `paywall_viewed` 発火箇所。オンボ経由の表示も数える。
+
+**Phase 4 — 購入フローの堅牢化**
+- `usePurchase`: entitlement 不一致時の `else` を追加（従来は**アラートも計測も出ず完全無音**）→ `purchase_failed { reason:'entitlement_missing' }` + アラート + logger.error。
+- **`subscriptionClient.initialize()` の実バグを発見・修正**: `_initPromise = (async()=>{...finally{_initPromise=null}})()` は、await を1つも通らない経路（APIキー未設定など）で IIFE が同期完了 → その後の**代入が null を上書き**し `_initPromise` が永久に残る → 以降の initialize が古い Promise を返し**再試行が死ぬ**（`useOfferings` は最大2回リトライする設計）。`.finally()` をチェーンに移して修正。
+- `useOfferings`: `availablePackages` が空でも ready になっていたのを `hasPurchasablePackage()` で防止。
+- `useOfferingPackages`: `offering.annual ?? availablePackages[0]` の**無条件フォールバックを廃止**し `packageType === 'ANNUAL'` 検索に。デフォルト価格を 2500/500 → **5400/680**（規約表記 `locales/ja.ts:781` と一致）。
+- `subscriptionClient`: APIキー未設定時に `logger.warn`（従来は無言 return）。
+- entitlement 識別子 `'Rewire Pro'` を `constants/subscription.ts` の `PRO_ENTITLEMENT_ID` に一元化（3箇所の重複を解消）。
+- `lib/routing/routes.ts` の `routeWithParams` が `string | Href` を受けるように（`as any` 回避）。
+
+### テスト
+- **343 suites / 2658 tests 全通過**（作業前 338/2609）。Python `scripts/analytics/tests/` 215 passed。
+- tsc 新規エラー **0**（既存47件のみ。`(tabs)/_layout` の sceneContainerStyle 等）。lint 新規エラー **0**。
+- テストモック注意: **`useAppInitialization` を通すテストは `analyticsClient` モックに `setUserId` が必要**（`RootLayout.theme.test.tsx` / `useAppInitialization.test.ts` で追加済み）。`brand.tsx` を通すテストは `usePaywallStore.setState({ lastShownAt: null, hasHydrated: true })` が必要。
+
+### 未確認・次回やること
+1. **hiro の実機確認**（私からタップできない）: ①オンボ完走→ペイウォール✕→benefits のニックネーム/目標日数が正しいか ②強制終了→再起動でペイウォールが出ないこと ③Sandbox で実購入して Pro になること。
+2. **RevenueCat の Offering が標準の `$rc_annual` / `$rc_monthly` を使っているか要確認**。カスタム識別子だと Phase 4 の厳格化で年額プランが解決できなくなる（月額が `offering.monthly` 経由で解決できている実績から、標準の可能性は高いが未確証）。
+3. `EXPO_PUBLIC_REVENUECAT_API_KEY_ANDROID` が `eas.json` に無く **Android は課金が一切成立しない**（キー貼付は hiro の作業）。
+4. **BigQuery 読み取り基盤は未着手**（当初依頼の本体）。`scripts/analytics/bigquery_client.py` + ファネル/リテンション/導線別CVR の SQL。計測が直ってデータが溜まってから。
+5. **Spark プランのサンドボックスは60日でテーブル自動削除**。Blaze に上げても既存データセットの default expiration は自動解除されないため手動変更が必要（[出典](https://docs.cloud.google.com/bigquery/docs/sandbox)）。
+6. 過去データには `paywall_dismissed.source='direct'` が残る。集計時は `direct`→`returning` の正規化が必要（切替は 2026-08-04 のこの変更以降）。
+
+### 変更ファイル（主要）
+- 新規: `constants/analytics/paywallSource.ts`, `constants/paywall/launchPaywall.ts`, `constants/subscription.ts`, `lib/paywall/launchPaywallCooldown.ts`, `stores/paywallStore.ts`, `hooks/tracking/useAnalyticsUserId.ts` + 各テスト, `lib/subscription/__tests__/subscriptionClient.missingKey.test.ts`
+- 変更: `app/brand.tsx`, `app/onboarding/benefits.tsx`, `constants/analyticsEvents.ts`, `hooks/useAppInitialization.ts`, `hooks/paywall/{usePaywallDismiss,usePaywallOrchestration,usePurchase,useOfferings,useOfferingPackages}.ts`, `lib/subscription/subscriptionClient.ts`, `lib/routing/routes.ts`, `lib/storage/asyncStorageClient.ts`, `components/paywall/{PaywallDefault,PaywallDiscount,PaywallTrial,TrialBottomSheet}.tsx` + テスト多数
+
+## 2026-08-05
+
+### 作業内容
+- 定期タスク `rewire-daily-analytics` の実行（ASC データ取得 → ファネル分析 → 補正レポート作成）
+- ASC API 取得は成功（9 レポート、`data/analytics/2026-08-04/`）
+- `analyze_funnel.py` の生成結果は誤り。Python で生 TSV を再集計し
+  `docs/analytics/daily-report-2026-08-04-corrected.md` を作成
+
+### 主要な数値（補正後）
+- 08-03: 216 impr → 15 PV = 6.94%（16日間で最高）。前日に警告した PV 率低下は**ノイズだった**（denominator 2〜3 の見せかけ）
+- 14日間（07-21〜08-03）: 2,357 impr → 100 PV（4.24%）→ 22 新規DL（PV比 22.0%）
+- チャネル: 検索が impr の 97.6%、PV率 3.91%。ブラウズは 14.04%。TikTok 行は依然データ上に存在しない
+- サブスク: 08-03 に無料トライアル開始 1件（JP、07-29 以来5日ぶり）。
+  状態 08-02 時点で Full price 2（前日3）/ Free trial 3 / Billing retry 1、累計 voluntary churn 13
+
+### `analyze_funnel.py` の未修正バグ（4回連続で同じ、要 TDD 修正）
+1. discovery の standard と detailed を二重加算（530 + 337 = 867 と報告、正は 530）
+2. `app_downloads_standard.tsv` に `Event` 列がなく `Counts`/`Download Type` 構造のため DL が常に 0 →
+   ボトルネックが毎回 "Download Rate" に誤判定される
+3. 日付フィルタなし。フォルダ名の日付と中身の日付が不一致（08-04 フォルダの中身は 08-01〜08-03）
+4. **新規発見**: サブスクの event/state レポートは `Event Group` / `Event Name` / `State Metric` 列を使うため
+   パーサに引っかからず trial/paid/churn が全て 0 →「Churn Rate 1/0」の出力になる
+
+### 次回やるべきこと
+- 上記4バグを TDD で修正（バグごとに失敗するテストを先に書く）。修正までは生成レポートは信用しない
+- 検索の impression→page view 改善（スクリーンショット1〜2枚目とサブタイトル、PPO で A/B）
+- 解約分析: subscription event report の `Churn Tenure` で初回課金サイクル内の離脱位置を確認
+
+### 変更ファイル
+- 新規: `docs/analytics/daily-report-2026-08-04-corrected.md`
+- 自動生成: `docs/analytics/daily-report-2026-08-04.md`, `data/analytics/2026-08-04/*.tsv`
+
+## 2026-08-08
+
+### 作業内容
+- Rewire 日次アナリティクスパイプラインの定期実行（scripts.analytics.main → analyze_funnel.py）
+- ASC API からのデータ取得は成功（8レポート、data/analytics/2026-08-07/）
+- レポート生成: docs/analytics/daily-report-2026-08-07.md / daily-metrics-2026-08-07.json
+
+### 発見した問題（要修正・未対応）
+`~/.claude/skills/app-analytics/scripts/analyze_funnel.py` の extract_metrics() に3つの不具合:
+1. **ダウンロード/トライアル/課金が常に0** — app_downloads_standard.tsv 等は `Event`列を持たず `Download Type`/`Purchase Type`/`Event Name` + `Counts` 構成。パーサは `Event`+`Counts` か wide列名しか見ないため取りこぼす。結果「Download Rate 0% が最大ボトルネック」という誤結論を出力。
+   - 実測: 初回DL 3、無料トライアル開始 1、有料転換 1、売上 $4.15 (proceeds $3.53)
+2. **インプレッション二重計上** — discovery_and_engagement の standard(756) と detailed(547) を両方加算し 1303 になっている。detailed は同一データの別カット。
+3. **日付ラベルの誤り** — 「2026-08-07」レポートの中身は Apple のレポート遅延により 2026-08-04〜08-06 の3日分。日次ではなく3日累計。
+
+### 正しい数値（08-04〜08-06 の3日累計）
+- Impressions 756 / Page Views 26 / First-time DL 3 / Trial 1 / Paid 1
+- Imp→PV 3.44%、PV→DL 11.54%、DL→Trial 33.3%、Trial→Paid 100%
+- サブスク状態: Free trial 5 / Full price 2 / Voluntary churn 13 / Billing retry 1 ← 解約13は要注視
+
+### 次回やるべきこと
+- analyze_funnel.py の TDD 修正（まず失敗するテストを scripts/analytics/tests に追加）
+  - 実 TSV レイアウト（Download Type / Purchase Type / Event Name + Counts）のフィクスチャ
+  - detailed レポートの除外 or 重複排除
+  - レポート対象日の実データ日付を明示する
+
+## 2026-08-08: BigQuery 分析基盤の構築 + ブランチ整理 + Blaze 移行
+
+### ブランチ整理（完了・push 済み）
+- `feature/onboarding-survey-split` を main に fast-forward マージ → `origin/main` へ push
+- 他3ブランチ（local/origin の `analytics/ga4-retention-onboarding-instrumentation`、`origin/claude/hardcore-goodall`）は**すべて既に main の祖先**で、マージ不要だった
+- `main.swift` / `tests.swift` / `body.txt` / `names.txt` は **FocusTown（ScreenCity）プロジェクトのスクラッチが誤混入**していたもの。`~/FocusTown-snapshots/citymap-standalone-runner-from-rewire-20260808/` に退避してから削除（commit `9b5cb62`）。本体は `~/FocusTown/ScreenCityTests/CityMapStateTests.swift` に存在し、import 行以外同一
+
+### GCP / BigQuery 環境（すべて API で実測確認済み）
+- Firebase プロジェクト `rewire-4a491` を **Spark → Blaze に移行**（請求先 `018951-7A606B-428BB0`、予算アラート1件設定済み）
+- ⚠️ **Blaze 化だけではデータは守られない**: サンドボックス時代の 60日自動削除がデータセットにも既存18テーブルにも残っていた。`defaultTableExpirationMs` と各テーブルの `expirationTime` を**手動で解除済み**（放置なら 2026-09-18 から順に消えていた）
+- SA `focusity-analytics-reader@focusity-df205` に `roles/bigquery.dataViewer` + `roles/bigquery.jobUser` を付与（hiro が IAM コンソールで実施）。SA 鍵でのクエリ成功をエンドツーエンドで確認
+- **SA が Focusity 所属なのは正常**。鍵 `~/.config/firebase/focusity-ga4-sa.json` が hiro のレポート用共通アカウントで、既に Rewire GA4 の閲覧権限を持つ。新規鍵の発行は不要
+- データセット `rewire-4a491.analytics_526015389`（**US** ロケーション）。**2026-08-03 のテーブルは欠測**
+
+### 実装（commit `b6b5d29`、Python 296 tests 全通過）
+`scripts/analytics/` に BigQuery 読み取り層 + HTML ダッシュボードを追加。1ファイル1責任:
+`bigquery_client.py` / `bq_cohort.py` / `bq_onboarding_funnel.py` / `bq_user_activity.py` / `dashboard_html.py` / `build_dashboard.py` + 各テスト。
+実行: `python3 -m scripts.analytics.build_dashboard --cohort purchaser|onboarded [--open]`
+
+### ⚠️ モックのテストでは絶対に捕まらなかった事実（実測でのみ判明）
+1. **`step_index` は `int_value` ではなく `double_value` に入る**。React Native の Firebase SDK が JS number を double で送るため。`int_value` だけ見るとファネルが**丸ごと空**になる（最初そうなった）
+2. **pathname は `firebase_screen` にのみ入る**（1814行中714行）。`firebase_screen_class` は iOS 自動収集の `RNSScreen` / `UIViewController` / `RCTFabricModalHostViewController` が混ざり使えない
+3. **`user_id` は全行 NULL**。`setUserId`（`hooks/tracking/useAnalyticsUserId.ts`）は commit `0b5e625` で追加されたが**本番は 2.3.0（41/47端末）で未配信**。配線（`useAppInitialization.ts:28`）は正しい。→ 当面 `user_pseudo_id` を使う。切替は `bigquery_client.USER_KEY_COLUMN` 1箇所
+
+### 実データで判明した数字（2026-07-19〜08-06 / 47端末）
+- **オンボーディング自体はほぼ脱落しない**: 35端末が開始 → 30端末が最終ステップ26に到達。当初の想定と逆
+- **脱落はペイウォール**: オンボ完了29 → ベネフィット29 → **ペイウォール表示32 → 購入開始7（-78.1%）→ 購入完了2**
+- 課金者2人の利用実態: どちらも最終利用2日前、稼働2〜3日、1.3〜2.0回/稼働日。よく使う機能は `quick_action_tapped` / `panic_button_tapped` / `reflection_*`
+
+### 未完了・次回やること
+- ⚠️ **`app/index.tsx` の `DEV_SKIP_ONBOARDING` と `constants/debug.ts` の `DEBUG_MENU_ENABLED` が `true` のまま**（このセッション中に切り替わった。私の変更ではない）。この状態で `app/__tests__/indexRouting.test.tsx` が2件失敗する。**リリースビルド前に必ず両方 false に戻すこと**
+- commit `9b5cb62`（Swift削除）と `b6b5d29`（分析基盤）は**未 push**
+- 2.4.0 配信後、`user_id` が埋まり始めたら `USER_KEY_COLUMN` を `user_id` に切り替える（切替時 `test_bigquery_client.py` の該当テストが落ちるので意図的な変更と分かる）
+- 課金者コホートは2人。統計的結論は出せないので、母数が増えるまでは `--cohort onboarded`（29人）も併用する

@@ -5,7 +5,9 @@ const STORAGE_KEY = 'breath_sessions';
 
 export const breathSessionStorage = {
   async getAll(): Promise<BreathSession[]> {
-    const data = await asyncStorageClient.get<BreathSession[]>(STORAGE_KEY);
+    // getStrict throws on read/decrypt failure so save()'s re-read aborts
+    // instead of overwriting the whole history with a single new record.
+    const data = await asyncStorageClient.getStrict<BreathSession[]>(STORAGE_KEY);
     return data ?? [];
   },
 

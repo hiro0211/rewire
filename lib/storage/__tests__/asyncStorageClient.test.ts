@@ -84,6 +84,33 @@ describe('asyncStorageClient', () => {
     });
   });
 
+  describe('getStrict', () => {
+    it('キーが存在しない場合はnullを返す', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+      const result = await asyncStorageClient.getStrict('checkins');
+      expect(result).toBeNull();
+    });
+
+    it('正常時は値を返す', async () => {
+      const data = [{ id: '1' }];
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(`PLAIN:${JSON.stringify(data)}`);
+      const result = await asyncStorageClient.getStrict('checkins');
+      expect(result).toEqual(data);
+    });
+
+    it('JSONパースエラーの場合は（nullではなく）例外を投げる', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue('invalid json');
+      await expect(asyncStorageClient.getStrict('checkins')).rejects.toThrow();
+    });
+
+    it('復号エラーの場合は（nullではなく）例外を投げる', async () => {
+      mockIsEncrypted.mockReturnValue(true);
+      mockDecrypt.mockRejectedValueOnce(new Error('decrypt failed'));
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue('encryptedBase64Data==');
+      await expect(asyncStorageClient.getStrict('checkins')).rejects.toThrow('decrypt failed');
+    });
+  });
+
   describe('set', () => {
     it('非センシティブキーの場合はJSON.stringifyして保存', async () => {
       await asyncStorageClient.set('user', { name: 'test' });

@@ -11,7 +11,7 @@ import { useDebugUnlockAll } from '@/hooks/debug/useDebugUnlockAll';
 
 // ブランド画面を常に表示する（dev clientでもスキップしない）
 // ⚠️ 本番運用設定: false。ローカルでオンボーディングをスキップしたい場合のみ一時的に true にする。
-const DEV_SKIP_ONBOARDING = false;
+const DEV_SKIP_ONBOARDING = true;
 // ⚠️ 開発用: 起動時にペイウォール後オンボーディングを直接開く。確認後は false に戻すこと
 const DEV_PREVIEW_POST_PURCHASE = false;
 

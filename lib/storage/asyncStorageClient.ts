@@ -27,30 +27,54 @@ export type StorageKey =
 
 const SENSITIVE_KEYS: StorageKey[] = ['checkins', 'recoveries', 'breath_sessions'];
 
+/**
+ * Reads, decrypts (for sensitive keys) and parses a stored value.
+ * Returns null ONLY when the key is absent. Any read/decrypt/parse failure
+ * throws — callers decide whether to swallow (get) or propagate (getStrict).
+ */
+async function readAndDecode<T>(key: StorageKey): Promise<T | null> {
+  const rawValue = await AsyncStorage.getItem(key);
+  if (rawValue == null) return null;
+
+  if (SENSITIVE_KEYS.includes(key)) {
+    // Handle PLAIN: prefix (fallback when crypto.subtle is unavailable)
+    if (rawValue.startsWith('PLAIN:')) {
+      return JSON.parse(rawValue.substring(6));
+    }
+    if (encryptionService.isEncrypted(rawValue)) {
+      const decrypted = await encryptionService.decrypt(rawValue);
+      return JSON.parse(decrypted);
+    }
+    // Migration: unencrypted data from before encryption was added
+    // Will be encrypted on next write
+    return JSON.parse(rawValue);
+  }
+
+  return JSON.parse(rawValue);
+}
+
 export const asyncStorageClient = {
   async get<T>(key: StorageKey): Promise<T | null> {
     try {
-      const rawValue = await AsyncStorage.getItem(key);
-      if (rawValue == null) return null;
-
-      if (SENSITIVE_KEYS.includes(key)) {
-        // Handle PLAIN: prefix (fallback when crypto.subtle is unavailable)
-        if (rawValue.startsWith('PLAIN:')) {
-          return JSON.parse(rawValue.substring(6));
-        }
-        if (encryptionService.isEncrypted(rawValue)) {
-          const decrypted = await encryptionService.decrypt(rawValue);
-          return JSON.parse(decrypted);
-        }
-        // Migration: unencrypted data from before encryption was added
-        // Will be encrypted on next write
-        return JSON.parse(rawValue);
-      }
-
-      return JSON.parse(rawValue);
+      return await readAndDecode<T>(key);
     } catch (e) {
       logger.error('Storage', `Error reading ${key}`, e);
       return null;
+    }
+  },
+
+  /**
+   * Like get(), but returns null ONLY when the key is genuinely absent and
+   * THROWS on any read/decrypt/parse failure. Read-modify-write callers (the
+   * append-style storages) must use this so a single unreadable blob aborts the
+   * write instead of being treated as "empty" and overwriting all prior data.
+   */
+  async getStrict<T>(key: StorageKey): Promise<T | null> {
+    try {
+      return await readAndDecode<T>(key);
+    } catch (e) {
+      logger.error('Storage', `Error reading ${key} (strict)`, e);
+      throw e;
     }
   },
 

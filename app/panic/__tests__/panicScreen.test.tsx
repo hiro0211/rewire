@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, fireEvent, within } from '@testing-library/react-native';
+import { render, fireEvent, within, waitFor } from '@testing-library/react-native';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockConfess = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: mockBack }),
@@ -71,12 +72,19 @@ jest.mock('@/lib/tracking/analyticsClient', () => ({
   analyticsClient: { logEvent: jest.fn() },
 }));
 
+jest.mock('@/hooks/reflection/useReflectionSheet', () => ({
+  useReflectionSheet: (selector: any) =>
+    selector({ confessRelapseAndClose: mockConfess }),
+}));
+
 import PanicScreen from '../index';
 
 describe('PanicScreen', () => {
   beforeEach(() => {
     mockPush.mockReset();
     mockBack.mockReset();
+    mockConfess.mockReset();
+    mockConfess.mockResolvedValue(true);
   });
 
   it('2つのアクションボタンと副作用見出しを表示する', () => {
@@ -92,10 +100,20 @@ describe('PanicScreen', () => {
     expect(mockPush).toHaveBeenCalledWith('/breathing?source=sos');
   });
 
-  it('紺ボタン押下で /recovery に遷移する', () => {
+  it('紺ボタン押下でリラプスを記録してから /recovery に遷移する', async () => {
+    mockConfess.mockResolvedValueOnce(true);
     const { getByTestId } = render(<PanicScreen />);
     fireEvent.press(getByTestId('panic-action-watched'));
-    expect(mockPush).toHaveBeenCalledWith('/recovery');
+    expect(mockConfess).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/recovery'));
+  });
+
+  it('リラプス記録に失敗したときは /recovery に遷移しない', async () => {
+    mockConfess.mockResolvedValueOnce(false);
+    const { getByTestId } = render(<PanicScreen />);
+    fireEvent.press(getByTestId('panic-action-watched'));
+    await waitFor(() => expect(mockConfess).toHaveBeenCalledTimes(1));
+    expect(mockPush).not.toHaveBeenCalledWith('/recovery');
   });
 
   it('閉じるボタン押下で router.back が呼ばれる', () => {

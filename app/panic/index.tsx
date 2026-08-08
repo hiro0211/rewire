@@ -9,6 +9,7 @@ import { PanicHeader } from '@/components/panic/PanicHeader';
 import { SideEffectsSection } from '@/components/panic/SideEffectsSection';
 import { TypewriterCapsule } from '@/components/panic/TypewriterCapsule';
 import { useTypewriterMessage } from '@/hooks/panic/useTypewriterMessage';
+import { useReflectionSheet } from '@/hooks/reflection/useReflectionSheet';
 import { SPACING } from '@/constants/theme';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
@@ -22,10 +23,21 @@ export default function PanicScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { displayedText, phase } = useTypewriterMessage();
+  const confessRelapseAndClose = useReflectionSheet((s) => s.confessRelapseAndClose);
 
   useEffect(() => {
     analyticsClient.logEvent('panic_screen_viewed');
   }, []);
+
+  // 「見てしまった」= リラプス確定。リフレクションシートと同じ確定処理
+  // （ストリークのバックアップ→リセット、当日チェックイン記録、分析イベント）
+  // を走らせてから /recovery へ遷移する。記録に失敗した場合は遷移しない。
+  const handleWatchedPorn = async () => {
+    const ok = await confessRelapseAndClose();
+    if (ok) {
+      router.push('/recovery');
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -60,7 +72,7 @@ export default function PanicScreen() {
         <View style={styles.actionButtonsWrapper}>
           <PanicActionButtons
             onThinkingOfWatching={() => router.push('/breathing?source=sos')}
-            onWatchedPorn={() => router.push('/recovery')}
+            onWatchedPorn={handleWatchedPorn}
           />
         </View>
       </View>

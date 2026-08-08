@@ -5,7 +5,9 @@ const STORAGE_KEY = 'checkins';
 
 export const checkinStorage = {
   async getAll(): Promise<DailyCheckin[]> {
-    const data = await asyncStorageClient.get<DailyCheckin[]>(STORAGE_KEY);
+    // getStrict throws on read/decrypt failure so save()'s re-read aborts
+    // instead of overwriting the whole history with a single new record.
+    const data = await asyncStorageClient.getStrict<DailyCheckin[]>(STORAGE_KEY);
     return data ?? [];
   },
 

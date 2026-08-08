@@ -13,6 +13,7 @@ const mockLoadUser = jest.fn();
 const mockLoadThemePreference = jest.fn();
 const mockLoadLocalePreference = jest.fn();
 const mockLoadDebugSettings = jest.fn();
+const mockLoadScreenTime = jest.fn();
 const mockUpdateUser = jest.fn().mockResolvedValue(undefined);
 
 let mockHasHydrated = false;
@@ -96,6 +97,12 @@ jest.mock('@/stores/debugStore', () => ({
   },
 }));
 
+jest.mock('@/stores/screenTimeStore', () => ({
+  useScreenTimeStore: {
+    getState: () => ({ loadFromStorage: mockLoadScreenTime }),
+  },
+}));
+
 import { useAppInitialization } from '../useAppInitialization';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
@@ -127,6 +134,11 @@ describe('useAppInitialization', () => {
   it('初期化時にloadDebugSettingsが呼ばれる', () => {
     renderHook(() => useAppInitialization());
     expect(mockLoadDebugSettings).toHaveBeenCalled();
+  });
+
+  it('初期化時にscreenTimeStoreのloadFromStorageが呼ばれる（起動時にネイティブのシールド状態と同期）', () => {
+    renderHook(() => useAppInitialization());
+    expect(mockLoadScreenTime).toHaveBeenCalled();
   });
 
   describe('トラッキング無効化', () => {

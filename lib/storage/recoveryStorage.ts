@@ -5,7 +5,9 @@ const STORAGE_KEY = 'recoveries';
 
 export const recoveryStorage = {
   async getAll(): Promise<Recovery[]> {
-    const data = await asyncStorageClient.get<Recovery[]>(STORAGE_KEY);
+    // getStrict throws on read/decrypt failure so save()'s re-read aborts
+    // instead of overwriting the whole history with a single new record.
+    const data = await asyncStorageClient.getStrict<Recovery[]>(STORAGE_KEY);
     return data ?? [];
   },
 
