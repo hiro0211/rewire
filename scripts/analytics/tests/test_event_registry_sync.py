@@ -47,6 +47,24 @@ def _fired_event_names() -> set:
     return fired
 
 
+class TestEventCatalogIsSourceOfTruth:
+    """`constants/analyticsEvents.ts` must describe every event the app fires.
+
+    Without this, the catalog is just a subset and `trackEvent`'s compile-time
+    param checking protects only the events that happened to be added to it.
+    Measured 2026-08-08: 39 events fired, 17 typed — and the two events that
+    slipped through carried camelCase params (`questionCount`, `fromStep`)
+    that no other event used, because nothing checked them.
+    """
+
+    def test_every_fired_event_is_declared_in_the_catalog(self):
+        untyped = _fired_event_names() - _typed_event_names()
+        assert not untyped, (
+            f"Fired via analyticsClient.logEvent but absent from "
+            f"AnalyticsEventParams, so their params are unchecked: {sorted(untyped)}"
+        )
+
+
 class TestEventRegistrySync:
     def test_every_typed_event_is_in_the_report_allowlist(self):
         missing = _typed_event_names() - set(REWIRE_KEY_EVENTS)

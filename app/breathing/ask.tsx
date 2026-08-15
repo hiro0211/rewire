@@ -9,7 +9,7 @@ import { SPACING, FONT_SIZE, FONT_WEIGHT, } from '@/constants/theme';
 import { useBreathStore } from '@/stores/breathStore';
 import { useUserStore } from '@/stores/userStore';
 import * as Crypto from 'expo-crypto';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { trackActivation, type ActivationPath } from '@/lib/tracking/activation';
 
 const ACTIVATION_PATHS: readonly ActivationPath[] = ['sos', 'quick_action', 'onboarding'];
@@ -29,7 +29,7 @@ export default function BreathingAskScreen() {
   const { t } = useLocale();
 
   const handleResponse = async (resolved: boolean) => {
-    analyticsClient.logEvent('breathing_completed', { urge_resolved: resolved });
+    trackEvent('breathing_completed', { urge_resolved: resolved });
     // Completing a breathing session is the activation milestone — the first
     // time the app actually delivered its core value. Fires once per user.
     void trackActivation(toActivationPath(source));

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { daysSinceInstall, ensureInstallDate } from '@/lib/tracking/installDate';
 
 /**
@@ -13,11 +14,17 @@ import { daysSinceInstall, ensureInstallDate } from '@/lib/tracking/installDate'
  *
  * @param userCreatedAt existing user's `createdAt`, used to seed the install
  *   date for people who installed before this shipped.
+ * @param ready whether the user store has finished hydrating. We must not fire
+ *   before this is true: on the first render `userCreatedAt` is null because the
+ *   store hasn't loaded yet, and seeding the (write-once) install date with that
+ *   null would stamp today's date on every existing user, restarting all
+ *   retention cohorts on upgrade day.
  */
-export function useAppOpenTracking(userCreatedAt: string | null): void {
+export function useAppOpenTracking(userCreatedAt: string | null, ready: boolean): void {
   const fired = useRef(false);
 
   useEffect(() => {
+    if (!ready) return;
     if (fired.current) return;
     fired.current = true;
 
@@ -26,8 +33,8 @@ export function useAppOpenTracking(userCreatedAt: string | null): void {
       const day = await daysSinceInstall();
       if (day === null) return;
 
-      analyticsClient.logEvent('app_open', { days_since_install: day });
+      trackEvent('app_open', { days_since_install: day });
       analyticsClient.setUserProperty('days_since_install', String(day));
     })();
-  }, [userCreatedAt]);
+  }, [ready, userCreatedAt]);
 }

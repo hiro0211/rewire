@@ -13,7 +13,7 @@ import { useUserStore } from '@/stores/userStore';
 import { notificationClient } from '@/lib/notifications/notificationClient';
 import { format } from 'date-fns/format';
 import * as Crypto from 'expo-crypto';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { surveyService } from '@/features/survey/surveyService';
 import { logger } from '@/lib/logger';
 
@@ -88,7 +88,7 @@ export default function GoalSettingScreen() {
         await notificationClient.scheduleDailyReminder(resolvedNotifyTime);
       }
 
-      analyticsClient.logEvent('onboarding_complete', { goal_days: selectedGoal });
+      trackEvent('onboarding_complete', { goal_days: selectedGoal });
       InteractionManager.runAfterInteractions(() => {
         router.replace({
           pathname: '/onboarding/benefits',

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Linking } from 'react-native';
 import { reviewPromptStorage } from '@/lib/storage/reviewPromptStorage';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { isExpoGo } from '@/lib/nativeGuard';
 import { t } from '@/locales/i18n';
 import { SUPPORT_EMAIL } from '@/constants/support';
@@ -12,7 +12,7 @@ export function useReviewPromptActions(onHide: () => void) {
 
   const handleRate = useCallback(async (stars: number) => {
     setSelectedRating(stars);
-    await analyticsClient.logEvent('review_prompt_rated', { stars });
+    trackEvent('review_prompt_rated', { stars });
 
     if (stars >= 4) {
       await reviewPromptStorage.recordPositiveReview();
@@ -36,7 +36,7 @@ export function useReviewPromptActions(onHide: () => void) {
   }, [onHide]);
 
   const handleFeedbackTap = useCallback(async () => {
-    await analyticsClient.logEvent('review_prompt_feedback_tapped');
+    trackEvent('review_prompt_feedback_tapped');
     await reviewPromptStorage.recordFeedbackSent();
     const subject = encodeURIComponent(t('review.feedbackSubject'));
     await Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${subject}`);
@@ -45,7 +45,7 @@ export function useReviewPromptActions(onHide: () => void) {
 
   const handleDismiss = useCallback(async () => {
     await reviewPromptStorage.recordDismissal();
-    await analyticsClient.logEvent('review_prompt_dismissed');
+    trackEvent('review_prompt_dismissed');
     onHide();
   }, [onHide]);
 

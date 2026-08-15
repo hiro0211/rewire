@@ -24,6 +24,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       ...config.ios?.infoPlist,
       CFBundleAllowMixedLocalizations: true,
       ITSAppUsesNonExemptEncryption: false,
+      // 画面遷移は lib/tracking/useScreenTracking.ts が Expo Router の pathname を
+      // 使って自前で送る。Firebase の自動収集を切らないと、iOS の swizzling が
+      // RNSScreen / UIViewController といった内部クラス名を screen_view として
+      // 二重に送り、`firebase_screen`（＝我々のルート）を持たない行になる。
+      // 実測 2026-08-08: screen_view 1,814 行中 1,100 行（61%）が自動収集由来で、
+      // 「1セッション 21.6 画面」という実態とかけ離れた数字を生んでいた。
+      FirebaseAutomaticScreenReportingEnabled: false,
       NSCameraUsageDescription:
         'パニックボタン画面で自分の顔を映し、衝動に対して自分自身と向き合うために使用します。映像は端末内でのみ表示され、保存・送信されません。',
     },

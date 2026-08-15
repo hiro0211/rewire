@@ -17,7 +17,7 @@ import { Pressable } from 'react-native';
 import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 const SPRING_CONFIG = { damping: 15, stiffness: 300 };
 
@@ -63,7 +63,7 @@ export function SOSButton() {
 
   const handlePress = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    analyticsClient.logEvent('panic_button_tapped');
+    trackEvent('panic_button_tapped');
     router.push('/panic');
   };
 

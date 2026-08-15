@@ -9,7 +9,7 @@ import { BreathingTimer } from '@/components/breathing/BreathingTimer';
 import { useBreathingEngine } from '@/hooks/breathing/useBreathingEngine';
 import { useTheme } from '@/hooks/useTheme';
 import { SPACING, FONT_SIZE, LINE_HEIGHT, } from '@/constants/theme';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 export default function BreathingScreen() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function BreathingScreen() {
   const { colors } = useTheme();
 
   useEffect(() => {
-    analyticsClient.logEvent('breathing_started');
+    trackEvent('breathing_started');
     startSession();
     return () => stopSession();
   }, []);

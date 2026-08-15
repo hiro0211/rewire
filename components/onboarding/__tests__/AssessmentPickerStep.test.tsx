@@ -68,4 +68,22 @@ describe('AssessmentPickerStep', () => {
   it('クラッシュしない', () => {
     expect(() => render(<AssessmentPickerStep {...defaultProps} />)).not.toThrow();
   });
+
+  // Picker は mount 時に onValueChange を発火しないため、表示中のデフォルト値が
+  // 回答として登録されず「次へ」が押せなくなる不具合を防ぐ。
+  it('マウント時に未回答なら表示中のデフォルト値(25)を onSelect で登録する', () => {
+    const onSelect = jest.fn();
+    render(
+      <AssessmentPickerStep {...defaultProps} selectedValue={undefined} onSelect={onSelect} />,
+    );
+    expect(onSelect).toHaveBeenCalledWith('25');
+  });
+
+  it('既に回答がある場合はマウント時に上書きしない', () => {
+    const onSelect = jest.fn();
+    render(
+      <AssessmentPickerStep {...defaultProps} selectedValue="30" onSelect={onSelect} />,
+    );
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

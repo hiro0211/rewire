@@ -3,7 +3,7 @@ import { Share } from 'react-native';
 import { useStreak } from '@/hooks/dashboard/useStreak';
 import { useStopwatch } from '@/hooks/dashboard/useStopwatch';
 import { buildShareText } from '@/lib/share/shareService';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { logger } from '@/lib/logger';
 import { useLocale } from '@/hooks/useLocale';
 
@@ -14,7 +14,7 @@ export function useShareWidget() {
   const { isJapanese } = useLocale();
 
   const share = useCallback(async () => {
-    analyticsClient.logEvent('share_tapped');
+    trackEvent('share_tapped');
 
     const text = buildShareText(stopwatch, isJapanese);
 

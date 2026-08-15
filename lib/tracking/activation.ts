@@ -1,6 +1,7 @@
 import { asyncStorageClient } from '@/lib/storage/asyncStorageClient';
 
 import { analyticsClient } from './analyticsClient';
+import { trackEvent } from './trackEvent';
 import { daysSinceInstall } from './installDate';
 
 /**
@@ -54,7 +55,7 @@ export async function trackActivation(
   const day = await daysSinceInstall(now);
   await asyncStorageClient.set<ActivationRecord>(STORAGE_KEY, { path, day });
 
-  analyticsClient.logEvent('activation_reached', {
+  trackEvent('activation_reached', {
     path,
     ...(day === null ? {} : { days_since_install: day }),
   });

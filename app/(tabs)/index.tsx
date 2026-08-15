@@ -27,7 +27,7 @@ import { SurveyPromptModal } from '@/components/survey/SurveyPromptModal';
 import { useReviewEligibility } from '@/hooks/review/useReviewEligibility';
 import { useReviewPromptActions } from '@/hooks/review/useReviewPromptActions';
 import { ReviewPromptModal } from '@/components/review/ReviewPromptModal';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { ReflectionSheet } from '@/components/reflection/ReflectionSheet';
 import { useReflectionTrigger } from '@/hooks/reflection/useReflectionTrigger';
 import { useAutoOpenReflectionSheet } from '@/hooks/reflection/useAutoOpenReflectionSheet';
@@ -101,7 +101,7 @@ export default function DashboardScreen() {
       setSurveyModalVisible(true);
     } else if (shouldShowReview) {
       setReviewModalVisible(true);
-      analyticsClient.logEvent('review_prompt_shown');
+      trackEvent('review_prompt_shown');
     }
   }, [shouldShowSurvey, shouldShowReview]);
 

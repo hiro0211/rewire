@@ -1,6 +1,7 @@
 import { surveyValidator } from './surveyValidator';
 import { firestoreClient } from '@/lib/survey/firestoreClient';
 import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { surveyStorage } from '@/lib/storage/surveyStorage';
 import { userStorage } from '@/lib/storage/userStorage';
 import {
@@ -42,8 +43,8 @@ export const surveyService = {
     await surveyStorage.markCompleted();
     // free_text is deliberately excluded: free-form user text stays in
     // Firestore only and must never reach Analytics.
-    await analyticsClient.logEvent('survey_completed', {
-      questionCount: answeredCount,
+    trackEvent('survey_completed', {
+      question_count: answeredCount,
       perceived_change: answers.perceived_change,
     });
   },
@@ -69,7 +70,7 @@ export const surveyService = {
       motivation: answers.motivation,
     };
 
-    await analyticsClient.logEvent('onboarding_survey_completed', params);
+    trackEvent('onboarding_survey_completed', params);
     await analyticsClient.setUserProperties(params);
   },
 };

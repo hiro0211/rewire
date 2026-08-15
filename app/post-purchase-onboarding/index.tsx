@@ -20,6 +20,7 @@ import {
   TOTAL_POST_PURCHASE_STEPS,
 } from '@/constants/postPurchaseOnboarding';
 import { ROUTES } from '@/lib/routing/routes';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 const TRANSITION_DURATION = 150;
 const SLIDE_DISTANCE = 300;
@@ -53,20 +54,23 @@ export default function PostPurchaseOnboardingScreen() {
     });
   };
 
-  const { goToNext, markCompleted, logEvent } = flow;
+  const { goToNext, markCompleted } = flow;
 
-  const handleAdvance = async () => {
-    await markCompleted();
+  const handleAdvance = () => {
+    // 完了フラグはここでは立てない。最終ステップに到達して初めて完了扱いにする
+    // ことで、途中で中断してもフローに戻れるようにする。
     animateTransition(-1, () => goToNext());
   };
 
   const handleSkip = async () => {
-    logEvent('post_purchase_onboarding_skipped', { fromStep: step });
+    trackEvent('post_purchase_onboarding_skipped', { from_step: step });
     await markCompleted();
     router.replace(ROUTES.tabs);
   };
 
-  const handleFinishComplete = () => {
+  const handleFinishComplete = async () => {
+    // 全ステップ完了時に初めて完了フラグを永続化する。
+    await markCompleted();
     router.replace(ROUTES.tabs);
   };
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useShieldActivation } from '@/hooks/screenTime/useShieldActivation';
 import { useScreenTimeStore } from '@/stores/screenTimeStore';
 import { useToast } from '@/hooks/ui/useToast';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { BLOCKER_ACTIVATION_ADVANCE_DELAY_MS } from '@/constants/postPurchaseOnboarding';
 
 interface UseBlockerActivationStepResult {
@@ -39,7 +39,7 @@ export function useBlockerActivationStep(
     const ok = await activate();
     if (!ok) return;
 
-    analyticsClient.logEvent('post_purchase_blocker_activated');
+    trackEvent('post_purchase_blocker_activated');
     toast.show();
     advanceTimerRef.current = setTimeout(
       onComplete,

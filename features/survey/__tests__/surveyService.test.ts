@@ -53,7 +53,7 @@ describe('surveyService', () => {
 
       expect(mockMarkCompleted).toHaveBeenCalledTimes(1);
       expect(mockLogEvent).toHaveBeenCalledWith('survey_completed', {
-        questionCount: 1,
+        question_count: 1,
         perceived_change: 'slight',
       });
     });

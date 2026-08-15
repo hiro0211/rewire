@@ -2813,3 +2813,22 @@ JS **322スイート / 2369テスト全通過**、Python **215通過**。tsc は
 - commit `9b5cb62`（Swift削除）と `b6b5d29`（分析基盤）は**未 push**
 - 2.4.0 配信後、`user_id` が埋まり始めたら `USER_KEY_COLUMN` を `user_id` に切り替える（切替時 `test_bigquery_client.py` の該当テストが落ちるので意図的な変更と分かる）
 - 課金者コホートは2人。統計的結論は出せないので、母数が増えるまでは `--cohort onboarded`（29人）も併用する
+
+## 2026-08-08: 本番コード網羅バグ監査 + HIGH 6件を TDD 修正
+### 監査
+- ワークフロー（16ドメイン・本番203ファイル・発見→敵対的検証の2段パイプライン、55エージェント）で網羅精査。候補39件中 **確定30 / 判断保留3 / 誤検出6**
+- HIGH は実バグ6件 + 開発トグル2件（`DEV_SKIP_ONBOARDING`/`DEBUG_MENU_ENABLED` が true = リリース衛生。既知）
+### 修正した HIGH 6件（すべて TDD: Red→Green、テスト付き）
+1. **パニック「見てしまった」がリラプス未記録** `app/panic/index.tsx` — `useReflectionSheet.confessRelapseAndClose()` を呼んでから /recovery 遷移（記録失敗時は遷移しない）。リフレクションシートと同じ確定処理を再利用
+2. **AsyncStorage 読み取りエラーで全履歴上書き（データ消失）** `lib/storage/asyncStorageClient.ts` に `getStrict()`（絶対不在のみ null、復号/parse 失敗は throw）を追加。checkin/breath/recovery の `getAll()` を getStrict に切替 → 読めない時は save が中断し履歴保全。breath/recovery のテスト新規作成
+3. **screenTimeStore が起動時 hydrate されない** `hooks/useAppInitialization.ts` に `useScreenTimeStore.getState().loadFromStorage()` 追加（既存の未使用アクションを配線）
+4. **install date シードが既存ユーザーで無視** `hooks/tracking/useAppOpenTracking.ts` に `ready` 引数追加。hydration 前（createdAt=null）は発火せず、`hasHydrated` 後に実 createdAt でシード。呼び出し側 `useAppInitialization.ts` 更新
+5. **Picker のデフォルトが回答未登録で「次へ」不可** `components/onboarding/AssessmentPickerStep.tsx` — mount 時に未回答なら表示中デフォルトを `onSelect` で登録（既存回答は上書きしない）
+6. **課金後オンボが最初の Next で完了扱い** `app/post-purchase-onboarding/index.tsx` — `markCompleted()` を `handleAdvance` から除去し `handleFinishComplete`（最終ステップ）へ移動。中断しても再度フローに戻れる
+### 検証
+- 全スイート: **344 suites / 2674 tests 通過**。失敗は `indexRouting.test.tsx` の2件のみ = `DEV_SKIP_ONBOARDING=true`（本番設定テスト、既知・私の変更と無関係）
+- 変更ファイルの lint 0 error（既存 warning のみ）、tsc も新規エラー 0
+### 未対応（監査で確定・別途判断）
+- MEDIUM 11件（例: 同日2回リラプスで undo 破壊 `checkinService.ts`、月額のみ offering で架空JPY年額 `useOfferingPackages.ts`、リセットで reflection/learn 残留、survey/リラプス二重送信ガード無し 等）
+- LOW 11件・UNCERTAIN 3件（hydration 順依存の再プロンプト/ダークフラッシュ、settings 共有キーの lost update）
+- 未コミット状態（commit は依頼時のみ）

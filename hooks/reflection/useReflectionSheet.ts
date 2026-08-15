@@ -5,7 +5,7 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { useUserStore } from '@/stores/userStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
 import { calculateStreak } from '@/features/checkin/streakCalculator';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { setRetentionUserProperties } from '@/lib/tracking/retentionUserProperties';
 
 export type ReflectionStep = 1 | 2 | 3;
@@ -51,7 +51,7 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
   ...INITIAL_STATE,
 
   open: (source = 'manual') => {
-    analyticsClient.logEvent('reflection_opened', { source });
+    trackEvent('reflection_opened', { source });
     set({ ...INITIAL_STATE, visible: true });
   },
 
@@ -105,7 +105,7 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
         }
       }
 
-      analyticsClient.logEvent('reflection_completed', {
+      trackEvent('reflection_completed', {
         streak_day: pendingCelebrationStreak ?? 0,
         urge_level: level,
       });
@@ -151,7 +151,7 @@ export const useReflectionSheet = create<ReflectionSheetState & ReflectionSheetA
       const today = format(new Date(), 'yyyy-MM-dd');
       await useReflectionStore.getState().markCompleted(today);
 
-      analyticsClient.logEvent('relapse_recorded', { previous_streak: previousStreak });
+      trackEvent('relapse_recorded', { previous_streak: previousStreak });
       const fresh = useUserStore.getState().user;
       setRetentionUserProperties(
         fresh?.streakStartDate,

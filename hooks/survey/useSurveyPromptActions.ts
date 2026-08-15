@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { surveyPromptStorage } from '@/lib/storage/surveyPromptStorage';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { ROUTES } from '@/lib/routing/routes';
 
 export function useSurveyPromptActions(onHide: () => void) {
@@ -9,14 +9,14 @@ export function useSurveyPromptActions(onHide: () => void) {
 
   const handleAccept = useCallback(async () => {
     await surveyPromptStorage.recordPromptShown();
-    await analyticsClient.logEvent('survey_prompt_accepted');
+    trackEvent('survey_prompt_accepted');
     onHide();
     router.push(ROUTES.survey);
   }, [onHide, router]);
 
   const handleDismiss = useCallback(async () => {
     await surveyPromptStorage.recordDismissal();
-    await analyticsClient.logEvent('survey_prompt_dismissed');
+    trackEvent('survey_prompt_dismissed');
     onHide();
   }, [onHide]);
 

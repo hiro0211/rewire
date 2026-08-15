@@ -11,7 +11,7 @@ import { TypewriterCapsule } from '@/components/panic/TypewriterCapsule';
 import { useTypewriterMessage } from '@/hooks/panic/useTypewriterMessage';
 import { useReflectionSheet } from '@/hooks/reflection/useReflectionSheet';
 import { SPACING } from '@/constants/theme';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 /**
  * Panic button screen shown between the dashboard SOSButton and the breathing
@@ -26,7 +26,7 @@ export default function PanicScreen() {
   const confessRelapseAndClose = useReflectionSheet((s) => s.confessRelapseAndClose);
 
   useEffect(() => {
-    analyticsClient.logEvent('panic_screen_viewed');
+    trackEvent('panic_screen_viewed');
   }, []);
 
   // 「見てしまった」= リラプス確定。リフレクションシートと同じ確定処理

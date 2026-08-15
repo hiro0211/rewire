@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useUserStore } from '@/stores/userStore';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import { logger } from '@/lib/logger';
 import type { PostPurchaseStep } from '@/constants/postPurchaseOnboarding';
 import { TOTAL_POST_PURCHASE_STEPS } from '@/constants/postPurchaseOnboarding';
@@ -11,7 +11,6 @@ interface UsePostPurchaseFlowResult {
   goToStep: (index: number) => void;
   markCompleted: () => Promise<void>;
   logStepViewed: (name: PostPurchaseStep) => void;
-  logEvent: (name: string, payload?: Record<string, unknown>) => void;
 }
 
 export function usePostPurchaseFlow(): UsePostPurchaseFlowResult {
@@ -34,19 +33,17 @@ export function usePostPurchaseFlow(): UsePostPurchaseFlowResult {
   }, []);
 
   const logStepViewed = useCallback((name: PostPurchaseStep) => {
-    analyticsClient.logEvent('post_purchase_step_viewed', { step: name });
+    trackEvent('post_purchase_step_viewed', { step: name });
   }, []);
 
-  const logEvent = useCallback((name: string, payload?: Record<string, unknown>) => {
-    analyticsClient.logEvent(name, payload);
-  }, []);
-
+  // 汎用の logEvent は意図的に公開しない。イベント名と params が型で守られない
+  // 抜け道になり、実際に `fromStep` という camelCase をここから素通しさせていた。
+  // 画面固有のイベントは呼び出し側で `trackEvent` を直接使うこと。
   return {
     step,
     goToNext,
     goToStep,
     markCompleted,
     logStepViewed,
-    logEvent,
   };
 }

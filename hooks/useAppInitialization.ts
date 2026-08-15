@@ -7,6 +7,7 @@ import { useThemeStore } from '@/stores/themeStore';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useReflectionStore } from '@/stores/reflectionStore';
 import { useDebugStore } from '@/stores/debugStore';
+import { useScreenTimeStore } from '@/stores/screenTimeStore';
 import { useSubscriptionStore } from '@/stores/subscriptionStore';
 import { usePaywallStore } from '@/stores/paywallStore';
 import { PRO_ENTITLEMENT_ID } from '@/constants/subscription';
@@ -28,7 +29,9 @@ export function useAppInitialization() {
   useAnalyticsUserId(user?.id ?? null);
   // Seeded from createdAt so users who installed before this shipped get a real
   // install date rather than looking like a fresh install on upgrade day.
-  useAppOpenTracking(user?.createdAt ?? null);
+  // Gated on hasHydrated: before the store loads, user is null and seeding with
+  // that null would stamp today's date on every existing user.
+  useAppOpenTracking(user?.createdAt ?? null, hasHydrated);
 
   useEffect(() => {
     loadUser();
@@ -36,6 +39,9 @@ export function useAppInitialization() {
     useLocaleStore.getState().loadLocalePreference();
     useReflectionStore.getState().loadReflectionState();
     useDebugStore.getState().loadDebugSettings();
+    // 起動のたびに INITIAL_STATE(enabled:false) にリセットされると、
+    // ネイティブ側で有効なままのシールドと UI 状態が乖離し、UI から解除できなくなる。
+    useScreenTimeStore.getState().loadFromStorage();
     // brand.tsx がこの値の hydration を待ってから起動時ペイウォールを出すか決める
     usePaywallStore.getState().loadLaunchPaywallState();
     // Why: configure は userStore 復元に依存しないので並列に先行させる。

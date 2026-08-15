@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import { STEPS } from '@/constants/onboarding';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 
 /**
  * Fires an `onboarding_step_viewed` event whenever the onboarding step changes.
@@ -17,7 +17,7 @@ export function useOnboardingStepTracking(step: number): void {
     const current = STEPS[step];
     if (!current) return;
 
-    analyticsClient.logEvent('onboarding_step_viewed', {
+    trackEvent('onboarding_step_viewed', {
       step_index: step,
       step_type: current.type,
     });

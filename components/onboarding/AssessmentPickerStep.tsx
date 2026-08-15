@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { SPACING, FONT_SIZE, RADIUS, FONT_WEIGHT, } from '@/constants/theme';
@@ -26,6 +26,17 @@ export function AssessmentPickerStep({
   const [localValue, setLocalValue] = useState(selectedValue || defaultValue);
   const { colors } = useTheme();
   const { t } = useLocale();
+
+  // Picker は mount 時に onValueChange を発火しない。ホイールにはデフォルト値が
+  // 見えているのに回答が未登録のままだと canAdvanceStep が false になり「次へ」を
+  // 押せなくなる。未回答なら表示中のデフォルト値を明示的に回答として登録する。
+  useEffect(() => {
+    if (selectedValue === undefined) {
+      onSelect(localValue);
+    }
+    // localValue / onSelect は初回シード目的のため依存に含めない
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question.id, selectedValue]);
 
   const handleValueChange = (value: string) => {
     setLocalValue(value);

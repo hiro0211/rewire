@@ -9,7 +9,7 @@ import { useCheckinStore } from '@/stores/checkinStore';
 import { useTheme } from '@/hooks/useTheme';
 import { useLocale } from '@/hooks/useLocale';
 import { SPACING, FONT_SIZE, FONT_WEIGHT, LINE_HEIGHT, } from '@/constants/theme';
-import { analyticsClient } from '@/lib/tracking/analyticsClient';
+import { trackEvent } from '@/lib/tracking/trackEvent';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 
@@ -23,7 +23,7 @@ export default function RecoveryScreen() {
 
   const handleSelectTrigger = async (selected: string) => {
     setTrigger(selected);
-    analyticsClient.logEvent('recovery_trigger_selected', { trigger: selected });
+    trackEvent('recovery_trigger_selected', { trigger: selected });
     if (user && todayCheckin) {
       await recoveryService.saveRecovery(user.id, selected, todayCheckin.id);
     }

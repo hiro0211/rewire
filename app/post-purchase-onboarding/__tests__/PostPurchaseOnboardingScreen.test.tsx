@@ -111,7 +111,6 @@ const mockMarkCompleted = jest.fn().mockResolvedValue(undefined);
 const mockGoToNext = jest.fn();
 const mockGoToStep = jest.fn();
 const mockLogStepViewed = jest.fn();
-const mockLogEvent = jest.fn();
 let mockCurrentStep = 0;
 jest.mock('@/hooks/postPurchaseOnboarding/usePostPurchaseFlow', () => ({
   usePostPurchaseFlow: () => ({
@@ -120,8 +119,14 @@ jest.mock('@/hooks/postPurchaseOnboarding/usePostPurchaseFlow', () => ({
     goToStep: mockGoToStep,
     markCompleted: mockMarkCompleted,
     logStepViewed: mockLogStepViewed,
-    logEvent: mockLogEvent,
   }),
+}));
+
+// 画面固有のイベントはフック経由の汎用 logEvent ではなく trackEvent で送る。
+// フックが汎用の抜け道を持たなくなったため、ここでモックするのは trackEvent。
+const mockTrackEvent = jest.fn();
+jest.mock('@/lib/tracking/trackEvent', () => ({
+  trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
 }));
 
 import PostPurchaseOnboardingScreen from '../index';
@@ -181,37 +186,43 @@ describe('PostPurchaseOnboardingScreen', () => {
     expect(mockLogStepViewed).toHaveBeenCalledWith(name);
   });
 
-  it('ThankYouStep の onNext で markCompleted が呼ばれる', async () => {
+  // 完了フラグ(hasCompletedPostPurchaseOnboarding)は最初の Next で立ててはいけない。
+  // 立ててしまうと、権限付与やブロッカー有効化の前に中断（バックグラウンド/強制終了）
+  // した課金ユーザーが二度とこのフローに戻れず、有料機能が未設定のまま放置される。
+  it('最初のステップ(ThankYou)の onNext では markCompleted を呼ばない', async () => {
     mockCurrentStep = 0;
     const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
     fireEvent.press(getByTestId('thankyou-next'));
     await Promise.resolve();
     await Promise.resolve();
-    expect(mockMarkCompleted).toHaveBeenCalled();
+    expect(mockMarkCompleted).not.toHaveBeenCalled();
   });
 
-  it('ScreenTimePermissionStep の onComplete で markCompleted が呼ばれる', async () => {
+  it('ScreenTimePermissionStep(step=3) の onComplete でも markCompleted を呼ばない', async () => {
     mockCurrentStep = 3;
     const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
     fireEvent.press(getByTestId('screen-time-complete'));
     await Promise.resolve();
     await Promise.resolve();
-    expect(mockMarkCompleted).toHaveBeenCalled();
+    expect(mockMarkCompleted).not.toHaveBeenCalled();
   });
 
-  it('BlockerActivationStep の onComplete で markCompleted が呼ばれる', async () => {
+  it('BlockerActivationStep(step=4) の onComplete でも markCompleted を呼ばない', async () => {
     mockCurrentStep = 4;
     const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
     fireEvent.press(getByTestId('blocker-activation-complete'));
     await Promise.resolve();
     await Promise.resolve();
-    expect(mockMarkCompleted).toHaveBeenCalled();
+    expect(mockMarkCompleted).not.toHaveBeenCalled();
   });
 
-  it('CompleteStep の onFinish で router.replace((tabs)) が呼ばれる', () => {
+  it('CompleteStep の onFinish で初めて markCompleted し、その後 router.replace((tabs)) する', async () => {
     mockCurrentStep = 5;
     const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
     fireEvent.press(getByTestId('complete-finish'));
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockMarkCompleted).toHaveBeenCalledTimes(1);
     expect(mockReplace).toHaveBeenCalledTimes(1);
   });
 
@@ -243,6 +254,18 @@ describe('PostPurchaseOnboardingScreen', () => {
       await Promise.resolve();
       expect(mockMarkCompleted).toHaveBeenCalled();
       expect(mockReplace).toHaveBeenCalledTimes(1);
+    });
+
+    // パラメータ名は snake_case で固定する。BigQuery の event_params は
+    // キー名の完全一致でしか引けないため、camelCase が1つ混ざるだけで
+    // そのイベントだけ別の書き方を強いられ、集計時に取りこぼす。
+    it('Skip タップで from_step 付きの離脱イベントを送る', () => {
+      mockCurrentStep = 2;
+      const { getByTestId } = render(<PostPurchaseOnboardingScreen />);
+      fireEvent.press(getByTestId('post-purchase-skip-button'));
+      expect(mockTrackEvent).toHaveBeenCalledWith('post_purchase_onboarding_skipped', {
+        from_step: 2,
+      });
     });
   });
 });
