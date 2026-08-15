@@ -7,7 +7,7 @@
  * ⚠️ archive / TestFlight / App Store 提出ビルドの前には必ず false に戻すこと。
  *    （release-testflight / EAS Build / Xcode Archive 前の必須チェック項目）
  */
-export const DEBUG_MENU_ENABLED = true;
+export const DEBUG_MENU_ENABLED = false;
 
 /**
  * デバッグの「全バッジ解放」トグルが有効なときに、ストリーク日数として扱う値。

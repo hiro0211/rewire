@@ -2832,3 +2832,85 @@ JS **322スイート / 2369テスト全通過**、Python **215通過**。tsc は
 - MEDIUM 11件（例: 同日2回リラプスで undo 破壊 `checkinService.ts`、月額のみ offering で架空JPY年額 `useOfferingPackages.ts`、リセットで reflection/learn 残留、survey/リラプス二重送信ガード無し 等）
 - LOW 11件・UNCERTAIN 3件（hydration 順依存の再プロンプト/ダークフラッシュ、settings 共有キーの lost update）
 - 未コミット状態（commit は依頼時のみ）
+
+## 2026-08-09: 分析基盤の全面強化（BigQuery）+ コンテンツブロッカー計測
+
+### 背景
+「ユーザーがいつ・何曜日に・どんな機能をどれくらい使っているか」をBigQueryで出し、
+リテンション改善に繋げたい、という依頼。実測で現状を調べたところ、時間軸のクエリが
+1本も無く、engagement_time_msec（24.5時間分）を誰も読んでおらず、BigQuery側に
+リテンションが無かった。
+
+### 実測でわかった重要な数字（2026-07-19〜08-06 / 47端末）
+- **初日以降ただの一度も戻らない端末 33/39（84.6%）**
+- **初週に機能を1つでも使った端末 4/39（10.3%）** ← 最も行動に繋がる数字
+- D1 継続 7.7%、D3 2.7%、D7 3.6%、D14 0%
+- 流入: Apple Search 20台（復帰10%） vs direct 19台（復帰21%）
+- **日本は26%しかいない。zh-hans 6台の復帰率は0%**（中国語未対応）
+- 滞在時間の**95.6%が RNSScreen に紐づいており画面別に出せない**（自動収集ノイズ）
+
+### アプリ側（A-1〜A-5）
+- **A-1 自動 screen_view を無効化**: `app.config.ts` に
+  `FirebaseAutomaticScreenReportingEnabled: false`。screen_view の61%（1,100/1,814）が
+  RNSScreen/UIViewController 等のノイズだった。滞在時間の紐付けもこれで直る
+- **A-2 命名統一**: `questionCount`→`question_count`、`fromStep`→`from_step`
+- **A-3 イベントカタログ完全化**: 25イベントを `constants/analyticsEvents.ts` に追加し
+  全て `trackEvent` 経由に統一。`usePostPurchaseFlow` の汎用 logEvent 抜け道を削除
+- **A-4** `docs/analytics/event-schema.md` 新規（BQでの型の罠・語彙・変更履歴）
+- **A-5 コンテンツブロッカー計測（hiro 追加依頼）**: `blocker_enabled` /
+  `blocker_disable_requested` / `_confirmed` / `_cancelled` + `hours_enabled`。
+  新規 `lib/screenTime/blockerDuration.ts`、`hooks/screenTime/useBlockerAnalytics.ts`
+
+### 分析側（B-0〜B-8、すべて `scripts/analytics/`）
+`bq_sql.py`（共通SQL断片）/ `bq_retention.py` / `bq_time_usage.py` / `bq_engagement.py` /
+`bq_feature_retention.py` / `bq_segments.py` / `bq_data_quality.py` / `bq_blocker.py` /
+`dashboard_charts.py` / `dashboard_insights.py`。`build_dashboard.py` に配線。
+
+### 重要な設計判断
+- **`days_since_install` はアプリ値を信用しない。** 実測でアプリは「0日目」と送りながら
+  実際は52日目だった。BQ の `user_first_touch_timestamp`（全行に存在・遡及可）から導出する
+- **未成熟／サンプル不足は 0% ではなく「—」「サンプル不足」と出す。** D30 を 0% と書くと
+  「1か月で全滅」と誤読される
+- **エクスポート開始前インストールの8端末をコホートから除外**（day 0 が存在しないため）
+- ヒートマップは**非ゼロを絶対に空白にしない**（1件がゼロと同じ見た目になる罠を実物で発見）
+
+### 未完了・次回
+- **2.4.0 を配信しないと A-1 と A-5 の効果は出ない**（現在41台が2.3.0）。
+  配信後に「screen_view の firebase_event_origin='auto' が消えたか」を実測確認する
+- `user_id` は全行 NULL のまま。2.4.0 浸透後に `bigquery_client.USER_KEY_COLUMN` を
+  `user_id` に切り替える（1箇所で済む設計）
+- ブロッカー分析（`bq_blocker.py`）は 2.4.0 配信までデータ0件。`has_data=False` で
+  「未計測」と表示される
+
+### リリース準備
+- version **2.4.0** / build **1**（変更不要、既に全ファイル一致していた）
+- `DEBUG_MENU_ENABLED = false` / `DEV_SKIP_ONBOARDING = false` に設定済み（TestFlight向け）
+- **`DEV_SKIP_ONBOARDING=true` が原因で失敗していた `indexRouting.test.tsx` が解消。
+  既知の失敗テストは現在ゼロ**
+
+### テスト
+Python 297 → **468 passed**、Jest **348 suites / 2,689 passed**（全通過）、lint エラー0
+
+## 2026-08-11
+
+### 作業内容
+- スケジュールタスク `rewire-daily-analytics` を実行（ASC データ取得 → ファネル分析 → レポート生成）。
+- ASC API 認証は正常。2026-08-10 分として 8 レポートを取得。
+- `analyze_funnel.py` の出力を生 TSV と突き合わせて検証し、複数の集計バグを発見。
+
+### 発見した問題（未修正・要対応）
+1. `analyze_funnel.py`: Impressions を discovery の standard + detailed 両方から合算 → 二重計上（1,194 vs 実数 731）。
+2. `analyze_funnel.py`: メトリクス判定が `Event` 列前提。App Downloads レポートは `Download Type`/`Counts` 構成のため Downloads が常に 0。
+3. 同様に Purchases (`Purchase Type`)、Subscription Events (`Event Name`) が未対応 → Trial/Paid が常に 0。
+4. 日付フィルタが無く、フォルダ内の全日付を合算している（「昨日の指標」になっていない）。
+5. データラグ: フォルダ名はフェッチ日だが、中身は 2〜3 日前まで。Downloads/課金系はさらに遅い。2026-08-10 フォルダに 08-10 の行は存在しない。
+
+### 次回やるべきこと
+- 上記 1〜4 を TDD で修正（実 TSV を fixture 化した失敗テストを先に書く）。
+- 修正までは自動生成レポートの「ボトルネック」結論を信用しない。
+
+### 変更ファイル
+- `docs/analytics/daily-report-2026-08-10.md`（スクリプト生成）
+- `docs/analytics/daily-metrics-2026-08-10.json`（スクリプト生成）
+- `docs/analytics/daily-report-2026-08-10-corrected.md`（手動補正版・新規）
+- `data/analytics/2026-08-10/*.tsv`（再取得）

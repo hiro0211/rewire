@@ -215,3 +215,73 @@ class TestReadability:
 
         headers = html.split("<thead>")[-1].split("</thead>")[0]
         assert "white-space:nowrap" in headers
+
+
+class TestCaveatsAreNotDuplicated:
+    """⑨「データの限界」を出すときは、旧「データの読み方・限界」を重ねない。
+
+    生成した HTML を実際に読んで見つかった。集計単位の説明が2回並ぶうえ、
+    旧セクションには「2026-08-03 のテーブルが存在しない」というハードコード
+    文字列が残っており、⑨ の計算結果と将来必ず食い違う。
+    """
+
+    def _insights(self):
+        from datetime import date
+
+        from scripts.analytics.bq_blocker import BlockerFunnel
+        from scripts.analytics.bq_data_quality import DataQuality
+        from scripts.analytics.bq_engagement import (
+            compute_dwell_coverage,
+            compute_session_stats,
+        )
+        from scripts.analytics.bq_time_usage import WeekSplit
+        from scripts.analytics.dashboard_insights import Insights
+
+        return Insights(
+            retention_cohorts=[],
+            lifespan=[],
+            retention_offsets=(1,),
+            heatmap=[[0] * 24 for _ in range(7)],
+            feature_profiles=[],
+            week_split=WeekSplit(0, 0),
+            session_stats=compute_session_stats([]),
+            screen_dwell=[],
+            dwell_coverage=compute_dwell_coverage(0, 0),
+            segments=[],
+            blocker_funnel=BlockerFunnel(0, 0, 0, 0),
+            holdout=[],
+            quality=DataQuality(
+                first_date=date(2026, 7, 19),
+                last_date=date(2026, 8, 6),
+                missing_dates=[date(2026, 8, 3)],
+                today=date(2026, 8, 9),
+                total_devices=47,
+                eligible_devices=39,
+            ),
+        )
+
+    def _html(self, insights):
+        from datetime import date
+
+        from scripts.analytics.bq_cohort import Cohort
+
+        return build_dashboard_html(
+            generated_on=date(2026, 8, 9),
+            cohort=Cohort(key="onboarded", label="オンボ完了者", device_ids=["a"] * 29),
+            onboarding_steps=[],
+            conversion_stages=[],
+            activity=[],
+            insights=insights,
+        )
+
+    def test_the_stale_hardcoded_gap_string_is_gone(self):
+        html = self._html(self._insights())
+        assert "のテーブルが存在しないため" not in html
+
+    def test_the_aggregation_unit_note_appears_only_once(self):
+        html = self._html(self._insights())
+        assert html.count("再インストールや機種変更") == 1
+
+    def test_the_old_caveats_still_render_when_there_are_no_insights(self):
+        """⑨ が出せないときまで注意書きを失わない。"""
+        assert "再インストールや機種変更" in self._html(None)

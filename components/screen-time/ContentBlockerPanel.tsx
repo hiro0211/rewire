@@ -23,6 +23,7 @@ import { useScreenTimeStore } from '@/stores/screenTimeStore';
 import { screenTimeBridge } from '@/lib/screenTime/screenTimeBridge';
 import { useScreenTimeSetup } from '@/hooks/screenTime/useScreenTimeSetup';
 import { useShieldActivation } from '@/hooks/screenTime/useShieldActivation';
+import { useBlockerAnalytics } from '@/hooks/screenTime/useBlockerAnalytics';
 import { useToast } from '@/hooks/ui/useToast';
 import { Toast } from '@/components/ui/Toast';
 import { BlockerPowerButton } from './BlockerPowerButton';
@@ -41,6 +42,7 @@ export function ContentBlockerPanel() {
 
   // オンにする処理（許可フォールバック＋シールド適用＋触覚）は共通フックに委譲する
   const { isBusy: isActivating, activate } = useShieldActivation();
+  const analytics = useBlockerAnalytics();
   const toast = useToast();
   // オフにする処理は深呼吸ゲート確認後にこのパネル内で行う
   const [isClearing, setIsClearing] = useState(false);
@@ -75,12 +77,18 @@ export function ContentBlockerPanel() {
     if (isBusy) return;
     if (enabled) {
       // 即オフにせず、深呼吸ゲートを通してから確認する
+      // ここで送るのは「やめたくなった瞬間」。この後 confirmed / cancelled の
+      // どちらに転んだかと突き合わせて、ゲートの引き止め率を出す。
+      analytics.trackDisableRequested();
       setGateVisible(true);
       return;
     }
     const ok = await activate();
-    if (ok) toast.show();
-  }, [isBusy, enabled, activate, toast]);
+    if (ok) {
+      analytics.trackEnabled('settings');
+      toast.show();
+    }
+  }, [isBusy, enabled, activate, toast, analytics]);
 
   const handleGateConfirm = useCallback(async () => {
     setGateVisible(false);
@@ -88,15 +96,21 @@ export function ContentBlockerPanel() {
     setIsClearing(true);
     try {
       const ok = screenTimeBridge.clearAppShield(!!selectionToken);
-      if (ok) await markCleared();
+      if (ok) {
+        // markCleared より先に送る。経過時間の元になる lastShieldedAt を
+        // 読んでいるため、順序を入れ替えるときは注意すること。
+        analytics.trackDisableConfirmed();
+        await markCleared();
+      }
     } finally {
       setIsClearing(false);
     }
-  }, [isClearing, selectionToken, markCleared]);
+  }, [isClearing, selectionToken, markCleared, analytics]);
 
   const handleGateCancel = useCallback(() => {
+    analytics.trackDisableCancelled();
     setGateVisible(false);
-  }, []);
+  }, [analytics]);
 
   const handleBlockApps = useCallback(() => {
     void startSetup();

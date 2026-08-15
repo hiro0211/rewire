@@ -129,6 +129,28 @@ BigQuery で結合できない。語彙は `constants/analytics/paywallSource.ts
 `unknown`（特定不能）。語彙外の値は `toPaywallSource()` が `unknown` に丸めるので、
 タイポが新しい source 値として増えて分母が割れることはない。
 
+### コンテンツブロッカー（ポルノ禁の挫折測定）
+
+ブロックを ON にした人が **どれくらい持ちこたえ、どこで解除に向かうか** を測る。
+解除フローには3呼吸のゲートが挟まるので、押した時点（requested）と、その後
+解除した（confirmed）／思いとどまった（cancelled）を分けて送る。
+
+| イベント | パラメータ | 型 | BQ | 意味 |
+|---|---|---|---|---|
+| `blocker_enabled` | `source` | `'settings'\|'post_purchase'` | string | ブロック開始。持続時間の起点 |
+| `blocker_disable_requested` | `hours_enabled`（任意） | number | double | **やめたくなった瞬間** |
+| `blocker_disable_confirmed` | `hours_enabled`（任意） | number | double | **挫折**（実際に解除した） |
+| `blocker_disable_cancelled` | `hours_enabled`（任意） | number | double | **踏みとどまった** |
+
+- `hours_enabled` は直近の有効化からの経過時間（時間単位・切り捨て）。
+  **これがそのまま「何時間で挫折したか」になる。**
+- 切り捨てなのは、ON 直後の解除（最も強い挫折シグナル）を `0` として残すため。
+- **有効化の記録が無いときはパラメータごと省く**（`0` を送ると「即解除」と混ざる）。
+- 導出できる指標: 挫折率 = `confirmed ÷ enabled`、
+  **ゲート引き止め率 = `cancelled ÷ requested`**（呼吸ゲートの存在価値そのもの）。
+- 分析は `scripts/analytics/bq_blocker.py`。
+- ⚠️ **2.4.0 からの計測。それ以前のデータは存在しない。**
+
 ### 課金後オンボーディング
 
 | イベント | パラメータ | 型 | BQ |

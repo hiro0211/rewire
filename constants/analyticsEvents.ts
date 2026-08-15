@@ -31,6 +31,9 @@ import type { PaywallSource } from './analytics/paywallSource';
 import type { ReflectionOpenSource } from '@/hooks/reflection/useReflectionSheet';
 import type { ActivationPath } from '@/lib/tracking/activation';
 
+/** ブロックを有効にした導線。 */
+export type BlockerEnableSource = 'settings' | 'post_purchase';
+
 export interface AnalyticsEventParams {
   // --- Lifecycle ---
   // `days_since_install` is also derivable in BigQuery from
@@ -86,6 +89,23 @@ export interface AnalyticsEventParams {
   restore_completed: { success: boolean };
   paywall_dismissed: { source: PaywallSource };
   pro_purchase_completed: { source: PaywallSource; plan: string; offering: string };
+
+  // --- Content blocker (Screen Time シールド) ---
+  // ポルノ禁の挫折を測るための4イベント。ブロックを ON にした人が、どれくらい
+  // 持ちこたえて、どこで解除に向かうかを追う。
+  //
+  // `hours_enabled` は直近の有効化からの経過時間で、これが「何時間で挫折したか」
+  // そのものになる。解除フローには3呼吸のゲートが挟まるので、requested（押した）
+  // と confirmed（ゲートを越えて解除した）/ cancelled（思いとどまった）を分けて
+  // 送る。cancelled ÷ requested がゲートの引き止め率になる。
+  //
+  // `hours_enabled` は任意。有効化の記録が無いときは 0 を送らずパラメータごと
+  // 省く。0 は「ONにした直後に解除した」という最も強い挫折シグナルなので、
+  // 不明と同じ値にしてはいけない。
+  blocker_enabled: { source: BlockerEnableSource };
+  blocker_disable_requested: { hours_enabled?: number };
+  blocker_disable_confirmed: { hours_enabled?: number };
+  blocker_disable_cancelled: { hours_enabled?: number };
 
   // --- Post-purchase onboarding ---
   post_purchase_step_viewed: { step: PostPurchaseStep };

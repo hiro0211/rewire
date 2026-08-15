@@ -73,6 +73,12 @@ REWIRE_KEY_EVENTS: Tuple[str, ...] = (
     "post_purchase_step_viewed",
     "post_purchase_onboarding_skipped",
     "post_purchase_blocker_activated",
+    # Content blocker: how long people hold out, and whether the breathing
+    # gate talks them out of switching it off.
+    "blocker_enabled",
+    "blocker_disable_requested",
+    "blocker_disable_confirmed",
+    "blocker_disable_cancelled",
     # Feature-usage events (constants/analyticsEvents.ts). Keep in sync.
     "lesson_started",
     "lesson_completed",

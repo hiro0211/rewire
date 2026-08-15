@@ -13,6 +13,7 @@ from typing import List, Optional, Sequence, Tuple
 from scripts.analytics.bq_cohort import Cohort
 from scripts.analytics.bq_onboarding_funnel import FunnelStep, biggest_drop
 from scripts.analytics.bq_user_activity import FEATURE_EVENTS, UserActivity
+from scripts.analytics.dashboard_insights import Insights, render_insights
 from scripts.analytics.html_report import (
     _document,
     _esc,
@@ -199,18 +200,35 @@ def _user_table(activity: Sequence[UserActivity]) -> str:
     )
 
 
-def _caveats(cohort: Cohort) -> str:
-    """State the limits on the page itself, not just in a commit message."""
+def _cohort_note(cohort: Cohort) -> str:
+    """How many devices are behind section ③, and whether that is enough.
+
+    Sits next to the table it qualifies rather than in a page footer, so the
+    warning is read before the numbers instead of after them.
+    """
     return _kv_table([
-        ("集計単位",
-         "端末（user_pseudo_id）。GA4 の user_id は全行 NULL のため、"
-         "再インストールや機種変更は別端末として数えられます", "warn"),
-        ("既知の欠測", "2026-08-03 のテーブルが存在しないため、その日は集計に含まれません"),
         ("母数の注意",
          f"{_esc(cohort.label)}は {cohort.size} 端末。"
          "統計的な結論ではなく個票の観察として読んでください")
         if cohort.size < 10 else
         ("母数", f"{_esc(cohort.label)} {cohort.size} 端末"),
+    ])
+
+
+def _caveats(cohort: Cohort) -> str:
+    """Fallback caveats, used only when the computed section ⑨ is unavailable.
+
+    Section ⑨ supersedes this: it derives the gaps, the provisional window and
+    the excluded devices from the export rather than asserting them. What was
+    here before included a hardcoded "2026-08-03 のテーブルが存在しない" line —
+    correct the day it was written, and guaranteed to contradict the computed
+    section the next time a different day goes missing. A caveat that stops
+    being true is worse than no caveat, so it is gone.
+    """
+    return _kv_table([
+        ("集計単位",
+         "端末（user_pseudo_id）。GA4 の user_id は全行 NULL のため、"
+         "再インストールや機種変更は別端末として数えられます", "warn"),
     ])
 
 
@@ -222,8 +240,14 @@ def build_dashboard_html(
     conversion_stages: List[FunnelStep],
     activity: List[UserActivity],
     data_range: Optional[str] = None,
+    insights: Optional[Insights] = None,
 ) -> str:
-    """Render the whole dashboard."""
+    """Render the whole dashboard.
+
+    ``insights`` carries the retention / timing / engagement / blocker sections.
+    It is optional so the funnel-only dashboard still renders when a BigQuery
+    call for the newer sections fails — a partial page beats no page.
+    """
     header = _kv_table([
         ("生成日", generated_on.isoformat()),
         ("対象コホート", f"{_esc(cohort.label)}（{cohort.size} 端末）"),
@@ -241,7 +265,11 @@ def build_dashboard_html(
         _drop_callout(conversion_stages),
         _section(f"③ {_esc(cohort.label)} の利用実態（最終利用が新しい順）"),
         _user_table(activity),
-        _section("データの読み方・限界"),
-        _caveats(cohort),
+        _cohort_note(cohort),
+        # ⑨ が出るときは旧セクションを重ねない。同じことを2回書くと、
+        # どちらが最新なのか読者には区別がつかない。
+        render_insights(insights)
+        if insights
+        else _section("データの読み方・限界") + _caveats(cohort),
     ])
     return _document(inner)
