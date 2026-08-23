@@ -2914,3 +2914,356 @@ Python 297 → **468 passed**、Jest **348 suites / 2,689 passed**（全通過�
 - `docs/analytics/daily-metrics-2026-08-10.json`（スクリプト生成）
 - `docs/analytics/daily-report-2026-08-10-corrected.md`（手動補正版・新規）
 - `data/analytics/2026-08-10/*.tsv`（再取得）
+
+## 2026-08-15
+
+### 作業内容
+- BigQuery（rewire-4a491.analytics_526015389）でオンボーディング離脱・購入後利用・トライアル中離脱を深掘り分析（読み取り専用、コード変更なし）
+- 一時スクリプト: scratchpad/deep_dive.py, deep_dive2.py（既存 scripts/analytics/ モジュールを再利用）
+
+### 主要な発見
+- **オンボ27ステップはほぼ漏れない**（61→53台、離脱は welcome→Q1 で4台、consent/notification で各2台のみ）
+- **最大の離脱点はペイウォール**: paywall_viewed 54台 → purchase_initiated 16台（70%離脱）→ 完了5台。離脱者50台中39台がインストール当日に最終活動、うち29台はPW到達済み
+- **購入開始→未完了11台の大半は reason=1（Apple決済シートでユーザーキャンセル）**。plan_selected は monthly 9 / annual 2
+- **購入者5台は全員 購入後オンボ6ステップ完走＋ブロッカー有効化**。トライアル3日間はアクティブ、day3（課金開始）以降に急減（day1 60% → day3 33% → day6 0%）
+- ASC実数: トライアル開始301 / 有料転換144（約48%）/ 直近はアクティブ購読8・累計チャーン14
+
+### 発見した計測上の問題
+- **pro_purchase_completed の plan/source が2.3.0では未送信**（offering のみ）。commit 0b5e625（2026-08-04）で追加済み、2.4.0 配信で解消。現在2.4.0は3台のみ
+- **app_open がほぼ発火していない**（11行・4台のみ）。要調査
+- user_id が入り始めた（121行、2.4.0端末）。まだ分析キーは user_pseudo_id のまま
+
+### 未完了・次回
+- app_open の発火不良の原因調査
+- 2.4.0 浸透後に USER_KEY_COLUMN を user_id へ切替（scripts/analytics/bigquery_client.py）
+- ペイウォール離脱（54→16）への施策検討が最優先
+
+## 2026-08-15（続き）: A案ペイウォール「星の旅」実装 + A/Bテスト基盤
+
+### 作業内容
+BigQuery分析で判明した「ペイウォール表示54台→購入開始16台（70%離脱）」への施策として、
+承認済みスクリーンショット（A案・感情先行）のペイウォールを実装。既存ペイウォールは
+A/Bの対照群としてそのまま残置。
+
+### 新規ファイル
+- A/B基盤: `constants/paywall/paywallExperiment.ts`, `lib/experiment/stableHash.ts`（FNV-1a+fmix32）,
+  `lib/experiment/assignVariant.ts`, `lib/paywall/resolvePaywallVariant.ts`
+- 純関数/定数: `constants/paywall/paywallTrial.ts`(TRIAL_DAYS=3), `constants/paywall/journeyMilestones.ts`,
+  `lib/paywall/trialBillingDate.ts`, `lib/paywall/journeyBadge.ts`
+- UI: `components/paywall/PaywallCosmicJourney.tsx` + `components/paywall/cosmic/`（6コンポーネント）
+- 抽出: `components/paywall/PaywallLoadingState.tsx`, `PaywallUnavailableState.tsx`
+- 計測: `hooks/tracking/usePaywallVariantUserProperty.ts`
+
+### 設計上の重要な判断（実測で決めた）
+- **AsyncStorage / ストアを使わない**。`user.id`(UUID)の決定論的ハッシュで同期割当 →
+  「バリアント確定前のチラつき」が原理的に起きない。重み変更時は実験IDを変える
+- **FNV-1a の最下位ビットは線形パリティ**。`hash % 2` で2アームに割ると実験IDでソルトしても
+  100%一致か100%反転になる（実測）。fmix32 を後段に入れ、`assignVariant` は剰余でなく
+  **上位ビットを除算**で使う。防御は `lib/experiment/__tests__/stableHash.test.ts` の
+  アバランチ検証1本のみ → **このテストを消すと防御がゼロになる**
+- **`app/paywall.tsx` は unavailable を最優先で判定**。バリアントゲートを先に置くと
+  crash/通常テスト計14件が「フォールバックUIでなくスピナー」で落ちる
+- **`markLaunchPaywallShown()` をバリアントゲートに入れない**。入れると毎起動でペイウォールが出る
+- 月額を初期選択（実測: plan_selected が monthly 9 vs annual 2）
+
+### 誠実さの修正（レビューで発見・本セッションで修正）
+- **ロック画面ウィジェットの虚偽記載を修正**: `locales/ja.ts` の paywall.features.widget が
+  「ロック画面のまま」と書いていたが、`plugins/withWidget.js:240` は `.systemSmall/.systemMedium`
+  のみ宣言でロック画面非対応。「ホーム画面のまま」に修正（en も同様）
+- **トライアル資格の断定を緩和**: 「今日から3日間は、無料」→「はじめての方は、3日間無料」。
+  無料トライアルはApple アカウント単位で1回のみ
+- 請求行に期間単位を追加（「¥5,400。」→「¥5,400／年。」）
+- `PlanSelector` のフォールバック価格を formatPrice 経由に（¥5400 と ¥5,400 の表記ゆれ解消）
+
+### 未完了・次回やるべきこと（重要）
+1. **トライアル資格チェックが未実装**（`checkTrialOrIntroductoryPriceEligibility` 未使用）。
+   一度解約した復帰ユーザーには即時課金されるのに日付つきで「◯日から課金」と出る。
+   コピーは「はじめての方は」で緩和したが、根本解決には RevenueCat API 連携が必要。
+   **実機ビルドなしでは検証できないため未着手**
+2. **ペイウォールを閉じても出口がない**（既存問題）。dismiss → benefits → paywall の閉ループ。
+   `usePaywallDismiss.ts:37-43` と `app/onboarding/benefits.tsx:30-38`。審査リスクあり
+3. 対照群（PaywallDefault）のフッターには請求開始日がない。A/B の変数を増やさないため意図的に据置
+4. **実験の検出力**: 現状のトラフィック（paywall_viewed 54台/26日）では1群27台。
+   ベースライン30%から相対+50%を検出するには1群100台超が必要。**何日回すか先に決めること**
+5. 実機での目視確認（ライト/ダーク両モード、スクロール時のオーブ描画）が未実施
+
+### テスト
+370スイート / 2848テスト全通過（+22スイート/+約160テスト）。tsc 新規エラーなし。lint 0 errors。
+
+## 2026-08-15（続き2）: 設定画面にペイウォール確認用デバッグメニューを追加
+
+### 作業内容
+設定 →「デバッグ」セクションに、A/Bどちらのペイウォールも任意に開ける項目を2つ追加。
+バリアントは `user.id` のハッシュで決まるため、指定手段が無いと開発者は片方を目視確認できなかった。
+
+- 「新ペイウォール（星の旅）を見る」→ `/paywall?debugVariant=cosmicJourney`
+- 「旧ペイウォール（対照群）を見る」→ `/paywall?debugVariant=default`
+
+### 新規/変更ファイル
+- 新規 `lib/paywall/debugPaywallVariant.ts` — 純関数。`DEBUG_MENU_ENABLED` を引数で受けて二重ゲート
+- 新規 `components/settings/SettingsDebugSection.tsx`（78行）— デバッグ節を設定画面から切り出し
+- 変更 `hooks/paywall/usePaywallOrchestration.ts` — `debugVariant` を受けて割当を上書き
+- 変更 `app/paywall.tsx` — ルートパラメータを受け渡し
+- 変更 `app/settings.tsx` — 272行 → **229行**（元247行より短くなった）
+- 変更 `locales/ja.ts` / `en.ts` — `settings.labels.debugPaywallCosmic` / `debugPaywallDefault`
+
+### 重要な発見と修正
+**`app/index.tsx` に `DEV_PREVIEW_PAYWALL = true` が残っていた**（前セッションのワークフローのエージェントが追加）。
+起動時に全ユーザーが `/paywall` へリダイレクトされる状態だった。**削除済み**。
+起動を乗っ取るフラグは戻し忘れが致命的なので、今後は設定画面のデバッグメニューを使うこと。
+（indexRouting テスト3件がこれで落ちていた）
+
+### 設計上の判断
+- **デバッグ指定で開いたときは `paywall_viewed` を送らない**。開発者の確認回数が A/B の母数に
+  混ざると、その端末が本来と違うアームに計上されて比較が歪むため
+- `DEBUG_MENU_ENABLED=false` のリリースビルドでは、パラメータ付きディープリンクを踏まれても
+  上書きは効かない（テストで固定済み）
+- 語彙照合（`isPaywallVariant`）を必ず通す。未知の文字列が variant として流れると白画面になる
+
+### 注意
+- **`constants/debug.ts` の `DEBUG_MENU_ENABLED` は現在 `true`**。提出ビルド前に必ず `false` に戻すこと
+- シミュレーターで確認するには StoreKit 設定ファイルが要る（`ios/Rewire.storekit` は存在。
+  scheme の `StoreKitConfigurationFileReference` を確認）。商品が取れないと「いま、つながりません」になる
+
+### テスト
+371スイート / 2869テスト全通過（+4スイート相当・+21テスト）。lint 0 errors。
+tsc の `settings.crash.test.tsx` の `isPad` エラーは変更前から存在する既存のもの。
+
+## 2026-08-15（続き3）: 新ペイウォールのコピーを自然な日本語に修正
+
+hiro から「AI独特の日本語になっている。引力が強すぎる→誘惑が強すぎる のような言い回しに」と指摘。
+/natural-japanese スキルで全文を診断・書き換え。
+
+### 診断
+翻訳調ではなく **AI特有の詩的文体**。症状:
+- 宇宙テーマに引っ張られた比喩の転用（引力）
+- 「〜が、そのまま〜になる」構文
+- 抽象名詞化（「〜という記録」「戦わなくていい状態をつくる」）
+- 婉曲な言い換え（揺れる＝つらい、立ち上がる＝始まる）
+- 意味の薄い装飾語（そのまま）
+
+### 変更（locales/ja.ts の paywall.cosmic）
+| Before | After |
+|---|---|
+| 旅は、今夜はじまる。 | 今夜が、1日目になる。 |
+| …引力が強すぎるだけ。…我慢して勝つのではなく、戦わなくていい状態をつくる。 | …誘惑が強すぎるだけ。…我慢しなくても、開かなくなる。 |
+| 続けた日が、そのまま星になる。 | 続けた日数だけ、星が増えていく。 |
+| 18の節目 | 全18個 |
+| ブロックが立ち上がる。 | ブロックをオンにする。 |
+| いちばん揺れる時期を、仕組みが支える。 | いちばんきつい時期を、ブロックが支える。 |
+| 月に届く。1週間、自分で選べたという記録。 | 月にたどり着く。1週間、開かずに過ごせた。 |
+
+en.ts も対応する5キーを同義に更新。
+
+### 学び（今後のコピー作成時の注意）
+- **テーマ（宇宙）に寄せた比喩を本文に持ち込むと即座にAI臭くなる**。世界観はビジュアルと
+  バッジ名で表現し、本文は人が実際に使う言葉（誘惑・きつい・オンにする）に寄せる
+- 「〜という記録」「〜という状態」の抽象名詞化はAIの手癖。動詞で言い切る
+- 婉曲表現（揺れる）より直接的な語（きつい）のほうが、当事者には届く
+
+### テスト
+371スイート / 2869テスト全通過。コピー文字列を参照する4テストファイルを先に更新（Red→Green）。
+
+## 2026-08-16: 新ペイウォール 3点修正（ヒーロー天体の巡回 / 見出し削除 / 年額表示）
+
+### 1. ヒーロー天体が時間経過で入れ替わる
+- 新規 `constants/paywall/heroPlanets.ts` — `HERO_PLANET_BADGE_IDS`（月→水星→金星→地球→火星→木星→土星→天王星→海王星→**太陽**の10天体、到達順）、間隔3000ms、フェード400ms
+- 新規 `hooks/paywall/useHeroPlanetCycle.ts` — setInterval + AppState でバックグラウンド時は停止
+- 変更 `components/paywall/cosmic/CosmicHeroOrb.tsx` — 巡回に対応。`badgeId` を渡すと固定（優先）。
+  切り替え時は opacity フェードで隠す（素の差し替えだとテクスチャ読み込み中の単色グラデが一瞬見える）。
+  `key={badge.id}` で作り直して前の惑星の画像が残らないようにする
+- 既定のヒーローが `cosmos`（固定）→ 巡回（月始まり）に変わった
+
+**テスト設計の判断**: 巡回のタイミングは `useHeroPlanetCycle` のテスト（6件、reanimated 非依存）で担保し、
+`CosmicHeroOrb` のテストでは**フックをモックして「返り値を描いているか」だけ**を見る。
+コンポーネント側でフェイクタイマーを回すと reanimated の `useFrameCallback` 解除処理と噛み合わず、
+製品コードと無関係な理由で落ちる（実際に `Cannot set properties of undefined (setting 'startTime')` で落ちた）。
+
+**副次的な修正**: `AppState.addEventListener` の戻り値を `sub?.remove()` にガード。
+jest 環境では undefined が返り、cleanup の例外は ErrorBoundary でも拾えないため。
+※ `hooks/dashboard/useOrbBreathing.ts:42` は同じ形のガード無しのまま（潜在的に同じ問題を持つ）
+
+### 2. 「お金の話を、先に。」の見出しを削除
+`TrialBillingNotice` から見出しを撤去。金額の3行はそのまま残す（価格の不意打ち対策の本体なので消さない）。
+`billingTitle` は ja/en 両方から削除。
+
+### 3. 年額カードの主表示を月換算に
+`PlanSelector` に `emphasizeMonthly` プロップを追加（**既定 false**）。true のとき:
+- 主表示（大）= ¥450 ／月（月換算）
+- 従属（小）= ¥5,400／年（**実際の請求総額。消してはいけない** — Guideline 3.1.2(c)）
+
+**既定を false にした理由**: `PlanSelector` は新旧ペイウォールが共有している。両方変えると
+A/B の差が「新デザインの効果」か「価格の見せ方の効果」か分離できなくなる。
+新ペイウォール（`PaywallCosmicJourney`）だけが `emphasizeMonthly` を渡す。
+→ **対照群にも適用したい場合は `PaywallDefault.tsx` の PlanSelector に1行足すだけ**
+
+### テスト
+372スイート / 2882テスト全通過。tsc 新規エラーなし。lint 0 errors。
+
+### 追記: アイブロウ（前置き）も削除
+「今夜が、1日目になる。」を `CosmicHeadline` から撤去。`eyebrow` キーは ja/en 両方から削除し、
+`styles.eyebrow` も除去。天体の直下がいきなり見出し「意志力の問題じゃない。」になる。
+
+現在の冒頭の並び:
+  ✕（閉じる）→ 天体（巡回）→ 意志力の問題じゃない。/ 仕組みで、止める。→ 本文 → 星の旅カード
+
+372スイート / 2882テスト全通過。
+
+## 2026-08-16（続き）: 新ペイウォールを参考デザイン準拠に再構成
+
+参考: /Users/arimurahiroaki/Downloads/IMG_6825.PNG, IMG_6826.PNG（他社アプリのペイウォール）
+
+### 整理した要件と適用結果
+| 要件 | 適用 |
+|---|---|
+| 一番上の惑星バッジはそのまま | `CosmicHeroOrb`（巡回）を維持 |
+| その下に機能紹介 | `FeatureRowList` 新規。アイコン+見出しの5行を縦積み |
+| 機能紹介の下にレビュー | 既存 `ReviewCarousel` を再利用（旧ペイウォールと同じもの） |
+| 年額/月額を固定部分に | `PlanOptionList` を `CosmicPaywallFooter` に差し込み。スクロールしない |
+| デフォルトで年額選択 | `preferredPlan` の初期値を `'annual'` に変更（従来は monthly） |
+
+### 新規ファイル
+- `constants/paywall/paywallFeatures.ts` — 5機能（Ionicon名 + 既存 paywall.features.* のキー）
+- `components/paywall/cosmic/FeatureRowList.tsx`
+- `components/paywall/cosmic/PlanOptionRow.tsx` — ラジオ+ラベル+右寄せ価格+割引バッジ
+- `components/paywall/cosmic/PlanOptionList.tsx` — 年額/月額の2行
+
+### 削除したファイル（新構成で不要に）
+- `components/paywall/cosmic/JourneyCard.tsx` / `JourneyBadgeTrack.tsx` / `JourneyMilestoneList.tsx` + テスト
+- `components/paywall/cosmic/TrialBillingNotice.tsx` + テスト（内容は固定フッターに統合）
+- `constants/paywall/journeyMilestones.ts` + テスト
+- ロケールの未使用キー14個（journeyTitle/journeyCaption/journeyBadgeCount/milestone*/track*/billingToday/billingCharge*）
+
+### 設計上の判断
+- **年額の主表示は月換算（¥450／月）、総額（¥5,400／年）は小さく併記**。
+  参考デザインは逆（総額が大）だが、hiro の「大きいところに月額表示で下に小さく○○円/年」の
+  指示を優先。総額は Guideline 3.1.2(c) と信頼のため**絶対に消さない**
+- 「はじめての方は3日間無料。{{date}}から {{price}}。」＋「それまでに解約すれば〜」の2行を
+  固定フッターに常時表示。スクロール途中に置くと読まずに CTA を押せてしまう
+- 月額プランが無い Offering では割引バッジを出さない（架空の基準価格を作らない）
+- `PlanSelector`（旧・横並びカード）は対照群の `PaywallDefault` が引き続き使用。
+  新ペイウォールは `PlanOptionList` に移行したので `emphasizeMonthly` プロップは
+  対照群からは未使用のまま（消していない）
+
+### 注意
+- **既定プランを monthly → annual に変更した**。実測では plan_selected が monthly 9台 vs annual 2台
+  だったので、ユーザーの自然な選好とは逆向き。年額既定は LTV を取りに行く判断であり、
+  トライアル開始率が下がる可能性がある。A/B 開始後に plan_selected の分布を必ず確認すること
+
+### テスト
+369スイート / 2863テスト全通過。tsc 新規エラーなし。lint 0 errors。
+
+## 2026-08-16（続き2）: シミュレーター SIGTERM の調査 と オーブ再マウントの修正
+
+### 報告
+Xcode で「Thread 1: signal SIGTERM」、スタックは reanimated `UpdatesRegistry` 内、メモリ 327.8MB。
+
+### 判定
+- **SIGTERM はクラッシュではない**（クラッシュなら SIGSEGV / SIGABRT / EXC_BAD_ACCESS）。
+  プロセスへの終了要求で、シミュレーターでは Xcode の Stop、再ビルドによる置き換え、
+  `simctl terminate` などで出る。デバッガは信号が来た時点の実行位置で止まるだけなので、
+  スタックが reanimated 内なのは「そこにバグがある」ことを意味しない
+- **バンドルは正常**（`npx expo export --platform ios` 成功、6.44MB）。
+  削除したモジュール（JourneyCard 等）への参照残りが原因ではない
+
+### ただし実在した欠陥を1つ発見・修正
+`CosmicHeroOrb` が `key={badge.id}` で **3秒ごとに `AnimatedOrb` を丸ごと再マウント**していた。
+`AnimatedOrb` は Skia キャンバス + シェーダー + パーティクル + SVGグロー ×2 +
+`useFrameCallback` + AppState 購読 を内包する重い木。3秒ごとに共有値とアニメーションを
+生成・破棄し続けるため、メモリ肥大と reanimated 側の負荷の説明になる。
+
+**修正**: `key` を削除。`PlanetOrbRenderer` は `useImage(getPlanetTexture(badgeId))` で
+badgeId の変化に追従し、`OrbParticles` も `useMemo([size, count])` で count 変化に対応するので、
+**prop の更新だけで天体は入れ替わる**。remount は不要だった。
+
+**教訓**: 重いネイティブ資源を持つコンポーネントに `key` を付けて作り直す前に、
+「prop の変化で追従できないか」を先に確認する。`key` は最後の手段。
+
+### 次に同じ症状が出たときの調べ方
+1. Xcode 下部のコンソール出力（信号の直前のログ）を見る
+2. Xcode の Stop を押した／再ビルドが走ったタイミングと一致していないか確認
+3. 本当のクラッシュなら Devices and Simulators → View Device Logs にクラッシュレポートが残る
+4. メモリ起因を疑うなら Debug Navigator の Memory グラフで増え続けているか観察
+
+### テスト
+369スイート / 2863テスト全通過。
+
+## 2026-08-16（続き3）: 固定フッター縮小 と 価格表示の 3.1.2 違反の修正
+
+### Apple の規定を一次文書で確認した結論（調査済み・再調査不要）
+- **「スクロールなしで見えること」を要求する規定は存在しない。**
+  App Store Review Guidelines 全文に `scroll` の語は **0件**。
+  DPLA Schedule 2 §3.8(b)（2025-12-17版）の位置指定語は `clearly and conspicuously` のみ
+- 必須開示は3項目のみ: **Title / Length / Price（+ price per unit if appropriate）**
+- 規約・プライバシーは "**accessible within Your Licensed Application**" としか書かれておらず、
+  ペイウォールに置けとは言っていない。**Rewire は `app/terms.tsx` / `app/privacy-policy.tsx` が
+  設定画面から到達可能なので、ペイウォールを触らなくても要件は既に充足**
+- Apple の subscriptions ページは sign-up screen の必須3項目に
+  "A way for current subscribers to sign in or **restore purchases**" を含む → 復元は沈めない
+- HIG に「必須項目を1つのシートに入れてスクロールさせてよい」と明記あり（ただし watchOS 節）
+- 「期間終了の24時間前までに…」の定型文は**現行 §3.8(b) に無い**（2019年頃の旧9項目版の名残）。
+  ただし削除はしない（CLAUDE.md「自動更新の条件を隠さない」＋国内法）
+
+### ⚠️ 見つけた 3.1.2 違反（フッター高より重い）
+Apple: "the amount that will be billed must be **the most prominent pricing element** in the layout"
+「月換算などの計算値は subordinate position and size に置け」。2025-11 に同趣旨のリジェクト事例あり。
+
+`PlanOptionList` は **月換算(¥450／月)を大、総額(¥5,400／年)を小**にしていた＝**直接抵触**。
+（hiro の「大きいところに月額表示」という指示に従った結果だが、Apple 規定が優先）
+→ **主従を反転**。総額が主表示、月換算が従属。
+対照群の `PlanSelector.tsx:88-97` は元々正しく、その JSDoc にルールも書かれていた＝cosmic 側のリグレッションだった。
+
+**再発防止**: `PlanOptionRow` に `-price-main` / `-price-sub` の testID を追加し、
+「主表示の fontSize > 従属表示の fontSize」をテストで固定した。
+以前の「文字列が存在するか」だけのテストは主従の入替を検出できなかった（無効化との対比が不成立）。
+
+### フッター縮小: 400pt → 305pt（50% → 38%、SE は 57% → 42%）
+- 固定に残す: プラン2行 / CTA / 請求文（トライアル条件+請求開始日+総額+解約すれば無料 を1本に統合）
+- スクロール末尾へ移動: `SubscriptionTerms`（自動更新の定型文 + 規約/プライバシーリンク）
+- ヘッダーへ移動: 購入を復元（新規 `components/paywall/cosmic/CosmicPaywallHeader.tsx`、✕ と同じ帯）
+- ロケール: `billingCancel` を削除し `billingNote*` に統合
+
+### ヒーローオーブの余白回収
+`AnimatedOrb` は `containerSize = size * 2.0` を確保し外周は大部分が透明。
+iPhone 15 で 354pt を占めてファーストビューがほぼ天体だけだった。
+`CosmicHeroOrb` に `HERO_VERTICAL_TRIM = 0.15` の負マージンを入れて上下を詰めた（-53pt）。
+**⚠️ この係数は実機目視で決めること。グローが欠けたら小さくする。**
+
+### 未確認（実機が要る）
+- 高さは全てスタイル値からの積算。`onLayout` での実測はしていない
+- 負マージンでグローが欠けていないかの目視
+- 競合（QUITTR 等）が法的表記を固定/スクロールどちらに置いているかは**調査で取得できず**
+
+### 提出前チェック
+- レビューノートに1行推奨: "Terms of Use and Privacy Policy are available at the bottom of the paywall and in Settings > Support."
+
+### テスト
+369スイート / 2868テスト全通過。tsc 新規エラーなし。lint 0 errors。
+
+### 追記: 「購入を復元」を法的表記と同じ末尾ブロックへ
+実機スクショで、画面左上に単独で置いた復元リンクが浮いて見えると判明（他に何も無い帯にリンクだけがある状態）。
+`CosmicPaywallHeader.tsx` を削除し、閉じるボタンは元の `PaywallCloseButton` 直置きに戻した。
+スクロール末尾は `SubscriptionTerms` 単体から **`PaywallFooter`**（自動更新文 + 規約/プライバシー + 購入を復元）に変更。
+対照群の `PaywallDefault` と同じ部品・同じ並びになったので、ユーザーから見た置き場所も揃った。
+
+Apple 要件は「sign-up screen 内にあること」で位置指定は無いため、末尾でも充足。
+検証は `testID="paywall-legal-block"` を付けて、そのブロック内に
+「購入を復元 / 利用規約 / プライバシーポリシー」が揃うことと、固定フッター内には無いことを対で固定した。
+
+369スイート / 2869テスト全通過。
+
+### 追記: ヒーロー天体をプロフィール画面と同じ 120pt に
+実機で「惑星がデカすぎる」と指摘。画面幅55%から算出していたため iPhone 15 で size=177 になっていた。
+`components/profile/ProfileHeader.tsx` が `size={120}` の固定値なので、それに揃えた。
+
+- 新規定数 `HERO_ORB_SIZE = 120`（`constants/paywall/heroPlanets.ts`）
+- `CosmicHeroOrb` から `useWindowDimensions` / `HERO_WIDTH_RATIO` / `MAX_HERO_SIZE` を撤去
+- レイアウト占有: **301pt → 204pt（-97pt）**。ファーストビューに見出しと本文まで収まる計算
+
+**画面幅から算出しない理由**: 端末ごとに大きさが変わり、同じアプリの中で天体のサイズが
+場所によって違う状態になる。固定値で揃えるほうが一貫する。
+
+テスト: `animated-orb` の箱幅が `HERO_ORB_SIZE * 2` であることを固定
+（AnimatedOrb がグロー用に size の2倍を確保する仕様に依存しているので、その前提もテストに書いた）。
+
+370スイート / 2870テスト全通過。

@@ -41,7 +41,9 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@/stores/userStore', () => {
-  const state = { user: null, updateUser: jest.fn() };
+  // hasHydrated / user.id が無いと A/B バリアントが確定せず、
+  // ペイウォール本体まで進まないまま offerings の検証ができない
+  const state = { user: { id: 'u1' }, hasHydrated: true, updateUser: jest.fn() };
   return {
     useUserStore: (selector?: (s: any) => any) =>
       selector ? selector(state) : state,

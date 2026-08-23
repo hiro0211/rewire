@@ -77,4 +77,51 @@ describe('PlanSelector — Guideline 3.1.2(c) 価格表示の優先順位', () =
     const monthlyEquivalent = fontSizeOf(getByText('約 ¥450／月'));
     expect(billedTotal).toBeGreaterThan(monthlyEquivalent);
   });
+
+  describe('emphasizeMonthly（月換算を主役にする表示）', () => {
+    const props = {
+      ...baseProps,
+      annualPackage,
+      monthlyPackage,
+      emphasizeMonthly: true,
+    };
+
+    it('年額カードの主表示が月換算の金額になる', () => {
+      const { getByText } = render(<PlanSelector {...props} />);
+
+      expect(getByText('¥450')).toBeTruthy();
+    });
+
+    it('年額カードに実際の請求総額が「¥5,400／年」として残る', () => {
+      // 主役を月換算にしても、実際に請求される総額を消してはいけない
+      // （Guideline 3.1.2(c)／見た金額と請求額のズレは信頼の直接の毀損）
+      const { getByText } = render(<PlanSelector {...props} />);
+
+      expect(getByText('¥5,400／年')).toBeTruthy();
+    });
+
+    it('月換算（主役）の文字サイズが請求総額（従属）より大きい', () => {
+      const { getByText } = render(<PlanSelector {...props} />);
+
+      expect(fontSizeOf(getByText('¥450'))).toBeGreaterThan(
+        fontSizeOf(getByText('¥5,400／年')),
+      );
+    });
+
+    it('月額カードの表示は変わらない', () => {
+      const { getByText } = render(<PlanSelector {...props} />);
+
+      expect(getByText('¥680')).toBeTruthy();
+    });
+
+    it('指定しないときは従来どおり総額が主役のまま', () => {
+      // 対照群（PaywallDefault）の見た目を変えないための回帰テスト
+      const { getByText, queryByText } = render(
+        <PlanSelector {...baseProps} annualPackage={annualPackage} monthlyPackage={monthlyPackage} />,
+      );
+
+      expect(getByText('¥5,400')).toBeTruthy();
+      expect(queryByText('¥5,400／年')).toBeNull();
+    });
+  });
 });

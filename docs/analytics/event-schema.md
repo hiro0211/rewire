@@ -7,7 +7,7 @@
 > 機械的に検出する（イベント名のみ。パラメータ名は人が見るしかないので、
 > 変更したらこのファイルも直すこと）。
 
-最終更新: 2026-08-08
+最終更新: 2026-08-15
 
 ---
 
@@ -116,6 +116,7 @@ BigQuery で結合できない。語彙は `constants/analytics/paywallSource.ts
 | `benefits_screen_viewed` | `source` | `PaywallSource` | string |
 | `benefits_cta_tapped` | — | | |
 | `paywall_viewed` | `source`, `offering` | string | string |
+| | `paywall_variant` | `PaywallVariant` | string |
 | `plan_selected` | `plan` | string | string |
 | `purchase_initiated` | `plan` | string | string |
 | `purchase_failed` | `reason` | string | string |
@@ -123,11 +124,34 @@ BigQuery で結合できない。語彙は `constants/analytics/paywallSource.ts
 | `restore_tapped` | — | | |
 | `restore_completed` | `success` | boolean | int (0/1) |
 | `paywall_dismissed` | `source` | `PaywallSource` | string |
+| | `paywall_variant` | `PaywallVariant` | string |
 | `pro_purchase_completed` | `source`, `plan`, `offering` | string | string |
+| | `paywall_variant` | `PaywallVariant` | string |
 
 **`PaywallSource` の語彙**: `onboarding`（オンボ完走後） / `returning`（既存ユーザーの起動時） /
 `unknown`（特定不能）。語彙外の値は `toPaywallSource()` が `unknown` に丸めるので、
 タイポが新しい source 値として増えて分母が割れることはない。
+
+### A/B バリアント（`paywall_variant`）
+
+**`PaywallVariant` の語彙**: `default`（既存ペイウォール） / `cosmicJourney`（A案「星の旅」）。
+割当は `user.id` の決定論的ハッシュ（`lib/paywall/resolvePaywallVariant.ts`）で、
+実験IDは `constants/paywall/paywallExperiment.ts` の `PAYWALL_EXPERIMENT_ID`。
+
+param 名を `variant` ではなく **`paywall_variant`** にしているのは、同名のユーザー
+プロパティ（§4）と対称にするため。イベントで見るときもユーザー単位で見るときも
+同じ列名で書けるので、BigQuery の SQL に2つ目の綴りが増えない。
+
+> ⚠️ **A/B の分母は必ず `paywall_viewed` の `paywall_variant` param 側で取ること。**
+> 同名のユーザープロパティも設定しているが、`setUserProperty` は非同期のネイティブ
+> 呼び出しで、しかも GA4 のユーザープロパティは「設定後に送られたイベント」にしか
+> 付かない。起動直後にペイウォールが出る導線では表示イベントに間に合う保証がなく、
+> ユーザープロパティで割ると分母が欠ける。ユーザープロパティは購入後のリテンションや
+> 解約をバリアント別に割るための補助と考える。
+
+> ⚠️ **配信前のデータにこのパラメータは存在しない。** バリアント別の集計は
+> 配信日以降に限定すること（§5 の変更履歴を参照）。期間をまたぐと、
+> パラメータが無い行が全て「不明」に落ちて比率が壊れる。
 
 ### コンテンツブロッカー（ポルノ禁の挫折測定）
 
@@ -194,6 +218,7 @@ GA4 のユーザープロパティは **最後に設定された値で全イベ�
 | `is_pro` | `'true'` / `'false'` | 同上 |
 | `theme_preference` | `system\|light\|dark` | `hooks/tracking/useThemeLocaleUserProperties.ts` |
 | `locale_preference` | `system\|ja\|en` | 同上 |
+| `paywall_variant` | `default\|cosmicJourney` | `hooks/tracking/usePaywallVariantUserProperty.ts` |
 | `current_streak` | 現在の連続日数 | `lib/tracking/retentionUserProperties.ts` |
 | `relapse_count` | 再発回数 | 同上 |
 | `days_since_install` | インストール後日数 | `hooks/tracking/useAppOpenTracking.ts` |
@@ -228,6 +253,7 @@ DATE_DIFF(
 | 2026-08-08 | `questionCount` → **`question_count`**（`survey_completed`） | 旧名の実データは1行のみ。実質無視してよい |
 | 2026-08-08 | `fromStep` → **`from_step`**（`post_purchase_onboarding_skipped`） | 旧名の実データは0行 |
 | 2026-08-08 | iOS の自動 `screen_view` 収集を無効化（`FirebaseAutomaticScreenReportingEnabled=false`） | この設定を含むビルドの配信後、`screen_view` は自前のルートのみになる。**それ以前のデータは 61% が自動収集ノイズ**なので、期間をまたぐ画面数の比較は不可 |
+| 2026-08-15 | `paywall_viewed` / `paywall_dismissed` / `pro_purchase_completed` に **`paywall_variant`** を追加。同名のユーザープロパティ `paywall_variant` を新設 | **配信前のデータにはこのパラメータもプロパティも存在しない。バリアント別の集計は配信日以降に限定すること。** 期間をまたぐと配信前の行が全て「不明」に落ちて比率が壊れる。**A/B の分母は `paywall_viewed` の param 側で取る**（ユーザープロパティは非同期設定なので表示イベントに間に合う保証がない） |
 | 2026-08-08 | 未型付けだった25イベントを `analyticsEvents.ts` に登録 | 送信内容は不変。型が付いただけ |
 | （それ以前） | `paywall_viewed` の `source` 語彙を `onboarding\|returning\|unknown` に統一 | 旧 `direct` は `dismissed` 側にのみ存在 |
 

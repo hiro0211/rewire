@@ -14,6 +14,8 @@ import { useDebugUnlockAll } from '@/hooks/debug/useDebugUnlockAll';
 const DEV_SKIP_ONBOARDING = false;
 // ⚠️ 開発用: 起動時にペイウォール後オンボーディングを直接開く。確認後は false に戻すこと
 const DEV_PREVIEW_POST_PURCHASE = false;
+// ペイウォールの確認は設定画面のデバッグメニューから行う。起動を乗っ取るフラグは
+// 戻し忘れると全ユーザーが起動直後にペイウォールへ飛ぶので置かない。
 
 export default function Index() {
   const { hasHydrated, user } = useUserStore();

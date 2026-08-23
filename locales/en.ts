@@ -473,6 +473,8 @@ export const en: Translations = {
       replayOnboarding: 'Watch Onboarding Again',
       replayPostPurchaseOnboarding: 'Watch Post-Purchase Onboarding Again',
       debugUnlockAll: 'Unlock all + skip onboarding',
+      debugPaywallCosmic: 'Preview new paywall (Star Journey)',
+      debugPaywallDefault: 'Preview old paywall (control)',
     },
     alerts: {
       notificationRequired: 'Notification Permission Required',
@@ -751,13 +753,20 @@ export const en: Translations = {
     trialAutoRenew: 'After the free trial ends, subscription charges will be automatically applied.',
     features: {
       blocker: { title: 'Stops it before you look — any browser', description: 'Whatever browser you open, adult sites are blocked automatically.' },
-      widget: { title: 'Your streak, at a glance', description: 'See how far you’ve come, right from the lock screen.' },
+      widget: { title: 'Your streak, at a glance', description: 'See how far you’ve come, right from your home screen.' },
       sos: { title: 'Urge hit? Take a breath.', description: 'Haptic-guided breathing — a minute, and the wave passes.' },
       reflection: { title: 'One minute a day to reflect', description: 'A tap at your chosen time — done.' },
       badges: { title: 'From the moon to the cosmos — 18 milestones', description: 'Each day you keep going becomes a journey among the stars.' },
     },
     reviews: {
       sectionTitle: 'What Users Say',
+    },
+    cosmic: {
+      headlineTop: "It's not about willpower.",
+      headlineBottom: 'Let the system stop it.',
+      body: "You're not failing because you're weak — the pull is simply stronger than willpower. Rewire blocks at the device level, so you never have to fight it.",
+      billingNoteMonthly: 'New here? 3 days free, then {{price}}/month from {{date}}. Cancel before then and you pay nothing.',
+      billingNoteAnnual: 'New here? 3 days free, then {{price}}/year from {{date}}. Cancel before then and you pay nothing.',
     },
   },
   purchaseAlerts: {

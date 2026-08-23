@@ -48,6 +48,7 @@ describe('usePaywallDismiss', () => {
     const { result } = renderHook(() =>
       usePaywallDismiss({
         source: 'onboarding',
+        variant: 'default',
         offeringType: 'default',
         setOfferingType,
         setDiscountRemainingSeconds: jest.fn(),
@@ -76,6 +77,7 @@ describe('usePaywallDismiss', () => {
     const { result } = renderHook(() =>
       usePaywallDismiss({
         source: 'returning',
+        variant: 'default',
         offeringType: 'default',
         setOfferingType: jest.fn(),
         setDiscountRemainingSeconds: jest.fn(),
@@ -96,6 +98,7 @@ describe('usePaywallDismiss', () => {
     const { result } = renderHook(() =>
       usePaywallDismiss({
         source: 'onboarding',
+        variant: 'default',
         offeringType: 'default',
         setOfferingType: jest.fn(),
         setDiscountRemainingSeconds: jest.fn(),
@@ -108,7 +111,35 @@ describe('usePaywallDismiss', () => {
       await result.current.handleDismiss();
     });
 
-    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'onboarding' });
+    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', {
+      source: 'onboarding',
+      paywall_variant: 'default',
+    });
+  });
+
+  it('cosmicJourney に割り当てられているとき paywall_dismissed に paywall_variant が載る', async () => {
+    // 離脱をバリアント別に割れないと、A案が「見られてはいるが閉じられている」のか
+    // 「そもそも見られていない」のかを区別できない
+    const { result } = renderHook(() =>
+      usePaywallDismiss({
+        source: 'onboarding',
+        variant: 'cosmicJourney',
+        offeringType: 'default',
+        setOfferingType: jest.fn(),
+        setDiscountRemainingSeconds: jest.fn(),
+        setShowTrialSheet: jest.fn(),
+        onOfferingChange: jest.fn(),
+      }),
+    );
+
+    await act(async () => {
+      await result.current.handleDismiss();
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', {
+      source: 'onboarding',
+      paywall_variant: 'cosmicJourney',
+    });
   });
 
   it('起動時ペイウォールの dismiss で paywall_dismissed source=returning を送信する', async () => {
@@ -117,6 +148,7 @@ describe('usePaywallDismiss', () => {
     const { result } = renderHook(() =>
       usePaywallDismiss({
         source: 'returning',
+        variant: 'default',
         offeringType: 'default',
         setOfferingType: jest.fn(),
         setDiscountRemainingSeconds: jest.fn(),
@@ -129,6 +161,9 @@ describe('usePaywallDismiss', () => {
       await result.current.handleDismiss();
     });
 
-    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', { source: 'returning' });
+    expect(mockTrackEvent).toHaveBeenCalledWith('paywall_dismissed', {
+      source: 'returning',
+      paywall_variant: 'default',
+    });
   });
 });

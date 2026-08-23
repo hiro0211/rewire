@@ -28,6 +28,7 @@
 import type { OnboardingStep } from './onboarding';
 import type { PostPurchaseStep } from './postPurchaseOnboarding';
 import type { PaywallSource } from './analytics/paywallSource';
+import type { PaywallVariant } from './paywall/paywallExperiment';
 import type { ReflectionOpenSource } from '@/hooks/reflection/useReflectionSheet';
 import type { ActivationPath } from '@/lib/tracking/activation';
 
@@ -79,16 +80,28 @@ export interface AnalyticsEventParams {
   // --- Paywall depth ---
   // source は3イベントで同じ語彙を共有する（constants/analytics/paywallSource.ts）。
   // これがないと BigQuery で「どの導線が購入に繋がったか」を結合できない。
+  //
+  // `paywall_variant` は A/B の割当（constants/paywall/paywallExperiment.ts）。
+  // param 名を `variant` ではなく `paywall_variant` にしているのは、同名の
+  // user property と対称にするため。イベントで見るときもユーザー単位で見るときも
+  // 同じ列名で書けるので、BigQuery の SQL に2つ目の綴りが増えない。
+  // A/B の分母は必ずこの param 側で取ること（user property は非同期設定なので
+  // 表示イベントに間に合う保証がない）。
   benefits_screen_viewed: { source: PaywallSource };
   benefits_cta_tapped: undefined;
-  paywall_viewed: { source: PaywallSource; offering: string };
+  paywall_viewed: { source: PaywallSource; offering: string; paywall_variant: PaywallVariant };
   plan_selected: { plan: string };
   purchase_initiated: { plan: string };
   purchase_failed: { reason: string; cancelled: boolean };
   restore_tapped: undefined;
   restore_completed: { success: boolean };
-  paywall_dismissed: { source: PaywallSource };
-  pro_purchase_completed: { source: PaywallSource; plan: string; offering: string };
+  paywall_dismissed: { source: PaywallSource; paywall_variant: PaywallVariant };
+  pro_purchase_completed: {
+    source: PaywallSource;
+    plan: string;
+    offering: string;
+    paywall_variant: PaywallVariant;
+  };
 
   // --- Content blocker (Screen Time シールド) ---
   // ポルノ禁の挫折を測るための4イベント。ブロックを ON にした人が、どれくらい

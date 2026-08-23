@@ -13,11 +13,18 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ source: 'onboarding' }),
 }));
 
-jest.mock('@/stores/userStore', () => ({
-  useUserStore: () => ({
+// セレクタ対応にしておかないと `useUserStore((s) => s.hasHydrated)` が
+// state オブジェクトそのものを返し、A/B バリアントの確定判定が狂う
+jest.mock('@/stores/userStore', () => {
+  const state = {
+    user: { id: 'u1', isPro: false },
+    hasHydrated: true,
     updateUser: jest.fn(),
-  }),
-}));
+  };
+  const useUserStore = (selector?: (s: any) => any) => (selector ? selector(state) : state);
+  useUserStore.getState = () => state;
+  return { useUserStore };
+});
 
 jest.mock('@/lib/nativeGuard', () => ({
   isExpoGo: true,
@@ -56,6 +63,8 @@ describe('PaywallScreen analytics', () => {
       expect(mockLogEvent).toHaveBeenCalledWith('paywall_viewed', {
         source: 'onboarding',
         offering: 'default',
+        // resolvePaywallVariant('u1') を実際に呼んで確かめた値
+        paywall_variant: 'cosmicJourney',
       });
     });
   });

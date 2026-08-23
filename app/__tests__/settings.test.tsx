@@ -272,6 +272,46 @@ describe('SettingsScreen', () => {
       expect(queryByText('購入後オンボーディングをもう一度見る')).toBeNull();
     });
 
+    it('「新ペイウォール（星の旅）を見る」が表示される', () => {
+      mockDebugEnabled = true;
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('新ペイウォール（星の旅）を見る')).toBeTruthy();
+    });
+
+    it('新ペイウォール項目タップで cosmicJourney を指定して /paywall に遷移する', () => {
+      // 割当は user.id のハッシュなので、指定しないと片方を一生確認できない
+      mockDebugEnabled = true;
+      const { getByTestId } = render(<SettingsScreen />);
+      fireEvent.press(getByTestId('setting-新ペイウォール（星の旅）を見る'));
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/paywall',
+        params: { debugVariant: 'cosmicJourney' },
+      });
+    });
+
+    it('「旧ペイウォール（対照群）を見る」が表示される', () => {
+      mockDebugEnabled = true;
+      const { getByText } = render(<SettingsScreen />);
+      expect(getByText('旧ペイウォール（対照群）を見る')).toBeTruthy();
+    });
+
+    it('旧ペイウォール項目タップで default を指定して /paywall に遷移する', () => {
+      mockDebugEnabled = true;
+      const { getByTestId } = render(<SettingsScreen />);
+      fireEvent.press(getByTestId('setting-旧ペイウォール（対照群）を見る'));
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/paywall',
+        params: { debugVariant: 'default' },
+      });
+    });
+
+    it('DEBUG_MENU_ENABLED が false のときペイウォール確認項目も表示されない', () => {
+      mockDebugEnabled = false;
+      const { queryByText } = render(<SettingsScreen />);
+      expect(queryByText('新ペイウォール（星の旅）を見る')).toBeNull();
+      expect(queryByText('旧ペイウォール（対照群）を見る')).toBeNull();
+    });
+
     it('全解放トグルが表示される', () => {
       mockDebugEnabled = true;
       const { getByText } = render(<SettingsScreen />);

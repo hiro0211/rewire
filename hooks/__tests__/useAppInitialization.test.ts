@@ -106,6 +106,7 @@ jest.mock('@/stores/screenTimeStore', () => ({
 import { useAppInitialization } from '../useAppInitialization';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
+import { analyticsClient } from '@/lib/tracking/analyticsClient';
 
 const mockInitialize = subscriptionClient.initialize as jest.Mock;
 const mockGetSubscriptionStatus = subscriptionClient.getSubscriptionStatus as jest.Mock;
@@ -293,6 +294,22 @@ describe('useAppInitialization', () => {
       });
 
       expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ペイウォールA/Bのユーザープロパティ', () => {
+    it('user.id が入っているとき paywall_variant が設定される', async () => {
+      // 購入後のリテンションや解約をバリアント別に割れるようにするため
+      mockHasHydrated = true;
+      mockUser = { id: 'u1', nickname: 'Test', isPro: false, goalDays: 30 };
+
+      renderHook(() => useAppInitialization());
+      await act(async () => {});
+
+      expect(analyticsClient.setUserProperty).toHaveBeenCalledWith(
+        'paywall_variant',
+        'cosmicJourney',
+      );
     });
   });
 

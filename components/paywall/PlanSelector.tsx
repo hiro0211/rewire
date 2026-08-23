@@ -12,6 +12,14 @@ interface PlanSelectorProps {
   onSelectPlan: (plan: 'annual' | 'monthly') => void;
   currencyCode?: string;
   showMonthly?: boolean;
+  /**
+   * 年額カードの主表示を月換算（¥450）にし、総額（¥5,400／年）を従属に落とす。
+   *
+   * 既定が false なのは、対照群の PaywallDefault の見た目を動かさないため。
+   * A/B の途中で両群のプラン表示が変わると、差が「新デザインの効果」なのか
+   * 「価格の見せ方の効果」なのか分離できなくなる。
+   */
+  emphasizeMonthly?: boolean;
 }
 
 export function PlanSelector({
@@ -21,6 +29,7 @@ export function PlanSelector({
   onSelectPlan,
   currencyCode = 'JPY',
   showMonthly = true,
+  emphasizeMonthly = false,
 }: PlanSelectorProps) {
   const { colors, glow, shadows } = useTheme();
   const { t } = useLocale();
@@ -32,8 +41,10 @@ export function PlanSelector({
   const discountPercent =
     showMonthly && monthlyPackage ? calcRelativeDiscount(monthlyPrice, annualPrice) : 0;
 
-  const annualPriceStr = annualPackage?.product?.priceString ?? `¥${annualPrice}`;
-  const monthlyPriceStr = monthlyPackage?.product?.priceString ?? `¥${monthlyPrice}`;
+  // フォールバックも formatPrice を通す。素の `¥${price}` だと桁区切りが付かず、
+  // 同じ画面のフッター（formatPrice 経由）が「¥5,400」、ここが「¥5400」と割れる。
+  const annualPriceStr = annualPackage?.product?.priceString ?? formatPrice(annualPrice, currencyCode);
+  const monthlyPriceStr = monthlyPackage?.product?.priceString ?? formatPrice(monthlyPrice, currencyCode);
 
   return (
     <View style={styles.container}>
@@ -57,13 +68,34 @@ export function PlanSelector({
             {t('paywall.savePercent', { percent: discountPercent })}
           </Text>
         )}
-        {/* 主役: 実際に請求される総額（Guideline 3.1.2(c)） */}
-        <Text style={[styles.priceMain, { color: colors.text }]}>{annualPriceStr}</Text>
-        <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perYear')}</Text>
-        {/* 従属: 月換算は小さく muted に */}
-        <Text style={[styles.priceEquivalent, { color: colors.textSecondary }]}>
-          {t('paywall.monthlyEquivalent', { price: formatPrice(annualMonthly, currencyCode) })}
-        </Text>
+        {emphasizeMonthly ? (
+          <>
+            {/* 主役: 月換算。月額プランと同じ単位で並ぶので、割安さが直感的に伝わる */}
+            <Text style={[styles.priceMain, { color: colors.text }]}>
+              {formatPrice(annualMonthly, currencyCode)}
+            </Text>
+            <Text style={[styles.priceSub, { color: colors.textSecondary }]}>
+              {t('paywall.perMonth')}
+            </Text>
+            {/* 従属: それでも実際に請求される総額は必ず残す。
+                消すと「¥450 だと思ったら ¥5,400 請求された」になり、
+                Guideline 3.1.2(c) にも信頼にも反する */}
+            <Text style={[styles.priceEquivalent, { color: colors.textSecondary }]}>
+              {annualPriceStr}
+              {t('paywall.perYear')}
+            </Text>
+          </>
+        ) : (
+          <>
+            {/* 主役: 実際に請求される総額（Guideline 3.1.2(c)） */}
+            <Text style={[styles.priceMain, { color: colors.text }]}>{annualPriceStr}</Text>
+            <Text style={[styles.priceSub, { color: colors.textSecondary }]}>{t('paywall.perYear')}</Text>
+            {/* 従属: 月換算は小さく muted に */}
+            <Text style={[styles.priceEquivalent, { color: colors.textSecondary }]}>
+              {t('paywall.monthlyEquivalent', { price: formatPrice(annualMonthly, currencyCode) })}
+            </Text>
+          </>
+        )}
       </TouchableOpacity>
 
       {/* Monthly Card */}

@@ -1,16 +1,18 @@
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { useUserStore } from '@/stores/userStore';
 import { discountExpiry } from '@/lib/paywall/discountExpiry';
 import { ROUTES, routeWithParams } from '@/lib/routing/routes';
 import { trackEvent } from '@/lib/tracking/trackEvent';
 import { PAYWALL_SOURCE, type PaywallSource } from '@/constants/analytics/paywallSource';
+import type { PaywallVariant } from '@/constants/paywall/paywallExperiment';
 
 type OfferingType = 'default' | 'discount' | 'trial';
 
 interface UsePaywallDismissOptions {
   /** 表示元の導線。`paywall_viewed` と同じ値を受け取り、同じ語彙で計測する。 */
   source: PaywallSource;
+  /** 表示中の A/B アーム。`paywall_viewed` と同じ値を渡し、離脱率を割れるようにする。 */
+  variant: PaywallVariant;
   offeringType: OfferingType;
   setOfferingType: (type: OfferingType) => void;
   setDiscountRemainingSeconds: (seconds: number) => void;
@@ -20,6 +22,7 @@ interface UsePaywallDismissOptions {
 
 export function usePaywallDismiss({
   source,
+  variant,
   offeringType,
   setOfferingType,
   setDiscountRemainingSeconds,
@@ -27,11 +30,10 @@ export function usePaywallDismiss({
   onOfferingChange,
 }: UsePaywallDismissOptions) {
   const router = useRouter();
-  const { user } = useUserStore();
   const isFromOnboarding = source === PAYWALL_SOURCE.ONBOARDING;
 
   const handleDismiss = useCallback(async () => {
-    trackEvent('paywall_dismissed', { source });
+    trackEvent('paywall_dismissed', { source, paywall_variant: variant });
     if (isFromOnboarding) {
       // paywall を閉じたらベネフィット画面へ戻す。
       // source を明示しないと戻り先で `benefits_screen_viewed { source: 'unknown' }`
@@ -57,7 +59,7 @@ export function usePaywallDismiss({
     } else {
       router.replace(ROUTES.tabs);
     }
-  }, [isFromOnboarding, source, router]);
+  }, [isFromOnboarding, source, variant, router]);
 
   // --- Trial sheet disabled for Guideline 5.6 ---
   const handleTrialSheetDismiss = useCallback(() => {

@@ -16,6 +16,7 @@ import { useScreenTracking } from '@/lib/tracking/useScreenTracking';
 import { useThemeLocaleUserProperties } from '@/hooks/tracking/useThemeLocaleUserProperties';
 import { useAppOpenTracking } from '@/hooks/tracking/useAppOpenTracking';
 import { useAnalyticsUserId } from '@/hooks/tracking/useAnalyticsUserId';
+import { usePaywallVariantUserProperty } from '@/hooks/tracking/usePaywallVariantUserProperty';
 import { subscriptionClient } from '@/lib/subscription/subscriptionClient';
 import { Purchases } from '@/lib/subscription/purchasesModule';
 
@@ -32,6 +33,7 @@ export function useAppInitialization() {
   // Gated on hasHydrated: before the store loads, user is null and seeding with
   // that null would stamp today's date on every existing user.
   useAppOpenTracking(user?.createdAt ?? null, hasHydrated);
+  usePaywallVariantUserProperty(user?.id ?? null);
 
   useEffect(() => {
     loadUser();

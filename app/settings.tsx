@@ -9,6 +9,7 @@ import { ProfileEditModal } from '@/components/settings/ProfileEditModal';
 import { TimePickerModal } from '@/components/settings/TimePickerModal';
 import { ThemePickerModal } from '@/components/settings/ThemePickerModal';
 import { LocalePickerModal } from '@/components/settings/LocalePickerModal';
+import { SettingsDebugSection } from '@/components/settings/SettingsDebugSection';
 import { useUserStore } from '@/stores/userStore';
 import { useThemeStore } from '@/stores/themeStore';
 import { useLocaleStore } from '@/stores/localeStore';
@@ -17,7 +18,6 @@ import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/lib/routing/routes';
 import { SUPPORT_EMAIL } from '@/constants/support';
-import { DEBUG_MENU_ENABLED } from '@/constants/debug';
 import { resyncWidgetFromStores } from '@/lib/widget/resyncWidget';
 import { useSettingsHandlers } from '@/hooks/settings/useSettingsHandlers';
 import { useSurveyCompleted } from '@/hooks/survey/useSurveyCompleted';
@@ -165,28 +165,10 @@ export default function SettingsScreen() {
           />
         </SettingSection>
 
-        {DEBUG_MENU_ENABLED && (
-          <SettingSection title={t('settings.sections.debug')}>
-            <SettingItem
-              label={t('settings.labels.debugUnlockAll')}
-              icon="planet-outline"
-              type="toggle"
-              toggleValue={debugUnlockAll}
-              onToggle={setDebugUnlockAll}
-            />
-            <SettingItem
-              label={t('settings.labels.replayOnboarding')}
-              icon="refresh-outline"
-              onPress={() => router.push(ROUTES.onboarding)}
-            />
-            <SettingItem
-              label={t('settings.labels.replayPostPurchaseOnboarding')}
-              icon="sparkles-outline"
-              onPress={() => router.push(ROUTES.postPurchaseOnboarding)}
-              isLast
-            />
-          </SettingSection>
-        )}
+        <SettingsDebugSection
+          unlockAll={debugUnlockAll}
+          onToggleUnlockAll={setDebugUnlockAll}
+        />
 
         <Text style={[styles.version, { color: colors.textSecondary }]}>Version {Constants.expoConfig?.version ?? '1.0.0'}</Text>
       </ScrollView>

@@ -15,9 +15,18 @@ jest.mock('expo-router', () => ({
 }));
 
 const mockUpdateUser = jest.fn().mockResolvedValue(undefined);
-jest.mock('@/stores/userStore', () => ({
-  useUserStore: () => ({ updateUser: mockUpdateUser, user: { nickname: 'Test', goalDays: 30 } }),
-}));
+// セレクタ対応にしておかないと `useUserStore((s) => s.hasHydrated)` が
+// state オブジェクトそのものを返し、A/B バリアントの確定判定が狂う
+jest.mock('@/stores/userStore', () => {
+  const state = {
+    user: { id: 'u1', nickname: 'Test', goalDays: 30, isPro: false },
+    hasHydrated: true,
+    updateUser: mockUpdateUser,
+  };
+  const useUserStore = (selector?: (s: any) => any) => (selector ? selector(state) : state);
+  useUserStore.getState = () => state;
+  return { useUserStore };
+});
 
 jest.mock('@/lib/nativeGuard', () => ({ isExpoGo: true }));
 

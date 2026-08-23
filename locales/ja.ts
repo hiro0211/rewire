@@ -459,6 +459,9 @@ export const ja = {
       replayOnboarding: 'オンボーディングをもう一度見る',
       replayPostPurchaseOnboarding: '購入後オンボーディングをもう一度見る',
       debugUnlockAll: '全バッジ解放＋オンボスキップ',
+      // A/B の割当は user.id のハッシュで決まるため、指定できないと片方を一生確認できない
+      debugPaywallCosmic: '新ペイウォール（星の旅）を見る',
+      debugPaywallDefault: '旧ペイウォール（対照群）を見る',
     },
     alerts: {
       notificationRequired: '通知許可が必要です',
@@ -737,13 +740,27 @@ export const ja = {
     trialAutoRenew: 'トライアル終了後、自動で課金されます。',
     features: {
       blocker: { title: '全ブラウザで、見る前に止める', description: 'どのブラウザで開いても、アダルトサイトを自動でブロック。' },
-      widget: { title: '続いた日数を、ひと目で', description: 'ロック画面のまま、今日までの積み重ねが見える。' },
+      // ウィジェットは systemSmall / systemMedium のみ（plugins/withWidget.js）。
+      // accessory 系を宣言していないのでロック画面には置けない。「ロック画面」と
+      // 書くと存在しない機能の約束になる。
+      widget: { title: '続いた日数を、ひと目で', description: 'ホーム画面のまま、今日までの積み重ねが見える。' },
       sos: { title: '衝動がきたら、ひと呼吸', description: '触覚ガイドの呼吸で、1分あれば波は引く。' },
       reflection: { title: '1日1分の、振り返り', description: '決めた時刻に通知。タップひとつで完了。' },
       badges: { title: '月から宇宙まで、18の節目', description: '続けた日が、星の旅になる。' },
     },
     reviews: {
       sectionTitle: 'ユーザーの声',
+    },
+    // A案ペイウォール専用。既存 paywall 直下のキーは対照群として据え置くため、ここに分離する
+    cosmic: {
+      headlineTop: '意志力の問題じゃない。',
+      headlineBottom: '仕組みで、止める。',
+      body: '続かないのは、弱いからじゃない。誘惑が強すぎるだけ。Rewire は iPhone 側でブロックする。我慢しなくても、開かなくなる。',
+      // 「はじめての方は」は飾りではない。無料トライアルは Apple のアカウント単位で
+      // 1回だけなので、一度解約した復帰ユーザーには適用されず即時に課金される。
+      // 条件を書かずに「3日間無料」と断言すると、その層に対して虚偽になる。
+      billingNoteMonthly: 'はじめての方は3日間無料。{{date}}から {{price}}／月。それまでに解約すれば、料金はかかりません。',
+      billingNoteAnnual: 'はじめての方は3日間無料。{{date}}から {{price}}／年。それまでに解約すれば、料金はかかりません。',
     },
   },
   purchaseAlerts: {
